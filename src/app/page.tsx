@@ -1,12 +1,18 @@
+// src/app/page.tsx
 import { prisma } from '@/lib/prisma';
-import { formatPrice } from '@/lib/utils';
+import { ProductCard } from '@/components/ProductCard';
 
 async function getProducts() {
   const products = await prisma.product.findMany({
     take: 6,
     orderBy: { createdAt: 'desc' }
   });
-  return products;
+  
+  // Convert Decimal to number for the client
+  return products.map(product => ({
+    ...product,
+    price: Number(product.price)
+  }));
 }
 
 export default async function HomePage() {
@@ -14,20 +20,6 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-blue-600">Můj E-shop</h1>
-            <nav className="flex gap-6">
-              <a href="/" className="text-gray-700 hover:text-blue-600">Domů</a>
-              <a href="/products" className="text-gray-700 hover:text-blue-600">Produkty</a>
-              <a href="/cart" className="text-gray-700 hover:text-blue-600">Košík</a>
-            </nav>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 text-center">
@@ -51,27 +43,7 @@ export default async function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                <div className="h-48 bg-gray-200 flex items-center justify-center">
-                  {product.image ? (
-                    <img src={product.image} alt={product.nameCs} className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-gray-400">Obrázek produktu</span>
-                  )}
-                </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-2">{product.nameCs}</h3>
-                  <p className="text-gray-600 mb-4">{product.description}</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-blue-600">
-                      {formatPrice(Number(product.price))}
-                    </span>
-                    <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                      Do košíku
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
