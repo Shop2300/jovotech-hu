@@ -65,7 +65,13 @@ export const useCart = create<CartStore>()(
         }));
       },
       
-      clearCart: () => set({ items: [] }),
+      clearCart: () => {
+        set({ items: [] });
+        // Force localStorage update
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('shopping-cart');
+        }
+      },
       
       getTotalPrice: () => {
         const items = get().items;

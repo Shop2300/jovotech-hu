@@ -14,29 +14,42 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    // Create order
+    console.log('Received order data:', body);
+    
+    const orderNumber = generateOrderNumber();
+    
+    // Create order with all fields
     const order = await prisma.order.create({
       data: {
+        orderNumber: orderNumber,
         customerEmail: body.email,
         customerName: `${body.firstName} ${body.lastName}`,
         customerPhone: body.phone,
+        firstName: body.firstName,
+        lastName: body.lastName,
+        address: body.address,
+        city: body.city,
+        postalCode: body.postalCode,
         items: body.items,
         total: body.total,
+        deliveryMethod: body.deliveryMethod,
+        paymentMethod: body.paymentMethod,
+        note: body.note || null,
         status: 'pending',
       },
     });
     
-    // In a real app, you would:
-    // 1. Send confirmation email
-    // 2. Process payment if card payment
-    // 3. Notify warehouse
-    // 4. Create invoice
+    console.log('Order created successfully:', order);
     
-    return NextResponse.json(order);
+    return NextResponse.json({ 
+      id: orderNumber,
+      success: true,
+      order: order 
+    });
   } catch (error) {
     console.error('Error creating order:', error);
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      { error: 'Failed to create order', details: error },
       { status: 500 }
     );
   }

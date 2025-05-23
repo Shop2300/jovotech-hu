@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Simple Product model to start
+// Product model
 model Product {
   id          String   @id @default(cuid())
   name        String
@@ -20,14 +20,32 @@ model Product {
   updatedAt   DateTime @updatedAt
 }
 
-// Simple Order model
+// Updated Order model with all fields
 model Order {
-  id            String   @id @default(cuid())
-  customerEmail String
-  customerName  String
-  customerPhone String
-  items         Json     // We'll store items as JSON for simplicity
-  total         Decimal  @db.Decimal(10, 2)
-  status        String   @default("pending")
-  createdAt     DateTime @default(now())
+  id              String   @id @default(cuid())
+  orderNumber     String   @unique
+  
+  // Customer info
+  customerEmail   String
+  customerName    String
+  customerPhone   String
+  firstName       String
+  lastName        String
+  
+  // Delivery address
+  address         String
+  city            String
+  postalCode      String
+  
+  // Order details
+  items           Json     // Store items as JSON
+  total           Decimal  @db.Decimal(10, 2)
+  status          String   @default("pending")
+  
+  // Delivery and payment
+  deliveryMethod  String
+  paymentMethod   String
+  note            String?
+  
+  createdAt       DateTime @default(now())
 }
