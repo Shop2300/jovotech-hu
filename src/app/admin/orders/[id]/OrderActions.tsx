@@ -411,7 +411,7 @@ export function OrderActions({ orderId, currentStatus, currentTrackingNumber, cu
         {trackingNumber && status === 'shipped' && (
           <button 
             className="w-full bg-green-100 text-green-800 py-2 rounded hover:bg-green-200 transition mt-2"
-            onClick={() => toast.info('Funkce odesílání emailů bude brzy dostupná')}
+            onClick={() => toast('Funkce odesílání emailů bude brzy dostupná')}
           >
             Poslat sledovací číslo zákazníkovi
           </button>
