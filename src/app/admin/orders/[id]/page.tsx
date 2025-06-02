@@ -60,7 +60,6 @@ async function getOrder(id: string) {
         ...item,
         product: {
           id: 'unknown',
-          name: item.name || 'Unknown Product',
           name: item.name || 'Neznámý produkt',
         }
       };
@@ -75,7 +74,6 @@ async function getOrder(id: string) {
         name: product.name,
       } : {
         id: item.productId,
-        name: item.name || 'Unknown Product',
         name: item.name || 'Neznámý produkt',
       }
     };
