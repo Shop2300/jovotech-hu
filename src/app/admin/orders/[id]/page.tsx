@@ -41,7 +41,7 @@ async function getOrder(id: string) {
   const productIds = validItems.map(item => item.productId);
 
   // Only fetch products if we have valid IDs
-  let products = [];
+  let products: any[] = [];
   if (productIds.length > 0) {
     products = await prisma.product.findMany({
       where: {
