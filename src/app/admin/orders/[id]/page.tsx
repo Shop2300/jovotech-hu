@@ -240,7 +240,10 @@ export default async function OrderDetailPage({
           </div>
 
           {/* Order History */}
-          <OrderHistory history={order.history} />
+          <OrderHistory history={order.history.map(h => ({
+            ...h,
+            createdAt: h.createdAt.toISOString()
+          }))} />
         </div>
 
         {/* Sidebar */}
