@@ -48,14 +48,23 @@ export default async function ProductDetailPage({
   // Convert Decimal to number for client component
   const serializedProduct = {
     ...product,
-    price: Number(product.price),
-    regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
-    averageRating: product.averageRating,
-    totalRatings: product.totalRatings,
-    variants: product.variants.map(variant => ({
-      ...variant,
-      price: variant.price ? Number(variant.price) : null
-    }))
+    price: product.price.toNumber(),
+    regularPrice: product.regularPrice?.toNumber() || null,
+    averageRating: product.averageRating || 0,
+    totalRatings: product.totalRatings || 0,
+    variants: product.variants.map(v => ({
+      ...v,
+      price: v.price?.toNumber() || null,
+      createdAt: v.createdAt,
+      updatedAt: v.updatedAt
+    })),
+    category: product.category ? {
+      id: product.category.id,
+      name: product.category.name,
+      slug: product.category.slug
+    } : undefined,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt
   };
 
   return <ProductDetailClient product={serializedProduct} />;
