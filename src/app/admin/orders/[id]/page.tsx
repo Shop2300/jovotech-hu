@@ -71,7 +71,6 @@ async function getOrder(id: string) {
       product: product ? {
         id: product.id,
         name: product.name,
-        name: product.name,
       } : {
         id: item.productId,
         name: item.name || 'Neznámý produkt',
