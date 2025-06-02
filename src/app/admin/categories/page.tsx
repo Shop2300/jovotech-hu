@@ -48,7 +48,11 @@ export default async function AdminCategoriesPage() {
         </Link>
       </div>
 
-      <CategoriesTable categories={categories} />
+      <CategoriesTable categories={categories.map(cat => ({
+        ...cat,
+        parent: cat.parent || undefined,
+        _count: cat._count
+      }))} />
     </div>
   );
 }
