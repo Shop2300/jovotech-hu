@@ -45,10 +45,10 @@ export async function GET(request: NextRequest) {
   try {
     if (type === 'confirmation') {
       const emailComponent = EmailService.previewOrderConfirmation(sampleOrderData);
-      html = render(emailComponent);
+      html = await render(emailComponent);
     } else if (type === 'shipping') {
       const emailComponent = EmailService.previewShippingNotification(sampleShippingData);
-      html = render(emailComponent);
+      html = await render(emailComponent);
     } else {
       return NextResponse.json(
         { error: 'Invalid type. Use ?type=confirmation or ?type=shipping' },
