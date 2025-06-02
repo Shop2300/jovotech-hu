@@ -32,6 +32,7 @@ export default async function EditProductPage({
   // Convert Decimal fields to numbers for client component
   const serializedProduct = {
     ...product,
+    code: product.code || undefined,
     price: product.price.toNumber(),
     regularPrice: product.regularPrice?.toNumber() || null,
     images: product.images.map(img => ({
