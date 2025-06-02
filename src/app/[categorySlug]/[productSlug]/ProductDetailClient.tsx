@@ -342,7 +342,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       const colorVariant = product.variants?.find(v => v.colorName === color);
                       const isAvailable = hasSizes 
                         ? getAvailableSizes(color).includes(selectedSize!)
-                        : colorVariant?.stock > 0;
+                        : (colorVariant?.stock || 0) > 0;
                       
                       return (
                         <button
