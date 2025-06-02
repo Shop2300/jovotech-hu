@@ -41,7 +41,11 @@ export default async function EditProductPage({
     })),
     variants: product.variants.map(v => ({
       ...v,
-      price: v.price?.toNumber() || null
+      price: v.price?.toNumber() || null,
+      colorName: v.colorName || undefined,
+      colorCode: v.colorCode || undefined,
+      sizeName: v.sizeName || undefined,
+      imageUrl: v.imageUrl || undefined
     }))
   };
 
