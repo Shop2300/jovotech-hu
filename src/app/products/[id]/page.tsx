@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { ProductDetailClient } from './ProductDetailClient';
 import { notFound } from 'next/navigation';
 
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const product = await prisma.product.findUnique({
     where: { id: params.id },
     include: {

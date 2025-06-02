@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { InvoiceTemplate } from '@/components/admin/InvoiceTemplate';
 import { useParams } from 'next/navigation';
 
-export default function InvoicePage() {
+export default async function InvoicePage() {
   const params = useParams();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
