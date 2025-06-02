@@ -1,41 +1,77 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Dependencies
+node_modules
+.pnp
+.pnp.js
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Testing
+coverage
+.nyc_output
 
-# testing
-/coverage
+# Next.js
+.next
+out
+build
+dist
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Production
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
 
-# vercel
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+prisma/*.db-journal
+prisma/dev.db.backup*
+*.db
+*.sqlite
+
+# Uploads (keep the folder structure)
+public/uploads/*
+!public/uploads/.gitkeep
+public/invoices/*
+!public/invoices/.gitignore
+
+# Backup files
+*.bak
+*.backup
+backup-before-bg-change/
+*.bak-namecs*
+
+# Migration and seed scripts (keep only essential ones)
+migrate-*.js
+fix-*.js
+check-*.js
+add-*.js
+test-*.js
+update-*.js
+verify-*.js
+sync-*.js
+final-*.js
+finalize-*.js
+find-*.js
+copy-*.js
+run-*.js
+
+# Vercel
 .vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts

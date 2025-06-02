@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model Banner {
+  id        String   @id
+  title     String
+  subtitle  String?
+  imageUrl  String
+  link      String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  type      String   @default("hero")
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model Category {
+  id             String    @id
+  name           String
+  slug           String     @unique(map: "sqlite_autoindex_Category_2")
+  description    String?
+  image          String?
+  order          Int?       @default(0)
+  isActive       Boolean?   @default(true)
+  parentId       String?
+  createdAt      DateTime?  @default(now())
+  updatedAt      DateTime?  @default(now())
+  Category       Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_Category Category[] @relation("CategoryToCategory")
+  Product        Product[]
+
+  @@index([parentId], map: "idx_category_parentId")
+}
+
+model FeatureIcon {
+  id            String   @id
+  key           String   @unique
+  title         String
+  titleCs       String
+  description   String?
+  descriptionCs String?
+  imageUrl      String?
+  emoji         String?
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+}
+
+model Invoice {
+  id            String    @id
+  invoiceNumber String    @unique
+  orderId       String    @unique
+  pdfUrl        String?
+  issuedAt      DateTime  @default(now())
+  dueDate       DateTime
+  totalAmount   Float
+  vatAmount     Float
+  status        String    @default("issued")
+  paidAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+  Order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id                   String         @id
+  orderNumber          String         @unique
+  customerEmail        String
+  customerName         String
+  customerPhone        String
+  billingFirstName     String
+  billingLastName      String
+  billingAddress       String
+  billingCity          String
+  billingPostalCode    String
+  deliveryFirstName    String?
+  deliveryLastName     String?
+  deliveryAddress      String?
+  deliveryCity         String?
+  deliveryPostalCode   String?
+  useDifferentDelivery Boolean        @default(false)
+  firstName            String
+  lastName             String
+  address              String
+  city                 String
+  postalCode           String
+  items                Json
+  total                Float
+  status               String         @default("pending")
+  paymentStatus        String         @default("unpaid")
+  deliveryMethod       String
+  paymentMethod        String
+  note                 String?
+  trackingNumber       String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime
+  Invoice              Invoice?
+  OrderHistory         OrderHistory[]
+}
+
+model OrderHistory {
+  id          String   @id
+  orderId     String
+  action      String
+  description String
+  oldValue    String?
+  newValue    String?
+  performedBy String   @default("Admin")
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  Order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model OrderItem {
+  id        String   @id
+  orderId   String
+  productId String
+  quantity  Int
+  price     Decimal
+  createdAt DateTime @default(now())
+  Product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Product {
+  id                String           @id
+  name              String
+  slug              String?          @unique
+  description       String?
+  detailDescription String?
+  price             Decimal
+  regularPrice      Decimal?
+  stock             Int              @default(0)
+  image             String?
+  categoryId        String?
+  brand             String?
+  warranty          String?
+  averageRating     Float            @default(0)
+  totalRatings      Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime
+  OrderItem         OrderItem[]
+  Category          Category?        @relation(fields: [categoryId], references: [id])
+  ProductImage      ProductImage[]
+  ProductReview     ProductReview[]
+  ProductVariant    ProductVariant[]
+}
+
+model ProductImage {
+  id        String   @id
+  url       String
+  alt       String?
+  order     Int      @default(0)
+  productId String
+  createdAt DateTime @default(now())
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductReview {
+  id          String   @id
+  productId   String
+  rating      Int
+  comment     String?
+  authorName  String
+  authorEmail String
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  Product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductVariant {
+  id        String   @id
+  productId String
+  colorName String?
+  colorCode String?
+  sizeName  String?
+  sizeOrder Int      @default(0)
+  stock     Int      @default(0)
+  price     Decimal?
+  imageUrl  String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}

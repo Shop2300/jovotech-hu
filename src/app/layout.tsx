@@ -2,7 +2,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
-import { Header } from '@/components/Header';
+import { LayoutWrapper } from '@/components/LayoutWrapper';
+import { ConditionalFooter } from '@/components/ConditionalFooter';
+// Remove: import { CartProvider } from '@/contexts/CartContext';
 
 export const metadata: Metadata = {
   title: "Můj E-shop",
@@ -17,9 +19,11 @@ export default function RootLayout({
   return (
     <html lang="cs">
       <body>
-        <Header />
+        {/* Remove CartProvider wrapper */}
+        <LayoutWrapper />
         {children}
-        <Toaster 
+        <ConditionalFooter />
+        <Toaster
           position="bottom-right"
           toastOptions={{
             duration: 3000,

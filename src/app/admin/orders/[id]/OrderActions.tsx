@@ -1,0 +1,422 @@
+// src/app/admin/orders/[id]/OrderActions.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import { Package, FileText, Download, Loader2, CheckCircle, Trash2, CreditCard } from 'lucide-react';
+
+interface OrderActionsProps {
+  orderId: string;
+  currentStatus: string;
+  currentTrackingNumber: string;
+  currentPaymentStatus?: string;
+}
+
+interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  pdfUrl: string | null;
+  status: string;
+  createdAt: string;
+}
+
+export function OrderActions({ orderId, currentStatus, currentTrackingNumber, currentPaymentStatus = 'unpaid' }: OrderActionsProps) {
+  const router = useRouter();
+  const [status, setStatus] = useState(currentStatus);
+  const [paymentStatus, setPaymentStatus] = useState(currentPaymentStatus);
+  const [trackingNumber, setTrackingNumber] = useState(currentTrackingNumber);
+  const [isEditingTracking, setIsEditingTracking] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isCheckingInvoice, setIsCheckingInvoice] = useState(true);
+  const [isDeletingInvoice, setIsDeletingInvoice] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const statusOptions = [
+    { value: 'pending', label: 'Čeká na vyřízení' },
+    { value: 'processing', label: 'Zpracovává se' },
+    { value: 'shipped', label: 'Odesláno' },
+    { value: 'delivered', label: 'Doručeno' },
+    { value: 'cancelled', label: 'Zrušeno' },
+  ];
+
+  const paymentStatusOptions = [
+    { value: 'unpaid', label: 'Nezaplaceno' },
+    { value: 'paid', label: 'Zaplaceno' },
+  ];
+
+  // Check if invoice exists
+  useEffect(() => {
+    async function checkInvoice() {
+      try {
+        const response = await fetch(`/api/admin/orders/${orderId}`);
+        if (response.ok) {
+          const orderData = await response.json();
+          if (orderData.invoice) {
+            setInvoice(orderData.invoice);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking invoice:', error);
+      } finally {
+        setIsCheckingInvoice(false);
+      }
+    }
+    checkInvoice();
+  }, [orderId]);
+
+  const handleStatusChange = async (newStatus: string) => {
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update status');
+      
+      setStatus(newStatus);
+      toast.success('Stav objednávky byl aktualizován');
+      router.refresh();
+    } catch (error) {
+      toast.error('Chyba při aktualizaci stavu');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handlePaymentStatusChange = async (newPaymentStatus: string) => {
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ paymentStatus: newPaymentStatus }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update payment status');
+      
+      setPaymentStatus(newPaymentStatus);
+      toast.success('Stav platby byl aktualizován');
+      router.refresh();
+    } catch (error) {
+      toast.error('Chyba při aktualizaci stavu platby');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleTrackingNumberUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ trackingNumber }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update tracking number');
+      
+      toast.success('Sledovací číslo bylo aktualizováno');
+      setIsEditingTracking(false);
+      router.refresh();
+    } catch (error) {
+      toast.error('Chyba při aktualizaci sledovacího čísla');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleGenerateInvoice = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}/invoice/generate`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) throw new Error('Failed to generate invoice');
+      
+      const data = await response.json();
+      setInvoice(data.invoice);
+      toast.success('Faktura byla úspěšně vygenerována');
+      router.refresh();
+    } catch (error) {
+      toast.error('Chyba při generování faktury');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleDownloadInvoice = async () => {
+    if (!invoice) return;
+
+    try {
+      const response = await fetch(`/api/admin/invoices/${invoice.id}/download`);
+      
+      if (!response.ok) throw new Error('Failed to download invoice');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${invoice.invoiceNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Faktura byla stažena');
+    } catch (error) {
+      toast.error('Chyba při stahování faktury');
+    }
+  };
+
+  const handlePrintInvoice = () => {
+    // Open invoice in a new window for printing
+    const invoiceWindow = window.open(
+      `/admin/orders/${orderId}/invoice`,
+      '_blank',
+      'width=800,height=1000,menubar=no,toolbar=no,location=no,status=no'
+    );
+    
+    if (!invoiceWindow) {
+      toast.error('Nepodařilo se otevřít fakturu. Povolte prosím vyskakovací okna.');
+    }
+  };
+
+  const handleDeleteInvoice = async () => {
+    if (!invoice) return;
+
+    setIsDeletingInvoice(true);
+    try {
+      const response = await fetch(`/api/admin/invoices/${invoice.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete invoice');
+      
+      setInvoice(null);
+      setShowDeleteConfirm(false);
+      toast.success('Faktura byla úspěšně smazána');
+      router.refresh();
+    } catch (error) {
+      toast.error('Chyba při mazání faktury');
+    } finally {
+      setIsDeletingInvoice(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4 text-black">Akce</h2>
+      
+      {/* Status Update */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Stav objednávky
+        </label>
+        <select
+          value={status}
+          onChange={(e) => handleStatusChange(e.target.value)}
+          disabled={isUpdating}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {statusOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Payment Status */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Stav platby
+        </label>
+        <div className="relative">
+          <select
+            value={paymentStatus}
+            onChange={(e) => handlePaymentStatusChange(e.target.value)}
+            disabled={isUpdating}
+            className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              paymentStatus === 'paid' 
+                ? 'border-green-300 bg-green-50' 
+                : 'border-red-300 bg-red-50'
+            }`}
+          >
+            {paymentStatusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            {paymentStatus === 'paid' ? (
+              <CheckCircle className="text-green-600" size={20} />
+            ) : (
+              <CreditCard className="text-red-600" size={20} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tracking Number */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Sledovací číslo zásilky
+        </label>
+        {!isEditingTracking ? (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 px-3 py-2 bg-gray-50 rounded-md flex items-center gap-2">
+              <Package size={16} className="text-gray-500" />
+              <span className="text-sm text-gray-700">
+                {trackingNumber || 'Není zadáno'}
+              </span>
+            </div>
+            <button
+              onClick={() => setIsEditingTracking(true)}
+              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            >
+              {trackingNumber ? 'Upravit' : 'Přidat'}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+              placeholder="Zadejte sledovací číslo"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleTrackingNumberUpdate}
+                disabled={isUpdating}
+                className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:opacity-50"
+              >
+                Uložit
+              </button>
+              <button
+                onClick={() => {
+                  setTrackingNumber(currentTrackingNumber);
+                  setIsEditingTracking(false);
+                }}
+                disabled={isUpdating}
+                className="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition disabled:opacity-50"
+              >
+                Zrušit
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Invoice Actions */}
+      <div className="space-y-2 pt-4 border-t">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Faktura</h3>
+        
+        {isCheckingInvoice ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="animate-spin text-gray-400" size={24} />
+          </div>
+        ) : invoice ? (
+          <>
+            <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-green-700 text-sm">
+                  <CheckCircle size={16} />
+                  <span>Faktura {invoice.invoiceNumber} byla vygenerována</span>
+                </div>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-red-600 hover:text-red-700 p-1"
+                  title="Smazat fakturu"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Delete Confirmation Dialog */}
+            {showDeleteConfirm && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-2">
+                <p className="text-sm text-red-700 mb-2">
+                  Opravdu chcete smazat fakturu {invoice.invoiceNumber}?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDeleteInvoice}
+                    disabled={isDeletingInvoice}
+                    className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {isDeletingInvoice ? 'Mažu...' : 'Ano, smazat'}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeletingInvoice}
+                    className="px-3 py-1 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                  >
+                    Zrušit
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <button 
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition flex items-center justify-center gap-2"
+              onClick={handlePrintInvoice}
+            >
+              <FileText size={18} />
+              Vytisknout fakturu
+            </button>
+            <button 
+              className="w-full bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 transition flex items-center justify-center gap-2"
+              onClick={handleDownloadInvoice}
+            >
+              <Download size={18} />
+              Stáhnout PDF
+            </button>
+          </>
+        ) : (
+          <button 
+            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
+            onClick={handleGenerateInvoice}
+            disabled={isGeneratingPdf}
+          >
+            {isGeneratingPdf ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                Generuji fakturu...
+              </>
+            ) : (
+              <>
+                <FileText size={18} />
+                Vygenerovat fakturu
+              </>
+            )}
+          </button>
+        )}
+        
+        {trackingNumber && status === 'shipped' && (
+          <button 
+            className="w-full bg-green-100 text-green-800 py-2 rounded hover:bg-green-200 transition mt-2"
+            onClick={() => toast.info('Funkce odesílání emailů bude brzy dostupná')}
+          >
+            Poslat sledovací číslo zákazníkovi
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

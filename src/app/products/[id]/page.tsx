@@ -1,0 +1,42 @@
+// src/app/products/[id]/page.tsx
+import { prisma } from '@/lib/prisma';
+import { ProductDetailClient } from './ProductDetailClient';
+import { notFound } from 'next/navigation';
+
+export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+  const product = await prisma.product.findUnique({
+    where: { id: params.id },
+    include: {
+      category: true,  // Added this line
+      images: {
+        orderBy: { order: 'asc' }
+      },
+      variants: {
+        where: { isActive: true },
+        orderBy: [
+          { sizeOrder: 'asc' },
+          { order: 'asc' }
+        ]
+      }
+    }
+  });
+
+  if (!product) {
+    notFound();
+  }
+
+  // Convert Decimal to number for client component
+  const serializedProduct = {
+    ...product,
+    price: Number(product.price),
+    regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
+    averageRating: product.averageRating,
+    totalRatings: product.totalRatings,
+    variants: product.variants.map(variant => ({
+      ...variant,
+      price: variant.price ? Number(variant.price) : null
+    }))
+  };
+
+  return <ProductDetailClient product={serializedProduct} />;
+}
