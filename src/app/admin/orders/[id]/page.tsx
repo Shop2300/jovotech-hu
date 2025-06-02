@@ -12,9 +12,11 @@ import { OrderHistory } from '@/components/admin/OrderHistory';
 interface OrderItem {
   productId: string;
   name?: string;
-  name?: string;
   quantity: number;
   price: number;
+  size?: string;
+  color?: string;
+  image?: string;
 }
 
 async function getOrder(id: string) {
