@@ -95,7 +95,7 @@ export async function GET(request: Request) {
       'ID': product.id,
       'Název': product.name,
       'Slug': product.slug || '',
-      'Kategorie': product.category?.nameCs || '',
+      'Kategorie': product.category?.name || '',
       'Značka': product.brand || '',
       'Cena': Number(product.price),
       'Běžná cena': product.regularPrice ? Number(product.regularPrice) : '',
