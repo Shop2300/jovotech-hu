@@ -32,13 +32,15 @@ export default async function EditProductPage({
   // Convert Decimal fields to numbers for client component
   const serializedProduct = {
     ...product,
-    code: product.code || '', // Ensure code is included
-    price: Number(product.price),
-    regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
-    images: product.images,
-    variants: product.variants.map(variant => ({
-      ...variant,
-      price: variant.price ? Number(variant.price) : null
+    price: product.price.toNumber(),
+    regularPrice: product.regularPrice?.toNumber() || null,
+    images: product.images.map(img => ({
+      ...img,
+      alt: img.alt || undefined
+    })),
+    variants: product.variants.map(v => ({
+      ...v,
+      price: v.price?.toNumber() || null
     }))
   };
 
