@@ -206,10 +206,7 @@ function TiptapEditor({ value, onChange, placeholder, height = '200px' }: {
         paragraph: {
           HTMLAttributes: {},
         },
-        listItem: {
-          HTMLAttributes: {},
-          content: 'inline*',
-        },
+        listItem: { HTMLAttributes: {} },
       }),
       PreserveAttributes,
       Underline,
