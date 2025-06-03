@@ -54,9 +54,7 @@ async function getCategoryProducts(categoryId: string, includeSubcategories: boo
       price: Number(product.price),
       regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
       averageRating: product.averageRating ? Number(product.averageRating) : undefined,
-      totalRatings: product.totalRatings || 0,
-      isActive: product.isActive ?? true
-    }));
+      totalRatings: product.totalRatings || 0}));
   } else {
     const products = await prisma.product.findMany({
       where: { categoryId },
@@ -74,9 +72,7 @@ async function getCategoryProducts(categoryId: string, includeSubcategories: boo
       price: Number(product.price),
       regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
       averageRating: product.averageRating ? Number(product.averageRating) : undefined,
-      totalRatings: product.totalRatings || 0,
-      isActive: product.isActive ?? true
-    }));
+      totalRatings: product.totalRatings || 0}));
   }
 }
 
