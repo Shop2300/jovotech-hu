@@ -240,7 +240,7 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
             </div>
           </td>
         </tr>
-        {isExpanded && hasChildren && category.childCategories.map(child => renderCategory(child, level + 1))}
+        {isExpanded && hasChildren && (category.childCategories?.map(child => renderCategory(child, level + 1)) || null)}
       </React.Fragment>
     );
   };
