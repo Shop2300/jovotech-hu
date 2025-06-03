@@ -232,7 +232,7 @@ export default async function CategoryPage({
             )}
 
             {/* Products Grid with Filter */}
-            <CategoryProductsClient products={products.map(p => ({...p, isActive: true}))} />
+            <CategoryProductsClient products={products.map(p => ({...p, isActive: true, slug: p.slug || p.id}))} />
           </div>
         </div>
       </div>
