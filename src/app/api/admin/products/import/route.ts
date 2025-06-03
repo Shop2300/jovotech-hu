@@ -189,8 +189,7 @@ async function processRow(row: any, categoryMap: Map<string, any>) {
       // Create new category if it doesn't exist
       const newCategory = await prisma.category.create({
         data: {
-          nameCs: categoryName,
-          nameEn: categoryName,
+          name: categoryName,
           slug: createSlug(categoryName),
           order: await prisma.category.count()
         }
