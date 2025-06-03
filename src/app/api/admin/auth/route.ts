@@ -1,32 +1,43 @@
 // src/app/api/admin/auth/route.ts
 import { NextResponse } from 'next/server';
-import { AUTH_CONFIG } from '@/lib/auth';
+import { cookies } from 'next/headers';
+
+// Use the same constants as middleware
+const ADMIN_TOKEN = 'd3a165840e65153fc24bf57c1228c1d927e16f2ff5122e72e2612b073d9749e2';
+const ADMIN_PASSWORD = 'O87TJpfbh2qtUqvzTGc0KjkioE2jZCGA';
+const COOKIE_NAME = 'galaxy-admin-session';
 
 export async function POST(request: Request) {
   try {
     const { password } = await request.json();
     
-    // Check if password matches
-    if (password !== AUTH_CONFIG.ADMIN_PASSWORD) {
+    console.log('Login attempt:', { 
+      providedPassword: password,
+      expectedPassword: ADMIN_PASSWORD,
+      matches: password === ADMIN_PASSWORD 
+    });
+    
+    if (password !== ADMIN_PASSWORD) {
       return NextResponse.json(
         { error: 'Invalid password' },
         { status: 401 }
       );
     }
     
-    // Create response with success
-    const response = NextResponse.json({ success: true });
-    
-    // Set secure admin session cookie
-    response.cookies.set(AUTH_CONFIG.COOKIE_NAME, AUTH_CONFIG.ADMIN_TOKEN, {
+    // Get cookies store with await (Next.js 15 requirement)
+    const cookieStore = await cookies();
+    cookieStore.set(COOKIE_NAME, ADMIN_TOKEN, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
-      maxAge: AUTH_CONFIG.COOKIE_MAX_AGE,
-      path: '/', // Ensure cookie is available for all paths
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
     });
     
-    return response;
+    return NextResponse.json({ 
+      success: true,
+      message: 'Authentication successful' 
+    });
   } catch (error) {
     console.error('Auth error:', error);
     return NextResponse.json(
@@ -38,19 +49,20 @@ export async function POST(request: Request) {
 
 // Logout endpoint
 export async function DELETE() {
-  const response = NextResponse.json({ success: true });
-  response.cookies.set(AUTH_CONFIG.COOKIE_NAME, '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 0, // This will delete the cookie
-    path: '/',
-  });
-  return response;
+  const cookieStore = await cookies();
+  cookieStore.delete(COOKIE_NAME);
+  return NextResponse.json({ success: true });
 }
 
 // Check auth status endpoint
 export async function GET() {
-  // This endpoint can be used to check if user is authenticated
-  return NextResponse.json({ authenticated: true });
+  const cookieStore = await cookies();
+  const adminSession = cookieStore.get(COOKIE_NAME);
+  
+  const isAuthenticated = adminSession?.value === ADMIN_TOKEN;
+  
+  return NextResponse.json({ 
+    authenticated: isAuthenticated,
+    hasSession: !!adminSession 
+  });
 }

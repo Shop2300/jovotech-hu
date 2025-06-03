@@ -1,12 +1,15 @@
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { AUTH_CONFIG } from '@/lib/auth';
+
+// Define the admin token directly here to avoid env variable issues
+const ADMIN_TOKEN = 'd3a165840e65153fc24bf57c1228c1d927e16f2ff5122e72e2612b073d9749e2';
+const COOKIE_NAME = 'galaxy-admin-session';
 
 export function middleware(request: NextRequest) {
-  // Check if the path starts with /admin
+  // Only check admin routes
   if (request.nextUrl.pathname.startsWith('/admin')) {
-    // Skip auth check for login page and API routes
+    // Allow access to login page and auth API
     if (
       request.nextUrl.pathname === '/admin/login' ||
       request.nextUrl.pathname.startsWith('/api/admin/auth')
@@ -15,12 +18,20 @@ export function middleware(request: NextRequest) {
     }
 
     // Check for admin session cookie
-    const adminSession = request.cookies.get(AUTH_CONFIG.COOKIE_NAME);
+    const adminSession = request.cookies.get(COOKIE_NAME);
     
-    if (!adminSession || adminSession.value !== AUTH_CONFIG.ADMIN_TOKEN) {
-      // Redirect to login if not authenticated
+    // Debug logging (remove in production)
+    console.log('Middleware check:', {
+      path: request.nextUrl.pathname,
+      hasCookie: !!adminSession,
+      cookieValue: adminSession?.value,
+      expectedToken: ADMIN_TOKEN,
+      matches: adminSession?.value === ADMIN_TOKEN
+    });
+    
+    if (!adminSession || adminSession.value !== ADMIN_TOKEN) {
+      // Redirect to login
       const loginUrl = new URL('/admin/login', request.url);
-      // Add return URL so we can redirect back after login
       loginUrl.searchParams.set('returnUrl', request.nextUrl.pathname);
       return NextResponse.redirect(loginUrl);
     }
@@ -30,5 +41,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/admin/:path*',
+  matcher: ['/admin/:path*'],
 };
