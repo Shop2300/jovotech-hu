@@ -48,7 +48,7 @@
     "@types/mime-types": "^2.1.4",
     "@types/node": "^20.17.50",
     "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react-dom": "^19.1.5",
     "@types/xlsx": "^0.0.35",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
