@@ -36,7 +36,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     variants: product.variants.map(variant => ({
       ...variant,
       price: variant.price ? Number(variant.price) : null
-    }))
+    })),
+    category: product.category ? {
+      id: product.category.id,
+      name: product.category.name,
+      slug: product.category.slug
+    } : undefined
   };
 
   return <ProductDetailClient product={serializedProduct} />;
