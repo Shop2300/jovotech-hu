@@ -108,7 +108,11 @@ export default async function HomePage() {
     regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
     averageRating: product.averageRating,
     totalRatings: product.totalRatings,
-    slug: product.slug || undefined
+    slug: product.slug || undefined,
+    variants: product.variants.map(v => ({
+      ...v,
+      colorName: v.colorName || ""
+    }))
   }));
 
   const serializedNewProducts = newProducts.map(product => ({
@@ -118,6 +122,11 @@ export default async function HomePage() {
     averageRating: product.averageRating,
     totalRatings: product.totalRatings,
     slug: product.slug || undefined
+  ,
+    variants: product.variants.map(v => ({
+      ...v,
+      colorName: v.colorName || ""
+    }))
   }));
 
   return (
