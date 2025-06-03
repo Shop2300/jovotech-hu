@@ -28,12 +28,12 @@ export async function GET() {
       parentCategories: parentCategories.length,
       childCategories: childCategories.length,
       categoriesWithChildren: categories.filter(c => c._count.children > 0).map(c => ({
-        name: c.nameCs,
+        name: c.name,
         childrenCount: c._count.children
       })),
       allCategories: categories.map(c => ({
         id: c.id,
-        nameCs: c.nameCs,
+        nameCs: c.name,
         parentId: c.parentId,
         parentName: c.parent?.nameCs || null,
         childrenCount: c._count.children
