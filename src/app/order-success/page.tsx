@@ -1,5 +1,7 @@
 // src/app/order-success/page.tsx
 'use client';
+
+export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
