@@ -140,7 +140,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             const itemTotalWithoutVat = itemTotalWithVat / (1 + vatRate);
             return (
               <tr key={index} className="border-b">
-                <td className="py-1">{item.name || item.name || 'Položka'}</td>
+                <td className="py-1">{item.name || 'Položka'}</td>
                 <td className="text-center py-1">{item.quantity}</td>
                 <td className="text-right py-1">{formatPrice(item.price)}</td>
                 <td className="text-right py-1">{formatPrice(itemTotalWithoutVat)}</td>

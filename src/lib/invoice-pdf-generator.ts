@@ -197,7 +197,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
     const itemTotalWithVat = item.price * item.quantity;
     const itemTotalWithoutVat = itemTotalWithVat / (1 + vatRate);
     
-    doc.text(czechToAscii(item.name || item.name || 'Položka'), leftMargin + 2, yPosition);
+    doc.text(czechToAscii(item.name || 'Položka'), leftMargin + 2, yPosition);
     doc.text(item.quantity.toString(), leftMargin + 100, yPosition, { align: 'center' });
     doc.text(formatCurrency(item.price), leftMargin + 120, yPosition, { align: 'right' });
     doc.text(formatCurrency(itemTotalWithoutVat), leftMargin + 150, yPosition, { align: 'right' });

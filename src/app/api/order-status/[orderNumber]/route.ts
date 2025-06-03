@@ -53,7 +53,7 @@ export async function GET(
       paymentMethod: order.paymentMethod,
       total: Number(order.total),
       items: items.map(item => ({
-        name: item.name || item.name,
+        name: item.name,
         quantity: item.quantity,
         price: item.price
       })),

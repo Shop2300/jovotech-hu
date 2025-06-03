@@ -53,7 +53,7 @@ export class EmailService {
     try {
       // Transform items for email template
       const emailItems = data.items.map(item => ({
-        name: item.name || item.name || 'Produkt',
+        name: item.name || 'Produkt',
         quantity: item.quantity,
         price: item.price,
       }));
@@ -90,7 +90,7 @@ export class EmailService {
     try {
       // Transform items for email template
       const emailItems = data.items.map(item => ({
-        name: item.name || item.name || 'Produkt',
+        name: item.name || 'Produkt',
         quantity: item.quantity,
       }));
 
@@ -141,7 +141,7 @@ export class EmailService {
    */
   static previewOrderConfirmation(data: Omit<OrderEmailData, 'customerEmail'>): React.ReactElement {
     const emailItems = data.items.map(item => ({
-      name: item.name || item.name || 'Produkt',
+      name: item.name || 'Produkt',
       quantity: item.quantity,
       price: item.price,
     }));
@@ -162,7 +162,7 @@ export class EmailService {
    */
   static previewShippingNotification(data: Omit<ShippingEmailData, 'customerEmail'>): React.ReactElement {
     const emailItems = data.items.map(item => ({
-      name: item.name || item.name || 'Produkt',
+      name: item.name || 'Produkt',
       quantity: item.quantity,
     }));
 
