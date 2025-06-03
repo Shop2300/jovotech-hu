@@ -5,7 +5,6 @@ import { formatPrice } from '@/lib/utils';
 
 interface InvoiceItem {
   name?: string;
-  name?: string;
   quantity: number;
   price: number;
 }
