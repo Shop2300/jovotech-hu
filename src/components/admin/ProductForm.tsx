@@ -234,9 +234,7 @@ function TiptapEditor({ value, onChange, placeholder, height = '200px' }: {
 
   const handleHtmlSave = (newHtml: string) => {
     if (editor) {
-      editor.commands.setContent(newHtml, {
-        preserveWhitespace: true,
-      });
+      editor.commands.setContent(newHtml);
       onChange(newHtml);
     }
   };
