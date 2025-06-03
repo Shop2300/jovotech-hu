@@ -1,6 +1,6 @@
 // src/app/order-success/page.tsx
 'use client';
-
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle, Copy } from 'lucide-react';
@@ -14,21 +14,20 @@ const BANK_DETAILS = {
   swift: 'FIOBCZPPXXX'
 };
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get('orderNumber');
   const { clearCart } = useCart();
-
+  
   // Ensure cart is cleared when arriving at success page
   useEffect(() => {
     clearCart();
   }, [clearCart]);
-
+  
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} zkopírováno do schránky`);
   };
-
   return (
     <main className="min-h-screen bg-white flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
@@ -141,5 +140,20 @@ export default function OrderSuccessPage() {
         </Link>
       </div>
     </main>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Načítání...</p>
+        </div>
+      </div>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }
