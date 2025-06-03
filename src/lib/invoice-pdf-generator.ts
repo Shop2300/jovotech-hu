@@ -16,7 +16,6 @@ interface InvoiceData {
   billingPostalCode: string;
   items: Array<{
     name?: string;
-    name?: string;
     quantity: number;
     price: number;
   }>;
