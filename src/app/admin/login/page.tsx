@@ -1,8 +1,8 @@
 // src/app/admin/login/page.tsx
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { Lock } from 'lucide-react';
@@ -13,13 +13,31 @@ interface LoginForm {
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const returnUrl = searchParams.get('returnUrl') || '/admin';
   
   const {
     register,
     handleSubmit,
     formState: { errors }
   } = useForm<LoginForm>();
+
+  // Check if already authenticated
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/admin/auth');
+        if (response.ok) {
+          // Already authenticated, redirect
+          router.push(returnUrl);
+        }
+      } catch (error) {
+        // Not authenticated, stay on login page
+      }
+    };
+    checkAuth();
+  }, [router, returnUrl]);
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
@@ -31,16 +49,22 @@ export default function AdminLoginPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
+        credentials: 'include', // Important for cookies
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error('Nesprávné heslo');
+        throw new Error(result.error || 'Nesprávné heslo');
       }
 
       toast.success('Přihlášení úspěšné');
-      router.push('/admin');
+      // Use router.push instead of window.location for better SPA experience
+      router.push(returnUrl);
+      // Force a router refresh to ensure middleware rechecks auth
+      router.refresh();
     } catch (error) {
-      toast.error('Nesprávné heslo');
+      toast.error(error instanceof Error ? error.message : 'Nesprávné heslo');
     } finally {
       setIsLoading(false);
     }
@@ -65,6 +89,7 @@ export default function AdminLoginPage() {
               {...register('password', { required: 'Heslo je povinné' })}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Zadejte admin heslo"
+              autoComplete="current-password"
             />
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
@@ -84,9 +109,12 @@ export default function AdminLoginPage() {
           </button>
         </form>
         
-        <p className="text-sm text-gray-600 text-center mt-4">
-          Pro přístup do administrace kontaktujte správce
-        </p>
+        <div className="text-sm text-gray-600 text-center mt-4 space-y-2">
+          <p>Pro přístup do administrace kontaktujte správce</p>
+          <p className="text-xs">
+            Session platnost: 7 dní
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -1,33 +1,34 @@
 // src/app/api/admin/auth/route.ts
 import { NextResponse } from 'next/server';
-
-// Simple auth - in production, use proper authentication
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+import { AUTH_CONFIG } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
     const { password } = await request.json();
     
-    if (password !== ADMIN_PASSWORD) {
+    // Check if password matches
+    if (password !== AUTH_CONFIG.ADMIN_PASSWORD) {
       return NextResponse.json(
         { error: 'Invalid password' },
         { status: 401 }
       );
     }
     
-    // Create response with cookie
+    // Create response with success
     const response = NextResponse.json({ success: true });
     
-    // Set admin token cookie (in production, use proper JWT)
-    response.cookies.set('admin-token', process.env.ADMIN_TOKEN || 'admin-authenticated', {
+    // Set secure admin session cookie
+    response.cookies.set(AUTH_CONFIG.COOKIE_NAME, AUTH_CONFIG.ADMIN_TOKEN, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24, // 24 hours
+      sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
+      maxAge: AUTH_CONFIG.COOKIE_MAX_AGE,
+      path: '/', // Ensure cookie is available for all paths
     });
     
     return response;
   } catch (error) {
+    console.error('Auth error:', error);
     return NextResponse.json(
       { error: 'Authentication failed' },
       { status: 500 }
@@ -38,6 +39,18 @@ export async function POST(request: Request) {
 // Logout endpoint
 export async function DELETE() {
   const response = NextResponse.json({ success: true });
-  response.cookies.delete('admin-token');
+  response.cookies.set(AUTH_CONFIG.COOKIE_NAME, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0, // This will delete the cookie
+    path: '/',
+  });
   return response;
+}
+
+// Check auth status endpoint
+export async function GET() {
+  // This endpoint can be used to check if user is authenticated
+  return NextResponse.json({ authenticated: true });
 }
