@@ -157,7 +157,7 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
       
       if (!matches && hasChildren) {
         // Check if any children match
-        const childrenMatch = category.childCategories.some(child => 
+        const childrenMatch = category.childCategories?.some(child => 
           child.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           child.slug.toLowerCase().includes(searchTerm.toLowerCase())
         );
