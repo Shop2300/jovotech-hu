@@ -80,7 +80,11 @@ export default function SearchPage() {
           .filter((p: Product) => p.category)
           .map((p: Product) => [p.category!.id, p.category!]))
           .values()];
-        setAvailableCategories(categories.sort((a: any, b: any) => a.name.localeCompare(b.name)));
+        setAvailableCategories(
+    categories
+      .filter((cat): cat is { id: string; name: string } => cat !== null && cat !== undefined)
+      .sort((a, b) => a.name.localeCompare(b.name))
+  );
 
         // Calculate price range
         if (data.products.length > 0) {
