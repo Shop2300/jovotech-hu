@@ -50,6 +50,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19.1.5",
     "@types/xlsx": "^0.0.35",
+    "dotenv": "^16.5.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",
