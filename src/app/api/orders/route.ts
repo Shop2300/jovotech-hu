@@ -74,7 +74,6 @@ export async function POST(request: Request) {
         id: item.id,
         productId: item.id, // Ensure productId is included
         name: item.name,
-        name: item.name,
         price: item.price,
         quantity: item.quantity,
         image: item.image,
