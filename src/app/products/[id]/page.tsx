@@ -4,8 +4,9 @@ import { ProductDetailClient } from './ProductDetailClient';
 import { notFound } from 'next/navigation';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const product = await prisma.product.findUnique({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
     include: {
       category: true,  // Added this line
       images: {
