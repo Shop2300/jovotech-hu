@@ -39,8 +39,7 @@ export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart(); // Using addItem from Zustand store
   
   const hasVariants = product.variants && product.variants.length > 0;
-  const inStock = hasVariants 
-    ? product.variants.some(v => v.stock > 0)
+  const inStock = hasVariants ? product.variants?.some(v => v.stock > 0) || false
     : product.stock > 0;
     
   const discount = product.regularPrice 
