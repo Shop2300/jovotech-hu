@@ -3,7 +3,8 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import ReactDOM from 'react-dom';
+const { createPortal } = ReactDOM;
 import { ChevronDown, FolderOpen } from 'lucide-react';
 
 interface Category {
