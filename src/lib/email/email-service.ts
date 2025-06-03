@@ -13,7 +13,6 @@ const REPLY_TO = process.env.EMAIL_REPLY_TO || 'info@czech-eshop.cz';
 
 interface OrderItem {
   name?: string;
-  name?: string;
   quantity: number;
   price: number;
 }
