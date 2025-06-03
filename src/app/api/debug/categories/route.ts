@@ -35,7 +35,7 @@ export async function GET() {
         id: c.id,
         nameCs: c.name,
         parentId: c.parentId,
-        parentName: c.parent?.nameCs || null,
+        parentName: c.parent?.name || null,
         childrenCount: c._count.children
       }))
     };
