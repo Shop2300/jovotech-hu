@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     
     // Get all categories for mapping
     const categories = await prisma.category.findMany();
-    const categoryMap = new Map(categories.map(c => [c.nameCs.toLowerCase(), c]));
+    const categoryMap = new Map(categories.map(c => [c.name.toLowerCase(), c]));
     
     // Process each row
     for (const row of data) {
