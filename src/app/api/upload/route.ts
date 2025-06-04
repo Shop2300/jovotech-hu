@@ -1,7 +1,6 @@
 // src/app/api/upload/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { put } from '@vercel/blob';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,29 +24,30 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // No size validation - unlimited file size
-    
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    
     // Generate unique filename
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const ext = path.extname(file.name);
-    const filename = `${uniqueSuffix}${ext}`;
+    const ext = file.name.split('.').pop();
+    const filename = `${type}/${uniqueSuffix}.${ext}`;
     
-    // Ensure upload directory exists
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
-    
-    // Write file
-    const filePath = path.join(uploadDir, filename);
-    await writeFile(filePath, buffer);
+    // Upload to Vercel Blob
+    const blob = await put(filename, file, {
+      access: 'public',
+      addRandomSuffix: false,
+    });
     
     // Return the URL
-    const url = `/uploads/${type}/${filename}`;
-    
-    return NextResponse.json({ url });
+    return NextResponse.json({ url: blob.url });
   } catch (error) {
     console.error('Upload error:', error);
+    
+    // Check if it's a missing token error
+    if (error instanceof Error && error.message.includes('BLOB_READ_WRITE_TOKEN')) {
+      return NextResponse.json(
+        { error: 'Blob storage not configured. Please set up Vercel Blob Storage.' },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to upload file' },
       { status: 500 }
