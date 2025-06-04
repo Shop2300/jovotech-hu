@@ -164,8 +164,16 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
       }
 
       toast.success(initialData ? 'Kategorie byla aktualizována' : 'Kategorie byla přidána');
-      router.push('/admin/categories');
-      router.refresh();
+      
+      // Force a hard refresh to ensure data is updated
+      if (initialData) {
+        // For updates, do a hard refresh of the categories page
+        window.location.href = '/admin/categories';
+      } else {
+        // For new categories, router navigation is fine
+        router.push('/admin/categories');
+        router.refresh();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Chyba při ukládání kategorie');
     } finally {

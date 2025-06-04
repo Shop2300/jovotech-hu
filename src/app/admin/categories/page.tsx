@@ -1,4 +1,7 @@
 // src/app/admin/categories/page.tsx
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
