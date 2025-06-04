@@ -54,6 +54,19 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     
+    // Get the current category to check if order is changing
+    const currentCategory = await prisma.category.findUnique({
+      where: { id },
+      select: { order: true, parentId: true }
+    });
+
+    if (!currentCategory) {
+      return NextResponse.json(
+        { error: 'Category not found' },
+        { status: 404 }
+      );
+    }
+
     // Generate slug if name changed
     const slug = body.slug || createSlug(body.name);
     
@@ -90,21 +103,103 @@ export async function PUT(
         );
       }
     }
-    
-    const category = await prisma.category.update({
-      where: { id },
-      data: {
-        name: body.name,
-        slug,
-        description: body.description || null,
-        image: body.image || null,
-        order: body.order || 0,
-        isActive: body.isActive ?? true,
-        parentId: body.parentId || null,
-      },
-    });
-    
-    return NextResponse.json(category);
+
+    // Handle order change
+    const newOrder = body.order || 0;
+    const oldOrder = currentCategory.order;
+    const parentId = body.parentId || null;
+
+    // If order is changing, we need to shift other categories
+    if (newOrder !== oldOrder || parentId !== currentCategory.parentId) {
+      // Get all sibling categories (same parent)
+      const siblings = await prisma.category.findMany({
+        where: {
+          parentId: parentId,
+          id: { not: id }
+        },
+        orderBy: { order: 'asc' }
+      });
+
+      // Use a transaction to update all affected categories
+      const updates = [];
+
+      // If moving to a different parent or order changed
+      if (parentId !== currentCategory.parentId) {
+        // When moving to a different parent, just insert at the new position
+        siblings.forEach(sibling => {
+          if (sibling.order >= newOrder) {
+            updates.push(
+              prisma.category.update({
+                where: { id: sibling.id },
+                data: { order: sibling.order + 10 }
+              })
+            );
+          }
+        });
+      } else if (newOrder > oldOrder) {
+        // Moving down: shift categories between old and new position up
+        siblings.forEach(sibling => {
+          if (sibling.order > oldOrder && sibling.order <= newOrder) {
+            updates.push(
+              prisma.category.update({
+                where: { id: sibling.id },
+                data: { order: sibling.order - 10 }
+              })
+            );
+          }
+        });
+      } else if (newOrder < oldOrder) {
+        // Moving up: shift categories between new and old position down
+        siblings.forEach(sibling => {
+          if (sibling.order >= newOrder && sibling.order < oldOrder) {
+            updates.push(
+              prisma.category.update({
+                where: { id: sibling.id },
+                data: { order: sibling.order + 10 }
+              })
+            );
+          }
+        });
+      }
+
+      // Add the main category update
+      updates.push(
+        prisma.category.update({
+          where: { id },
+          data: {
+            name: body.name,
+            slug,
+            description: body.description || null,
+            image: body.image || null,
+            order: newOrder,
+            isActive: body.isActive ?? true,
+            parentId: parentId,
+          },
+        })
+      );
+
+      // Execute all updates in a transaction
+      const results = await prisma.$transaction(updates);
+      const updatedCategory = results[results.length - 1]; // The last update is our category
+
+      return NextResponse.json(updatedCategory);
+    } else {
+      // No order change, just update the category normally
+      const category = await prisma.category.update({
+        where: { id },
+        data: {
+          name: body.name,
+          slug,
+          description: body.description || null,
+          image: body.image || null,
+          order: newOrder,
+          isActive: body.isActive ?? true,
+          parentId: parentId,
+        },
+      });
+      
+      return NextResponse.json(category);
+    }
   } catch (error) {
     console.error('Error updating category:', error);
     return NextResponse.json(
