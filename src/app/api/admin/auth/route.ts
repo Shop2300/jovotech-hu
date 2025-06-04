@@ -1,43 +1,46 @@
 // src/app/api/admin/auth/route.ts
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-
-// Use the same constants as middleware
-const ADMIN_TOKEN = 'd3a165840e65153fc24bf57c1228c1d927e16f2ff5122e72e2612b073d9749e2';
-const ADMIN_PASSWORD = 'O87TJpfbh2qtUqvzTGc0KjkioE2jZCGA';
-const COOKIE_NAME = 'galaxy-admin-session';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
     const { password } = await request.json();
     
-    console.log('Login attempt:', { 
-      providedPassword: password,
-      expectedPassword: ADMIN_PASSWORD,
-      matches: password === ADMIN_PASSWORD 
-    });
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminToken = process.env.ADMIN_TOKEN;
     
-    if (password !== ADMIN_PASSWORD) {
+    if (!adminPassword || !adminToken) {
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+    
+    const isValid = await bcrypt.compare(password, adminPassword);
+    
+    if (!isValid) {
       return NextResponse.json(
         { error: 'Invalid password' },
         { status: 401 }
       );
     }
     
-    // Get cookies store with await (Next.js 15 requirement)
-    const cookieStore = await cookies();
-    cookieStore.set(COOKIE_NAME, ADMIN_TOKEN, {
+    // Return the token so the client can store it
+    const response = NextResponse.json({ 
+      success: true,
+      token: adminToken 
+    });
+    
+    // Also set as httpOnly cookie
+    response.cookies.set('adminToken', adminToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
+      path: '/'
     });
     
-    return NextResponse.json({ 
-      success: true,
-      message: 'Authentication successful' 
-    });
+    return response;
   } catch (error) {
     console.error('Auth error:', error);
     return NextResponse.json(
@@ -45,24 +48,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
-
-// Logout endpoint
-export async function DELETE() {
-  const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
-  return NextResponse.json({ success: true });
-}
-
-// Check auth status endpoint
-export async function GET() {
-  const cookieStore = await cookies();
-  const adminSession = cookieStore.get(COOKIE_NAME);
-  
-  const isAuthenticated = adminSession?.value === ADMIN_TOKEN;
-  
-  return NextResponse.json({ 
-    authenticated: isAuthenticated,
-    hasSession: !!adminSession 
-  });
 }

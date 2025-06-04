@@ -2,15 +2,23 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { createSlug } from '@/lib/slug';
+import { checkAuth } from '@/lib/auth-middleware';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Check authentication
+  const authError = await checkAuth(request as any);
+  if (authError) return authError;
+
   try {
     const categories = await prisma.category.findMany({
       include: {
         parent: true,
         children: true,
         _count: {
-          select: { products: true }
+          select: { 
+            products: true,
+            children: true 
+          }
         }
       },
       orderBy: { order: 'asc' }
@@ -27,6 +35,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // Check authentication
+  const authError = await checkAuth(request as any);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
     
@@ -62,6 +74,43 @@ export async function POST(request: Request) {
     console.error('Error creating category:', error);
     return NextResponse.json(
       { error: 'Failed to create category' },
+      { status: 500 }
+    );
+  }
+}
+
+// Endpoint for updating category orders
+export async function PATCH(request: Request) {
+  // Check authentication
+  const authError = await checkAuth(request as any);
+  if (authError) return authError;
+
+  try {
+    const body = await request.json();
+    const { updates } = body;
+    
+    if (!updates || !Array.isArray(updates)) {
+      return NextResponse.json(
+        { error: 'Invalid updates format' },
+        { status: 400 }
+      );
+    }
+    
+    // Update all categories in a transaction
+    const results = await prisma.$transaction(
+      updates.map((update: { id: string; order: number }) =>
+        prisma.category.update({
+          where: { id: update.id },
+          data: { order: update.order }
+        })
+      )
+    );
+    
+    return NextResponse.json({ success: true, updated: results.length });
+  } catch (error) {
+    console.error('Error updating category orders:', error);
+    return NextResponse.json(
+      { error: 'Failed to update category orders', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

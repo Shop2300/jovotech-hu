@@ -38,13 +38,22 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
   const [categories, setCategories] = useState(initialCategories);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
   const router = useRouter();
 
-  // Debug logging
-  useEffect(() => {
-    console.log('Categories data:', categories);
-    console.log('Categories with children:', categories.filter(c => c._count.children > 0));
-  }, [categories]);
+  // Function to get admin token from localStorage or cookie
+  const getAdminToken = () => {
+    const token = localStorage.getItem('adminToken');
+    if (token) return token;
+    
+    // Fallback to cookie
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'adminToken') return value;
+    }
+    return null;
+  };
 
   // Build hierarchical structure
   const buildHierarchy = (cats: Category[]): CategoryWithChildren[] => {
@@ -77,8 +86,6 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
 
     sortCategories(rootCategories);
     
-    console.log('Hierarchical structure:', rootCategories);
-    
     return rootCategories;
   };
 
@@ -108,8 +115,12 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
     if (!confirm(`Opravdu chcete smazat kategorii "${name}"?`)) return;
 
     try {
+      const token = getAdminToken();
       const response = await fetch(`/api/admin/categories/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (!response.ok) {
@@ -119,6 +130,7 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
 
       setCategories(categories.filter(c => c.id !== id));
       toast.success('Kategorie byla smazána');
+      router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Chyba při mazání kategorie');
     }
@@ -126,9 +138,13 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
 
   const toggleActive = async (category: Category) => {
     try {
+      const token = getAdminToken();
       const response = await fetch(`/api/admin/categories/${category.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...category,
           isActive: !category.isActive,
@@ -143,6 +159,85 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
       toast.success('Stav kategorie byl změněn');
     } catch (error) {
       toast.error('Chyba při změně stavu');
+    }
+  };
+
+  const moveCategory = async (category: Category, direction: 'up' | 'down') => {
+    setIsUpdatingOrder(true);
+    
+    try {
+      // Get sibling categories (same parent)
+      const siblings = categories
+        .filter(c => c.parentId === category.parentId)
+        .sort((a, b) => a.order - b.order);
+      
+      const currentIndex = siblings.findIndex(c => c.id === category.id);
+      
+      if ((direction === 'up' && currentIndex === 0) || 
+          (direction === 'down' && currentIndex === siblings.length - 1)) {
+        setIsUpdatingOrder(false);
+        return; // Can't move further
+      }
+      
+      const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      const swapCategory = siblings[swapIndex];
+      
+      // If both categories have the same order, assign new order values
+      let categoryNewOrder = swapCategory.order;
+      let swapCategoryNewOrder = category.order;
+      
+      if (category.order === swapCategory.order) {
+        // Categories have same order, need to create distinct values
+        if (direction === 'up') {
+          categoryNewOrder = category.order - 10;
+          swapCategoryNewOrder = category.order;
+        } else {
+          categoryNewOrder = category.order + 10;
+          swapCategoryNewOrder = category.order;
+        }
+      }
+      
+      // Prepare updates for both categories
+      const updates = [
+        { id: category.id, order: categoryNewOrder },
+        { id: swapCategory.id, order: swapCategoryNewOrder }
+      ];
+      
+      // Send update request
+      const token = getAdminToken();
+      const response = await fetch('/api/admin/categories', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ updates })
+      });
+      
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Failed to update order');
+      }
+      
+      // Update local state
+      setCategories(categories.map(c => {
+        if (c.id === category.id) return { ...c, order: categoryNewOrder };
+        if (c.id === swapCategory.id) return { ...c, order: swapCategoryNewOrder };
+        return c;
+      }));
+      
+      toast.success('Pořadí bylo změněno');
+      
+      // Optionally refresh the page to ensure consistency
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
+      
+    } catch (error) {
+      toast.error('Chyba při změně pořadí: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsUpdatingOrder(false);
     }
   };
 
@@ -167,9 +262,15 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
       }
     }
 
+    // Get sibling categories for up/down button visibility
+    const siblings = categories.filter(c => c.parentId === category.parentId);
+    siblings.sort((a, b) => a.order - b.order);
+    const isFirst = siblings[0]?.id === category.id;
+    const isLast = siblings[siblings.length - 1]?.id === category.id;
+
     return (
       <React.Fragment key={category.id}>
-        <tr className="border-b hover:bg-white">
+        <tr className="border-b hover:bg-gray-50">
           <td className="py-4 px-6">
             <div className="flex items-center gap-3" style={{ paddingLeft: `${level * 2}rem` }}>
               {hasChildren ? (
@@ -194,16 +295,16 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
                   <Package size={20} className="text-gray-500" />
                 </div>
               )}
-              <div className="font-medium text-black">{category.name}</div>
+              <div className="font-medium text-gray-900">{category.name}</div>
             </div>
           </td>
           <td className="py-4 px-6">
             <code className="px-2 py-1 bg-gray-100 rounded text-sm">{category.slug}</code>
           </td>
-          <td className="py-4 px-6 text-black">
+          <td className="py-4 px-6 text-gray-700">
             {category._count.products} produktů
             {category._count.children > 0 && (
-              <span className="text-gray-600 ml-2">
+              <span className="text-gray-500 ml-2">
                 ({category._count.children} podkategorií)
               </span>
             )}
@@ -220,20 +321,50 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
               {category.isActive ? 'Aktivní' : 'Neaktivní'}
             </button>
           </td>
-          <td className="py-4 px-6 text-center text-black">
-            {category.order}
+          <td className="py-4 px-6 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <span className="font-medium">{category.order}</span>
+              <div className="flex flex-col">
+                <button
+                  onClick={() => moveCategory(category, 'up')}
+                  disabled={isFirst || isUpdatingOrder}
+                  className={`p-1 rounded transition ${
+                    isFirst || isUpdatingOrder
+                      ? 'text-gray-300 cursor-not-allowed' 
+                      : 'text-gray-600 hover:bg-gray-200'
+                  }`}
+                  title="Posunout nahoru"
+                >
+                  <MoveUp size={14} />
+                </button>
+                <button
+                  onClick={() => moveCategory(category, 'down')}
+                  disabled={isLast || isUpdatingOrder}
+                  className={`p-1 rounded transition ${
+                    isLast || isUpdatingOrder
+                      ? 'text-gray-300 cursor-not-allowed' 
+                      : 'text-gray-600 hover:bg-gray-200'
+                  }`}
+                  title="Posunout dolů"
+                >
+                  <MoveDown size={14} />
+                </button>
+              </div>
+            </div>
           </td>
           <td className="py-4 px-6">
             <div className="flex gap-2">
               <button
                 onClick={() => router.push(`/admin/categories/${category.id}/edit`)}
                 className="p-2 text-blue-600 hover:bg-blue-100 rounded transition"
+                title="Upravit"
               >
                 <Edit size={18} />
               </button>
               <button
                 onClick={() => handleDelete(category.id, category.name, category._count.products, category._count.children)}
                 className="p-2 text-red-600 hover:bg-red-100 rounded transition"
+                title="Smazat"
               >
                 <Trash2 size={18} />
               </button>
@@ -260,7 +391,7 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b bg-white">
+            <tr className="border-b bg-gray-50">
               <th className="text-left py-3 px-6 text-gray-700 font-semibold">Kategorie</th>
               <th className="text-left py-3 px-6 text-gray-700 font-semibold">Slug</th>
               <th className="text-left py-3 px-6 text-gray-700 font-semibold">Produkty</th>
@@ -272,7 +403,7 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
           <tbody>
             {hierarchicalCategories.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-700">
+                <td colSpan={6} className="text-center py-8 text-gray-500">
                   Žádné kategorie nenalezeny
                 </td>
               </tr>

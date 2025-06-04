@@ -58,11 +58,29 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
   const name = watch('name');
   const currentSlug = watch('slug');
 
+  // Function to get admin token
+  const getAdminToken = () => {
+    const token = localStorage.getItem('adminToken');
+    if (token) return token;
+    
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'adminToken') return value;
+    }
+    return null;
+  };
+
   // Fetch categories for parent selection
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await fetch('/api/admin/categories');
+        const token = getAdminToken();
+        const response = await fetch('/api/admin/categories', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (response.ok) {
           const data = await response.json();
           // Filter out the current category and its descendants if editing
@@ -126,10 +144,12 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
       
       const method = initialData ? 'PUT' : 'POST';
       
+      const token = getAdminToken();
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           ...data,

@@ -1,6 +1,5 @@
 // src/components/admin/AdminSidebar.tsx
 'use client';
-
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -51,22 +50,36 @@ const menuItems = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-
+  
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/admin/auth', {
-        method: 'DELETE',
+      // Clear localStorage
+      localStorage.removeItem('adminToken');
+      
+      // Clear cookie
+      document.cookie = 'adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      
+      // Call logout endpoint to clear server-side cookie
+      const response = await fetch('/api/admin/logout', {
+        method: 'POST',
       });
-
+      
       if (response.ok) {
         toast.success('Odhlášení úspěšné');
         router.push('/admin/login');
+        router.refresh();
+      } else {
+        throw new Error('Logout failed');
       }
     } catch (error) {
-      toast.error('Chyba při odhlašování');
+      // Even if the API call fails, we've already cleared local storage
+      // So redirect anyway
+      toast.success('Odhlášení úspěšné');
+      router.push('/admin/login');
+      router.refresh();
     }
   };
-
+  
   return (
     <div className="w-64 bg-gray-900 text-white min-h-screen">
       <div className="p-6">
