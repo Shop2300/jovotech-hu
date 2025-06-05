@@ -18,12 +18,12 @@ export function PromotionalBar({ showPromo, onClose }: PromotionalBarProps) {
     >
       <div className="max-w-screen-2xl mx-auto px-4 flex items-center justify-center">
         <div>
-          <span className="font-semibold">Doprava zdarma:</span> Při nákupu nad 3 000 Kč máte od nás dopravu zadarmo.
+          <span className="font-semibold">Darmowa dostawa:</span> Przy zakupach powyżej 500 zł dostawa gratis.
         </div>
         <button
           onClick={onClose}
           className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 transition hover:bg-black/10"
-          aria-label="Zavřít oznámení"
+          aria-label="Zamknij powiadomienie"
         >
           <X size={16} />
         </button>

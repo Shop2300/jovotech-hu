@@ -196,7 +196,7 @@ export function CategoryBar() {
                           className="inline-block mb-6 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors duration-150"
                           onClick={() => setOpenDropdown(null)}
                         >
-                          <span>Zobrazit vše v kategorii {category.name} →</span>
+                          <span>Pokaż wszystko w kategorii {category.name} →</span>
                         </Link>
                         
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">

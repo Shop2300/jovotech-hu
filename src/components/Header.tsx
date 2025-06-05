@@ -16,7 +16,7 @@ export function Header() {
           <Link href="/" className="flex items-center">
             <Image
               src="/images/galaxyskleplogo.png"
-              alt="DANNYFASHION.cz - Oblečení - hobby - elektronika"
+              alt="Galaxy Sklep - Odzież - hobby - elektronika"
               width={250}  // Adjust based on your logo's aspect ratio
               height={80}  // Adjust based on your logo's aspect ratio
               className="h-16 w-auto"  // This ensures the logo maintains aspect ratio
@@ -37,7 +37,7 @@ export function Header() {
               className="flex text-gray-700 hover:text-gray-900 text-sm font-medium items-center gap-2 whitespace-nowrap"
             >
               <Package size={16} />
-              Sledovat objednávku
+              Śledzenie zamówienia
             </Link>
           </div>
 
@@ -59,7 +59,7 @@ export function Header() {
               className="flex text-gray-700 hover:text-gray-900 text-sm font-medium items-center gap-2"
             >
               <Package size={16} />
-              Sledovat objednávku
+              Śledzenie zamówienia
             </Link>
           </div>
         </div>

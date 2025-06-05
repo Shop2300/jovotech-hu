@@ -7,47 +7,47 @@ export function Footer() {
     <footer className="bg-gray-900 text-gray-300">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Column 1 - Informace */}
+          {/* Column 1 - Informacje */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Informace</h3>
+            <h3 className="text-white font-semibold text-lg mb-4">Informacje</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/obchodni-podminky" className="hover:text-white transition">
-                  Obchodní podmínky
+                  Regulamin
                 </Link>
               </li>
               <li>
                 <Link href="/ochrana-osobnich-udaju" className="hover:text-white transition">
-                  Ochrana osobních údajů
+                  Polityka prywatności
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 2 - Zákaznický servis */}
+          {/* Column 2 - Obsługa klienta */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Zákaznický servis</h3>
+            <h3 className="text-white font-semibold text-lg mb-4">Obsługa klienta</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/doprava-a-platba" className="hover:text-white transition">
-                  Doprava a platba
+                  Dostawa i płatność
                 </Link>
               </li>
               <li>
                 <Link href="/vymena-a-reklamace" className="hover:text-white transition">
-                  Výměna a reklamace
+                  Zwroty i reklamacje
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 3 - O nás */}
+          {/* Column 3 - O nas */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">O nás</h3>
+            <h3 className="text-white font-semibold text-lg mb-4">O nas</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/o-nas" className="hover:text-white transition">
-                  O společnosti
+                  O firmie
                 </Link>
               </li>
               <li>
@@ -58,34 +58,34 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Column 4 - Kontaktní informace */}
+          {/* Column 4 - Dane kontaktowe */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Kontaktní údaje</h3>
+            <h3 className="text-white font-semibold text-lg mb-4">Dane kontaktowe</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
                 <MapPin size={18} className="text-blue-400 mt-0.5" />
                 <span className="text-sm">
-                  Václavské náměstí 123<br />
-                  110 00 Praha 1
+                  ul. Marszałkowska 123<br />
+                  00-001 Warszawa
                 </span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone size={18} className="text-blue-400" />
-                <a href="tel:+420123456789" className="hover:text-white transition">
-                  +420 123 456 789
+                <a href="tel:+48123456789" className="hover:text-white transition">
+                  +48 123 456 789
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={18} className="text-blue-400" />
-                <a href="mailto:info@muj-eshop.cz" className="hover:text-white transition">
-                  info@muj-eshop.cz
+                <a href="mailto:info@galaxysklep.pl" className="hover:text-white transition">
+                  info@galaxysklep.pl
                 </a>
               </li>
               <li className="flex items-start gap-2">
                 <Clock size={18} className="text-blue-400 mt-0.5" />
                 <span className="text-sm">
-                  Po-Pá: 8:00 - 18:00<br />
-                  So-Ne: 9:00 - 15:00
+                  Pn-Pt: 8:00 - 18:00<br />
+                  Sob-Nd: 9:00 - 15:00
                 </span>
               </li>
             </ul>
@@ -95,19 +95,19 @@ export function Footer() {
         {/* Newsletter Section */}
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="max-w-md mx-auto text-center">
-            <h3 className="text-white font-semibold text-lg mb-2">Odebírejte novinky</h3>
-            <p className="text-sm mb-4">Buďte první, kdo se dozví o novinkách a slevách</p>
+            <h3 className="text-white font-semibold text-lg mb-2">Zapisz się do newslettera</h3>
+            <p className="text-sm mb-4">Bądź pierwszy i dowiedz się o nowościach i promocjach</p>
             <form className="flex gap-2">
               <input
                 type="email"
-                placeholder="Váš e-mail"
+                placeholder="Twój e-mail"
                 className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 text-white"
               />
               <button
                 type="submit"
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                Odebírat
+                Zapisz się
               </button>
             </form>
           </div>
@@ -132,7 +132,7 @@ export function Footer() {
 
             {/* Payment Methods */}
             <div className="flex items-center gap-4">
-              <span className="text-sm">Platební metody:</span>
+              <span className="text-sm">Metody płatności:</span>
               <div className="flex gap-2">
                 <div className="bg-white rounded px-2 py-1 text-gray-900 text-xs font-semibold">VISA</div>
                 <div className="bg-white rounded px-2 py-1 text-gray-900 text-xs font-semibold">Mastercard</div>
@@ -146,12 +146,12 @@ export function Footer() {
       {/* Copyright Bar */}
       <div className="bg-gray-950 py-4">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm">
-          <p>&copy; 2024 Můj E-shop. Všechna práva vyhrazena. | 
+          <p>&copy; 2024 Galaxy Sklep. Wszelkie prawa zastrzeżone. | 
             <Link href="/obchodni-podminky" className="hover:text-white ml-1">
-              Obchodní podmínky
+              Regulamin
             </Link> | 
             <Link href="/ochrana-osobnich-udaju" className="hover:text-white ml-1">
-              Ochrana údajů
+              Ochrona danych
             </Link>
           </p>
         </div>
