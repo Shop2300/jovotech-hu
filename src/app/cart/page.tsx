@@ -156,7 +156,7 @@ export default function CartPage() {
               
               <div className="mt-6 p-4 bg-white rounded-lg">
                 <p className="text-sm text-black">
-                  ✓ Doprava zdarma při nákupu nad 1000 Kč<br/>
+                  ✓ Doprava zdarma při nákupu nad 1000 zł<br/>
                   ✓ 14 dní na vrácení<br/>
                   ✓ Zásilkovna po celé ČR
                 </p>

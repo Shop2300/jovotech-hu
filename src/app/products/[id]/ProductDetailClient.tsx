@@ -604,11 +604,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               )}
             </div>
             
-            {/* Shipping Info */}
+            {/* Shipping Info - Updated for PLN */}
             <div className="border-t border-gray-200 pt-6">
               <h3 className="text-lg font-semibold mb-3 text-black">Doprava a platba</h3>
               <ul className="space-y-2 text-gray-700">
-                <li>✓ Doprava zdarma při nákupu nad 1000 Kč</li>
+                <li>✓ Doprava zdarma při nákupu nad 1000 zł</li>
                 <li>✓ Doručení do 2-3 pracovních dnů</li>
                 <li>✓ Možnost platby kartou nebo na dobírku</li>
                 <li>✓ 14 dní na vrácení zboží</li>

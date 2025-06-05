@@ -36,9 +36,9 @@ function czechToAscii(text: string): string {
   return text.replace(/[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/g, char => charMap[char] || char);
 }
 
-// Format currency with proper spacing
+// Format currency with proper spacing for PLN
 function formatCurrency(amount: number): string {
-  return `${amount.toFixed(2)} Kc`;
+  return `${amount.toFixed(2)} zl`;
 }
 
 export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
@@ -106,7 +106,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFont('helvetica', 'normal');
   let supplierY = yPosition + 7;
   doc.setFont('helvetica', 'bold');
-  doc.text(czechToAscii('Můj E-shop s.r.o.'), leftMargin, supplierY);
+  doc.text(czechToAscii('Galaxy Sklep s.r.o.'), leftMargin, supplierY);
   doc.setFont('helvetica', 'normal');
   supplierY += 5;
   doc.text(czechToAscii('Václavské náměstí 123'), leftMargin, supplierY);
@@ -117,7 +117,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   supplierY += 5;
   doc.text(czechToAscii('DIČ: CZ12345678'), leftMargin, supplierY);
   supplierY += 5;
-  doc.text('Email: info@muj-eshop.cz', leftMargin, supplierY);
+  doc.text('Email: support@galaxysklep.pl', leftMargin, supplierY);
   supplierY += 5;
   doc.text('Tel: +420 123 456 789', leftMargin, supplierY);
 
@@ -255,11 +255,11 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   yPosition += 7;
-  doc.text(czechToAscii(`Číslo účtu: 123456789/0100`), leftMargin + 3, yPosition);
+  doc.text(czechToAscii(`Číslo účtu: 2302034483 / 2010`), leftMargin + 3, yPosition);
   doc.text(czechToAscii(`Variabilní symbol: ${invoiceData.orderNumber}`), leftMargin + 100, yPosition);
   yPosition += 6;
-  doc.text('IBAN: CZ12 0100 0000 0012 3456 789', leftMargin + 3, yPosition);
-  doc.text('SWIFT: KOMBCZPP', leftMargin + 100, yPosition);
+  doc.text('IBAN: CZ79 2010 0000 0023 0203 4483', leftMargin + 3, yPosition);
+  doc.text('SWIFT: FIOBCZPPXXX', leftMargin + 100, yPosition);
 
   // Footer
   const footerY = pageHeight - 20;
