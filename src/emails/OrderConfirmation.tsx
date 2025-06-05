@@ -42,10 +42,11 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
+// TODO: Aktualizujte tyto údaje vašimi skutečnými bankovními údaji
 const BANK_DETAILS = {
-  accountNumber: '2302034483 / 2010',
-  iban: 'CZ79 2010 0000 0023 0203 4483',
-  swift: 'FIOBCZPPXXX'
+  accountNumber: '2302034483 / 2010',  // Váš účet / kód banky
+  iban: 'CZ79 2010 0000 0023 0203 4483',  // Váš IBAN
+  swift: 'FIOBCZPPXXX'  // SWIFT kód vaší banky
 };
 
 export const OrderConfirmationEmail = ({
@@ -57,7 +58,7 @@ export const OrderConfirmationEmail = ({
   paymentMethod,
   deliveryAddress,
 }: OrderConfirmationEmailProps) => {
-  const previewText = `Potvrzení objednávky #${orderNumber}`;
+  const previewText = `Potvrzení objednávky #${orderNumber} - Galaxy Sklep`;
 
   return (
     <Html>
@@ -65,9 +66,14 @@ export const OrderConfirmationEmail = ({
       <Preview>{previewText}</Preview>
       <Body style={main}>
         <Container style={container}>
-          {/* Header */}
+          {/* Header with Logo */}
           <Section style={header}>
-            <Heading style={h1}>Czech E-Shop</Heading>
+            <Img 
+              src="https://galaxysklep.pl/images/galaxyskleplogo.png" 
+              alt="Galaxy Sklep" 
+              height="60" 
+              style={logo}
+            />
           </Section>
 
           {/* Main Content */}
@@ -128,7 +134,11 @@ export const OrderConfirmationEmail = ({
               </Text>
               
               <Text style={infoText}>
-                <strong>Způsob platby:</strong> {paymentMethod === 'bank' ? 'Bankovní převod' : 'Platba na dobírku'}
+                <strong>Způsob platby:</strong> {
+                  paymentMethod === 'bank' ? 'Bankovní převod' : 
+                  paymentMethod === 'card' ? 'Platba kartou online' :
+                  'Platba na dobírku'
+                }
               </Text>
               
               <Text style={infoText}>
@@ -188,7 +198,8 @@ export const OrderConfirmationEmail = ({
                   <>
                     1. Vaši objednávku nyní zpracováváme<br />
                     2. Jakmile bude objednávka odeslána, obdržíte e-mail s informacemi o sledování<br />
-                    3. Zásilku můžete sledovat pomocí sledovacího čísla
+                    3. Zásilku můžete sledovat pomocí sledovacího čísla<br />
+                    4. Těšte se na své nové produkty!
                   </>
                 )}
               </Text>
@@ -198,24 +209,37 @@ export const OrderConfirmationEmail = ({
             <Section style={buttonContainer}>
               <Button
                 style={button}
-                href={`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/order-status/${orderNumber}`}
+                href={`https://galaxysklep.pl/order-status/${orderNumber}`}
               >
                 Sledovat objednávku
               </Button>
             </Section>
 
             {/* Footer */}
+            <Hr style={divider} />
+            
             <Text style={footer}>
               Máte-li jakékoli dotazy, neváhejte nás kontaktovat na{' '}
-              <Link href="mailto:info@czech-eshop.cz" style={link}>
-                info@czech-eshop.cz
+              <Link href="mailto:support@galaxysklep.pl" style={link}>
+                support@galaxysklep.pl
               </Link>
             </Text>
             
             <Text style={footer}>
-              S pozdravem,<br />
-              Tým Czech E-Shop
+              Děkujeme za váš nákup!<br />
+              Tým Galaxy Sklep
             </Text>
+
+            {/* Company Info */}
+            <Section style={companyInfo}>
+              <Text style={companyText}>
+                <strong>Galaxy Sklep</strong><br />
+                Váš oblíbený internetový obchod<br />
+                <Link href="https://galaxysklep.pl" style={link}>
+                  www.galaxysklep.pl
+                </Link>
+              </Text>
+            </Section>
           </Section>
         </Container>
       </Body>
@@ -233,42 +257,42 @@ const main = {
 const container = {
   backgroundColor: '#ffffff',
   margin: '0 auto',
-  padding: '20px 0 48px',
+  padding: '0',
   marginBottom: '64px',
   maxWidth: '600px',
+  borderRadius: '8px',
+  overflow: 'hidden',
 };
 
 const header = {
-  backgroundColor: '#1e293b',
-  padding: '24px',
+  backgroundColor: '#8b5cf6',
+  padding: '32px 24px',
   textAlign: 'center' as const,
 };
 
-const h1 = {
-  color: '#ffffff',
-  fontSize: '28px',
-  fontWeight: '600',
-  lineHeight: '32px',
-  margin: '0',
+const logo = {
+  margin: '0 auto',
+  borderRadius: '8px',
 };
 
 const content = {
-  padding: '24px',
+  padding: '32px 24px 48px',
 };
 
 const h2 = {
   color: '#1e293b',
-  fontSize: '24px',
-  fontWeight: '600',
-  lineHeight: '32px',
+  fontSize: '28px',
+  fontWeight: '700',
+  lineHeight: '36px',
   marginBottom: '24px',
+  textAlign: 'center' as const,
 };
 
 const h3 = {
   color: '#1e293b',
-  fontSize: '18px',
+  fontSize: '20px',
   fontWeight: '600',
-  lineHeight: '24px',
+  lineHeight: '28px',
   marginBottom: '16px',
 };
 
@@ -280,10 +304,11 @@ const paragraph = {
 };
 
 const orderSummary = {
-  backgroundColor: '#f8fafc',
+  backgroundColor: '#f8f4ff',
   borderRadius: '8px',
   padding: '24px',
   marginBottom: '24px',
+  border: '1px solid #e9d5ff',
 };
 
 const itemRow = {
@@ -323,8 +348,8 @@ const totalLabel = {
 };
 
 const totalAmount = {
-  color: '#1e293b',
-  fontSize: '20px',
+  color: '#8b5cf6',
+  fontSize: '24px',
   fontWeight: '700',
   margin: '0',
   textAlign: 'right' as const,
@@ -346,6 +371,7 @@ const bankSection = {
   borderRadius: '8px',
   padding: '24px',
   marginBottom: '24px',
+  border: '1px solid #dbeafe',
 };
 
 const bankText = {
@@ -382,15 +408,16 @@ const nextSteps = {
   borderRadius: '8px',
   padding: '24px',
   marginBottom: '24px',
+  border: '1px solid #e0e7ff',
 };
 
 const buttonContainer = {
   textAlign: 'center' as const,
-  marginBottom: '24px',
+  marginBottom: '32px',
 };
 
 const button = {
-  backgroundColor: '#2563eb',
+  backgroundColor: '#8b5cf6',
   borderRadius: '8px',
   color: '#ffffff',
   display: 'inline-block',
@@ -403,16 +430,29 @@ const button = {
 };
 
 const footer = {
-  color: '#94a3b8',
+  color: '#64748b',
   fontSize: '14px',
   lineHeight: '20px',
-  marginBottom: '16px',
+  marginBottom: '8px',
   textAlign: 'center' as const,
 };
 
 const link = {
-  color: '#2563eb',
+  color: '#8b5cf6',
   textDecoration: 'underline',
+};
+
+const companyInfo = {
+  marginTop: '32px',
+  paddingTop: '24px',
+  borderTop: '1px solid #e2e8f0',
+};
+
+const companyText = {
+  color: '#94a3b8',
+  fontSize: '12px',
+  lineHeight: '18px',
+  textAlign: 'center' as const,
 };
 
 export default OrderConfirmationEmail;
