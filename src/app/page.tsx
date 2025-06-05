@@ -52,7 +52,7 @@ export default async function HomePage() {
     orderBy: { order: 'asc' }
   });
 
-  // Fetch featured products
+  // Fetch featured products with images
   const featuredProducts = await prisma.product.findMany({
     take: 8,
     orderBy: { createdAt: 'desc' },
@@ -62,6 +62,13 @@ export default async function HomePage() {
           id: true,
           name: true,
           slug: true
+        }
+      },
+      images: {
+        orderBy: { order: 'asc' },
+        take: 1,
+        select: {
+          url: true
         }
       },
       variants: {
@@ -76,7 +83,7 @@ export default async function HomePage() {
     }
   });
 
-  // Fetch new products (Novinky) - Skip the first 8 to avoid duplicates
+  // Fetch new products (Novinky) with images - Skip the first 8 to avoid duplicates
   const newProducts = await prisma.product.findMany({
     skip: 8,
     take: 8,
@@ -89,6 +96,13 @@ export default async function HomePage() {
           slug: true
         }
       },
+      images: {
+        orderBy: { order: 'asc' },
+        take: 1,
+        select: {
+          url: true
+        }
+      },
       variants: {
         where: { isActive: true },
         select: {
@@ -101,7 +115,7 @@ export default async function HomePage() {
     }
   });
 
-  // Convert Decimal to number for client components
+  // Convert Decimal to number for client components and include image from images array
   const serializedProducts = featuredProducts.map(product => ({
     ...product,
     price: Number(product.price),
@@ -109,6 +123,7 @@ export default async function HomePage() {
     averageRating: product.averageRating,
     totalRatings: product.totalRatings,
     slug: product.slug || undefined,
+    image: product.image || product.images?.[0]?.url || null,
     variants: product.variants.map(v => ({
       ...v,
       colorName: v.colorName || ""
@@ -121,8 +136,8 @@ export default async function HomePage() {
     regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
     averageRating: product.averageRating,
     totalRatings: product.totalRatings,
-    slug: product.slug || undefined
-  ,
+    slug: product.slug || undefined,
+    image: product.image || product.images?.[0]?.url || null,
     variants: product.variants.map(v => ({
       ...v,
       colorName: v.colorName || ""
