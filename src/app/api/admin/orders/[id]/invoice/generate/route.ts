@@ -100,6 +100,7 @@ export async function POST(
       access: 'public',
       contentType: 'application/pdf',
       addRandomSuffix: false,
+      allowOverwrite: true,  // Allow overwriting existing files
     });
 
     // Update invoice with Blob URL
