@@ -159,6 +159,14 @@ export function OrderActions({ orderId, currentStatus, currentTrackingNumber, cu
   const handleDownloadInvoice = async () => {
     if (!invoice) return;
 
+    // Direct download from Blob URL (if it exists)
+    if (invoice.pdfUrl && invoice.pdfUrl.startsWith('http')) {
+      window.open(invoice.pdfUrl, '_blank');
+      toast.success('Faktura byla stažena');
+      return;
+    }
+
+    // Fallback to API route (shouldn't happen with new invoices)
     try {
       const response = await fetch(`/api/admin/invoices/${invoice.id}/download`);
       
