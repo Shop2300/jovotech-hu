@@ -1,9 +1,8 @@
+// src/app/api/admin/orders/[id]/invoice/generate/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateInvoicePDF } from '@/lib/invoice-pdf-generator';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { put } from '@vercel/blob';
 
 export async function POST(
   request: NextRequest,
@@ -95,26 +94,24 @@ export async function POST(
     const pdf = generateInvoicePDF(invoiceData);
     const pdfBuffer = Buffer.from(pdf.output('arraybuffer'));
 
-    // Create invoices directory if it doesn't exist
-    const invoicesDir = join(process.cwd(), 'public', 'invoices');
-    if (!existsSync(invoicesDir)) {
-      await mkdir(invoicesDir, { recursive: true });
-    }
-
-    // Save PDF file
+    // Upload PDF to Vercel Blob Storage
     const fileName = `${invoiceNumber.replace(/\//g, '-')}.pdf`;
-    const filePath = join(invoicesDir, fileName);
-    await writeFile(filePath, pdfBuffer);
+    const blob = await put(`invoices/${fileName}`, pdfBuffer, {
+      access: 'public',
+      contentType: 'application/pdf',
+      addRandomSuffix: false,
+    });
 
-    // Update invoice with PDF path
+    // Update invoice with Blob URL
     const updatedInvoice = await prisma.invoice.update({
       where: { id: invoice.id },
-      data: { pdfUrl: `/invoices/${fileName}` }
+      data: { pdfUrl: blob.url }
     });
 
     return NextResponse.json({
       invoice: updatedInvoice,
-      message: 'Invoice generated successfully'
+      message: 'Invoice generated successfully',
+      url: blob.url
     });
 
   } catch (error) {
