@@ -64,6 +64,8 @@ async function getOrders() {
     select: {
       id: true,
       orderNumber: true,
+      customerName: true,
+      customerEmail: true,
       firstName: true,
       lastName: true,
       billingFirstName: true,
@@ -76,13 +78,16 @@ async function getOrders() {
     },
   });
 
-  // Transform the orders to include fullName
+  // Transform the orders to include fullName with proper fallbacks
   return orders.map(order => ({
     id: order.id,
     orderNumber: order.orderNumber,
-    fullName: order.billingFirstName && order.billingLastName 
-      ? `${order.billingFirstName} ${order.billingLastName}`
-      : `${order.firstName} ${order.lastName}`,
+    fullName: order.customerName || 
+      (order.billingFirstName && order.billingLastName 
+        ? `${order.billingFirstName} ${order.billingLastName}`
+        : order.firstName && order.lastName
+          ? `${order.firstName} ${order.lastName}`
+          : order.customerEmail || 'Unknown Customer'),
     total: Number(order.total),
     status: order.status,
     paymentStatus: order.paymentStatus || 'unpaid',
