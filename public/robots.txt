@@ -1,0 +1,53 @@
+# robots.txt for https://galaxysklep.pl
+User-agent: *
+Allow: /
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/admin/
+
+# Disallow API endpoints
+Disallow: /api/
+
+# Allow API endpoints needed for functionality
+Allow: /api/search
+Allow: /api/products
+Allow: /api/categories
+
+# Disallow cart and checkout for crawlers
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order-success
+Disallow: /order-status/
+
+# Sitemap location
+Sitemap: https://galaxysklep.pl/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /

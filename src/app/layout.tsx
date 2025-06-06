@@ -1,10 +1,16 @@
 // src/app/layout.tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { ConditionalFooter } from '@/components/ConditionalFooter';
 // Remove: import { CartProvider } from '@/contexts/CartContext';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
 
 export const metadata: Metadata = {
   title: "Galaxysklep.pl - Elektronika, Moda, Akcesoria",
@@ -56,9 +62,11 @@ export const metadata: Metadata = {
     },
   },
   verification: {
+    // IMPORTANT: Replace rM73bzskVZTTR0tmKXijqULs5zrCBTgi1EY-th_ce3k with your actual Google verification code
+    google: "rM73bzskVZTTR0tmKXijqULs5zrCBTgi1EY-th_ce3k",
     // Add these when you have them:
-    // google: "your-google-verification-code",
     // yandex: "your-yandex-verification-code",
+    // bing: "your-bing-verification-code",
   },
 };
 
@@ -69,6 +77,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl">
+      <head>
+        {/* Alternative Google verification method - uncomment and use if the metadata verification doesn't work */}
+        {/* <meta name="google-site-verification" content="rM73bzskVZTTR0tmKXijqULs5zrCBTgi1EY-th_ce3k" /> */}
+      </head>
       <body>
         {/* Remove CartProvider wrapper */}
         <LayoutWrapper />
