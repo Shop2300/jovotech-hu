@@ -111,7 +111,7 @@ export function ProductCard({ product }: { product: Product }) {
           {/* Availability - Centered */}
           <div className="text-center mb-3">
             <span className={`text-sm font-medium ${inStock ? 'text-green-600' : 'text-red-600'}`}>
-              {inStock ? 'Skladem' : 'Vyprodáno'}
+              {inStock ? 'Na stanie' : 'Vyprodáno'}
             </span>
           </div>
 
