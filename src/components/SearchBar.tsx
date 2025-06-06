@@ -43,8 +43,8 @@ export function SearchBar() {
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Popular searches (you can make this dynamic based on your data)
-  const popularSearches = ['tričko', 'mikina', 'kalhoty', 'boty', 'čepice'];
+  // Popular searches (Polish products)
+  const popularSearches = ['router CNC', 'ultradźwięki', 'prasy', 'lasery', 'elektronika'];
 
   // Load recent searches on mount
   useEffect(() => {
@@ -191,7 +191,7 @@ export function SearchBar() {
           onChange={handleInputChange}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Hledat produkty, kategorie..."
+          placeholder="Czego szukasz? Np. router CNC, ultradźwięki, prasy termotransferowe..."
           className="w-full px-4 py-2.5 pr-20 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-white"
         />
         
@@ -326,7 +326,7 @@ export function SearchBar() {
                               </span>
                             )}
                             {product.stock === 0 && (
-                              <span className="text-xs text-red-500">Vyprodáno</span>
+                              <span className="text-xs text-red-500">Wyprzedane</span>
                             )}
                           </div>
                         </div>
@@ -344,7 +344,7 @@ export function SearchBar() {
                 onClick={() => setIsOpen(false)}
                 className="block px-4 py-3 text-center text-sm text-blue-600 hover:bg-gray-50 transition-colors"
               >
-                Zobrazit všechny výsledky ({totalResults})
+                Zobacz wszystkie wyniki ({totalResults})
               </Link>
             )}
 
@@ -353,7 +353,7 @@ export function SearchBar() {
               <div className="px-4 py-8 text-center bg-white">
                 <Search size={40} className="mx-auto text-gray-300 mb-3" />
                 <p className="text-sm text-gray-500">
-                  Nenašli jsme žádné výsledky pro "{query}"
+                  Nie znaleźliśmy żadnych wyników dla "{query}"
                 </p>
               </div>
             )}
@@ -366,7 +366,7 @@ export function SearchBar() {
                   <div className="border-b border-gray-100 bg-white">
                     <div className="px-4 py-2 flex items-center justify-between">
                       <span className="text-xs font-semibold text-gray-500 uppercase">
-                        Nedávné vyhledávání
+                        Ostatnie wyszukiwania
                       </span>
                       <button
                         onClick={() => {
@@ -375,7 +375,7 @@ export function SearchBar() {
                         }}
                         className="text-xs text-gray-400 hover:text-gray-600"
                       >
-                        Vymazat
+                        Wyczyść
                       </button>
                     </div>
                     {recentSearches.map((search, index) => (
@@ -394,7 +394,7 @@ export function SearchBar() {
                 {/* Popular Searches */}
                 <div className="bg-white">
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
-                    Oblíbené vyhledávání
+                    Popularne wyszukiwania
                   </div>
                   {popularSearches.map((search, index) => (
                     <button
