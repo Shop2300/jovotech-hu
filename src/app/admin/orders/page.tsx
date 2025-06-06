@@ -1,6 +1,8 @@
 // src/app/admin/orders/page.tsx
 import { prisma } from '@/lib/prisma';
 import { OrdersTable } from '@/components/admin/OrdersTable';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function updateOldPendingOrders() {
   // Find orders that are:
