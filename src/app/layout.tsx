@@ -7,8 +7,59 @@ import { ConditionalFooter } from '@/components/ConditionalFooter';
 // Remove: import { CartProvider } from '@/contexts/CartContext';
 
 export const metadata: Metadata = {
-  title: "Můj E-shop",
-  description: "Kvalitní produkty s rychlým doručením",
+  title: "Galaxysklep.pl - Elektronika, Moda, Akcesoria",
+  description: "Twój sklep z elektroniką, modą i akcesoriami. Router CNC, ultradźwięki, prasy termotransferowe. Najlepsze ceny, darmowa dostawa od 200 zł!",
+  keywords: "elektronika, moda, akcesoria, sklep internetowy, router CNC, ultradźwięki, prasy termotransferowe, lasery, Galaxy Sklep",
+  authors: [{ name: "Galaxy Sklep" }],
+  creator: "Galaxy Sklep",
+  publisher: "Galaxy Sklep",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://galaxysklep.pl"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Galaxysklep.pl - Elektronika, Moda, Akcesoria",
+    description: "Twój sklep z elektroniką, modą i akcesoriami. Router CNC, ultradźwięki, prasy termotransferowe. Najlepsze ceny!",
+    url: "https://galaxysklep.pl",
+    siteName: "Galaxy Sklep",
+    locale: "pl_PL",
+    type: "website",
+    images: [
+      {
+        url: "/images/galaxyskleplogo.png",
+        width: 1200,
+        height: 630,
+        alt: "Galaxy Sklep - Twój sklep internetowy",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Galaxysklep.pl - Elektronika, Moda, Akcesoria",
+    description: "Twój sklep z elektroniką, modą i akcesoriami. Najlepsze ceny, szybka dostawa!",
+    images: ["/images/galaxyskleplogo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    // Add these when you have them:
+    // google: "your-google-verification-code",
+    // yandex: "your-yandex-verification-code",
+  },
 };
 
 export default function RootLayout({
@@ -17,7 +68,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="cs">
+    <html lang="pl">
       <body>
         {/* Remove CartProvider wrapper */}
         <LayoutWrapper />
