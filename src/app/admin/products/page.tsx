@@ -4,6 +4,8 @@ import { ProductsTable } from '@/components/admin/ProductsTable';
 import { CategoryFilter } from '@/components/admin/CategoryFilter';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface SearchParams {
   category?: string;
