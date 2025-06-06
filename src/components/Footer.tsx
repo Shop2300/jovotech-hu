@@ -12,12 +12,12 @@ export function Footer() {
             <h3 className="text-white font-semibold text-lg mb-4">Informacje</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/obchodni-podminky" className="hover:text-white transition">
+                <Link href="/regulamin" className="hover:text-white transition">
                   Regulamin
                 </Link>
               </li>
               <li>
-                <Link href="/ochrana-osobnich-udaju" className="hover:text-white transition">
+                <Link href="/polityka-prywatnosci" className="hover:text-white transition">
                   Polityka prywatności
                 </Link>
               </li>
@@ -29,12 +29,12 @@ export function Footer() {
             <h3 className="text-white font-semibold text-lg mb-4">Obsługa klienta</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/doprava-a-platba" className="hover:text-white transition">
+                <Link href="/dostawa-i-platnosc" className="hover:text-white transition">
                   Dostawa i płatność
                 </Link>
               </li>
               <li>
-                <Link href="/vymena-a-reklamace" className="hover:text-white transition">
+                <Link href="/zwroty-i-reklamacje" className="hover:text-white transition">
                   Zwroty i reklamacje
                 </Link>
               </li>
@@ -148,10 +148,10 @@ export function Footer() {
       <div className="bg-gray-950 py-4">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm">
           <p>&copy; 2025 Galaxy Sklep. Wszelkie prawa zastrzeżone. | 
-            <Link href="/obchodni-podminky" className="hover:text-white ml-1">
+            <Link href="/regulamin" className="hover:text-white ml-1">
               Regulamin
             </Link> | 
-            <Link href="/ochrana-osobnich-udaju" className="hover:text-white ml-1">
+            <Link href="/polityka-prywatnosci" className="hover:text-white ml-1">
               Ochrona danych
             </Link> | 
             <span className="ml-1">IČO: 04688465</span>
