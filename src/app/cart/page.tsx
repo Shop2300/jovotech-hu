@@ -3,7 +3,7 @@
 
 import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/utils';
-import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { Trash2, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -19,8 +19,53 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="max-w-4xl mx-auto px-4 py-16">
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+        {/* Progress Bar */}
+        <div className="py-6">
+          <div className="max-w-screen-2xl mx-auto px-6">
+            <div className="flex items-center justify-center">
+              <div className="flex items-center w-full max-w-3xl">
+                {/* Step 1: Cart */}
+                <div className="flex items-center flex-1">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white font-medium">
+                      1
+                    </div>
+                    <span className="ml-3 text-sm font-medium text-gray-900">Koszyk</span>
+                  </div>
+                  <div className="flex-1 mx-4">
+                    <div className="h-1 bg-gray-300 rounded">
+                      <div className="h-1 bg-[#8bc34a] rounded w-0"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Step 2: Checkout */}
+                <div className="flex items-center flex-1">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
+                      2
+                    </div>
+                    <span className="ml-3 text-sm font-medium text-gray-500">Dostawa i płatność</span>
+                  </div>
+                  <div className="flex-1 mx-4">
+                    <div className="h-1 bg-gray-300 rounded"></div>
+                  </div>
+                </div>
+                
+                {/* Step 3: Success */}
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
+                    3
+                  </div>
+                  <span className="ml-3 text-sm font-medium text-gray-500">Potwierdzenie</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="max-w-screen-2xl mx-auto px-6 py-16">
+          <div className="bg-white rounded-lg shadow-md p-8 text-center max-w-2xl mx-auto">
             <ShoppingCart size={64} className="mx-auto text-gray-300 mb-4" />
             <h1 className="text-2xl font-bold mb-4 text-black">Twój koszyk jest pusty</h1>
             <p className="text-black mb-8">Dodaj produkty z naszej oferty</p>
@@ -38,15 +83,58 @@ export default function CartPage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-black">Koszyk</h1>
-        
+      {/* Progress Bar */}
+      <div className="py-6">
+        <div className="max-w-screen-2xl mx-auto px-6">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center w-full max-w-3xl">
+              {/* Step 1: Cart */}
+              <div className="flex items-center flex-1">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white font-medium">
+                    1
+                  </div>
+                  <span className="ml-3 text-sm font-medium text-gray-900">Koszyk</span>
+                </div>
+                <div className="flex-1 mx-4">
+                  <div className="h-1 bg-gray-300 rounded">
+                    <div className="h-1 bg-[#8bc34a] rounded w-0"></div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Step 2: Checkout */}
+              <div className="flex items-center flex-1">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
+                    2
+                  </div>
+                  <span className="ml-3 text-sm font-medium text-gray-500">Dostawa i płatność</span>
+                </div>
+                <div className="flex-1 mx-4">
+                  <div className="h-1 bg-gray-300 rounded"></div>
+                </div>
+              </div>
+              
+              {/* Step 3: Success */}
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
+                  3
+                </div>
+                <span className="ml-3 text-sm font-medium text-gray-500">Potwierdzenie</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="max-w-screen-2xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md">
+            <div>
               {items.map((item) => (
-                <div key={`${item.id}-${item.variantId || 'default'}`} className="border-b last:border-b-0 p-4">
+                <div key={`${item.id}-${item.variantId || 'default'}`} className="border-b border-gray-200 last:border-b-0 py-4">
                   <div className="flex gap-4">
                     {/* Product Image */}
                     <div className="w-24 h-24 bg-gray-200 rounded-md flex-shrink-0">
@@ -65,7 +153,7 @@ export default function CartPage() {
                     
                     {/* Product Info */}
                     <div className="flex-grow">
-                      <h3 className="font-semibold text-lg text-black">{item.name}</h3>
+                      <h3 className="text-base text-black">{item.name}</h3>
                       {item.variantName && (
                         <div className="flex items-center gap-2 mt-1">
                           {item.variantColor && (
@@ -77,37 +165,53 @@ export default function CartPage() {
                           <span className="text-gray-600">{item.variantName}</span>
                         </div>
                       )}
-                      <p className="text-black mt-1">{formatPrice(item.price)}</p>
+                      {/* Availability */}
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="inline-block w-2 h-2 bg-[#8bc34a] rounded-full"></span>
+                        <span className="text-sm text-[#8bc34a]">Na stanie</span>
+                      </div>
+                      
                       
                       {/* Quantity Controls */}
-                      <div className="flex items-center gap-2 mt-2">
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1, item.variantId)}
-                          className="p-1 hover:bg-gray-100 rounded transition"
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus size={16} className="text-black" />
-                        </button>
-                        <span className="px-3 py-1 bg-gray-100 rounded text-black">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1, item.variantId)}
-                          className="p-1 hover:bg-gray-100 rounded transition"
-                        >
-                          <Plus size={16} className="text-black" />
-                        </button>
+                      <div className="flex items-center mt-3">
+                        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.variantId)}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition text-gray-600 text-lg font-light"
+                            disabled={item.quantity <= 1}
+                          >
+                            −
+                          </button>
+                          <input
+                            type="text"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 1;
+                              if (value > 0) {
+                                updateQuantity(item.id, value, item.variantId);
+                              }
+                            }}
+                            className="w-12 h-8 text-center border-x border-gray-300 focus:outline-none text-black"
+                            maxLength={5}
+                          />
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.variantId)}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition text-gray-600 text-lg font-light"
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
                     </div>
                     
                     {/* Price and Remove */}
                     <div className="text-right">
-                      <p className="font-bold text-lg text-black">
+                      <p className="text-lg text-[#8bc34a]">
                         {formatPrice(item.price * item.quantity)}
                       </p>
                       <button
                         onClick={() => removeItem(item.id, item.variantId)}
-                        className="text-red-500 hover:text-red-700 mt-2 transition"
+                        className="text-gray-400 hover:text-gray-600 mt-2 transition"
                       >
                         <Trash2 size={20} />
                       </button>
@@ -142,9 +246,16 @@ export default function CartPage() {
               
               <button
                 onClick={handleCheckout}
-                className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold"
+                className="block w-full h-[44px] bg-[#8bc34a] text-white rounded hover:bg-[#7cb342] transition relative overflow-hidden group"
               >
-                Przejdź do kasy
+                <span className="flex items-center justify-center h-full">
+                  <span className="font-normal">Przejdź do kasy</span>
+                  <span className="ml-3 flex items-center transition-transform group-hover:translate-x-1">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                    </svg>
+                  </span>
+                </span>
               </button>
               
               <Link 
@@ -154,9 +265,9 @@ export default function CartPage() {
                 Kontynuuj zakupy
               </Link>
               
-              <div className="mt-6 p-4 bg-white rounded-lg">
-                <p className="text-sm text-black">
-                  ✓ Darmowa wysyłka przy zakupach powyżej 1000 zł<br/>
+              <div className="mt-6 p-4 bg-gray-100 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  ✓ Darmowa wysyłka przy zakupach powyżej 0 zł<br/>
                   ✓ 14 dni na zwrot<br/>
                   ✓ Paczkomaty w całej Polsce
                 </p>

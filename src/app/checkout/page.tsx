@@ -98,7 +98,7 @@ export default function CheckoutPage() {
     }
   }, [items.length, router, isProcessingOrder]);
 
-  const deliveryPrice = deliveryMethod === 'personal' ? 0 : 89;
+  const deliveryPrice = 0; // Always free
   const totalPrice = getTotalPrice() + deliveryPrice;
 
   const copyToClipboard = (text: string, label: string) => {
@@ -376,7 +376,7 @@ export default function CheckoutPage() {
                         <label className="block text-sm font-medium mb-2 text-black">Kod pocztowy *</label>
                         <input
                           {...register('deliveryPostalCode', { 
-                            required: useDifferentDelivery ? 'Kod pocztowy jest wymagany' : false 
+                            required: useDifferentDelivery ? 'Kod pocztowy jest wymagane' : false 
                           })}
                           className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
@@ -400,37 +400,13 @@ export default function CheckoutPage() {
                       type="radio"
                       value="zasilkovna"
                       className="mr-3"
-                    />
-                    <div className="flex items-center gap-3 flex-1">
-                      {checkmarkIcon?.imageUrl ? (
-                        <img 
-                          src={checkmarkIcon.imageUrl} 
-                          alt="Paczkomat" 
-                          className="w-8 h-8 object-contain"
-                        />
-                      ) : (
-                        <Package className="text-gray-600" size={24} />
-                      )}
-                      <div className="flex-1">
-                        <div className="font-medium text-black">Paczkomat</div>
-                        <div className="text-sm text-gray-600">Dostawa do punktu odbioru</div>
-                      </div>
-                    </div>
-                    <span className="font-semibold text-black">{formatPrice(89)}</span>
-                  </label>
-                  
-                  <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                    <input
-                      {...register('deliveryMethod')}
-                      type="radio"
-                      value="personal"
-                      className="mr-3"
+                      checked
                     />
                     <div className="flex items-center gap-3 flex-1">
                       <Truck className="text-gray-600" size={24} />
                       <div className="flex-1">
-                        <div className="font-medium text-black">Odbiór osobisty</div>
-                        <div className="text-sm text-gray-600">Odbiór w sklepie</div>
+                        <div className="font-medium text-black">Najwygodniejsza dostawa</div>
+                        <div className="text-sm text-gray-600">Dostarczymy paczkę do Twojego domu za pośrednictwem firmy spedycyjnej. Wybieramy pomiędzy DPD, InPost, DHL lub Pocztą Polską.</div>
                       </div>
                     </div>
                     <span className="font-semibold text-green-600">Gratis</span>
@@ -558,7 +534,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-black">
                   <span>Dostawa</span>
-                  <span>{formatPrice(deliveryPrice)}</span>
+                  <span className="text-green-600 font-semibold">Gratis</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t pt-2 text-black">
                   <span>Razem</span>
