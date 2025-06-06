@@ -106,7 +106,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
   if (loading) {
     return (
       <div className="py-8">
-        <h2 className="text-2xl font-bold text-black mb-10 text-center">Související produkty</h2>
+        <h2 className="text-2xl font-bold text-black mb-10 text-center">Powiązane produkty</h2>
         <div className="flex space-x-4 overflow-hidden px-12">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="w-72 h-96 bg-gray-200 animate-pulse rounded-lg flex-shrink-0" />
@@ -124,7 +124,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
 
   return (
     <div className="py-8">
-      <h2 className="text-2xl font-bold text-black mb-10 text-center">Související produkty</h2>
+      <h2 className="text-2xl font-bold text-black mb-10 text-center">Powiązane produkty</h2>
       
       <div className="relative mx-auto" style={{ maxWidth: '1400px' }}>
         {/* Left Arrow - Higher z-index to ensure it's on top */}
@@ -146,7 +146,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
               justifyContent: 'center',
               zIndex: 50 // Increased z-index
             }}
-            aria-label="Předchozí produkty"
+            aria-label="Poprzednie produkty"
           >
             <ChevronLeft size={24} className="text-gray-700" />
           </button>
@@ -171,7 +171,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
               justifyContent: 'center',
               zIndex: 50 // Increased z-index
             }}
-            aria-label="Další produkty"
+            aria-label="Następne produkty"
           >
             <ChevronRight size={24} className="text-gray-700" />
           </button>

@@ -26,7 +26,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
   if (sortedImages.length === 0) {
     return (
       <div className="aspect-square w-full bg-gray-100 rounded-lg flex items-center justify-center">
-        <p className="text-gray-500">Žádný obrázek</p>
+        <p className="text-gray-500">Brak zdjęcia</p>
       </div>
     );
   }
@@ -54,7 +54,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
           <div className="aspect-square w-full">
             <img
               src={currentImage.url}
-              alt={currentImage.alt || `${productName} - obrázek ${selectedIndex + 1}`}
+              alt={currentImage.alt || `${productName} - zdjęcie ${selectedIndex + 1}`}
               className={`w-full h-full object-contain transition-transform duration-300 ${
                 isZoomed ? 'scale-150' : ''
               }`}
@@ -111,7 +111,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             >
               <img
                 src={image.url}
-                alt={image.alt || `${productName} - náhled ${index + 1}`}
+                alt={image.alt || `${productName} - miniatura ${index + 1}`}
                 className="w-full h-full object-cover"
               />
             </button>

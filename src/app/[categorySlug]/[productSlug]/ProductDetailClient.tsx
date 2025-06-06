@@ -48,11 +48,11 @@ function getNextDeliveryDate(): string {
 // Helper function to format stock display
 function formatStockDisplay(stock: number): string {
   if (stock === 0) {
-    return 'Vyprodáno';
+    return 'Wyprzedane';
   } else if (stock > 5) {
-    return 'Skladem: >5 KS';
+    return 'Na stanie: >5 SZT';
   } else {
-    return `Skladem: ${stock} ks`;
+    return `Na stanie: ${stock} szt`;
   }
 }
 
@@ -193,17 +193,17 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
   const handleAddToCart = () => {
     if (effectiveStock === 0) {
-      toast.error('Produkt není skladem');
+      toast.error('Produkt niedostępny');
       return;
     }
 
     if (hasColors && !selectedColor) {
-      toast.error('Vyberte prosím barvu');
+      toast.error('Proszę wybrać kolor');
       return;
     }
 
     if (hasSizes && !selectedSize) {
-      toast.error('Vyberte prosím velikost');
+      toast.error('Proszę wybrać rozmiar');
       return;
     }
 
@@ -231,7 +231,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       });
     }
 
-    toast.success(`${quantity}x ${product.name} ${variantDisplayName ? `(${variantDisplayName})` : ''} přidáno do košíku!`);
+    toast.success(`${quantity}x ${product.name} ${variantDisplayName ? `(${variantDisplayName})` : ''} dodano do koszyka!`);
     setQuantity(1);
   };
 
@@ -249,7 +249,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         {/* Breadcrumbs */}
         <Breadcrumbs 
           items={[
-            { label: 'Domů', href: '/', isHome: true },
+            { label: 'Strona główna', href: '/', isHome: true },
             ...(product.category ? [{ 
               label: product.category.name, 
               href: `/category/${product.category.slug}` 
@@ -266,7 +266,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             {/* Detailed Description */}
             {product.detailDescription && (
               <div className="mt-8 border-t border-gray-200 pt-6">
-                <h2 className="text-xl font-bold mb-4 text-black">Detailní popis</h2>
+                <h2 className="text-xl font-bold mb-4 text-black">Szczegółowy opis</h2>
                 <div 
                   className="prose prose-lg max-w-none text-gray-700"
                   dangerouslySetInnerHTML={{ __html: product.detailDescription }}
@@ -281,7 +281,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             <div>
               <h1 className="text-3xl font-bold text-black mb-2">{product.name}</h1>
               {product.brand && (
-                <p className="text-lg text-gray-600 mb-2">Značka: <span className="font-semibold">{product.brand}</span></p>
+                <p className="text-lg text-gray-600 mb-2">Marka: <span className="font-semibold">{product.brand}</span></p>
               )}
               
               {/* Rating */}
@@ -292,7 +292,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     size="md"
                   />
                   <span className="text-gray-600">
-                    {product.averageRating?.toFixed(1)} z 5 ({product.totalRatings} recenzí)
+                    {product.averageRating?.toFixed(1)} z 5 ({product.totalRatings} recenzji)
                   </span>
                 </div>
               )}
@@ -323,7 +323,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       </span>
                     </div>
                     <p className="text-green-600 font-medium text-sm">
-                      Ušetříte {formatPrice(product.regularPrice - Number(effectivePrice))}
+                      Oszczędzasz {formatPrice(product.regularPrice - Number(effectivePrice))}
                     </p>
                   </>
                 ) : (
@@ -336,7 +336,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Color Selection */}
               {hasColors && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-black">Barva</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-black">Kolor</h3>
                   <div className="flex flex-wrap gap-2">
                     {colors.map((color) => {
                       const colorVariant = product.variants?.find(v => v.colorName === color);
@@ -374,7 +374,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Size Selection */}
               {hasSizes && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-black">Velikost</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-black">Rozmiar</h3>
                   <div className="flex flex-wrap gap-2">
                     {sizes.map((size) => {
                       const isAvailable = hasColors 
@@ -411,7 +411,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   </span>
                   {effectiveStock > 0 && (
                     <p className="text-sm text-gray-600 mt-1">
-                      Doručení možné již <span className="font-semibold">{getNextDeliveryDate()}</span>
+                      Dostawa możliwa już <span className="font-semibold">{getNextDeliveryDate()}</span>
                     </p>
                   )}
                 </div>
@@ -419,7 +419,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               
               {/* Quantity Selector */}
               <div className="flex items-center gap-4">
-                <label className="text-black font-medium">Množství:</label>
+                <label className="text-black font-medium">Ilość:</label>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -468,7 +468,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 }}
               >
                 <ShoppingCart size={24} />
-                {effectiveStock === 0 ? 'Vyprodáno' : 'Přidat do košíku'}
+                {effectiveStock === 0 ? 'Wyprzedane' : 'Dodaj do koszyka'}
               </button>
               
               {/* Price Guarantee and Warranty */}
@@ -477,7 +477,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   {/* Price Guarantee - Fixed underline */}
                   <div className="flex items-center gap-2">
                     <span style={{ color: '#2ca335' }}>✅</span>
-                    <span style={{ color: '#2ca335' }} className="underline">Garance nejvýhodnější ceny</span>
+                    <span style={{ color: '#2ca335' }} className="underline">Gwarancja najlepszej ceny</span>
                     <button
                       type="button"
                       className="relative"
@@ -492,7 +492,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   {/* Warranty */}
                   {product.warranty && (
                     <p className="text-gray-700">
-                      <span className="text-black">Záruka</span> <span>✓ {product.warranty}</span>
+                      <span className="text-black">Gwarancja</span> <span>✓ {product.warranty}</span>
                     </p>
                   )}
                   
@@ -505,7 +505,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       onClick={() => setShowContactForm(!showContactForm)}
                     >
                       <MessageCircle className="h-4 w-4" />
-                      <span className="underline">Napište nám</span>
+                      <span className="underline">Napisz do nas</span>
                     </button>
                   </div>
                 </div>
@@ -513,18 +513,18 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 {/* Price Guarantee Popup */}
                 {showPriceGuarantee && (
                   <div className="absolute z-10 mt-2 p-5 bg-white rounded-lg shadow-xl border border-gray-200 max-w-sm">
-                    <h4 className="font-semibold text-black mb-3 text-lg">Garance nejvýhodnější ceny</h4>
+                    <h4 className="font-semibold text-black mb-3 text-lg">Gwarancja najlepszej ceny</h4>
                     <div className="space-y-2 text-sm text-gray-600">
                       <p>
-                        Garantujeme vám nejnižší cenu na trhu. Pokud najdete stejný produkt u konkurence levněji, 
-                        okamžitě vám vrátíme rozdíl.
+                        Gwarantujemy najniższą cenę na rynku. Jeśli znajdziesz ten sam produkt u konkurencji taniej, 
+                        natychmiast zwrócimy Ci różnicę.
                       </p>
-                      <p className="font-medium text-gray-700">Jak to funguje:</p>
+                      <p className="font-medium text-gray-700">Jak to działa:</p>
                       <ul className="list-disc list-inside space-y-1 ml-2">
-                        <li>Garance platí 14 dní od nákupu</li>
-                        <li>Produkt musí být identický (stejný model, barva, velikost)</li>
-                        <li>Konkurenční nabídka musí být aktuálně platná</li>
-                        <li>Stačí nám zaslat odkaz na konkurenční nabídku</li>
+                        <li>Gwarancja obowiązuje 14 dni od zakupu</li>
+                        <li>Produkt musi być identyczny (ten sam model, kolor, rozmiar)</li>
+                        <li>Oferta konkurencji musi być aktualnie ważna</li>
+                        <li>Wystarczy przesłać nam link do oferty konkurencji</li>
                       </ul>
                     </div>
                   </div>
@@ -539,8 +539,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                       <Truck className="w-6 h-6 text-gray-600" />
                     </div>
-                    <h4 className="text-sm font-semibold text-gray-800 mb-1">Doprava zdarma</h4>
-                    <p className="text-xs text-gray-600">Již od nákupu 0 Kč</p>
+                    <h4 className="text-sm font-semibold text-gray-800 mb-1">Darmowa wysyłka</h4>
+                    <p className="text-xs text-gray-600">Już od zakupu 0 zł</p>
                   </div>
                   
                   {/* Free Returns */}
@@ -548,8 +548,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                       <RotateCcw className="w-6 h-6 text-gray-600" />
                     </div>
-                    <h4 className="text-sm font-semibold text-gray-800 mb-1">Bezplatné vrácení</h4>
-                    <p className="text-xs text-gray-600">Do 14 dnů</p>
+                    <h4 className="text-sm font-semibold text-gray-800 mb-1">Bezpłatny zwrot</h4>
+                    <p className="text-xs text-gray-600">Do 14 dni</p>
                   </div>
                   
                   {/* Reliable Shop */}
@@ -557,8 +557,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                       <ShieldCheck className="w-6 h-6 text-gray-600" />
                     </div>
-                    <h4 className="text-sm font-semibold text-gray-800 mb-1">Spolehlivý obchod</h4>
-                    <p className="text-xs text-gray-600">100% bezpečný nákup</p>
+                    <h4 className="text-sm font-semibold text-gray-800 mb-1">Wiarygodny sklep</h4>
+                    <p className="text-xs text-gray-600">100% bezpieczne zakupy</p>
                   </div>
                 </div>
               </div>
@@ -567,13 +567,13 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               <div className="border-t border-gray-200 pt-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-black">
-                    Recenze ({reviews.length})
+                    Recenzje ({reviews.length})
                   </h3>
                   <button
                     onClick={() => setShowReviewForm(!showReviewForm)}
                     className="text-blue-600 hover:text-blue-700 font-medium"
                   >
-                    {showReviewForm ? 'Zrušit' : 'Napsat recenzi'}
+                    {showReviewForm ? 'Anuluj' : 'Napisz recenzję'}
                   </button>
                 </div>
                 
@@ -594,7 +594,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 <div className="space-y-4">
                   {reviews.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">
-                      Zatím žádné recenze. Buďte první!
+                      Brak recenzji. Bądź pierwszy!
                     </p>
                   ) : (
                     reviews.map((review) => (
@@ -607,7 +607,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                             <StarRating rating={review.rating} size="sm" />
                           </div>
                           <span className="text-sm text-gray-500">
-                            {new Date(review.createdAt).toLocaleDateString('cs-CZ')}
+                            {new Date(review.createdAt).toLocaleDateString('pl-PL')}
                           </span>
                         </div>
                         {review.comment && (
@@ -643,7 +643,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             <div className="bg-white rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h4 className="text-xl font-bold text-black">Napište nám</h4>
+                  <h4 className="text-xl font-bold text-black">Napisz do nas</h4>
                   <button
                     type="button"
                     onClick={() => setShowContactForm(false)}
@@ -657,12 +657,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 
                 <form className="space-y-4" onSubmit={(e) => {
                   e.preventDefault();
-                  toast.success('Vaše zpráva byla odeslána!');
+                  toast.success('Twoja wiadomość została wysłana!');
                   setShowContactForm(false);
                 }}>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Jméno a příjmení
+                      Imię i nazwisko
                     </label>
                     <input
                       type="text"
@@ -682,7 +682,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Telefon (nepovinné)
+                      Telefon (opcjonalnie)
                     </label>
                     <input
                       type="tel"
@@ -691,24 +691,24 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Předmět zprávy
+                      Temat wiadomości
                     </label>
                     <input
                       type="text"
                       required
-                      defaultValue={`Dotaz k produktu: ${product.name}`}
+                      defaultValue={`Pytanie o produkt: ${product.name}`}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Vaše zpráva
+                      Twoja wiadomość
                     </label>
                     <textarea
                       required
                       rows={4}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Napište nám svůj dotaz ohledně tohoto produktu..."
+                      placeholder="Napisz do nas swoje pytanie dotyczące tego produktu..."
                     />
                   </div>
                   <div className="flex gap-3 pt-4">
@@ -716,14 +716,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       type="submit"
                       className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition font-medium"
                     >
-                      Odeslat zprávu
+                      Wyślij wiadomość
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowContactForm(false)}
                       className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition font-medium"
                     >
-                      Zavřít
+                      Zamknij
                     </button>
                   </div>
                 </form>

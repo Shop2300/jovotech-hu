@@ -21,7 +21,7 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
     e.preventDefault();
 
     if (rating === 0) {
-      toast.error('Prosím vyberte hodnocení');
+      toast.error('Proszę wybrać ocenę');
       return;
     }
 
@@ -36,14 +36,14 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
         body: JSON.stringify({
           rating,
           comment: comment.trim() || null,
-          authorName: authorName.trim() || 'Anonym',
+          authorName: authorName.trim() || 'Anonim',
           authorEmail: authorEmail.trim() || 'anonymous@example.com',
         }),
       });
 
       if (!response.ok) throw new Error('Failed to submit review');
 
-      toast.success('Děkujeme za vaši recenzi!');
+      toast.success('Dziękujemy za Twoją recenzję!');
       
       // Reset form
       setRating(0);
@@ -53,7 +53,7 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
       
       if (onSuccess) onSuccess();
     } catch (error) {
-      toast.error('Chyba při odesílání recenze');
+      toast.error('Błąd podczas wysyłania recenzji');
     } finally {
       setIsSubmitting(false);
     }
@@ -61,11 +61,11 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-gray-50 rounded-lg p-6 space-y-4">
-      <h3 className="text-lg font-semibold text-black mb-4">Napište recenzi</h3>
+      <h3 className="text-lg font-semibold text-black mb-4">Napisz recenzję</h3>
       
       <div>
         <label className="block text-sm font-medium mb-2 text-black">
-          Vaše hodnocení *
+          Twoja ocena *
         </label>
         <StarRating 
           rating={rating} 
@@ -78,41 +78,41 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-2 text-black">
-            Jméno (nepovinné)
+            Imię (opcjonalnie)
           </label>
           <input
             type="text"
             value={authorName}
             onChange={(e) => setAuthorName(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Anonym"
+            placeholder="Anonim"
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium mb-2 text-black">
-            Email (nepovinné)
+            Email (opcjonalnie)
           </label>
           <input
             type="email"
             value={authorEmail}
             onChange={(e) => setAuthorEmail(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="váš@email.cz"
+            placeholder="twój@email.pl"
           />
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-2 text-black">
-          Váš komentář
+          Twój komentarz
         </label>
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={4}
           className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Podělte se o své zkušenosti s tímto produktem..."
+          placeholder="Podziel się swoimi doświadczeniami z tym produktem..."
         />
       </div>
 
@@ -125,7 +125,7 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
             : 'bg-blue-600 text-white hover:bg-blue-700'
         }`}
       >
-        {isSubmitting ? 'Odesílám...' : 'Odeslat recenzi'}
+        {isSubmitting ? 'Wysyłam...' : 'Wyślij recenzję'}
       </button>
     </form>
   );
