@@ -43,16 +43,18 @@ export const ShippingNotificationEmail = ({
   items,
   deliveryAddress,
 }: ShippingNotificationEmailProps) => {
-  const previewText = `Vaše objednávka #${orderNumber} byla odeslána - Galaxy Sklep`;
+  const previewText = `Twoje zamówienie #${orderNumber} zostało wysłane - Galaxy Sklep`;
 
   // Get tracking URL based on carrier
   const getTrackingUrl = () => {
-    if (carrier.toLowerCase().includes('zásilkovna') || carrier.toLowerCase().includes('packeta')) {
-      return `https://tracking.packeta.com/cs/?id=${trackingNumber}`;
-    } else if (carrier.toLowerCase().includes('ppl')) {
-      return `https://www.ppl.cz/vyhledat-zasilku?trackingNumber=${trackingNumber}`;
-    } else if (carrier.toLowerCase().includes('česká pošta') || carrier.toLowerCase().includes('cp')) {
-      return `https://www.postaonline.cz/trackandtrace/-/zasilka/cislo?parcelNumbers=${trackingNumber}`;
+    if (carrier.toLowerCase().includes('inpost') || carrier.toLowerCase().includes('paczkomat')) {
+      return `https://inpost.pl/sledzenie-przesylek?number=${trackingNumber}`;
+    } else if (carrier.toLowerCase().includes('dpd')) {
+      return `https://tracktrace.dpd.com.pl/parcelDetails?p1=${trackingNumber}`;
+    } else if (carrier.toLowerCase().includes('poczta polska')) {
+      return `https://emonitoring.poczta-polska.pl/?numer=${trackingNumber}`;
+    } else if (carrier.toLowerCase().includes('ups')) {
+      return `https://www.ups.com/track?loc=pl_PL&tracknum=${trackingNumber}`;
     }
     // Default - generic tracking
     return `https://www.google.com/search?q=${encodeURIComponent(trackingNumber)}`;
@@ -82,26 +84,26 @@ export const ShippingNotificationEmail = ({
             </Section>
 
             <Heading as="h2" style={h2}>
-              Vaše objednávka je na cestě!
+              Twoje zamówienie jest w drodze!
             </Heading>
             
             <Text style={paragraph}>
-              Dobrý den {customerName},
+              Dzień dobry {customerName},
             </Text>
             
             <Text style={paragraph}>
-              Skvělé zprávy! Vaše objednávka <strong>#{orderNumber}</strong> byla právě odeslána a je na cestě k vám.
+              Świetna wiadomość! Twoje zamówienie <strong>#{orderNumber}</strong> zostało właśnie wysłane i jest w drodze do Ciebie.
             </Text>
 
             {/* Tracking Info Box */}
             <Section style={trackingBox}>
               <Heading as="h3" style={h3}>
-                📦 Informace o sledování zásilky
+                📦 Informacje o śledzeniu przesyłki
               </Heading>
               
               <Row style={trackingRow}>
                 <Column>
-                  <Text style={trackingLabel}>Sledovací číslo:</Text>
+                  <Text style={trackingLabel}>Numer śledzenia:</Text>
                 </Column>
                 <Column>
                   <Text style={trackingValue}>{trackingNumber}</Text>
@@ -110,7 +112,7 @@ export const ShippingNotificationEmail = ({
               
               <Row style={trackingRow}>
                 <Column>
-                  <Text style={trackingLabel}>Dopravce:</Text>
+                  <Text style={trackingLabel}>Przewoźnik:</Text>
                 </Column>
                 <Column>
                   <Text style={trackingValue}>{carrier}</Text>
@@ -120,7 +122,7 @@ export const ShippingNotificationEmail = ({
               {estimatedDelivery && (
                 <Row style={trackingRow}>
                   <Column>
-                    <Text style={trackingLabel}>Předpokládané doručení:</Text>
+                    <Text style={trackingLabel}>Przewidywana dostawa:</Text>
                   </Column>
                   <Column>
                     <Text style={trackingValue}>{estimatedDelivery}</Text>
@@ -135,14 +137,14 @@ export const ShippingNotificationEmail = ({
                 style={button}
                 href={getTrackingUrl()}
               >
-                Sledovat zásilku online
+                Śledź przesyłkę online
               </Button>
             </Section>
 
             {/* Order Contents */}
             <Section style={orderContents}>
               <Heading as="h3" style={h3}>
-                📋 Obsah zásilky
+                📋 Zawartość przesyłki
               </Heading>
               
               {items.map((item, index) => (
@@ -155,7 +157,7 @@ export const ShippingNotificationEmail = ({
             {/* Delivery Address */}
             <Section style={addressSection}>
               <Heading as="h3" style={h3}>
-                📍 Doručovací adresa
+                📍 Adres dostawy
               </Heading>
               
               <Text style={addressText}>
@@ -167,23 +169,23 @@ export const ShippingNotificationEmail = ({
             {/* Tips */}
             <Section style={tipsSection}>
               <Heading as="h3" style={h3}>
-                💡 Užitečné tipy
+                💡 Przydatne wskazówki
               </Heading>
               
               <Text style={tipText}>
-                <strong>🔔</strong> Ujistěte se, že někdo bude doma pro převzetí zásilky
+                <strong>🔔</strong> Upewnij się, że ktoś będzie w domu, aby odebrać przesyłkę
               </Text>
               
               <Text style={tipText}>
-                <strong>📱</strong> Sledujte zásilku online pomocí sledovacího čísla
+                <strong>📱</strong> Śledź przesyłkę online za pomocą numeru śledzenia
               </Text>
               
               <Text style={tipText}>
-                <strong>📧</strong> Dopravce vás může kontaktovat ohledně doručení
+                <strong>📧</strong> Przewoźnik może skontaktować się z Tobą w sprawie dostawy
               </Text>
 
               <Text style={tipText}>
-                <strong>📦</strong> Při převzetí zkontrolujte, zda zásilka není poškozená
+                <strong>📦</strong> Przy odbiorze sprawdź, czy przesyłka nie jest uszkodzona
               </Text>
             </Section>
 
@@ -191,22 +193,22 @@ export const ShippingNotificationEmail = ({
             <Hr style={divider} />
             
             <Text style={footer}>
-              Máte-li jakékoli dotazy ohledně vaší objednávky, neváhejte nás kontaktovat na{' '}
+              Jeśli masz jakiekolwiek pytania dotyczące Twojego zamówienia, skontaktuj się z nami pod adresem{' '}
               <Link href="mailto:support@galaxysklep.pl" style={link}>
                 support@galaxysklep.pl
               </Link>
             </Text>
             
             <Text style={footer}>
-              Děkujeme za váš nákup a přejeme příjemný den!<br />
-              Tým Galaxy Sklep
+              Dziękujemy za zakupy i życzymy miłego dnia!<br />
+              Zespół Galaxy Sklep
             </Text>
 
             {/* Company Info */}
             <Section style={companyInfo}>
               <Text style={companyText}>
                 <strong>Galaxy Sklep</strong><br />
-                Váš oblíbený internetový obchod<br />
+                Twój ulubiony sklep internetowy<br />
                 <Link href="https://galaxysklep.pl" style={link}>
                   www.galaxysklep.pl
                 </Link>

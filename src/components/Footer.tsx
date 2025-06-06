@@ -65,8 +65,9 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <MapPin size={18} className="text-blue-400 mt-0.5" />
                 <span className="text-sm">
-                  ul. Marszałkowska 123<br />
-                  00-001 Warszawa
+                  1. máje 535/50<br />
+                  46007 Liberec<br />
+                  Czechy
                 </span>
               </li>
               <li className="flex items-center gap-2">
@@ -146,13 +147,14 @@ export function Footer() {
       {/* Copyright Bar */}
       <div className="bg-gray-950 py-4">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm">
-          <p>&copy; 2024 Galaxy Sklep. Wszelkie prawa zastrzeżone. | 
+          <p>&copy; 2025 Galaxy Sklep. Wszelkie prawa zastrzeżone. | 
             <Link href="/obchodni-podminky" className="hover:text-white ml-1">
               Regulamin
             </Link> | 
             <Link href="/ochrana-osobnich-udaju" className="hover:text-white ml-1">
               Ochrona danych
-            </Link>
+            </Link> | 
+            <span className="ml-1">IČO: 04688465</span>
           </p>
         </div>
       </div>

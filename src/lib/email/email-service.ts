@@ -63,7 +63,7 @@ export class EmailService {
         from: FROM_EMAIL,
         to: data.customerEmail,
         replyTo: REPLY_TO,
-        subject: `Potvrzení objednávky #${data.orderNumber} - Galaxy Sklep`,
+        subject: `Potwierdzenie zamówienia #${data.orderNumber} - Galaxy Sklep`,
         react: OrderConfirmationEmail({
           orderNumber: data.orderNumber,
           customerName: data.customerName,
@@ -99,19 +99,21 @@ export class EmailService {
       }));
 
       // Determine carrier from tracking number format
-      let carrier = 'Zásilkovna';
-      if (data.trackingNumber.startsWith('CZ')) {
-        carrier = 'Česká pošta';
-      } else if (data.trackingNumber.startsWith('PPL')) {
-        carrier = 'PPL';
-      } else if (data.trackingNumber.startsWith('Z')) {
-        carrier = 'Zásilkovna';
+      let carrier = 'Paczkomat InPost';
+      if (data.trackingNumber.startsWith('PL')) {
+        carrier = 'Poczta Polska';
+      } else if (data.trackingNumber.startsWith('DPD')) {
+        carrier = 'DPD';
+      } else if (data.trackingNumber.startsWith('UPS')) {
+        carrier = 'UPS';
+      } else if (data.trackingNumber.startsWith('6')) {
+        carrier = 'InPost';
       }
 
       // Estimate delivery (3-5 business days)
       const estimatedDelivery = new Date();
       estimatedDelivery.setDate(estimatedDelivery.getDate() + 3);
-      const estimatedDeliveryStr = estimatedDelivery.toLocaleDateString('cs-CZ', {
+      const estimatedDeliveryStr = estimatedDelivery.toLocaleDateString('pl-PL', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
@@ -122,7 +124,7 @@ export class EmailService {
         from: FROM_EMAIL,
         to: data.customerEmail,
         replyTo: REPLY_TO,
-        subject: `Vaše objednávka #${data.orderNumber} byla odeslána - Galaxy Sklep`,
+        subject: `Twoje zamówienie #${data.orderNumber} zostało wysłane - Galaxy Sklep`,
         react: ShippingNotificationEmail({
           orderNumber: data.orderNumber,
           customerName: data.customerName,
@@ -162,16 +164,16 @@ export class EmailService {
             </div>
             <div style="padding: 30px;">
               <h2 style="color: #1e293b;">Test Email z Galaxy Sklep</h2>
-              <p>Tento email potvrzuje, že emailová služba funguje správně.</p>
-              <p>Pokud vidíte tento email, znamená to, že:</p>
+              <p>Ten email potwierdza, że usługa emailowa działa prawidłowo.</p>
+              <p>Jeśli widzisz ten email, oznacza to, że:</p>
               <ul>
-                <li>✅ Doména je správně ověřena v Resend</li>
-                <li>✅ DNS záznamy jsou správně nastaveny</li>
-                <li>✅ Emailová služba je připravena k použití</li>
+                <li>✅ Domena jest prawidłowo zweryfikowana w Resend</li>
+                <li>✅ Rekordy DNS są poprawnie skonfigurowane</li>
+                <li>✅ Usługa emailowa jest gotowa do użycia</li>
               </ul>
               <hr style="border: 1px solid #e2e8f0; margin: 30px 0;">
               <p style="color: #64748b; font-size: 14px;">
-                Tento testovací email byl odeslán z Galaxy Sklep<br>
+                Ten testowy email został wysłany z Galaxy Sklep<br>
                 <a href="https://galaxysklep.pl" style="color: #8b5cf6;">www.galaxysklep.pl</a>
               </p>
             </div>
@@ -224,8 +226,8 @@ export class EmailService {
       orderNumber: data.orderNumber,
       customerName: data.customerName,
       trackingNumber: data.trackingNumber,
-      carrier: 'Zásilkovna',
-      estimatedDelivery: '3-5 pracovních dnů',
+      carrier: 'Paczkomat InPost',
+      estimatedDelivery: '3-5 dni roboczych',
       items: emailItems,
       deliveryAddress: data.deliveryAddress,
     });

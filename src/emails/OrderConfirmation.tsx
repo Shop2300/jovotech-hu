@@ -36,17 +36,17 @@ interface OrderConfirmationEmailProps {
 }
 
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('cs-CZ', {
+  return new Intl.NumberFormat('pl-PL', {
     style: 'currency',
-    currency: 'CZK',
+    currency: 'PLN',
   }).format(price);
 };
 
-// TODO: Aktualizujte tyto údaje vašimi skutečnými bankovními údaji
+// TODO: Zaktualizuj dane bankowe na polskie
 const BANK_DETAILS = {
-  accountNumber: '2302034483 / 2010',  // Váš účet / kód banky
-  iban: 'CZ79 2010 0000 0023 0203 4483',  // Váš IBAN
-  swift: 'FIOBCZPPXXX'  // SWIFT kód vaší banky
+  accountNumber: '2302034483 / 2010',  // Twój numer konta / kod banku
+  iban: 'CZ79 2010 0000 0023 0203 4483',  // Twój IBAN
+  swift: 'FIOBCZPPXXX'  // Kod SWIFT Twojego banku
 };
 
 export const OrderConfirmationEmail = ({
@@ -58,7 +58,7 @@ export const OrderConfirmationEmail = ({
   paymentMethod,
   deliveryAddress,
 }: OrderConfirmationEmailProps) => {
-  const previewText = `Potvrzení objednávky #${orderNumber} - Galaxy Sklep`;
+  const previewText = `Potwierdzenie zamówienia #${orderNumber} - Galaxy Sklep`;
 
   return (
     <Html>
@@ -79,21 +79,21 @@ export const OrderConfirmationEmail = ({
           {/* Main Content */}
           <Section style={content}>
             <Heading as="h2" style={h2}>
-              Děkujeme za vaši objednávku!
+              Dziękujemy za Twoje zamówienie!
             </Heading>
             
             <Text style={paragraph}>
-              Dobrý den {customerName},
+              Dzień dobry {customerName},
             </Text>
             
             <Text style={paragraph}>
-              Vaše objednávka <strong>#{orderNumber}</strong> byla úspěšně přijata a nyní ji zpracováváme.
+              Twoje zamówienie <strong>#{orderNumber}</strong> zostało pomyślnie przyjęte i jest obecnie przetwarzane.
             </Text>
 
             {/* Order Summary */}
             <Section style={orderSummary}>
               <Heading as="h3" style={h3}>
-                Shrnutí objednávky
+                Podsumowanie zamówienia
               </Heading>
               
               {items.map((item, index) => (
@@ -115,7 +115,7 @@ export const OrderConfirmationEmail = ({
               
               <Row style={totalRow}>
                 <Column>
-                  <Text style={totalLabel}>Celkem:</Text>
+                  <Text style={totalLabel}>Razem:</Text>
                 </Column>
                 <Column style={itemPrice}>
                   <Text style={totalAmount}>{formatPrice(total)}</Text>
@@ -126,23 +126,23 @@ export const OrderConfirmationEmail = ({
             {/* Delivery Info */}
             <Section style={infoSection}>
               <Heading as="h3" style={h3}>
-                Informace o doručení
+                Informacje o dostawie
               </Heading>
               
               <Text style={infoText}>
-                <strong>Způsob doručení:</strong> {deliveryMethod === 'zasilkovna' ? 'Zásilkovna' : 'Osobní odběr'}
+                <strong>Sposób dostawy:</strong> {deliveryMethod === 'zasilkovna' ? 'Paczkomat' : 'Odbiór osobisty'}
               </Text>
               
               <Text style={infoText}>
-                <strong>Způsob platby:</strong> {
-                  paymentMethod === 'bank' ? 'Bankovní převod' : 
-                  paymentMethod === 'card' ? 'Platba kartou online' :
-                  'Platba na dobírku'
+                <strong>Sposób płatności:</strong> {
+                  paymentMethod === 'bank' ? 'Przelew bankowy' : 
+                  paymentMethod === 'card' ? 'Płatność kartą online' :
+                  'Płatność za pobraniem'
                 }
               </Text>
               
               <Text style={infoText}>
-                <strong>Doručovací adresa:</strong><br />
+                <strong>Adres dostawy:</strong><br />
                 {deliveryAddress.street}<br />
                 {deliveryAddress.city}, {deliveryAddress.postalCode}
               </Text>
@@ -152,16 +152,16 @@ export const OrderConfirmationEmail = ({
             {paymentMethod === 'bank' && (
               <Section style={bankSection}>
                 <Heading as="h3" style={h3}>
-                  Informace pro platbu bankovním převodem
+                  Informacje do przelewu bankowego
                 </Heading>
                 
                 <Text style={bankText}>
-                  Pro dokončení objednávky prosím uhraďte částku <strong>{formatPrice(total)}</strong> na následující bankovní účet:
+                  Aby sfinalizować zamówienie, prosimy o wpłatę kwoty <strong>{formatPrice(total)}</strong> na poniższe konto bankowe:
                 </Text>
                 
                 <Section style={bankDetails}>
                   <Text style={bankDetailRow}>
-                    <strong>Číslo účtu:</strong> {BANK_DETAILS.accountNumber}
+                    <strong>Numer konta:</strong> {BANK_DETAILS.accountNumber}
                   </Text>
                   <Text style={bankDetailRow}>
                     <strong>IBAN:</strong> {BANK_DETAILS.iban}
@@ -170,12 +170,12 @@ export const OrderConfirmationEmail = ({
                     <strong>BIC/SWIFT:</strong> {BANK_DETAILS.swift}
                   </Text>
                   <Text style={bankDetailRow}>
-                    <strong>Variabilní symbol:</strong> {orderNumber}
+                    <strong>Tytuł przelewu:</strong> {orderNumber}
                   </Text>
                 </Section>
                 
                 <Text style={bankNote}>
-                  Vaše objednávka bude odeslána ihned po připsání platby na náš účet.
+                  Twoje zamówienie zostanie wysłane natychmiast po zaksięgowaniu wpłaty na naszym koncie.
                 </Text>
               </Section>
             )}
@@ -183,23 +183,23 @@ export const OrderConfirmationEmail = ({
             {/* Next Steps */}
             <Section style={nextSteps}>
               <Heading as="h3" style={h3}>
-                Co bude následovat?
+                Co dalej?
               </Heading>
               
               <Text style={paragraph}>
                 {paymentMethod === 'bank' ? (
                   <>
-                    1. Uhraďte prosím objednávku bankovním převodem<br />
-                    2. Po připsání platby vám zašleme potvrzení<br />
-                    3. Vaši objednávku zabalíme a odešleme<br />
-                    4. Obdržíte e-mail s informacemi o sledování zásilky
+                    1. Proszę opłacić zamówienie przelewem bankowym<br />
+                    2. Po zaksięgowaniu wpłaty wyślemy potwierdzenie<br />
+                    3. Twoje zamówienie zostanie spakowane i wysłane<br />
+                    4. Otrzymasz e-mail z informacjami o śledzeniu przesyłki
                   </>
                 ) : (
                   <>
-                    1. Vaši objednávku nyní zpracováváme<br />
-                    2. Jakmile bude objednávka odeslána, obdržíte e-mail s informacemi o sledování<br />
-                    3. Zásilku můžete sledovat pomocí sledovacího čísla<br />
-                    4. Těšte se na své nové produkty!
+                    1. Twoje zamówienie jest obecnie przetwarzane<br />
+                    2. Gdy zamówienie zostanie wysłane, otrzymasz e-mail z informacjami o śledzeniu<br />
+                    3. Będziesz mógł śledzić przesyłkę za pomocą numeru śledzenia<br />
+                    4. Ciesz się nowymi produktami!
                   </>
                 )}
               </Text>
@@ -211,7 +211,7 @@ export const OrderConfirmationEmail = ({
                 style={button}
                 href={`https://galaxysklep.pl/order-status/${orderNumber}`}
               >
-                Sledovat objednávku
+                Śledź zamówienie
               </Button>
             </Section>
 
@@ -219,22 +219,22 @@ export const OrderConfirmationEmail = ({
             <Hr style={divider} />
             
             <Text style={footer}>
-              Máte-li jakékoli dotazy, neváhejte nás kontaktovat na{' '}
+              Jeśli masz jakiekolwiek pytania, skontaktuj się z nami pod adresem{' '}
               <Link href="mailto:support@galaxysklep.pl" style={link}>
                 support@galaxysklep.pl
               </Link>
             </Text>
             
             <Text style={footer}>
-              Děkujeme za váš nákup!<br />
-              Tým Galaxy Sklep
+              Dziękujemy za zakupy!<br />
+              Zespół Galaxy Sklep
             </Text>
 
             {/* Company Info */}
             <Section style={companyInfo}>
               <Text style={companyText}>
                 <strong>Galaxy Sklep</strong><br />
-                Váš oblíbený internetový obchod<br />
+                Twój ulubiony sklep internetowy<br />
                 <Link href="https://galaxysklep.pl" style={link}>
                   www.galaxysklep.pl
                 </Link>
