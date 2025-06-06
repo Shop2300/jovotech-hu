@@ -28,36 +28,36 @@ function OrderSuccessContent() {
   
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast.success(`${label} zkopírováno do schránky`);
+    toast.success(`${label} skopiowano do schowka`);
   };
   return (
     <main className="min-h-screen bg-white flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
         <CheckCircle size={64} className="mx-auto text-green-500 mb-4" />
         
-        <h1 className="text-2xl font-bold mb-4 text-black">Děkujeme za vaši objednávku!</h1>
+        <h1 className="text-2xl font-bold mb-4 text-black">Dziękujemy za Twoje zamówienie!</h1>
         
         <p className="text-gray-700 mb-6">
-          Vaše objednávka byla úspěšně přijata a brzy vám zašleme potvrzení na email.
+          Twoje zamówienie zostało pomyślnie przyjęte i wkrótce wyślemy potwierdzenie na e-mail.
         </p>
         
         {orderNumber && (
           <div className="bg-gray-100 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-700 font-medium">Číslo objednávky:</p>
+            <p className="text-sm text-gray-700 font-medium">Numer zamówienia:</p>
             <p className="font-semibold text-lg text-black">{orderNumber}</p>
           </div>
         )}
 
         {/* Bank Transfer Information */}
         <div className="bg-blue-50 rounded-lg p-6 mb-6 text-left">
-          <h3 className="font-semibold text-lg text-black mb-3">Informace pro platbu bankovním převodem:</h3>
+          <h3 className="font-semibold text-lg text-black mb-3">Informacje do przelewu bankowego:</h3>
           <div className="space-y-3">
             <div>
-              <p className="text-sm text-gray-600">Číslo účtu:</p>
+              <p className="text-sm text-gray-600">Numer konta:</p>
               <div className="flex items-center justify-between">
                 <p className="font-mono font-medium text-black">{BANK_DETAILS.accountNumber}</p>
                 <button
-                  onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Číslo účtu')}
+                  onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Numer konta')}
                   className="text-blue-600 hover:text-blue-800"
                 >
                   <Copy size={16} />
@@ -90,11 +90,11 @@ function OrderSuccessContent() {
             </div>
             {orderNumber && (
               <div>
-                <p className="text-sm text-gray-600">Variabilní symbol:</p>
+                <p className="text-sm text-gray-600">Tytuł przelewu:</p>
                 <div className="flex items-center justify-between">
                   <p className="font-mono font-medium text-black">{orderNumber}</p>
                   <button
-                    onClick={() => copyToClipboard(orderNumber, 'Variabilní symbol')}
+                    onClick={() => copyToClipboard(orderNumber, 'Tytuł przelewu')}
                     className="text-blue-600 hover:text-blue-800"
                   >
                     <Copy size={16} />
@@ -104,32 +104,32 @@ function OrderSuccessContent() {
             )}
           </div>
           <p className="text-xs text-gray-600 mt-3">
-            Zboží vám odešleme ihned po připsání platby na náš účet.
+            Towar wyślemy natychmiast po zaksięgowaniu wpłaty na naszym koncie.
           </p>
         </div>
         
         <div className="space-y-4">
-          <h2 className="font-semibold text-lg text-black">Co bude následovat?</h2>
+          <h2 className="font-semibold text-lg text-black">Co dalej?</h2>
           <div className="text-left space-y-3 text-sm text-gray-700">
             <div className="flex gap-3">
               <span className="text-green-500">✓</span>
-              <span>Potvrzení objednávky na váš email</span>
+              <span>Potwierdzenie zamówienia na Twój e-mail</span>
             </div>
             <div className="flex gap-3">
               <span className="text-green-500">✓</span>
-              <span>Zaplacení objednávky bankovním převodem</span>
+              <span>Opłacenie zamówienia przelewem bankowym</span>
             </div>
             <div className="flex gap-3">
               <span className="text-green-500">✓</span>
-              <span>Zabalení a odeslání po připsání platby</span>
+              <span>Pakowanie i wysyłka po zaksięgowaniu wpłaty</span>
             </div>
             <div className="flex gap-3">
               <span className="text-green-500">✓</span>
-              <span>Sledovací číslo zásilky</span>
+              <span>Numer śledzenia przesyłki</span>
             </div>
             <div className="flex gap-3">
               <span className="text-green-500">✓</span>
-              <span>Doručení do 2-3 pracovních dnů</span>
+              <span>Dostawa w ciągu 2-3 dni roboczych</span>
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ function OrderSuccessContent() {
           href="/"
           className="inline-block mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
         >
-          Zpět na hlavní stránku
+          Powrót do strony głównej
         </Link>
       </div>
     </main>
@@ -151,7 +151,7 @@ export default function OrderSuccessPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Načítání...</p>
+          <p>Ładowanie...</p>
         </div>
       </div>
     }>

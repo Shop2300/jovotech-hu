@@ -16,7 +16,7 @@ export default function OrderSearchPage() {
     setError('');
 
     if (!orderNumber.trim()) {
-      setError('Zadejte prosím číslo objednávky');
+      setError('Proszę podać numer zamówienia');
       return;
     }
 
@@ -35,7 +35,7 @@ export default function OrderSearchPage() {
             className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors"
           >
             <ArrowLeft size={20} className="mr-2" />
-            Zpět na hlavní stránku
+            Powrót do strony głównej
           </Link>
         </div>
 
@@ -45,17 +45,17 @@ export default function OrderSearchPage() {
               <Package className="w-8 h-8 text-blue-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Sledování objednávky
+              Śledzenie zamówienia
             </h1>
             <p className="text-gray-600">
-              Zadejte číslo vaší objednávky pro zobrazení aktuálního stavu
+              Wprowadź numer zamówienia, aby sprawdzić aktualny status
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="orderNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                Číslo objednávky
+                Numer zamówienia
               </label>
               <div className="relative">
                 <input
@@ -63,7 +63,7 @@ export default function OrderSearchPage() {
                   id="orderNumber"
                   value={orderNumber}
                   onChange={(e) => setOrderNumber(e.target.value)}
-                  placeholder="např. 20250526-8982"
+                  placeholder="np. 20250526-8982"
                   className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   autoComplete="off"
                 />
@@ -78,13 +78,13 @@ export default function OrderSearchPage() {
               type="submit"
               className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
             >
-              Vyhledat objednávku
+              Wyszukaj zamówienie
             </button>
           </form>
 
           <div className="mt-6 pt-6 border-t">
             <p className="text-sm text-gray-600 text-center">
-              Číslo objednávky najdete v potvrzovacím emailu
+              Numer zamówienia znajdziesz w e-mailu potwierdzającym
             </p>
           </div>
         </div>
@@ -92,13 +92,13 @@ export default function OrderSearchPage() {
         {/* Help Section */}
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-600 mb-2">
-            Nemůžete najít vaši objednávku?
+            Nie możesz znaleźć swojego zamówienia?
           </p>
           <a 
-            href="mailto:info@czech-eshop.cz" 
+            href="mailto:info@galaxysklep.pl" 
             className="text-sm text-blue-600 hover:text-blue-700"
           >
-            Kontaktujte nás
+            Skontaktuj się z nami
           </a>
         </div>
       </main>

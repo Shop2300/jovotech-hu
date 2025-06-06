@@ -28,7 +28,7 @@ export function CartIcon() {
     <Link 
       href="/cart" 
       className="relative flex items-center text-gray-600 hover:text-gray-900"
-      title="Košík"
+      title="Koszyk"
     >
       <ShoppingCart size={24} />
       {totalItems > 0 && (

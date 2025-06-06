@@ -103,7 +103,7 @@ export default function CheckoutPage() {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast.success(`${label} zkopírováno do schránky`);
+    toast.success(`${label} skopiowano do schowka`);
   };
 
   const onSubmit = async (data: CheckoutForm) => {
@@ -157,7 +157,7 @@ export default function CheckoutPage() {
       }
 
       // Show success message
-      toast.success('Objednávka byla úspěšně vytvořena!');
+      toast.success('Zamówienie zostało pomyślnie utworzone!');
       
       // Navigate to success page first, then clear cart
       router.push(`/order-success?orderNumber=${responseData.orderNumber}`);
@@ -169,7 +169,7 @@ export default function CheckoutPage() {
       
     } catch (error) {
       console.error('Order submission error:', error);
-      toast.error(error instanceof Error ? error.message : 'Chyba při vytváření objednávky');
+      toast.error(error instanceof Error ? error.message : 'Błąd podczas tworzenia zamówienia');
       setIsSubmitting(false);
       setIsProcessingOrder(false);
     }
@@ -187,27 +187,27 @@ export default function CheckoutPage() {
           className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-8"
         >
           <ArrowLeft size={20} className="mr-2" />
-          Zpět do košíku
+          Powrót do koszyka
         </Link>
 
-        <h1 className="text-3xl font-bold mb-8 text-black">Dokončení objednávky</h1>
+        <h1 className="text-3xl font-bold mb-8 text-black">Finalizacja zamówienia</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Contact Information */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold mb-4 text-black">Kontaktní údaje</h2>
+                <h2 className="text-xl font-semibold mb-4 text-black">Dane kontaktowe</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-black">Email *</label>
                     <input
                       {...register('email', { 
-                        required: 'Email je povinný',
+                        required: 'Email jest wymagany',
                         pattern: {
                           value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: 'Neplatný email'
+                          message: 'Nieprawidłowy email'
                         }
                       })}
                       type="email"
@@ -221,7 +221,7 @@ export default function CheckoutPage() {
                   <div>
                     <label className="block text-sm font-medium mb-2 text-black">Telefon *</label>
                     <input
-                      {...register('phone', { required: 'Telefon je povinný' })}
+                      {...register('phone', { required: 'Telefon jest wymagany' })}
                       type="tel"
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -234,13 +234,13 @@ export default function CheckoutPage() {
 
               {/* Billing Address */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold mb-4 text-black">Fakturační adresa</h2>
+                <h2 className="text-xl font-semibold mb-4 text-black">Adres rozliczeniowy</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">Jméno *</label>
+                    <label className="block text-sm font-medium mb-2 text-black">Imię *</label>
                     <input
-                      {...register('billingFirstName', { required: 'Jméno je povinné' })}
+                      {...register('billingFirstName', { required: 'Imię jest wymagane' })}
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.billingFirstName && (
@@ -249,9 +249,9 @@ export default function CheckoutPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">Příjmení *</label>
+                    <label className="block text-sm font-medium mb-2 text-black">Nazwisko *</label>
                     <input
-                      {...register('billingLastName', { required: 'Příjmení je povinné' })}
+                      {...register('billingLastName', { required: 'Nazwisko jest wymagane' })}
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.billingLastName && (
@@ -261,9 +261,9 @@ export default function CheckoutPage() {
                 </div>
                 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2 text-black">Ulice a číslo popisné *</label>
+                  <label className="block text-sm font-medium mb-2 text-black">Ulica i numer domu *</label>
                   <input
-                    {...register('billingAddress', { required: 'Adresa je povinná' })}
+                    {...register('billingAddress', { required: 'Adres jest wymagany' })}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {errors.billingAddress && (
@@ -273,9 +273,9 @@ export default function CheckoutPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">Město *</label>
+                    <label className="block text-sm font-medium mb-2 text-black">Miasto *</label>
                     <input
-                      {...register('billingCity', { required: 'Město je povinné' })}
+                      {...register('billingCity', { required: 'Miasto jest wymagane' })}
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.billingCity && (
@@ -284,9 +284,9 @@ export default function CheckoutPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">PSČ *</label>
+                    <label className="block text-sm font-medium mb-2 text-black">Kod pocztowy *</label>
                     <input
-                      {...register('billingPostalCode', { required: 'PSČ je povinné' })}
+                      {...register('billingPostalCode', { required: 'Kod pocztowy jest wymagany' })}
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.billingPostalCode && (
@@ -299,30 +299,30 @@ export default function CheckoutPage() {
               {/* Delivery Address */}
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-black">Doručovací adresa</h2>
+                  <h2 className="text-xl font-semibold text-black">Adres dostawy</h2>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       {...register('useDifferentDelivery')}
                       type="checkbox"
                       className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                     />
-                    <span className="text-sm text-gray-700">Jiná než fakturační</span>
+                    <span className="text-sm text-gray-700">Inny niż rozliczeniowy</span>
                   </label>
                 </div>
                 
                 {!useDifferentDelivery ? (
                   <div className="text-gray-600 text-sm flex items-center gap-2">
                     <Copy size={16} />
-                    <span>Bude použita fakturační adresa</span>
+                    <span>Będzie użyty adres rozliczeniowy</span>
                   </div>
                 ) : (
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black">Jméno *</label>
+                        <label className="block text-sm font-medium mb-2 text-black">Imię *</label>
                         <input
                           {...register('deliveryFirstName', { 
-                            required: useDifferentDelivery ? 'Jméno je povinné' : false 
+                            required: useDifferentDelivery ? 'Imię jest wymagane' : false 
                           })}
                           className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
@@ -332,10 +332,10 @@ export default function CheckoutPage() {
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black">Příjmení *</label>
+                        <label className="block text-sm font-medium mb-2 text-black">Nazwisko *</label>
                         <input
                           {...register('deliveryLastName', { 
-                            required: useDifferentDelivery ? 'Příjmení je povinné' : false 
+                            required: useDifferentDelivery ? 'Nazwisko jest wymagane' : false 
                           })}
                           className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
@@ -346,10 +346,10 @@ export default function CheckoutPage() {
                     </div>
                     
                     <div className="mb-4">
-                      <label className="block text-sm font-medium mb-2 text-black">Ulice a číslo popisné *</label>
+                      <label className="block text-sm font-medium mb-2 text-black">Ulica i numer domu *</label>
                       <input
                         {...register('deliveryAddress', { 
-                          required: useDifferentDelivery ? 'Adresa je povinná' : false 
+                          required: useDifferentDelivery ? 'Adres jest wymagany' : false 
                         })}
                         className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -360,10 +360,10 @@ export default function CheckoutPage() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black">Město *</label>
+                        <label className="block text-sm font-medium mb-2 text-black">Miasto *</label>
                         <input
                           {...register('deliveryCity', { 
-                            required: useDifferentDelivery ? 'Město je povinné' : false 
+                            required: useDifferentDelivery ? 'Miasto jest wymagane' : false 
                           })}
                           className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
@@ -373,10 +373,10 @@ export default function CheckoutPage() {
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black">PSČ *</label>
+                        <label className="block text-sm font-medium mb-2 text-black">Kod pocztowy *</label>
                         <input
                           {...register('deliveryPostalCode', { 
-                            required: useDifferentDelivery ? 'PSČ je povinné' : false 
+                            required: useDifferentDelivery ? 'Kod pocztowy jest wymagany' : false 
                           })}
                           className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
@@ -391,7 +391,7 @@ export default function CheckoutPage() {
 
               {/* Delivery Method */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold mb-4 text-black">Způsob dopravy</h2>
+                <h2 className="text-xl font-semibold mb-4 text-black">Sposób dostawy</h2>
                 
                 <div className="space-y-3">
                   <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
@@ -405,15 +405,15 @@ export default function CheckoutPage() {
                       {checkmarkIcon?.imageUrl ? (
                         <img 
                           src={checkmarkIcon.imageUrl} 
-                          alt="Zásilkovna" 
+                          alt="Paczkomat" 
                           className="w-8 h-8 object-contain"
                         />
                       ) : (
                         <Package className="text-gray-600" size={24} />
                       )}
                       <div className="flex-1">
-                        <div className="font-medium text-black">Zásilkovna</div>
-                        <div className="text-sm text-gray-600">Doručení na výdejní místo</div>
+                        <div className="font-medium text-black">Paczkomat</div>
+                        <div className="text-sm text-gray-600">Dostawa do punktu odbioru</div>
                       </div>
                     </div>
                     <span className="font-semibold text-black">{formatPrice(89)}</span>
@@ -429,18 +429,18 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-3 flex-1">
                       <Truck className="text-gray-600" size={24} />
                       <div className="flex-1">
-                        <div className="font-medium text-black">Osobní odběr</div>
-                        <div className="text-sm text-gray-600">Vyzvednutí na prodejně</div>
+                        <div className="font-medium text-black">Odbiór osobisty</div>
+                        <div className="text-sm text-gray-600">Odbiór w sklepie</div>
                       </div>
                     </div>
-                    <span className="font-semibold text-green-600">Zdarma</span>
+                    <span className="font-semibold text-green-600">Gratis</span>
                   </label>
                 </div>
               </div>
 
               {/* Payment Method */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold mb-4 text-black">Způsob platby</h2>
+                <h2 className="text-xl font-semibold mb-4 text-black">Sposób płatności</h2>
                 
                 <div className="space-y-3">
                   <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
@@ -452,8 +452,8 @@ export default function CheckoutPage() {
                     />
                     <Building2 className="mr-3 text-gray-600" size={24} />
                     <div className="flex-1">
-                      <div className="font-medium text-black">Bankovní převod</div>
-                      <div className="text-sm text-gray-600">Platba převodem na účet</div>
+                      <div className="font-medium text-black">Przelew bankowy</div>
+                      <div className="text-sm text-gray-600">Płatność przelewem na konto</div>
                     </div>
                   </label>
                   
@@ -466,8 +466,8 @@ export default function CheckoutPage() {
                     />
                     <Banknote className="mr-3 text-gray-600" size={24} />
                     <div className="flex-1">
-                      <div className="font-medium text-black">Platba na dobírku</div>
-                      <div className="text-sm text-gray-600">Platba při převzetí</div>
+                      <div className="font-medium text-black">Płatność za pobraniem</div>
+                      <div className="text-sm text-gray-600">Płatność przy odbiorze</div>
                     </div>
                   </label>
                 </div>
@@ -475,15 +475,15 @@ export default function CheckoutPage() {
                 {/* Bank Details - shown when bank transfer is selected */}
                 {paymentMethod === 'bank' && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <h3 className="font-semibold text-black mb-2">Údaje pro platbu:</h3>
+                    <h3 className="font-semibold text-black mb-2">Dane do przelewu:</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-700">Číslo účtu:</span>
+                        <span className="text-gray-700">Numer konta:</span>
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-medium text-black">{BANK_DETAILS.accountNumber}</span>
                           <button
                             type="button"
-                            onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Číslo účtu')}
+                            onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Numer konta')}
                             className="text-blue-600 hover:text-blue-800"
                           >
                             <Copy size={16} />
@@ -518,7 +518,7 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                     <p className="text-xs text-gray-600 mt-3">
-                      * Jako variabilní symbol použijte číslo objednávky, které obdržíte po dokončení.
+                      * Jako tytuł przelewu proszę wpisać numer zamówienia, który otrzymają Państwo po finalizacji.
                     </p>
                   </div>
                 )}
@@ -526,12 +526,12 @@ export default function CheckoutPage() {
 
               {/* Note */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold mb-4 text-black">Poznámka k objednávce</h2>
+                <h2 className="text-xl font-semibold mb-4 text-black">Uwagi do zamówienia</h2>
                 <textarea
                   {...register('note')}
                   rows={3}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Zde můžete napsat poznámku k objednávce..."
+                  placeholder="Tutaj mogą Państwo wpisać uwagi do zamówienia..."
                 />
               </div>
             </form>
@@ -540,7 +540,7 @@ export default function CheckoutPage() {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-              <h2 className="text-xl font-semibold mb-4 text-black">Souhrn objednávky</h2>
+              <h2 className="text-xl font-semibold mb-4 text-black">Podsumowanie zamówienia</h2>
               
               <div className="space-y-2 mb-4">
                 {items.map((item) => (
@@ -553,15 +553,15 @@ export default function CheckoutPage() {
               
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-black">
-                  <span>Mezisoučet</span>
+                  <span>Suma częściowa</span>
                   <span>{formatPrice(getTotalPrice())}</span>
                 </div>
                 <div className="flex justify-between text-black">
-                  <span>Doprava</span>
+                  <span>Dostawa</span>
                   <span>{formatPrice(deliveryPrice)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t pt-2 text-black">
-                  <span>Celkem</span>
+                  <span>Razem</span>
                   <span>{formatPrice(totalPrice)}</span>
                 </div>
               </div>
@@ -575,7 +575,7 @@ export default function CheckoutPage() {
                     : 'bg-green-600 text-white hover:bg-green-700'
                 }`}
               >
-                {isSubmitting ? 'Zpracovávám...' : 'Dokončit objednávku'}
+                {isSubmitting ? 'Przetwarzanie...' : 'Złóż zamówienie'}
               </button>
             </div>
           </div>

@@ -2,7 +2,7 @@
 import { notFound } from 'next/navigation';
 import { formatPrice } from '@/lib/utils';
 import { format } from 'date-fns';
-import { cs } from 'date-fns/locale';
+import { pl } from 'date-fns/locale';
 import { 
   Package, 
   CheckCircle, 
@@ -83,21 +83,21 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
   const statusSteps = [
     { 
       key: 'pending', 
-      label: 'Přijato', 
+      label: 'Przyjęte', 
       icon: CheckCircle,
-      description: 'Objednávka byla přijata'
+      description: 'Zamówienie zostało przyjęte'
     },
     { 
       key: 'processing', 
-      label: 'Zpracovává se', 
+      label: 'W realizacji', 
       icon: Package,
-      description: 'Připravujeme vaši objednávku'
+      description: 'Przygotowujemy Twoje zamówienie'
     },
     { 
       key: 'shipped', 
-      label: 'Odesláno', 
+      label: 'Wysłane', 
       icon: Truck,
-      description: 'Objednávka je na cestě'
+      description: 'Zamówienie jest w drodze'
     },
   ];
 
@@ -109,7 +109,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
     if (!order.trackingNumber) return null;
     
     if (order.deliveryMethod === 'zasilkovna') {
-      return `https://tracking.packeta.com/cs/?id=${order.trackingNumber}`;
+      return `https://tracking.packeta.com/pl/?id=${order.trackingNumber}`;
     }
     // Add more carriers as needed
     return null;
@@ -117,9 +117,9 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
 
   const getPaymentMethodLabel = (method: string) => {
     const labels: Record<string, string> = {
-      card: 'Platba kartou online',
-      bank: 'Bankovní převod',
-      cash: 'Platba na dobírku'
+      card: 'Płatność kartą online',
+      bank: 'Przelew bankowy',
+      cash: 'Płatność za pobraniem'
     };
     return labels[method] || method;
   };
@@ -137,7 +137,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors"
           >
             <ArrowLeft size={20} className="mr-2" />
-            Zpět na vyhledávání objednávky
+            Powrót do wyszukiwania zamówienia
           </Link>
         </div>
 
@@ -146,10 +146,10 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Objednávka #{order.orderNumber}
+                Zamówienie #{order.orderNumber}
               </h1>
               <p className="text-gray-600">
-                Vytvořeno: {format(new Date(order.createdAt), 'd. MMMM yyyy HH:mm', { locale: cs })}
+                Utworzone: {format(new Date(order.createdAt), 'd MMMM yyyy HH:mm', { locale: pl })}
               </p>
             </div>
             <div className="mt-4 sm:mt-0 flex gap-3">
@@ -158,7 +158,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                 href="/" 
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
               >
-                Hlavní stránka
+                Strona główna
               </Link>
             </div>
           </div>
@@ -169,15 +169,15 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
               <div className="flex items-start gap-3">
                 <AlertCircle className="text-amber-600 mt-0.5" size={20} />
                 <div className="flex-1">
-                  <h3 className="font-semibold text-amber-900 mb-2">Čekáme na platbu</h3>
+                  <h3 className="font-semibold text-amber-900 mb-2">Czekamy na płatność</h3>
                   <p className="text-sm text-amber-800 mb-3">
-                    Pro dokončení objednávky prosím uhraďte částku <strong>{formatPrice(order.total)}</strong> na náš bankovní účet:
+                    Aby sfinalizować zamówienie, prosimy o wpłatę kwoty <strong>{formatPrice(order.total)}</strong> na nasze konto bankowe:
                   </p>
                   <div className="bg-white rounded-md p-3 space-y-1 text-sm">
-                    <p><strong>Číslo účtu:</strong> {BANK_DETAILS.accountNumber}</p>
-                    <p><strong>Variabilní symbol:</strong> {order.orderNumber}</p>
+                    <p><strong>Numer konta:</strong> {BANK_DETAILS.accountNumber}</p>
+                    <p><strong>Tytuł przelewu:</strong> {order.orderNumber}</p>
                     <p className="text-xs text-gray-600 mt-2">
-                      Objednávku odešleme ihned po připsání platby na náš účet.
+                      Zamówienie wyślemy natychmiast po zaksięgowaniu wpłaty na naszym koncie.
                     </p>
                   </div>
                 </div>
@@ -190,7 +190,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="text-green-600" size={20} />
-                <p className="text-green-800 font-medium">Platba byla úspěšně přijata</p>
+                <p className="text-green-800 font-medium">Płatność została pomyślnie przyjęta</p>
               </div>
             </div>
           )}
@@ -251,7 +251,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             </div>
           ) : (
             <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 font-medium">Objednávka byla zrušena</p>
+              <p className="text-red-800 font-medium">Zamówienie zostało anulowane</p>
             </div>
           )}
         </div>
@@ -266,13 +266,13 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <Truck className="text-green-600" size={20} />
-                      <h3 className="font-semibold text-green-900">Sledování zásilky</h3>
+                      <h3 className="font-semibold text-green-900">Śledzenie przesyłki</h3>
                     </div>
                     <p className="text-sm text-green-800 mb-1">
-                      Sledovací číslo: <span className="font-mono font-semibold">{order.trackingNumber}</span>
+                      Numer śledzenia: <span className="font-mono font-semibold">{order.trackingNumber}</span>
                     </p>
                     <p className="text-sm text-green-700">
-                      Dopravce: {order.deliveryMethod === 'zasilkovna' ? 'Zásilkovna' : 'Osobní odběr'}
+                      Przewoźnik: {order.deliveryMethod === 'zasilkovna' ? 'Paczkomat' : 'Odbiór osobisty'}
                     </p>
                   </div>
                   {trackingUrl && (
@@ -282,7 +282,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                     >
-                      Sledovat online
+                      Śledź online
                       <ExternalLink size={16} />
                     </a>
                   )}
@@ -292,7 +292,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
 
             {/* Order Items */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-4">Položky objednávky</h2>
+              <h2 className="text-lg font-semibold mb-4">Pozycje zamówienia</h2>
               <div className="space-y-4">
                 {order.items.map((item, index) => (
                   <div key={index} className="flex justify-between items-center pb-4 border-b last:border-0">
@@ -310,7 +310,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
               </div>
               <div className="mt-4 pt-4 border-t">
                 <div className="flex justify-between font-bold text-lg">
-                  <span>Celkem</span>
+                  <span>Razem</span>
                   <span>{formatPrice(order.total)}</span>
                 </div>
               </div>
@@ -320,7 +320,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Clock size={20} />
-                Historie objednávky
+                Historia zamówienia
               </h2>
               <div className="space-y-3">
                 {order.history.map((entry) => (
@@ -335,7 +335,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <div className="flex-1">
                       <p className="text-sm text-gray-900">{entry.description}</p>
                       <p className="text-xs text-gray-500">
-                        {format(new Date(entry.createdAt), 'd. MMMM yyyy HH:mm', { locale: cs })}
+                        {format(new Date(entry.createdAt), 'd MMMM yyyy HH:mm', { locale: pl })}
                       </p>
                     </div>
                   </div>
@@ -348,13 +348,13 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
           <div className="space-y-6">
             {/* Delivery Info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-4">Informace o doručení</h2>
+              <h2 className="text-lg font-semibold mb-4">Informacje o dostawie</h2>
               
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <MapPin className="text-gray-400 mt-0.5" size={16} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Doručovací adresa</p>
+                    <p className="text-sm font-medium text-gray-900">Adres dostawy</p>
                     <p className="text-sm text-gray-600">
                       {order.deliveryAddress.city}, {order.deliveryAddress.postalCode}
                     </p>
@@ -364,9 +364,9 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                 <div className="flex items-start gap-3">
                   <Truck className="text-gray-400 mt-0.5" size={16} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Způsob doručení</p>
+                    <p className="text-sm font-medium text-gray-900">Sposób dostawy</p>
                     <p className="text-sm text-gray-600">
-                      {order.deliveryMethod === 'zasilkovna' ? 'Zásilkovna' : 'Osobní odběr'}
+                      {order.deliveryMethod === 'zasilkovna' ? 'Paczkomat' : 'Odbiór osobisty'}
                     </p>
                   </div>
                 </div>
@@ -374,7 +374,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                 <div className="flex items-start gap-3">
                   <CreditCard className="text-gray-400 mt-0.5" size={16} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Způsob platby</p>
+                    <p className="text-sm font-medium text-gray-900">Sposób płatności</p>
                     <p className="text-sm text-gray-600">
                       {getPaymentMethodLabel(order.paymentMethod)}
                     </p>
@@ -382,7 +382,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                       <p className={`text-sm font-medium mt-1 ${
                         order.paymentStatus === 'paid' ? 'text-green-600' : 'text-amber-600'
                       }`}>
-                        {order.paymentStatus === 'paid' ? '✓ Zaplaceno' : '⏳ Čeká na platbu'}
+                        {order.paymentStatus === 'paid' ? '✓ Opłacone' : '⏳ Oczekuje na płatność'}
                       </p>
                     )}
                   </div>
@@ -393,10 +393,10 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             {/* Bank Details (if unpaid bank transfer) */}
             {order.paymentMethod === 'bank' && order.paymentStatus === 'unpaid' && (
               <div className="bg-amber-50 rounded-lg p-6">
-                <h3 className="font-semibold mb-3 text-amber-900">Platební údaje</h3>
+                <h3 className="font-semibold mb-3 text-amber-900">Dane do przelewu</h3>
                 <div className="space-y-2 text-sm">
                   <div>
-                    <p className="text-gray-600">Číslo účtu:</p>
+                    <p className="text-gray-600">Numer konta:</p>
                     <p className="font-mono font-medium">{BANK_DETAILS.accountNumber}</p>
                   </div>
                   <div>
@@ -404,11 +404,11 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <p className="font-mono font-medium text-xs">{BANK_DETAILS.iban}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Variabilní symbol:</p>
+                    <p className="text-gray-600">Tytuł przelewu:</p>
                     <p className="font-mono font-medium">{order.orderNumber}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Částka:</p>
+                    <p className="text-gray-600">Kwota:</p>
                     <p className="font-bold text-lg">{formatPrice(order.total)}</p>
                   </div>
                 </div>
@@ -417,22 +417,22 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
 
             {/* Help Section */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-semibold mb-3">Potřebujete pomoc?</h3>
+              <h3 className="font-semibold mb-3">Potrzebujesz pomocy?</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Máte-li jakékoli dotazy ohledně vaší objednávky, neváhejte nás kontaktovat.
+                Jeśli masz jakiekolwiek pytania dotyczące Twojego zamówienia, skontaktuj się z nami.
               </p>
               <div className="space-y-2">
                 <a 
-                  href="mailto:info@czech-eshop.cz" 
+                  href="mailto:info@galaxysklep.pl" 
                   className="block text-sm text-blue-600 hover:text-blue-700"
                 >
-                  info@czech-eshop.cz
+                  support@galaxysklep.pl
                 </a>
                 <a 
-                  href="tel:+420123456789" 
+                  href="tel:+48123456789" 
                   className="block text-sm text-blue-600 hover:text-blue-700"
                 >
-                  +420 123 456 789
+                  +48 123 456 789
                 </a>
               </div>
             </div>
