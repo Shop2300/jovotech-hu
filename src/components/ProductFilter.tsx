@@ -99,14 +99,14 @@ export function ProductFilter({ onSortChange, currentSort, productCount }: Produ
   const buttonRef = useRef<HTMLDivElement>(null);
 
   const sortOptions = [
-    { value: 'recommended' as SortOption, label: 'Doporučujeme' },
-    { value: 'bestselling' as SortOption, label: 'Nejprodávanější' },
-    { value: 'cheapest' as SortOption, label: 'Nejlevnější' },
-    { value: 'expensive' as SortOption, label: 'Nejdražší' },
-    { value: 'alphabetical' as SortOption, label: 'Abecedně' },
+    { value: 'recommended' as SortOption, label: 'Polecane' },
+    { value: 'bestselling' as SortOption, label: 'Najczęściej kupowane' },
+    { value: 'cheapest' as SortOption, label: 'Najtańsze' },
+    { value: 'expensive' as SortOption, label: 'Najdroższe' },
+    { value: 'alphabetical' as SortOption, label: 'Alfabetycznie' },
   ];
 
-  const currentLabel = sortOptions.find(opt => opt.value === currentSort)?.label || 'Doporučujeme';
+  const currentLabel = sortOptions.find(opt => opt.value === currentSort)?.label || 'Polecane';
 
   const handleSortChange = (value: SortOption) => {
     console.log('Sort clicked:', value);

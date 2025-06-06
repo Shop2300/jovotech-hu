@@ -96,7 +96,7 @@ function SearchPageContent() {
 
         setProducts(data.products);
       } catch (err) {
-        setError('Něco se pokazilo při vyhledávání');
+        setError('Coś poszło nie tak při vyhledávání');
         console.error('Search error:', err);
       } finally {
         setLoading(false);

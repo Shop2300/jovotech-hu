@@ -144,7 +144,7 @@ export function ProductCard({ product }: { product: Product }) {
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
-              {hasVariants ? 'Vybrat variantu' : 'Do košíku'}
+              {hasVariants ? 'Vybrat variantu' : 'Do koszyka'}
             </button>
           </div>
         </div>

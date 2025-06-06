@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { CategoryProductsClient } from '@/components/CategoryProductsClient';
-import { FolderOpen } from 'lucide-react';
+import { FolderOpen, Home } from 'lucide-react';
 
 async function getCategory(slug: string) {
   const category = await prisma.category.findFirst({
@@ -130,9 +130,9 @@ export default async function CategoryPage({
     <main className="min-h-screen bg-white">
       <div className="max-w-screen-2xl mx-auto px-6 py-8">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm">
+        <nav className="mb-6 text-sm flex items-center">
           <Link href="/" className="text-gray-600 hover:text-blue-600">
-            Hlavní stránka
+            <Home size={16} />
           </Link>
           {category.parent && (
             <>
@@ -156,10 +156,10 @@ export default async function CategoryPage({
 
         {/* Main Layout with Sidebar */}
         <div className="flex gap-8" style={{ overflow: "visible" }}>
-          {/* Left Sidebar - Nejnovější objednávky */}
+          {/* Left Sidebar - Najnowsze zamówienia */}
           <aside className="w-64 flex-shrink-0 hidden lg:block">
             <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold mb-4 text-black">Nejnovější objednávky</h3>
+              <h3 className="text-lg font-semibold mb-4 text-black">Najnowsze zamówienia</h3>
               <div className="space-y-3">
                 {randomProducts.map((product) => (
                   <Link 
@@ -188,7 +188,7 @@ export default async function CategoryPage({
                           {product.name}
                         </p>
                         <p className="text-sm font-semibold text-red-600 mt-1">
-                          {product.price.toLocaleString('cs-CZ')} Kč
+                          {product.price.toLocaleString('pl-PL')} zł
                         </p>
                       </div>
                     </div>

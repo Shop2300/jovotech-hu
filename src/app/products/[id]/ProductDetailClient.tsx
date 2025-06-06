@@ -241,7 +241,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       });
     }
 
-    toast.success(`${quantity}x ${product.name} ${variantDisplayName ? `(${variantDisplayName})` : ''} přidáno do košíku!`);
+    toast.success(`${quantity}x ${product.name} ${variantDisplayName ? `(${variantDisplayName})` : ''} dodano do koszyka!`);
     setQuantity(1);
   };
 
