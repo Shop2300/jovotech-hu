@@ -48,7 +48,7 @@ function generateGoogleShoppingFeed(products: any[]) {
     const primaryImage = product.images[0]?.url || '/images/placeholder.jpg';
     const imageUrl = primaryImage.startsWith('http') 
       ? primaryImage 
-      : `${baseUrl}${primaryImage}`;
+      : `${baseUrl}/${primaryImage}`;
     
     // Additional images
     const additionalImages = product.images.slice(1, 10).map((img: { url: string }) => 
