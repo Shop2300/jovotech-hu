@@ -86,7 +86,7 @@ interface Review {
 interface ProductDetailClientProps {
   product: {
     id: string;
-    code?: string;
+    code?: string | null;
     name: string;
     description: string | null;
     detailDescription: string | null;
@@ -283,19 +283,15 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             <div>
               <h1 className="text-3xl font-bold text-black mb-2">{product.name}</h1>
               {/* Brand and Product Code */}
-              {(product.brand || product.code) && (
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                  {product.brand && (
+              <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                {product.brand && (
+                  <>
                     <span>Marka: {product.brand}</span>
-                  )}
-                  {(product.brand && (product.code || product.id)) && (
                     <span className="text-gray-400">•</span>
-                  )}
-                  {(product.code || product.id) && (
-                    <span>Kod: {product.code || product.id}</span>
-                  )}
-                </div>
-              )}
+                  </>
+                )}
+                <span>Kod: {product.code || product.id}</span>
+              </div>
               
               {/* Rating */}
               {product.totalRatings !== undefined && product.totalRatings > 0 && (
