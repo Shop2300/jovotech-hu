@@ -1,7 +1,7 @@
 // src/components/PromotionalBar.tsx
 'use client';
 
-import { X } from 'lucide-react';
+import { X, Truck } from 'lucide-react';
 
 interface PromotionalBarProps {
   showPromo: boolean;
@@ -17,8 +17,10 @@ export function PromotionalBar({ showPromo, onClose }: PromotionalBarProps) {
       style={{ backgroundColor: '#7db349' }}
     >
       <div className="max-w-screen-2xl mx-auto px-4 flex items-center justify-center">
-        <div>
-          <span className="font-semibold">Darmowa dostawa:</span> Przy zakupach powyżej 500 zł dostawa gratis.
+        <div className="flex items-center gap-1">
+          <Truck size={16} className="inline-block" />
+          <span className="font-semibold">Darmowa dostawa:</span>
+          <span>Przy zakupach powyżej 0 zł dostawa gratis.</span>
         </div>
         <button
           onClick={onClose}
