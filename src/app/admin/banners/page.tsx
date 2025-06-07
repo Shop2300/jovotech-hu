@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { BannersTable } from '@/components/admin/BannersTable';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getBanners() {
   const banners = await prisma.banner.findMany({

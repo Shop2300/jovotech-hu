@@ -1,6 +1,6 @@
 // src/components/Footer.tsx
 import Link from 'next/link';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { MapPin, Check, Mail, Clock, Truck, CreditCard } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -65,21 +65,19 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <MapPin size={18} className="text-blue-400 mt-0.5" />
                 <span className="text-sm">
+                  Galaxysklep.pl<br />
                   1. máje 535/50<br />
-                  46007 Liberec<br />
-                  Czechy
+                  46007 Liberec
                 </span>
               </li>
               <li className="flex items-center gap-2">
-                <Phone size={18} className="text-blue-400" />
-                <a href="tel:+48123456789" className="hover:text-white transition">
-                  +48 123 456 789
-                </a>
+                <Check size={18} className="text-green-400" />
+                <span className="text-sm font-medium">Gwarancja najniższej ceny</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={18} className="text-blue-400" />
-                <a href="mailto:info@galaxysklep.pl" className="hover:text-white transition">
-                  info@galaxysklep.pl
+                <a href="mailto:support@galaxysklep.pl" className="hover:text-white transition">
+                  support@galaxysklep.pl
                 </a>
               </li>
               <li className="flex items-start gap-2">
@@ -114,7 +112,7 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Social Media & Payment Methods */}
+        {/* Social Media & Delivery Options */}
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Social Media Links */}
@@ -131,13 +129,39 @@ export function Footer() {
               </a>
             </div>
 
-            {/* Payment Methods */}
-            <div className="flex items-center gap-4">
-              <span className="text-sm">Metody płatności:</span>
-              <div className="flex gap-2">
-                <div className="bg-white rounded px-2 py-1 text-gray-900 text-xs font-semibold">VISA</div>
-                <div className="bg-white rounded px-2 py-1 text-gray-900 text-xs font-semibold">Mastercard</div>
-                <div className="bg-white rounded px-2 py-1 text-gray-900 text-xs font-semibold">PayPal</div>
+            {/* Delivery & Payment Options */}
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              {/* Delivery Options */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm flex items-center gap-1">
+                  <Truck size={16} />
+                  Dostawa:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">InPost</div>
+                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">DPD</div>
+                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">DHL</div>
+                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">Poczta Polska</div>
+                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">UPS</div>
+                </div>
+              </div>
+              
+              {/* Divider */}
+              <div className="hidden md:block h-6 w-px bg-gray-700"></div>
+              
+              {/* Payment Options */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm flex items-center gap-1">
+                  <CreditCard size={16} />
+                  Płatność:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <div className="bg-white rounded px-3 py-1 text-gray-900 text-xs font-semibold">VISA</div>
+                  <div className="bg-white rounded px-3 py-1 text-gray-900 text-xs font-semibold">Mastercard</div>
+                  <div className="bg-blue-600 rounded px-3 py-1 text-white text-xs font-semibold">PayPal</div>
+                  <div className="bg-orange-500 rounded px-3 py-1 text-white text-xs font-semibold">P24</div>
+                  <div className="bg-purple-600 rounded px-3 py-1 text-white text-xs font-semibold">BLIK</div>
+                </div>
               </div>
             </div>
           </div>
@@ -147,14 +171,14 @@ export function Footer() {
       {/* Copyright Bar */}
       <div className="bg-gray-950 py-4">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm">
-          <p>&copy; 2025 Galaxy Sklep. Wszelkie prawa zastrzeżone. | 
+          <p>&copy; 2012 Galaxy Sklep. Wszelkie prawa zastrzeżone. | 
             <Link href="/regulamin" className="hover:text-white ml-1">
               Regulamin
             </Link> | 
             <Link href="/polityka-prywatnosci" className="hover:text-white ml-1">
               Ochrona danych
             </Link> | 
-            <span className="ml-1">IČO: 04688465</span>
+            <span className="ml-1">Świętujemy 20 lat 🎉</span>
           </p>
         </div>
       </div>

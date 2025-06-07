@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { FeatureIconsTable } from '@/components/admin/FeatureIconsTable';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getFeatureIcons() {
   const icons = await prisma.featureIcon.findMany({
