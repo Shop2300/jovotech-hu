@@ -11,6 +11,7 @@ import { StarRating } from '@/components/StarRating';
 import { ReviewForm } from '@/components/ReviewForm';
 import { RelatedProducts } from '@/components/RelatedProducts';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import Image from 'next/image';
 
 // Helper function to calculate next delivery date
 function getNextDeliveryDate(): string {
@@ -85,6 +86,7 @@ interface Review {
 interface ProductDetailClientProps {
   product: {
     id: string;
+    code?: string;
     name: string;
     description: string | null;
     detailDescription: string | null;
@@ -280,13 +282,24 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             {/* Title and Basic Info Section */}
             <div>
               <h1 className="text-3xl font-bold text-black mb-2">{product.name}</h1>
-              {product.brand && (
-                <p className="text-lg text-gray-600 mb-2">Marka: <span className="font-semibold">{product.brand}</span></p>
+              {/* Brand and Product Code */}
+              {(product.brand || product.code) && (
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                  {product.brand && (
+                    <span>Marka: {product.brand}</span>
+                  )}
+                  {(product.brand && (product.code || product.id)) && (
+                    <span className="text-gray-400">•</span>
+                  )}
+                  {(product.code || product.id) && (
+                    <span>Kod: {product.code || product.id}</span>
+                  )}
+                </div>
               )}
               
               {/* Rating */}
               {product.totalRatings !== undefined && product.totalRatings > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mb-4">
                   <StarRating 
                     rating={product.averageRating || 0} 
                     size="md"
@@ -296,17 +309,18 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   </span>
                 </div>
               )}
-            </div>
-            
-            {/* Add spacing between title section and the rest of content */}
-            <div className="mt-8 space-y-6">
-              {/* Product Description - Moved here */}
+              
+              {/* Product Description - Moved closer to title */}
               {product.description && (
                 <div 
                   className="text-gray-600 text-base prose prose-lg max-w-none"
                   dangerouslySetInnerHTML={{ __html: product.description }}
                 />
               )}
+            </div>
+            
+            {/* Add spacing between description and the rest of content */}
+            <div className="mt-6 space-y-6">
               {/* Price Section */}
               <div className="space-y-2">
                 {product.regularPrice && product.regularPrice > product.price ? (
@@ -474,10 +488,16 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Price Guarantee and Warranty */}
               <div className="pt-6 relative">
                 <div className="flex items-center gap-6 text-base">
-                  {/* Price Guarantee - Fixed underline */}
+                  {/* Price Guarantee - Updated with custom icon and styling */}
                   <div className="flex items-center gap-2">
-                    <span style={{ color: '#2ca335' }}>✅</span>
-                    <span style={{ color: '#2ca335' }} className="underline">Gwarancja najlepszej ceny</span>
+                    <Image 
+                      src="/images/icon_checkmark.png"
+                      alt="Checkmark" 
+                      width={20} 
+                      height={20}
+                      className="inline-block"
+                    />
+                    <span style={{ color: '#5fb643' }} className="underline font-bold">Gwarancja najlepszej ceny</span>
                     <button
                       type="button"
                       className="relative"
