@@ -59,7 +59,7 @@ export default function CheckoutPage() {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors }
+    formState: { errors, touchedFields }
   } = useForm<CheckoutForm>({
     defaultValues: {
       deliveryMethod: 'zasilkovna',
@@ -71,6 +71,16 @@ export default function CheckoutPage() {
   const deliveryMethod = watch('deliveryMethod');
   const paymentMethod = watch('paymentMethod');
   const useDifferentDelivery = watch('useDifferentDelivery');
+
+  // Watch all form fields for checkmark display
+  const formValues = watch();
+
+  // Helper function to check if field is valid and has content
+  const isFieldValid = (fieldName: keyof CheckoutForm) => {
+    const fieldValue = formValues[fieldName];
+    const hasContent = fieldValue && fieldValue.toString().trim().length > 0;
+    return hasContent && touchedFields[fieldName] && !errors[fieldName];
+  };
 
   // Fetch checkmark icon
   useEffect(() => {
@@ -181,27 +191,83 @@ export default function CheckoutPage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <Link 
-          href="/cart" 
-          className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-8"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Powrót do koszyka
-        </Link>
+      {/* Progress Bar */}
+      <div className="py-6">
+        <div className="max-w-screen-2xl mx-auto px-6">
+          <div className="flex items-center justify-between">
+            <Link 
+              href="/cart" 
+              className="inline-flex items-center text-gray-400 hover:text-gray-600 text-sm"
+            >
+              <ArrowLeft size={16} className="mr-1" />
+              Powrót do koszyka
+            </Link>
+            
+            <div className="flex items-center flex-1 max-w-3xl mx-auto">
+              {/* Step 1: Cart */}
+              <div className="flex items-center flex-1">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white font-medium">
+                    ✓
+                  </div>
+                  <span className="ml-3 text-sm font-medium text-gray-900">Koszyk</span>
+                </div>
+                <div className="flex-1 mx-4">
+                  <div className="h-1 bg-gray-300 rounded">
+                    <div className="h-1 bg-[#8bc34a] rounded w-full"></div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Step 2: Checkout */}
+              <div className="flex items-center flex-1">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white font-medium">
+                    2
+                  </div>
+                  <span className="ml-3 text-sm font-medium text-gray-900">Dostawa i płatność</span>
+                </div>
+                <div className="flex-1 mx-4">
+                  <div className="h-1 bg-gray-300 rounded">
+                    <div className="h-1 bg-[#8bc34a] rounded w-0"></div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Step 3: Success */}
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
+                  3
+                </div>
+                <span className="ml-3 text-sm font-medium text-gray-500">Potwierdzenie</span>
+              </div>
+            </div>
+            
+            <div className="w-[140px]"></div> {/* Spacer for balance */}
+          </div>
+        </div>
+      </div>
 
-        <h1 className="text-3xl font-bold mb-8 text-black">Finalizacja zamówienia</h1>
-
+      <div className="max-w-screen-2xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Contact Information */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-black">Dane kontaktowe</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">Email *</label>
+                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                      <span>Email</span>
+                      {isFieldValid('email') ? (
+                        <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="text-red-500 ml-0.5">*</span>
+                      )}
+                    </label>
                     <input
                       {...register('email', { 
                         required: 'Email jest wymagany',
@@ -211,7 +277,7 @@ export default function CheckoutPage() {
                         }
                       })}
                       type="email"
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.email && (
                       <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
@@ -219,11 +285,20 @@ export default function CheckoutPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">Telefon *</label>
+                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                      <span>Telefon</span>
+                      {isFieldValid('phone') ? (
+                        <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="text-red-500 ml-0.5">*</span>
+                      )}
+                    </label>
                     <input
                       {...register('phone', { required: 'Telefon jest wymagany' })}
                       type="tel"
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.phone && (
                       <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>
@@ -233,15 +308,24 @@ export default function CheckoutPage() {
               </div>
 
               {/* Billing Address */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-black">Adres rozliczeniowy</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">Imię *</label>
+                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                      <span>Imię</span>
+                      {isFieldValid('billingFirstName') ? (
+                        <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="text-red-500 ml-0.5">*</span>
+                      )}
+                    </label>
                     <input
                       {...register('billingFirstName', { required: 'Imię jest wymagane' })}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.billingFirstName && (
                       <p className="text-red-500 text-sm mt-1">{errors.billingFirstName.message}</p>
@@ -249,10 +333,19 @@ export default function CheckoutPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">Nazwisko *</label>
+                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                      <span>Nazwisko</span>
+                      {isFieldValid('billingLastName') ? (
+                        <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="text-red-500 ml-0.5">*</span>
+                      )}
+                    </label>
                     <input
                       {...register('billingLastName', { required: 'Nazwisko jest wymagane' })}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.billingLastName && (
                       <p className="text-red-500 text-sm mt-1">{errors.billingLastName.message}</p>
@@ -261,10 +354,19 @@ export default function CheckoutPage() {
                 </div>
                 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2 text-black">Ulica i numer domu *</label>
+                  <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                    <span>Ulica i numer domu</span>
+                    {isFieldValid('billingAddress') ? (
+                      <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <span className="text-red-500 ml-0.5">*</span>
+                    )}
+                  </label>
                   <input
                     {...register('billingAddress', { required: 'Adres jest wymagany' })}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {errors.billingAddress && (
                     <p className="text-red-500 text-sm mt-1">{errors.billingAddress.message}</p>
@@ -273,10 +375,19 @@ export default function CheckoutPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">Miasto *</label>
+                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                      <span>Miasto</span>
+                      {isFieldValid('billingCity') ? (
+                        <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="text-red-500 ml-0.5">*</span>
+                      )}
+                    </label>
                     <input
                       {...register('billingCity', { required: 'Miasto jest wymagane' })}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.billingCity && (
                       <p className="text-red-500 text-sm mt-1">{errors.billingCity.message}</p>
@@ -284,10 +395,19 @@ export default function CheckoutPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black">Kod pocztowy *</label>
+                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                      <span>Kod pocztowy</span>
+                      {isFieldValid('billingPostalCode') ? (
+                        <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="text-red-500 ml-0.5">*</span>
+                      )}
+                    </label>
                     <input
                       {...register('billingPostalCode', { required: 'Kod pocztowy jest wymagany' })}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.billingPostalCode && (
                       <p className="text-red-500 text-sm mt-1">{errors.billingPostalCode.message}</p>
@@ -297,14 +417,14 @@ export default function CheckoutPage() {
               </div>
 
               {/* Delivery Address */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-black">Adres dostawy</h2>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       {...register('useDifferentDelivery')}
                       type="checkbox"
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-700">Inny niż rozliczeniowy</span>
                   </label>
@@ -319,12 +439,21 @@ export default function CheckoutPage() {
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black">Imię *</label>
+                        <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                          <span>Imię</span>
+                          {useDifferentDelivery && isFieldValid('deliveryFirstName') ? (
+                            <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          ) : (
+                            <span className="text-red-500 ml-0.5">*</span>
+                          )}
+                        </label>
                         <input
                           {...register('deliveryFirstName', { 
                             required: useDifferentDelivery ? 'Imię jest wymagane' : false 
                           })}
-                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {errors.deliveryFirstName && (
                           <p className="text-red-500 text-sm mt-1">{errors.deliveryFirstName.message}</p>
@@ -332,12 +461,21 @@ export default function CheckoutPage() {
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black">Nazwisko *</label>
+                        <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                          <span>Nazwisko</span>
+                          {useDifferentDelivery && isFieldValid('deliveryLastName') ? (
+                            <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          ) : (
+                            <span className="text-red-500 ml-0.5">*</span>
+                          )}
+                        </label>
                         <input
                           {...register('deliveryLastName', { 
                             required: useDifferentDelivery ? 'Nazwisko jest wymagane' : false 
                           })}
-                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {errors.deliveryLastName && (
                           <p className="text-red-500 text-sm mt-1">{errors.deliveryLastName.message}</p>
@@ -346,12 +484,21 @@ export default function CheckoutPage() {
                     </div>
                     
                     <div className="mb-4">
-                      <label className="block text-sm font-medium mb-2 text-black">Ulica i numer domu *</label>
+                      <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                        <span>Ulica i numer domu</span>
+                        {useDifferentDelivery && isFieldValid('deliveryAddress') ? (
+                          <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <span className="text-red-500 ml-0.5">*</span>
+                        )}
+                      </label>
                       <input
                         {...register('deliveryAddress', { 
                           required: useDifferentDelivery ? 'Adres jest wymagany' : false 
                         })}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       {errors.deliveryAddress && (
                         <p className="text-red-500 text-sm mt-1">{errors.deliveryAddress.message}</p>
@@ -360,12 +507,21 @@ export default function CheckoutPage() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black">Miasto *</label>
+                        <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                          <span>Miasto</span>
+                          {useDifferentDelivery && isFieldValid('deliveryCity') ? (
+                            <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          ) : (
+                            <span className="text-red-500 ml-0.5">*</span>
+                          )}
+                        </label>
                         <input
                           {...register('deliveryCity', { 
                             required: useDifferentDelivery ? 'Miasto jest wymagane' : false 
                           })}
-                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {errors.deliveryCity && (
                           <p className="text-red-500 text-sm mt-1">{errors.deliveryCity.message}</p>
@@ -373,12 +529,21 @@ export default function CheckoutPage() {
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black">Kod pocztowy *</label>
+                        <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                          <span>Kod pocztowy</span>
+                          {useDifferentDelivery && isFieldValid('deliveryPostalCode') ? (
+                            <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          ) : (
+                            <span className="text-red-500 ml-0.5">*</span>
+                          )}
+                        </label>
                         <input
                           {...register('deliveryPostalCode', { 
                             required: useDifferentDelivery ? 'Kod pocztowy jest wymagane' : false 
                           })}
-                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {errors.deliveryPostalCode && (
                           <p className="text-red-500 text-sm mt-1">{errors.deliveryPostalCode.message}</p>
@@ -390,18 +555,29 @@ export default function CheckoutPage() {
               </div>
 
               {/* Delivery Method */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-black">Sposób dostawy</h2>
                 
                 <div className="space-y-3">
-                  <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
                     <input
                       {...register('deliveryMethod')}
                       type="radio"
                       value="zasilkovna"
-                      className="mr-3"
-                      checked
+                      className="hidden"
+                      defaultChecked
                     />
+                    <div className={`w-5 h-5 border-2 rounded mr-3 flex items-center justify-center flex-shrink-0 ${
+                      deliveryMethod === 'zasilkovna' 
+                        ? 'bg-[#8bc34a] border-[#8bc34a]' 
+                        : 'border-gray-300'
+                    }`}>
+                      {deliveryMethod === 'zasilkovna' && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
                     <div className="flex items-center gap-3 flex-1">
                       <Truck className="text-gray-600" size={24} />
                       <div className="flex-1">
@@ -409,23 +585,39 @@ export default function CheckoutPage() {
                         <div className="text-sm text-gray-600">Dostarczymy paczkę do Twojego domu za pośrednictwem firmy spedycyjnej. Wybieramy pomiędzy DPD, InPost, DHL lub Pocztą Polską.</div>
                       </div>
                     </div>
-                    <span className="font-semibold text-green-600">Gratis</span>
+                    <span className="font-semibold text-[#8bc34a] flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Gratis
+                    </span>
                   </label>
                 </div>
               </div>
 
               {/* Payment Method */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-black">Sposób płatności</h2>
                 
                 <div className="space-y-3">
-                  <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
                     <input
                       {...register('paymentMethod')}
                       type="radio"
                       value="bank"
-                      className="mr-3"
+                      className="hidden"
                     />
+                    <div className={`w-5 h-5 border-2 rounded mr-3 flex items-center justify-center flex-shrink-0 ${
+                      paymentMethod === 'bank' 
+                        ? 'bg-[#8bc34a] border-[#8bc34a]' 
+                        : 'border-gray-300'
+                    }`}>
+                      {paymentMethod === 'bank' && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
                     <Building2 className="mr-3 text-gray-600" size={24} />
                     <div className="flex-1">
                       <div className="font-medium text-black">Przelew bankowy</div>
@@ -433,13 +625,24 @@ export default function CheckoutPage() {
                     </div>
                   </label>
                   
-                  <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
                     <input
                       {...register('paymentMethod')}
                       type="radio"
                       value="cash"
-                      className="mr-3"
+                      className="hidden"
                     />
+                    <div className={`w-5 h-5 border-2 rounded mr-3 flex items-center justify-center flex-shrink-0 ${
+                      paymentMethod === 'cash' 
+                        ? 'bg-[#8bc34a] border-[#8bc34a]' 
+                        : 'border-gray-300'
+                    }`}>
+                      {paymentMethod === 'cash' && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
                     <Banknote className="mr-3 text-gray-600" size={24} />
                     <div className="flex-1">
                       <div className="font-medium text-black">Płatność za pobraniem</div>
@@ -501,12 +704,12 @@ export default function CheckoutPage() {
               </div>
 
               {/* Note */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-black">Uwagi do zamówienia</h2>
                 <textarea
                   {...register('note')}
                   rows={3}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Tutaj mogą Państwo wpisać uwagi do zamówienia..."
                 />
               </div>
@@ -534,25 +737,51 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-black">
                   <span>Dostawa</span>
-                  <span className="text-green-600 font-semibold">Gratis</span>
+                  <span className="text-[#8bc34a] font-semibold flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Gratis
+                  </span>
                 </div>
-                <div className="flex justify-between font-semibold text-lg border-t pt-2 text-black">
-                  <span>Razem</span>
-                  <span>{formatPrice(totalPrice)}</span>
+                <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                  <span className="text-black">Razem</span>
+                  <span className="text-[#8bc34a]">{formatPrice(totalPrice)}</span>
                 </div>
               </div>
               
               <button
                 onClick={handleSubmit(onSubmit)}
                 disabled={isSubmitting}
-                className={`w-full mt-6 py-3 rounded-lg font-semibold transition ${
+                className={`block w-full h-[44px] mt-6 rounded hover:bg-[#7cb342] transition relative overflow-hidden group ${
                   isSubmitting 
                     ? 'bg-gray-300 cursor-not-allowed' 
-                    : 'bg-green-600 text-white hover:bg-green-700'
+                    : 'bg-[#8bc34a] text-white'
                 }`}
               >
-                {isSubmitting ? 'Przetwarzanie...' : 'Złóż zamówienie'}
+                <span className="flex items-center justify-center h-full">
+                  <span className="font-normal">{isSubmitting ? 'Przetwarzanie...' : 'Złóż zamówienie'}</span>
+                  {!isSubmitting && (
+                    <span className="ml-3 flex items-center transition-transform group-hover:translate-x-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                      </svg>
+                    </span>
+                  )}
+                </span>
               </button>
+              
+              <p className="text-xs text-gray-400 text-center mt-6">
+                Składając zamówienie, akceptujesz{' '}
+                <Link href="/regulamin" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">
+                  regulamin
+                </Link>
+                {' '}i{' '}
+                <Link href="/polityka-prywatnosci" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">
+                  politykę prywatności
+                </Link>
+                .
+              </p>
             </div>
           </div>
         </div>
