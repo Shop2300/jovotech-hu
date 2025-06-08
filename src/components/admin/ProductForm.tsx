@@ -716,7 +716,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
           productId={initialData?.id}
           value={productImages}
           onChange={setProductImages}
-          maxImages={10}
+          // Removed maxImages={10} to allow unlimited images (defaults to 999)
         />
       </div>
       
