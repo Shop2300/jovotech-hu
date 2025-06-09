@@ -2,9 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
-import { Edit, Trash, Image, Copy, Download, Upload, CheckSquare, Square, FolderOpen, Trash2 } from 'lucide-react';
+import { Edit, Trash, Image, Copy, Download, Upload, CheckSquare, Square, FolderOpen, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ProductImportModal } from './ProductImportModal';
 
@@ -36,10 +36,14 @@ interface Category {
 
 interface ProductsTableProps {
   products: Product[];
+  totalCount: number;
+  currentPage: number;
+  itemsPerPage: number;
 }
 
-export function ProductsTable({ products: initialProducts }: ProductsTableProps) {
+export function ProductsTable({ products: initialProducts, totalCount, currentPage, itemsPerPage }: ProductsTableProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState(initialProducts);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -54,6 +58,11 @@ export function ProductsTable({ products: initialProducts }: ProductsTableProps)
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+
+  // Calculate pagination
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalCount);
 
   // Update products when props change
   useEffect(() => {
@@ -79,6 +88,31 @@ export function ProductsTable({ products: initialProducts }: ProductsTableProps)
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
+  };
+
+  const updateSearchParams = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+    
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    updateSearchParams({ page: page.toString() });
+  };
+
+  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updateSearchParams({ 
+      limit: e.target.value,
+      page: '1' // Reset to first page when changing items per page
+    });
   };
 
   const handleSelectAll = () => {
@@ -287,6 +321,40 @@ export function ProductsTable({ products: initialProducts }: ProductsTableProps)
     return options;
   }
 
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      // Show all pages if total is small
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+      
+      if (currentPage > 3) {
+        pages.push('...');
+      }
+      
+      // Show pages around current
+      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+        pages.push(i);
+      }
+      
+      if (currentPage < totalPages - 2) {
+        pages.push('...');
+      }
+      
+      // Always show last page
+      pages.push(totalPages);
+    }
+    
+    return pages;
+  };
+
   return (
     <div>
       {/* Bulk actions bar */}
@@ -324,23 +392,44 @@ export function ProductsTable({ products: initialProducts }: ProductsTableProps)
         </div>
       )}
 
-      {/* Export and Import buttons */}
-      <div className="mb-4 flex justify-end gap-2">
-        <button
-          onClick={() => setIsImportModalOpen(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
-        >
-          <Upload size={20} />
-          Importovat produkty
-        </button>
-        <button
-          onClick={handleExport}
-          disabled={isExporting || products.length === 0}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Download size={20} />
-          {isExporting ? 'Exportování...' : `Exportovat (${products.length} produktů)`}
-        </button>
+      {/* Export, Import, and Items per page */}
+      <div className="mb-4 flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-600">
+            Zobrazeno {startItem}-{endItem} z {totalCount} produktů
+          </span>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">Produktů na stránku:</label>
+            <select
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+              className="px-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="250">250</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+          >
+            <Upload size={20} />
+            Importovat produkty
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={isExporting || products.length === 0}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download size={20} />
+            {isExporting ? 'Exportování...' : `Exportovat (${totalCount} produktů)`}
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -495,6 +584,54 @@ export function ProductsTable({ products: initialProducts }: ProductsTableProps)
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            >
+              <ChevronLeft size={16} />
+              Předchozí
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {getPageNumbers().map((page, index) => (
+                <button
+                  key={index}
+                  onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
+                  disabled={page === '...'}
+                  className={`px-3 py-2 rounded-lg ${
+                    page === currentPage
+                      ? 'bg-blue-600 text-white'
+                      : page === '...'
+                      ? 'cursor-default'
+                      : 'border hover:bg-gray-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            >
+              Další
+              <ChevronRight size={16} />
+            </button>
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            Stránka {currentPage} z {totalPages}
+          </div>
+        </div>
+      )}
 
       {/* Import Modal */}
       <ProductImportModal

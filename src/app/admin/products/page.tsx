@@ -2,38 +2,55 @@
 import { prisma } from '@/lib/prisma';
 import { ProductsTable } from '@/components/admin/ProductsTable';
 import { CategoryFilter } from '@/components/admin/CategoryFilter';
+import { ProductFilter } from '@/components/admin/ProductFilter';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
-interface SearchParams {
-  category?: string;
-  search?: string;
-}
-
-export default async function AdminProductsPage({
+export default async function ProductsPage({
   searchParams
 }: {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const params = await searchParams;
-  const selectedCategoryId = params.category || 'all';
+  const categoryId = params.category as string | undefined;
+  const searchTerm = params.search as string | undefined;
+  const page = parseInt(params.page as string || '1');
+  const limit = parseInt(params.limit as string || '25');
   
-  // Fetch categories for filter
-  const categories = await prisma.category.findMany({
-    orderBy: { order: 'asc' },
-    include: {
-      _count: {
-        select: { products: true }
-      }
-    }
+  // Build query conditions
+  const whereConditions: any = {};
+  
+  if (categoryId && categoryId !== 'all') {
+    whereConditions.categoryId = categoryId;
+  }
+  
+  if (searchTerm) {
+    whereConditions.OR = [
+      { name: { contains: searchTerm } },
+      { description: { contains: searchTerm } },
+      { code: { contains: searchTerm } }
+    ];
+  }
+  
+  // Get total count for pagination
+  const totalCount = await prisma.product.count({
+    where: Object.keys(whereConditions).length > 0 ? whereConditions : undefined
   });
   
-  // Fetch products with optional category filter
-  const productsQuery: any = {
+  // Calculate pagination
+  const skip = (page - 1) * limit;
+  
+  // Fetch paginated products
+  const productsData = await prisma.product.findMany({
+    where: Object.keys(whereConditions).length > 0 ? whereConditions : undefined,
     include: {
-      category: true,
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true
+        }
+      },
       _count: {
         select: {
           images: true,
@@ -41,67 +58,49 @@ export default async function AdminProductsPage({
         }
       }
     },
-    orderBy: { createdAt: 'desc' as const }
-  };
-  
-  // Add where conditions
-  const whereConditions: any = {};
-  
-  if (selectedCategoryId !== 'all') {
-    whereConditions.categoryId = selectedCategoryId;
-  }
-  
-  if (params.search) {
-    whereConditions.OR = [
-      { name: { contains: params.search } },
-      { description: { contains: params.search } },
-      { code: { contains: params.search } }  // Add code to search
-    ];
-  }
-  
-  if (Object.keys(whereConditions).length > 0) {
-    productsQuery.where = whereConditions;
-  }
-  
-  const products = await prisma.product.findMany(productsQuery);
-  
-  // Convert Decimal to number for client component
-  const serializedProducts = products.map(product => ({
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit
+  });
+
+  // Convert Decimal fields to numbers for the component
+  const products = productsData.map(product => ({
     ...product,
-    price: Number(product.price),
-    regularPrice: product.regularPrice ? Number(product.regularPrice) : null
+    price: product.price.toNumber(),
+    regularPrice: product.regularPrice?.toNumber() || null,
   }));
-  
-  // Get selected category name for display
-  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
-  
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-black">Produkty</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Produkty</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Celkem {totalCount} produktů
+          </p>
+        </div>
         <Link
           href="/admin/products/new"
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
         >
           <Plus size={20} />
-          Nový produkt
+          Přidat produkt
         </Link>
       </div>
       
-      {/* Category Filter Component */}
-      <CategoryFilter 
-        categories={categories} 
-        selectedCategoryId={selectedCategoryId} 
-      />
-      
-      {/* Products count */}
-      <div className="mb-4 text-sm text-gray-600">
-        Zobrazeno {products.length} produktů
-        {selectedCategory && ` v kategorii "${selectedCategory.name}"`}
-        {params.search && ` obsahujících "${params.search}"`}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <CategoryFilter selectedCategory={categoryId} />
+        <ProductFilter currentSearch={searchTerm} />
       </div>
       
-      <ProductsTable products={serializedProducts} />
+      <div className="bg-white rounded-lg shadow">
+        <ProductsTable 
+          products={products} 
+          totalCount={totalCount}
+          currentPage={page}
+          itemsPerPage={limit}
+        />
+      </div>
     </div>
   );
 }

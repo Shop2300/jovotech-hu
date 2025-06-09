@@ -8,6 +8,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get('category');
     const searchTerm = searchParams.get('search');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '25');
     
     // Build query conditions
     const whereConditions: any = {};
@@ -20,9 +22,17 @@ export async function GET(request: Request) {
       whereConditions.OR = [
         { name: { contains: searchTerm } },
         { description: { contains: searchTerm } },
-        { code: { contains: searchTerm } }  // Add code to search
+        { code: { contains: searchTerm } }
       ];
     }
+    
+    // Get total count
+    const totalCount = await prisma.product.count({
+      where: Object.keys(whereConditions).length > 0 ? whereConditions : undefined
+    });
+    
+    // Calculate pagination
+    const skip = (page - 1) * limit;
     
     const products = await prisma.product.findMany({
       where: Object.keys(whereConditions).length > 0 ? whereConditions : undefined,
@@ -30,7 +40,7 @@ export async function GET(request: Request) {
         category: {
           select: {
             id: true,
-            name: true,  // Changed from nameCs to name
+            name: true,
             slug: true
           }
         },
@@ -41,10 +51,18 @@ export async function GET(request: Request) {
           }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit
     });
     
-    return NextResponse.json(products);
+    return NextResponse.json({
+      products,
+      totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit)
+    });
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(
@@ -73,7 +91,7 @@ export async function POST(request: Request) {
     const product = await prisma.product.create({
       data: {
         name: productData.name,
-        code: productData.code || undefined,  // Let it be undefined to use ID
+        code: productData.code || undefined,
         slug,
         description: productData.description || null,
         detailDescription: productData.detailDescription || null,
