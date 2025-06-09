@@ -247,7 +247,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-screen-2xl mx-auto px-6 py-12">
+      <div className="max-w-screen-2xl mx-auto px-6 py-6">
         {/* Breadcrumbs */}
         <Breadcrumbs 
           items={[

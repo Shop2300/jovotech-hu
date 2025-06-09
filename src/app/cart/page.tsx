@@ -3,7 +3,7 @@
 
 import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/utils';
-import { Trash2, ShoppingCart } from 'lucide-react';
+import { Trash2, ShoppingCart, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -80,6 +80,8 @@ export default function CartPage() {
       </main>
     );
   }
+
+  const totalPrice = getTotalPrice();
 
   return (
     <main className="min-h-screen bg-white">
@@ -224,29 +226,41 @@ export default function CartPage() {
           
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-              <h2 className="text-xl font-bold mb-4 text-black">Podsumowanie zamówienia</h2>
+            <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
+              <h2 className="text-xl font-semibold mb-4 text-black">Podsumowanie zamówienia</h2>
               
               <div className="space-y-2 mb-4">
+                {items.map((item) => (
+                  <div key={`${item.id}-${item.variantId || 'default'}`} className="flex justify-between text-sm text-black">
+                    <span>{item.quantity}x {item.name}</span>
+                    <span>{formatPrice(item.price * item.quantity)}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-black">
                   <span>Suma częściowa</span>
-                  <span>{formatPrice(getTotalPrice())}</span>
+                  <span>{formatPrice(totalPrice)}</span>
                 </div>
                 <div className="flex justify-between text-black">
                   <span>Dostawa</span>
-                  <span>{getTotalPrice() >= 1000 ? 'Gratis' : formatPrice(99)}</span>
+                  <span className="text-[#8bc34a] font-semibold flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Gratis
+                  </span>
                 </div>
-                <div className="border-t pt-2 mt-2">
-                  <div className="flex justify-between font-bold text-lg text-black">
-                    <span>Razem</span>
-                    <span>{formatPrice(getTotalPrice() + (getTotalPrice() >= 1000 ? 0 : 99))}</span>
-                  </div>
+                <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                  <span className="text-black">Razem</span>
+                  <span className="text-[#8bc34a]">{formatPrice(totalPrice)}</span>
                 </div>
               </div>
               
               <button
                 onClick={handleCheckout}
-                className="block w-full h-[44px] bg-[#8bc34a] text-white rounded hover:bg-[#7cb342] transition relative overflow-hidden group"
+                className="block w-full h-[44px] mt-6 rounded hover:bg-[#7cb342] transition relative overflow-hidden group bg-[#8bc34a] text-white"
               >
                 <span className="flex items-center justify-center h-full">
                   <span className="font-normal">Przejdź do kasy</span>
@@ -258,13 +272,13 @@ export default function CartPage() {
                 </span>
               </button>
               
-              <Link 
-                href="/"
-                className="block text-center text-blue-600 mt-4 hover:underline"
-              >
-                Kontynuuj zakupy
-              </Link>
+              {/* Free Shipping Message - No Animation */}
+              <div className="flex items-center justify-center gap-2 text-[#8bc34a] mt-4">
+                <Truck size={20} />
+                <span className="font-medium">Masz darmową dostawę!</span>
+              </div>
               
+              {/* Advantages */}
               <div className="mt-6 p-4 bg-gray-100 rounded-lg">
                 <p className="text-sm text-gray-600">
                   ✓ Darmowa wysyłka przy zakupach powyżej 0 zł<br/>
@@ -276,6 +290,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+      
     </main>
   );
 }

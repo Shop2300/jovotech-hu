@@ -3,47 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { ProductCard } from '@/components/ProductCard';
 import { BannerSlider } from '@/components/BannerSlider';
 import { ProductsSlider } from '@/components/ProductsSlider';
-import Link from 'next/link';
-
-// Static categories configuration - translated to Polish
-const staticCategories = [
-  {
-    id: '1',
-    name: 'Elektronika',
-    slug: 'elektronika',
-    icon: '🔋'
-  },
-  {
-    id: '2',
-    name: 'Odzież',
-    slug: 'odziez',
-    icon: '👚'
-  },
-  {
-    id: '3',
-    name: 'Dom i Ogród',
-    slug: 'dom-ogrod',
-    icon: '🏠'
-  },
-  {
-    id: '4',
-    name: 'Sport',
-    slug: 'sport',
-    icon: '⚽️'
-  },
-  {
-    id: '5',
-    name: 'Poker',
-    slug: 'poker',
-    icon: '♣️'
-  },
-  {
-    id: '6',
-    name: 'Telefony',
-    slug: 'telefony',
-    icon: '📲'
-  }
-];
+import { CategoryProductBoxes } from '@/components/CategoryProductBoxes';
 
 export default async function HomePage() {
   // Fetch active banners
@@ -115,7 +75,113 @@ export default async function HomePage() {
     }
   });
 
-  // Convert Decimal to number for client components and include image from images array
+  // Fetch products for the three category boxes
+  const cleaningProducts = await prisma.product.findMany({
+    where: {
+      category: {
+        slug: 'sprzet-czyszczacy'
+      }
+    },
+    take: 6,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true
+        }
+      },
+      images: {
+        orderBy: { order: 'asc' },
+        take: 1,
+        select: {
+          url: true
+        }
+      },
+      variants: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          colorName: true,
+          colorCode: true,
+          stock: true
+        }
+      }
+    }
+  });
+
+  const paintingProducts = await prisma.product.findMany({
+    where: {
+      category: {
+        slug: 'malarstwo'
+      }
+    },
+    take: 6,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true
+        }
+      },
+      images: {
+        orderBy: { order: 'asc' },
+        take: 1,
+        select: {
+          url: true
+        }
+      },
+      variants: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          colorName: true,
+          colorCode: true,
+          stock: true
+        }
+      }
+    }
+  });
+
+  const autoMotoProducts = await prisma.product.findMany({
+    where: {
+      category: {
+        slug: 'auto-moto'
+      }
+    },
+    take: 6,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true
+        }
+      },
+      images: {
+        orderBy: { order: 'asc' },
+        take: 1,
+        select: {
+          url: true
+        }
+      },
+      variants: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          colorName: true,
+          colorCode: true,
+          stock: true
+        }
+      }
+    }
+  });
+
+  // Serialize products for client components
   const serializedProducts = featuredProducts.map(product => ({
     ...product,
     price: Number(product.price),
@@ -144,31 +210,59 @@ export default async function HomePage() {
     }))
   }));
 
+  const serializedCleaningProducts = cleaningProducts.map(product => ({
+    ...product,
+    price: Number(product.price),
+    regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
+    averageRating: product.averageRating,
+    totalRatings: product.totalRatings,
+    slug: product.slug || undefined,
+    image: product.image || product.images?.[0]?.url || null,
+    variants: product.variants.map(v => ({
+      ...v,
+      colorName: v.colorName || ""
+    }))
+  }));
+
+  const serializedPaintingProducts = paintingProducts.map(product => ({
+    ...product,
+    price: Number(product.price),
+    regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
+    averageRating: product.averageRating,
+    totalRatings: product.totalRatings,
+    slug: product.slug || undefined,
+    image: product.image || product.images?.[0]?.url || null,
+    variants: product.variants.map(v => ({
+      ...v,
+      colorName: v.colorName || ""
+    }))
+  }));
+
+  const serializedAutoMotoProducts = autoMotoProducts.map(product => ({
+    ...product,
+    price: Number(product.price),
+    regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
+    averageRating: product.averageRating,
+    totalRatings: product.totalRatings,
+    slug: product.slug || undefined,
+    image: product.image || product.images?.[0]?.url || null,
+    variants: product.variants.map(v => ({
+      ...v,
+      colorName: v.colorName || ""
+    }))
+  }));
+
   return (
     <main className="min-h-screen bg-white">
       {/* Banner Slider - Full width edge to edge */}
       <BannerSlider banners={banners} />
       
-      {/* Categories Section - Now using static categories */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-screen-2xl mx-auto px-6">
-          <h2 className="text-2xl font-bold mb-8 text-center text-black">Kategorie produktów</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {staticCategories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/category/${category.slug}`}
-                className="bg-white rounded-lg shadow-md p-4 text-center hover:shadow-lg transition group"
-              >
-                <div className="text-4xl mb-3 transform group-hover:scale-110 transition-transform">
-                  {category.icon}
-                </div>
-                <h3 className="text-sm font-semibold text-gray-800">{category.name}</h3>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Category Product Boxes - Replaces Categories Section */}
+      <CategoryProductBoxes 
+        cleaningProducts={serializedCleaningProducts}
+        paintingProducts={serializedPaintingProducts}
+        autoMotoProducts={serializedAutoMotoProducts}
+      />
       
       {/* Featured Products */}
       <section className="py-12">
