@@ -15,7 +15,6 @@ export async function GET(request: Request) {
       const templateData = [{
         'Kód': '',
         'Název': '',
-        'Slug': '',
         'Kategorie': '',
         'Značka': '',
         'Cena': '',
@@ -23,8 +22,7 @@ export async function GET(request: Request) {
         'Skladem': '',
         'Krátký popis': '',
         'Detailní popis': '',
-        'Záruka': '',
-        'Hlavní obrázek': ''
+        'Záruka': ''
       }];
       
       const variantsTemplate = [{
@@ -91,27 +89,18 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' }
     });
     
-    // Prepare data for Excel
+    // Prepare data for Excel - only essential columns
     const excelData = products.map(product => ({
-      'Kód': product.code || product.id, // Use code if available, fallback to ID
+      'Kód': product.code || product.id,
       'Název': product.name,
-      'Slug': product.slug || '',
       'Kategorie': product.category?.name || '',
       'Značka': product.brand || '',
       'Cena': Number(product.price),
       'Běžná cena': product.regularPrice ? Number(product.regularPrice) : '',
-      'Sleva (%)': product.regularPrice && Number(product.regularPrice) > Number(product.price) 
-        ? Math.round(((Number(product.regularPrice) - Number(product.price)) / Number(product.regularPrice)) * 100)
-        : '',
       'Skladem': product.stock,
       'Krátký popis': product.description || '',
       'Detailní popis': product.detailDescription || '',
-      'Záruka': product.warranty || '',
-      'Hlavní obrázek': product.image || '',
-      'Počet obrázků': product.images.length,
-      'Počet variant': product.variants.length,
-      'Datum vytvoření': new Date(product.createdAt).toLocaleDateString('cs-CZ'),
-      'Datum aktualizace': new Date(product.updatedAt).toLocaleDateString('cs-CZ')
+      'Záruka': product.warranty || ''
     }));
     
     // Create variants sheet data
