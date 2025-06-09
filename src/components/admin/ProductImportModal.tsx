@@ -2,17 +2,19 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { X, Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ImportResult {
   success: boolean;
   created: number;
   updated: number;
+  skipped: number;
   errors: string[];
   details: {
+    productCode: string;
     productName: string;
-    action: 'created' | 'updated' | 'error';
+    action: 'created' | 'updated' | 'skipped' | 'error';
     message?: string;
   }[];
 }
@@ -87,7 +89,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
       setImportResult(result);
       
       if (result.errors.length === 0) {
-        toast.success(`Import dokončen: ${result.created} vytvořeno, ${result.updated} aktualizováno`);
+        toast.success(`Import dokončen: ${result.created} vytvořeno, ${result.updated} aktualizováno, ${result.skipped} přeskočeno`);
       } else {
         toast.error(`Import dokončen s chybami: ${result.errors.length} chyb`);
       }
@@ -130,21 +132,49 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
         {!importResult ? (
           <>
             <div className="mb-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-start gap-2">
+                  <Info className="text-blue-600 mt-0.5" size={20} />
+                  <div className="text-sm text-blue-800">
+                    <p className="font-semibold mb-1">Jak funguje import:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li><strong>Kód produktu je povinný</strong> - používá se pro identifikaci produktů</li>
+                      <li>Pokud produkt s daným kódem existuje, <strong>aktualizují se pouze pole obsažená v importu</strong></li>
+                      <li>Pokud produkt neexistuje, vytvoří se nový (musí obsahovat všechna povinná pole)</li>
+                      <li>Prázdné buňky nebo chybějící sloupce neovlivní existující data</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
               <p className="text-sm text-gray-600 mb-2">
-                Nahrajte Excel soubor (.xlsx nebo .xls) s produkty. Soubor by měl obsahovat sloupce:
+                Nahrajte Excel soubor (.xlsx nebo .xls) s produkty. Dostupné sloupce:
               </p>
-              <ul className="text-sm text-gray-600 list-disc list-inside mb-4">
-                <li>Název - povinný</li>
-                <li>Kategorie</li>
-                <li>Značka</li>
-                <li>Cena</li>
-                <li>Běžná cena</li>
-                <li>Skladem</li>
-                <li>Krátký popis</li>
-                <li>Detailní popis</li>
-                <li>Záruka</li>
-                <li>Hlavní obrázek</li>
-              </ul>
+              <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-4">
+                <div>
+                  <p className="font-semibold">Povinné pro nové produkty:</p>
+                  <ul className="list-disc list-inside">
+                    <li>Kód - unikátní identifikátor</li>
+                    <li>Název</li>
+                    <li>Cena</li>
+                    <li>Skladem</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-semibold">Volitelné:</p>
+                  <ul className="list-disc list-inside">
+                    <li>Kategorie</li>
+                    <li>Značka</li>
+                    <li>Běžná cena</li>
+                    <li>Krátký popis</li>
+                    <li>Detailní popis</li>
+                    <li>Záruka</li>
+                    <li>Hlavní obrázek</li>
+                    <li>Slug (URL adresa)</li>
+                  </ul>
+                </div>
+              </div>
+              
               <button
                 onClick={downloadTemplate}
                 className="text-blue-600 hover:underline text-sm"
@@ -212,7 +242,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
           <div>
             <div className="mb-4">
               <h3 className="font-semibold mb-2">Výsledky importu:</h3>
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-4 gap-4 mb-4">
                 <div className="bg-green-50 p-3 rounded">
                   <p className="text-sm text-gray-600">Vytvořeno</p>
                   <p className="text-2xl font-bold text-green-600">{importResult.created}</p>
@@ -220,6 +250,10 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
                 <div className="bg-blue-50 p-3 rounded">
                   <p className="text-sm text-gray-600">Aktualizováno</p>
                   <p className="text-2xl font-bold text-blue-600">{importResult.updated}</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded">
+                  <p className="text-sm text-gray-600">Přeskočeno</p>
+                  <p className="text-2xl font-bold text-gray-600">{importResult.skipped}</p>
                 </div>
                 <div className="bg-red-50 p-3 rounded">
                   <p className="text-sm text-gray-600">Chyby</p>
@@ -233,6 +267,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 sticky top-0">
                     <tr>
+                      <th className="px-3 py-2 text-left">Kód</th>
                       <th className="px-3 py-2 text-left">Produkt</th>
                       <th className="px-3 py-2 text-left">Akce</th>
                       <th className="px-3 py-2 text-left">Zpráva</th>
@@ -241,18 +276,22 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
                   <tbody className="divide-y">
                     {importResult.details.map((detail, index) => (
                       <tr key={index}>
+                        <td className="px-3 py-2 font-mono text-xs">{detail.productCode}</td>
                         <td className="px-3 py-2">{detail.productName}</td>
                         <td className="px-3 py-2">
                           <span className={`inline-flex items-center gap-1 ${
                             detail.action === 'created' ? 'text-green-600' :
                             detail.action === 'updated' ? 'text-blue-600' :
+                            detail.action === 'skipped' ? 'text-gray-600' :
                             'text-red-600'
                           }`}>
                             {detail.action === 'created' && <CheckCircle size={16} />}
                             {detail.action === 'updated' && <AlertCircle size={16} />}
+                            {detail.action === 'skipped' && <AlertCircle size={16} />}
                             {detail.action === 'error' && <XCircle size={16} />}
                             {detail.action === 'created' ? 'Vytvořeno' :
                              detail.action === 'updated' ? 'Aktualizováno' :
+                             detail.action === 'skipped' ? 'Přeskočeno' :
                              'Chyba'}
                           </span>
                         </td>
@@ -269,7 +308,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
             {importResult.errors.length > 0 && (
               <div className="mb-4">
                 <h4 className="font-semibold mb-2 text-red-600">Chyby:</h4>
-                <ul className="text-sm text-red-600 list-disc list-inside">
+                <ul className="text-sm text-red-600 list-disc list-inside max-h-32 overflow-y-auto">
                   {importResult.errors.map((error, index) => (
                     <li key={index}>{error}</li>
                   ))}

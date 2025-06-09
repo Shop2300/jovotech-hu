@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     // If template is requested, return empty template
     if (isTemplate) {
       const templateData = [{
-        'ID': '',
+        'Kód': '',
         'Název': '',
         'Slug': '',
         'Kategorie': '',
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       }];
       
       const variantsTemplate = [{
-        'ID produktu': '',
+        'Kód produktu': '',
         'Název produktu': '',
         'Barva': '',
         'Kód barvy': '',
@@ -71,7 +71,8 @@ export async function GET(request: Request) {
     if (searchTerm) {
       whereConditions.OR = [
         { name: { contains: searchTerm } },
-        { description: { contains: searchTerm } }
+        { description: { contains: searchTerm } },
+        { code: { contains: searchTerm } }
       ];
     }
     
@@ -92,7 +93,7 @@ export async function GET(request: Request) {
     
     // Prepare data for Excel
     const excelData = products.map(product => ({
-      'ID': product.id,
+      'Kód': product.code || product.id, // Use code if available, fallback to ID
       'Název': product.name,
       'Slug': product.slug || '',
       'Kategorie': product.category?.name || '',
@@ -118,7 +119,7 @@ export async function GET(request: Request) {
     products.forEach(product => {
       product.variants.forEach(variant => {
         variantsData.push({
-          'ID produktu': product.id,
+          'Kód produktu': product.code || product.id,
           'Název produktu': product.name,
           'Barva': variant.colorName || '',
           'Kód barvy': variant.colorCode || '',
