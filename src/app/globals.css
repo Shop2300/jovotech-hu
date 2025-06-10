@@ -210,3 +210,59 @@ td {
 }
 
 @import "./search.css";
+
+/* Icon Animations for Category Boxes */
+@keyframes sweep {
+  0%, 100% {
+    transform: rotate(0deg) translateX(0);
+  }
+  25% {
+    transform: rotate(-15deg) translateX(-2px);
+  }
+  75% {
+    transform: rotate(15deg) translateX(2px);
+  }
+}
+
+@keyframes paint {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.05);
+  }
+  75% {
+    transform: rotate(-5deg) scale(1.1);
+  }
+}
+
+@keyframes wrench {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-30deg);
+  }
+  75% {
+    transform: rotate(30deg);
+  }
+}
+
+/* Icon animation classes - Always running */
+.icon-sweep {
+  display: inline-block;
+  animation: sweep 2s ease-in-out infinite;
+}
+
+.icon-paint {
+  display: inline-block;
+  animation: paint 2.5s ease-in-out infinite;
+}
+
+.icon-wrench {
+  display: inline-block;
+  animation: wrench 1.8s ease-in-out infinite;
+}

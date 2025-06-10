@@ -264,8 +264,8 @@ export default async function HomePage() {
         autoMotoProducts={serializedAutoMotoProducts}
       />
       
-      {/* Featured Products */}
-      <section className="py-12">
+      {/* Featured Products - Reduced top padding */}
+      <section className="pt-4 pb-12">
         <div className="max-w-screen-2xl mx-auto px-6">
           <h2 className="text-2xl font-bold mb-8 text-center text-black">Polecane produkty</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
