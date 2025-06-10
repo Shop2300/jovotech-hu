@@ -92,7 +92,7 @@ function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug }:
         <h2 className="text-lg font-bold text-gray-900 mb-3">{title}</h2>
         <Link 
           href={`/category/${categorySlug}`}
-          className="inline-flex items-center gap-1.5 px-6 py-2.5 text-gray-700 rounded-full transition-all duration-200 transform hover:scale-105 text-[13px] relative overflow-hidden group"
+          className="inline-flex items-center gap-1.5 px-6 py-2.5 text-gray-700 rounded-full transition-all duration-200 transform hover:scale-[1.02] text-[13px] relative overflow-hidden group"
           style={{
             // Main gradient background - lighter grey
             background: 'linear-gradient(to bottom, #f5f5f5 0%, #e8e8e8 100%)',
@@ -174,9 +174,9 @@ function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug }:
           <button
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
-            className={`absolute left-1 top-1/2 -translate-y-1/2 rounded-full p-2 transition-all duration-200 z-10 ${
+            className={`absolute -left-4 top-[110px] -translate-y-1/2 rounded-full p-2 transition-all duration-200 z-10 ${
               canScrollLeft 
-                ? 'opacity-100 hover:scale-110 cursor-pointer' 
+                ? 'opacity-100 hover:scale-[1.05] cursor-pointer' 
                 : 'opacity-30 cursor-not-allowed'
             }`}
             style={{
@@ -218,9 +218,9 @@ function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug }:
           <button
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
-            className={`absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-2 transition-all duration-200 z-10 ${
+            className={`absolute -right-4 top-[110px] -translate-y-1/2 rounded-full p-2 transition-all duration-200 z-10 ${
               canScrollRight 
-                ? 'opacity-100 hover:scale-110 cursor-pointer' 
+                ? 'opacity-100 hover:scale-[1.05] cursor-pointer' 
                 : 'opacity-30 cursor-not-allowed'
             }`}
             style={{

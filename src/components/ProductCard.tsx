@@ -7,6 +7,7 @@ import { StarRating } from './StarRating';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart'; // Changed from '@/contexts/CartContext'
 import toast from 'react-hot-toast';
+import { ShoppingCart } from 'lucide-react';
 
 interface ProductVariant {
   id: string;
@@ -71,9 +72,12 @@ export function ProductCard({ product }: { product: Product }) {
     }
   };
 
+  // San Francisco font family
+  const sfFontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif';
+
   return (
     <Link href={productUrl} className="block">
-      <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer h-full flex flex-col">
+      <div className="bg-white rounded-lg overflow-hidden hover:shadow-sm transition cursor-pointer h-full flex flex-col border border-gray-100">
         {/* 1:1 Aspect Ratio Image Container */}
         <div className="relative w-full pb-[100%]">
           <div className="absolute inset-0">
@@ -85,16 +89,16 @@ export function ProductCard({ product }: { product: Product }) {
               />
             ) : (
               <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-600">Obrázek produktu</span>
+                <span className="text-gray-600" style={{ fontFamily: sfFontFamily }}>Obrázek produktu</span>
               </div>
             )}
             {!inStock && (
               <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">Vyprodáno</span>
+                <span className="text-white font-bold text-lg" style={{ fontFamily: sfFontFamily }}>Vyprodáno</span>
               </div>
             )}
             {discount > 0 && inStock && (
-              <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg text-sm font-bold">
+              <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg text-sm font-bold" style={{ fontFamily: sfFontFamily }}>
                 -{discount}%
               </div>
             )}
@@ -104,13 +108,13 @@ export function ProductCard({ product }: { product: Product }) {
         {/* Product Info Container */}
         <div className="p-4 flex-1 flex flex-col">
           {/* Product Title - Centered and Less Bold */}
-          <h3 className="text-lg font-medium mb-3 text-gray-900 hover:text-blue-600 transition line-clamp-2 min-h-[3.5rem] text-center">
+          <h3 className="text-lg font-medium mb-3 text-gray-900 hover:underline transition line-clamp-2 min-h-[3.5rem] text-center" style={{ fontFamily: sfFontFamily }}>
             {product.name}
           </h3>
 
           {/* Availability - Centered */}
           <div className="text-center mb-3">
-            <span className={`text-sm font-medium ${inStock ? 'text-green-600' : 'text-red-600'}`}>
+            <span className={`text-sm font-medium ${inStock ? 'text-green-600' : 'text-red-600'}`} style={{ fontFamily: sfFontFamily }}>
               {inStock ? 'Na stanie' : 'Vyprodáno'}
             </span>
           </div>
@@ -119,15 +123,15 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="text-center mb-4">
             {product.regularPrice && product.regularPrice > product.price ? (
               <div>
-                <span className="text-xs text-gray-500 line-through block">
+                <span className="text-xs text-gray-500 line-through block" style={{ fontFamily: sfFontFamily }}>
                   {formatPrice(product.regularPrice)}
                 </span>
-                <span className="text-lg font-bold text-red-600">
+                <span className="text-lg font-bold text-red-600" style={{ fontFamily: sfFontFamily }}>
                   {formatPrice(product.price)}
                 </span>
               </div>
             ) : (
-              <span className="text-lg font-bold text-black">
+              <span className="text-lg font-bold text-black" style={{ fontFamily: sfFontFamily }}>
                 {formatPrice(product.price)}
               </span>
             )}
@@ -138,12 +142,14 @@ export function ProductCard({ product }: { product: Product }) {
             <button
               onClick={handleAddToCart}
               disabled={!inStock}
-              className={`w-[70%] py-1.5 px-4 rounded-lg font-medium transition ${
+              className={`w-[70%] py-1.5 px-4 rounded-lg font-medium transition flex items-center justify-center gap-2 ${
                 inStock 
                   ? 'bg-[#6da306] text-white hover:bg-[#5d8c05]' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
+              style={{ fontFamily: sfFontFamily }}
             >
+              <ShoppingCart size={16} />
               {hasVariants ? 'Vybrat variantu' : 'Do koszyka'}
             </button>
           </div>
