@@ -18,13 +18,28 @@ interface ImportResult {
   }[];
 }
 
+interface ChunkInfo {
+  currentChunk: number;
+  totalChunks: number;
+  isLastChunk: boolean;
+}
+
 // Required fields for creating a new product
 const REQUIRED_FIELDS_FOR_NEW = ['Kód', 'Název', 'Cena', 'Skladem'];
+
+// Cache for categories to avoid repeated database queries
+let categoryCache: Map<string, any> | null = null;
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
+    const chunkInfoStr = formData.get('chunkInfo') as string;
+    
+    let chunkInfo: ChunkInfo | null = null;
+    if (chunkInfoStr) {
+      chunkInfo = JSON.parse(chunkInfoStr);
+    }
     
     if (!file) {
       return NextResponse.json(
@@ -62,9 +77,11 @@ export async function POST(request: Request) {
       details: []
     };
     
-    // Get all categories for mapping
-    const categories = await prisma.category.findMany();
-    const categoryMap = new Map(categories.map(c => [c.name.toLowerCase(), c]));
+    // Initialize or use cached categories
+    if (!categoryCache || (chunkInfo && chunkInfo.currentChunk === 1)) {
+      const categories = await prisma.category.findMany();
+      categoryCache = new Map(categories.map(c => [c.name.toLowerCase(), c]));
+    }
     
     // Process each row
     for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
@@ -109,7 +126,7 @@ export async function POST(request: Request) {
           if ('Kategorie' in row) {
             const categoryName = row['Kategorie']?.toString().trim();
             if (categoryName) {
-              const category = categoryMap.get(categoryName.toLowerCase());
+              const category = categoryCache!.get(categoryName.toLowerCase());
               if (category) {
                 updateData.categoryId = category.id;
               } else {
@@ -122,7 +139,7 @@ export async function POST(request: Request) {
                   }
                 });
                 updateData.categoryId = newCategory.id;
-                categoryMap.set(categoryName.toLowerCase(), newCategory);
+                categoryCache!.set(categoryName.toLowerCase(), newCategory);
               }
             } else {
               updateData.categoryId = null;
@@ -228,7 +245,7 @@ export async function POST(request: Request) {
           if ('Kategorie' in row) {
             const categoryName = row['Kategorie']?.toString().trim();
             if (categoryName) {
-              const category = categoryMap.get(categoryName.toLowerCase());
+              const category = categoryCache!.get(categoryName.toLowerCase());
               if (category) {
                 categoryId = category.id;
               } else {
@@ -241,7 +258,7 @@ export async function POST(request: Request) {
                   }
                 });
                 categoryId = newCategory.id;
-                categoryMap.set(categoryName.toLowerCase(), newCategory);
+                categoryCache!.set(categoryName.toLowerCase(), newCategory);
               }
             }
           }
@@ -287,8 +304,8 @@ export async function POST(request: Request) {
       }
     }
     
-    // Process variants sheet if it exists
-    if (workbook.SheetNames.includes('Varianty')) {
+    // Process variants sheet if it exists AND this is the last chunk
+    if ((!chunkInfo || chunkInfo.isLastChunk) && workbook.SheetNames.includes('Varianty')) {
       const variantsSheet = workbook.Sheets['Varianty'];
       const variantsData = XLSX.utils.sheet_to_json(variantsSheet);
       
@@ -300,6 +317,11 @@ export async function POST(request: Request) {
           result.errors.push(`Varianty - řádek ${varIndex + 2}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
+    }
+    
+    // Clear category cache on last chunk
+    if (chunkInfo && chunkInfo.isLastChunk) {
+      categoryCache = null;
     }
     
     return NextResponse.json(result);

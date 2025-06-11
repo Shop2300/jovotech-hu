@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { X, Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 interface ImportResult {
   success: boolean;
@@ -25,11 +26,19 @@ interface ProductImportModalProps {
   onImportComplete: () => void;
 }
 
+const CHUNK_SIZE = 50; // Process 50 products at a time
+
 export function ProductImportModal({ isOpen, onClose, onImportComplete }: ProductImportModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  
+  // Progress tracking
+  const [currentChunk, setCurrentChunk] = useState(0);
+  const [totalChunks, setTotalChunks] = useState(0);
+  const [processedCount, setProcessedCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   if (!isOpen) return null;
 
@@ -71,32 +80,118 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
     }
 
     setIsImporting(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
+    
     try {
-      const response = await fetch('/api/admin/products/import', {
-        method: 'POST',
-        body: formData
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Import selhal');
-      }
-
-      setImportResult(result);
+      // Read and parse the Excel file on the client side
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const products = XLSX.utils.sheet_to_json(worksheet);
       
-      if (result.errors.length === 0) {
-        toast.success(`Import dokončen: ${result.created} vytvořeno, ${result.updated} aktualizováno, ${result.skipped} přeskočeno`);
+      // Check for variants sheet
+      let variants: any[] = [];
+      if (workbook.SheetNames.includes('Varianty')) {
+        const variantsSheet = workbook.Sheets['Varianty'];
+        variants = XLSX.utils.sheet_to_json(variantsSheet);
+      }
+      
+      // Calculate chunks
+      const totalProducts = products.length;
+      const chunks = Math.ceil(totalProducts / CHUNK_SIZE);
+      
+      setTotalCount(totalProducts);
+      setTotalChunks(chunks);
+      setProcessedCount(0);
+      
+      // Initialize aggregated results
+      const aggregatedResult: ImportResult = {
+        success: true,
+        created: 0,
+        updated: 0,
+        skipped: 0,
+        errors: [],
+        details: []
+      };
+      
+      // Process products in chunks
+      for (let i = 0; i < chunks; i++) {
+        setCurrentChunk(i + 1);
+        
+        const start = i * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, totalProducts);
+        const chunk = products.slice(start, end);
+        
+        // Send chunk to API
+        const formData = new FormData();
+        const chunkWorkbook = XLSX.utils.book_new();
+        const chunkSheet = XLSX.utils.json_to_sheet(chunk);
+        XLSX.utils.book_append_sheet(chunkWorkbook, chunkSheet, 'Products');
+        
+        // Include variants only in the last chunk
+        if (i === chunks - 1 && variants.length > 0) {
+          const variantsSheet = XLSX.utils.json_to_sheet(variants);
+          XLSX.utils.book_append_sheet(chunkWorkbook, variantsSheet, 'Varianty');
+        }
+        
+        const chunkBuffer = XLSX.write(chunkWorkbook, { type: 'array', bookType: 'xlsx' });
+        const chunkBlob = new Blob([chunkBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const chunkFile = new File([chunkBlob], `chunk-${i + 1}.xlsx`, { type: chunkBlob.type });
+        
+        formData.append('file', chunkFile);
+        formData.append('chunkInfo', JSON.stringify({
+          currentChunk: i + 1,
+          totalChunks: chunks,
+          isLastChunk: i === chunks - 1
+        }));
+        
+        const response = await fetch('/api/admin/products/import', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Import chunk failed');
+        }
+        
+        // Aggregate results
+        aggregatedResult.created += result.created;
+        aggregatedResult.updated += result.updated;
+        aggregatedResult.skipped += result.skipped;
+        aggregatedResult.errors.push(...result.errors);
+        aggregatedResult.details.push(...result.details);
+        
+        setProcessedCount(end);
+        
+        // Small delay between chunks to avoid overwhelming the server
+        if (i < chunks - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      setImportResult(aggregatedResult);
+      
+      if (aggregatedResult.errors.length === 0) {
+        toast.success(`Import dokončen: ${aggregatedResult.created} vytvořeno, ${aggregatedResult.updated} aktualizováno, ${aggregatedResult.skipped} přeskočeno`);
       } else {
-        toast.error(`Import dokončen s chybami: ${result.errors.length} chyb`);
+        toast.error(`Import dokončen s chybami: ${aggregatedResult.errors.length} chyb`);
       }
     } catch (error) {
       toast.error(`Chyba při importu: ${error instanceof Error ? error.message : 'Neznámá chyba'}`);
+      setImportResult({
+        success: false,
+        created: 0,
+        updated: 0,
+        skipped: 0,
+        errors: [error instanceof Error ? error.message : 'Neznámá chyba'],
+        details: []
+      });
     } finally {
       setIsImporting(false);
+      setCurrentChunk(0);
+      setTotalChunks(0);
     }
   };
 
@@ -106,6 +201,8 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
     }
     setFile(null);
     setImportResult(null);
+    setProcessedCount(0);
+    setTotalCount(0);
     onClose();
   };
 
@@ -124,6 +221,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
           <button
             onClick={handleClose}
             className="text-gray-500 hover:text-gray-700"
+            disabled={isImporting}
           >
             <X size={24} />
           </button>
@@ -142,6 +240,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
                       <li>Pokud produkt s daným kódem existuje, <strong>aktualizují se pouze pole obsažená v importu</strong></li>
                       <li>Pokud produkt neexistuje, vytvoří se nový (musí obsahovat všechna povinná pole)</li>
                       <li>Prázdné buňky nebo chybějící sloupce neovlivní existující data</li>
+                      <li><strong>Velké soubory jsou automaticky zpracovány po částech</strong> pro rychlejší import</li>
                     </ul>
                   </div>
                 </div>
@@ -199,6 +298,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
                   <button
                     onClick={() => setFile(null)}
                     className="text-red-600 hover:text-red-800"
+                    disabled={isImporting}
                   >
                     <X size={20} />
                   </button>
@@ -222,10 +322,32 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
               )}
             </div>
 
+            {/* Progress indicator */}
+            {isImporting && (
+              <div className="mt-4">
+                <div className="flex justify-between text-sm text-gray-600 mb-2">
+                  <span>Zpracovávání produktů...</span>
+                  <span>{processedCount} / {totalCount}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${totalCount > 0 ? (processedCount / totalCount) * 100 : 0}%` }}
+                  />
+                </div>
+                {totalChunks > 1 && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Část {currentChunk} z {totalChunks}
+                  </p>
+                )}
+              </div>
+            )}
+
             <div className="flex justify-end gap-2 mt-6">
               <button
                 onClick={handleClose}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                disabled={isImporting}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
               >
                 Zrušit
               </button>
@@ -234,7 +356,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
                 disabled={!file || isImporting}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isImporting ? 'Importování...' : 'Importovat'}
+                {isImporting ? `Importování... (${processedCount}/${totalCount})` : 'Importovat'}
               </button>
             </div>
           </>
