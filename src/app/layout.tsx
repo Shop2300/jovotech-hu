@@ -1,5 +1,6 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
+import Script from 'next/script';
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
@@ -82,6 +83,25 @@ export default function RootLayout({
         {/* <meta name="google-site-verification" content="rM73bzskVZTTR0tmKXijqULs5zrCBTgi1EY-th_ce3k" /> */}
       </head>
       <body>
+        {/* Google Analytics */}
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-770697695"
+        />
+        <Script
+          id="google-analytics-config"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-770697695');
+            `,
+          }}
+        />
+        
         {/* Remove CartProvider wrapper */}
         <LayoutWrapper />
         {children}
