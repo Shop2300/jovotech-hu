@@ -2,6 +2,7 @@
 import { prisma } from '@/lib/prisma';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { notFound } from 'next/navigation';
+import { createSlug } from '@/lib/slug';
 
 export default async function EditProductPage({ 
   params 
@@ -33,8 +34,15 @@ export default async function EditProductPage({
   const serializedProduct = {
     ...product,
     code: product.code || undefined,
+    slug: product.slug || createSlug(product.name), // Ensure slug is always a string
     price: product.price.toNumber(),
     regularPrice: product.regularPrice?.toNumber() || null,
+    description: product.description || null,
+    detailDescription: product.detailDescription || null,
+    brand: product.brand || null,
+    warranty: product.warranty || null,
+    categoryId: product.categoryId || null,
+    image: product.image || null,
     images: product.images.map(img => ({
       ...img,
       alt: img.alt || undefined

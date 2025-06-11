@@ -374,7 +374,6 @@ interface Category {
 interface ProductFormProps {
   initialData?: ProductFormData & { 
     id: string; 
-    slug: string;
     image: string | null;
     images?: ProductImage[];
     variants?: ProductVariant[];
@@ -476,6 +475,11 @@ export function ProductForm({ initialData }: ProductFormProps) {
       if (initialData.slug) {
         setGeneratedSlug(initialData.slug);
         setValue('slug', initialData.slug);
+      } else {
+        // Generate slug if missing
+        const newSlug = createSlug(initialData.name);
+        setGeneratedSlug(newSlug);
+        setValue('slug', newSlug);
       }
     }
   }, [initialData, setValue]);
