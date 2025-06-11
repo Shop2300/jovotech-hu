@@ -5,6 +5,10 @@ import { BannerSlider } from '@/components/BannerSlider';
 import { ProductsSlider } from '@/components/ProductsSlider';
 import { CategoryProductBoxes } from '@/components/CategoryProductBoxes';
 
+// Force dynamic rendering to ensure real-time updates
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function HomePage() {
   // Fetch active banners
   const banners = await prisma.banner.findMany({
