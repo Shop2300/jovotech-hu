@@ -12,32 +12,37 @@ export async function PUT(
     const body = await request.json();
     const { images, variants, ...productData } = body;
     
-    // Check if name changed and generate new slug if needed
-    const existingProduct = await prisma.product.findUnique({ where: { id } });
-    let slug = existingProduct?.slug;
+    // Handle slug
+    let slug = productData.slug; // Use provided slug if available
     
-    if (existingProduct && existingProduct.name !== productData.name) {
-      slug = createSlug(productData.name);
-      let counter = 1;
+    if (!slug) {
+      // If no slug provided, generate from name
+      const existingProduct = await prisma.product.findUnique({ where: { id } });
       
-      // Ensure unique slug
-      while (await prisma.product.findFirst({ 
-        where: { slug, NOT: { id } } 
-      })) {
-        slug = `${createSlug(productData.name)}-${counter}`;
-        counter++;
+      if (existingProduct && existingProduct.name !== productData.name) {
+        // Name changed and no slug provided, generate new one
+        slug = createSlug(productData.name);
+      } else if (existingProduct) {
+        // Keep existing slug if name didn't change
+        slug = existingProduct.slug;
+      } else {
+        // Fallback: generate from current name
+        slug = createSlug(productData.name);
       }
-    } else if (!slug) {
-      // If no slug exists, create one
-      slug = createSlug(productData.name);
-      let counter = 1;
-      
-      while (await prisma.product.findFirst({ 
-        where: { slug, NOT: { id } } 
-      })) {
-        slug = `${createSlug(productData.name)}-${counter}`;
-        counter++;
-      }
+    }
+    
+    // Ensure slug is unique
+    let finalSlug = slug;
+    let counter = 1;
+    
+    while (await prisma.product.findFirst({ 
+      where: { 
+        slug: finalSlug, 
+        NOT: { id } 
+      } 
+    })) {
+      finalSlug = `${slug}-${counter}`;
+      counter++;
     }
     
     // Update product
@@ -46,7 +51,7 @@ export async function PUT(
       data: {
         name: productData.name,
         code: productData.code || id, // Use product ID if code is empty
-        slug,
+        slug: finalSlug,
         description: productData.description || null,
         detailDescription: productData.detailDescription || null,
         price: parseFloat(productData.price),

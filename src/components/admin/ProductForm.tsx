@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { MultiImageUpload } from '@/components/MultiImageUpload';
-import { Plus, Trash2, Code2, X } from 'lucide-react';
+import { Plus, Trash2, Code2, X, Link2 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import { Extension } from '@tiptap/core';
 import { createPortal } from 'react-dom';
+import { createSlug } from '@/lib/slug';
 
 // Custom extension to preserve HTML attributes
 const PreserveAttributes = Extension.create({
@@ -353,6 +354,7 @@ interface ProductVariant {
 interface ProductFormData {
   name: string;
   code?: string;
+  slug?: string;
   description: string | null;
   detailDescription: string | null;
   price: number;
@@ -372,6 +374,7 @@ interface Category {
 interface ProductFormProps {
   initialData?: ProductFormData & { 
     id: string; 
+    slug: string;
     image: string | null;
     images?: ProductImage[];
     variants?: ProductVariant[];
@@ -395,16 +398,21 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [description, setDescription] = useState(initialData?.description || '');
   const [detailDescription, setDetailDescription] = useState(initialData?.detailDescription || '');
+  const [generatedSlug, setGeneratedSlug] = useState(initialData?.slug || '');
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+  const [originalName, setOriginalName] = useState(initialData?.name || '');
   
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue
+    setValue,
+    watch
   } = useForm<ProductFormData>({
     defaultValues: initialData || {
       name: '',
       code: '',
+      slug: '',
       description: '',
       detailDescription: '',
       price: 0,
@@ -415,6 +423,22 @@ export function ProductForm({ initialData }: ProductFormProps) {
       warranty: null,
     }
   });
+
+  const watchedName = watch('name');
+
+  // Generate slug from name
+  useEffect(() => {
+    // Only auto-generate slug if:
+    // 1. Creating new product OR
+    // 2. Editing existing product and name changed AND slug wasn't manually edited
+    if (!initialData || (initialData && watchedName !== originalName && !isSlugManuallyEdited)) {
+      if (watchedName) {
+        const newSlug = createSlug(watchedName);
+        setGeneratedSlug(newSlug);
+        setValue('slug', newSlug);
+      }
+    }
+  }, [watchedName, initialData, originalName, isSlugManuallyEdited, setValue]);
 
   // Update form values when editors change
   useEffect(() => {
@@ -447,8 +471,14 @@ export function ProductForm({ initialData }: ProductFormProps) {
         else if (hasSizes) setVariantType('size');
         else setVariantType('color');
       }
+
+      // Set the slug if editing
+      if (initialData.slug) {
+        setGeneratedSlug(initialData.slug);
+        setValue('slug', initialData.slug);
+      }
     }
-  }, [initialData]);
+  }, [initialData, setValue]);
 
   // Fetch categories
   useEffect(() => {
@@ -553,6 +583,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
         body: JSON.stringify({
           ...data,
           code: data.code && data.code.trim() !== '' ? data.code : null,
+          slug: data.slug || generatedSlug, // Use the generated slug
           image: mainImage,
           images: productImages,
           variants: variants.filter(v => v.colorName || v.sizeName),
@@ -598,6 +629,35 @@ export function ProductForm({ initialData }: ProductFormProps) {
             placeholder="Auto ID"
           />
         </div>
+      </div>
+
+      {/* URL/Slug field */}
+      <div className="mt-6">
+        <label className="block text-sm font-medium mb-2 text-black">
+          <Link2 className="inline w-4 h-4 mr-1" />
+          URL adresa produktu
+        </label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">www.galaxysklep.pl/</span>
+          <input
+            {...register('slug')}
+            value={generatedSlug}
+            onChange={(e) => {
+              const newSlug = e.target.value.toLowerCase()
+                .replace(/[^a-z0-9-]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-+|-+$/g, '');
+              setGeneratedSlug(newSlug);
+              setValue('slug', newSlug);
+              setIsSlugManuallyEdited(true);
+            }}
+            className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+            placeholder="automaticky-generovano-z-nazvu"
+          />
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          URL se generuje automaticky z názvu produktu. Můžete ji upravit ručně.
+        </p>
       </div>
 
       <div className="grid grid-cols-12 gap-6 mt-6">

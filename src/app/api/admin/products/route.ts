@@ -77,13 +77,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { images, variants, ...productData } = body;
     
-    // Generate slug
-    let slug = createSlug(productData.name);
+    // Use provided slug or generate from name
+    let slug = productData.slug || createSlug(productData.name);
     let counter = 1;
     
     // Ensure unique slug
+    const baseSlug = slug;
     while (await prisma.product.findFirst({ where: { slug } })) {
-      slug = `${createSlug(productData.name)}-${counter}`;
+      slug = `${baseSlug}-${counter}`;
       counter++;
     }
     

@@ -30,6 +30,29 @@ const REQUIRED_FIELDS_FOR_NEW = ['Kód', 'Název', 'Cena', 'Skladem'];
 // Cache for categories to avoid repeated database queries
 let categoryCache: Map<string, any> | null = null;
 
+// Helper function to generate unique slug
+async function generateUniqueSlug(name: string, excludeId?: string): Promise<string> {
+  let slug = createSlug(name);
+  let counter = 1;
+  
+  // Ensure unique slug
+  while (true) {
+    const existingProduct = await prisma.product.findFirst({ 
+      where: { 
+        slug,
+        id: excludeId ? { not: excludeId } : undefined
+      } 
+    });
+    
+    if (!existingProduct) break;
+    
+    slug = `${createSlug(name)}-${counter}`;
+    counter++;
+  }
+  
+  return slug;
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -113,14 +136,45 @@ export async function POST(request: Request) {
         if (existingProduct) {
           // UPDATE EXISTING PRODUCT - Only update fields that are present
           const updateData: any = {};
+          let nameChanged = false;
+          let slugUpdated = false;
           
-          // Only update fields that are present in the import file - always trim values
+          // Check if name is being updated
           if ('Název' in row && row['Název']) {
-            updateData.name = row['Název'].toString().trim();
+            const newName = row['Název'].toString().trim();
+            if (newName !== existingProduct.name) {
+              updateData.name = newName;
+              nameChanged = true;
+              
+              // If name changed and no explicit slug provided, generate new slug
+              if (!('Slug' in row && row['Slug'])) {
+                updateData.slug = await generateUniqueSlug(newName, existingProduct.id);
+                slugUpdated = true;
+              }
+            }
           }
           
+          // Handle explicit slug if provided
           if ('Slug' in row && row['Slug']) {
-            updateData.slug = row['Slug'].toString().trim();
+            const providedSlug = row['Slug'].toString().trim();
+            // Validate that the provided slug is unique
+            const existingWithSlug = await prisma.product.findFirst({
+              where: {
+                slug: providedSlug,
+                id: { not: existingProduct.id }
+              }
+            });
+            
+            if (existingWithSlug) {
+              // If slug already exists, generate a unique one
+              updateData.slug = await generateUniqueSlug(
+                updateData.name || existingProduct.name, 
+                existingProduct.id
+              );
+              slugUpdated = true;
+            } else {
+              updateData.slug = providedSlug;
+            }
           }
           
           if ('Kategorie' in row) {
@@ -188,7 +242,10 @@ export async function POST(request: Request) {
             });
             
             result.updated++;
-            const message = `Aktualizováno ${Object.keys(updateData).length} polí${wasTrimmed ? ' (kód byl oříznut)' : ''}`;
+            let message = `Aktualizováno ${Object.keys(updateData).length} polí`;
+            if (wasTrimmed) message += ' (kód byl oříznut)';
+            if (slugUpdated) message += ' (URL automaticky aktualizováno)';
+            
             result.details.push({
               productCode: code,
               productName: updateData.name || existingProduct.name,
@@ -230,13 +287,12 @@ export async function POST(request: Request) {
           let slug = row['Slug']?.toString().trim();
           
           if (!slug) {
-            slug = createSlug(name);
-            let counter = 1;
-            
-            // Ensure unique slug
-            while (await prisma.product.findFirst({ where: { slug } })) {
-              slug = `${createSlug(name)}-${counter}`;
-              counter++;
+            slug = await generateUniqueSlug(name);
+          } else {
+            // Validate provided slug is unique
+            const existingWithSlug = await prisma.product.findFirst({ where: { slug } });
+            if (existingWithSlug) {
+              slug = await generateUniqueSlug(name);
             }
           }
           
