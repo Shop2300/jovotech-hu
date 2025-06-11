@@ -21,6 +21,11 @@ export function Footer() {
                   Polityka prywatności
                 </Link>
               </li>
+              <li>
+                <Link href="/ocena-sklepu" className="hover:text-white transition">
+                  Ocena sklepu
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -192,7 +192,7 @@ export function SearchBar() {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Czego szukasz? Np. router CNC, ultradźwięki, prasy termotransferowe..."
-          className="w-full px-4 py-2.5 pr-20 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-white"
+          className="w-full px-4 py-2.5 pr-20 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-white placeholder:text-sm placeholder:text-gray-400"
         />
         
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">

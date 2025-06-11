@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { ConditionalFooter } from '@/components/ConditionalFooter';
+import { SideBadges } from '@/components/SideBadges';
 // Remove: import { CartProvider } from '@/contexts/CartContext';
 
 export const viewport: Viewport = {
@@ -106,6 +107,7 @@ export default function RootLayout({
         <LayoutWrapper />
         {children}
         <ConditionalFooter />
+        <SideBadges />
         <Toaster
           position="bottom-right"
           toastOptions={{
