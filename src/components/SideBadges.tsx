@@ -54,14 +54,16 @@ export function SideBadges() {
           border-radius: 0 5px 5px 0;
           cursor: pointer;
           transition: width 0.3s ease, background-color 0.3s ease;
-          font-family: sans-serif;
-          font-weight: 700;
-          font-size: 10px;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'San Francisco', 'Helvetica Neue', sans-serif !important;
+          font-weight: 800;
+          font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
           line-height: 1.2;
           overflow: hidden;
-          will-change: width;
+          padding: 0;
+          margin: 0;
+          box-sizing: border-box;
         }
 
         .verified-badge:hover {
@@ -73,16 +75,25 @@ export function SideBadges() {
           position: absolute;
           top: 50%;
           left: 50%;
-          transform: translate(-50%, -50%) translateZ(0);
+          transform: translate(-50%, -50%);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          width: 29px;
+          width: 100%;
+          height: calc(100% - 40px);
           pointer-events: none;
           backface-visibility: hidden;
-          font-family: sans-serif;
-          font-weight: 700;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'San Francisco', 'Helvetica Neue', sans-serif !important;
+          font-weight: 800;
+        }
+        
+        .badge-container * {
+          box-sizing: border-box;
+        }
+        
+        .vertical-text, .verified-icon, .badge-content, .badge-content * {
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'San Francisco', 'Helvetica Neue', sans-serif !important;
         }
         
         .map-badge {
@@ -114,24 +125,27 @@ export function SideBadges() {
         
         .vertical-text {
           writing-mode: vertical-rl;
-          transform: rotate(180deg) translateZ(0);
+          transform: rotate(180deg);
           white-space: nowrap;
-          margin-top: 5px;
+          margin-top: 0;
           text-align: center;
           line-height: 1;
           backface-visibility: hidden;
           font-kerning: none;
-          text-rendering: optimizeSpeed;
-          -webkit-font-smoothing: antialiased;
-          font-family: sans-serif;
-          font-weight: 700;
+          text-rendering: geometricPrecision;
+          -webkit-font-smoothing: subpixel-antialiased;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'San Francisco', 'Helvetica Neue', sans-serif !important;
+          font-weight: 800;
+          font-size: 10px;
+          position: relative;
+          z-index: 1;
         }
         
         .verified-icon {
-          width: 22px;
-          height: 22px;
+          width: 20px;
+          height: 20px;
           filter: brightness(0) invert(1);
-          margin-bottom: 5px;
+          margin-bottom: 8px;
           flex-shrink: 0;
           display: block;
           backface-visibility: hidden;
