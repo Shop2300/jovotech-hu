@@ -304,15 +304,13 @@ export function SideBadges() {
         
         <div className="popup-content">
           <div className="company-name">Galaxy Sklep</div>
-          <div className="company-address">1. máje 535/50, 46007 Liberec, Czechy</div>
+          <div className="company-address">1. máje 535/50, 46007 Liberec</div>
           <div>NIP: 04688465</div>
           <div>Forma prawna: Działalność gospodarcza</div>
           <div className="company-note">(Siedziba firmy - korespondencja prosimy wysyłać na e-mail)</div>
           <div>E-mail: support@galaxysklep.pl</div>
-          <div>Tel: +420 123 456 789</div>
           
           <div className="bank-details">Dane bankowe</div>
-          <div>Numer konta: 2302034483 / 2010</div>
           <div>IBAN: CZ79 2010 0000 0023 0203 4483</div>
           <div>BIC/SWIFT: FIOBCZPPXXX</div>
           

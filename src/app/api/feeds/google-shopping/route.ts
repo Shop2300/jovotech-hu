@@ -67,11 +67,11 @@ function generateGoogleShoppingFeed(products: any[]) {
     // Price formatting (ensure it's in PLN with 2 decimal places)
     const price = `${product.price.toFixed(2)} PLN`;
     
-    // Generate GTIN/MPN (use product code if available)
-    const gtin = product.code || `GS${product.id.substring(0, 8).toUpperCase()}`;
+    // Determine brand - check if product name contains VEVOR
+    const brand = product.brand || (product.name.toLowerCase().includes('vevor') ? 'VEVOR' : 'Galaxy Sklep');
     
-    // Brand (you can customize this based on your products)
-    const brand = product.brand || 'Galaxy Sklep';
+    // MPN (Manufacturer Part Number) - use product code or ID
+    const mpn = product.code || `SKU-${product.id.substring(0, 8).toUpperCase()}`;
     
     // Google product category (map your categories to Google's taxonomy)
     const googleCategory = mapToGoogleCategory(product.category.slug);
@@ -91,8 +91,8 @@ function generateGoogleShoppingFeed(products: any[]) {
       <g:price>${price}</g:price>
       <g:brand><![CDATA[${brand}]]></g:brand>
       <g:condition>${condition}</g:condition>
-      <g:gtin>${gtin}</g:gtin>
-      <g:mpn>${product.code || gtin}</g:mpn>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn>${mpn}</g:mpn>
       <g:google_product_category>${googleCategory}</g:google_product_category>
       <g:product_type><![CDATA[${product.category.name}]]></g:product_type>
       <g:shipping>
@@ -136,6 +136,9 @@ function mapToGoogleCategory(categorySlug: string): number {
     'routery-cnc': 1305, // Business & Industrial > Manufacturing
     'ultradzwieki': 2082, // Electronics
     'maszyny-przemyslowe': 1305, // Business & Industrial
+    'sprzet-czyszczacy': 623, // Home & Garden > Household Supplies > Household Cleaning Supplies
+    'malarstwo': 503742, // Arts & Entertainment > Hobbies & Creative Arts > Art & Crafting Supplies
+    'auto-moto': 888, // Vehicles & Parts
   };
   
   return categoryMap[categorySlug] || 2082; // Default to Electronics
