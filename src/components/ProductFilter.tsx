@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Filter, Star, TrendingUp, Tag, Gem, SortAsc } from 'lucide-react';
 
 export type SortOption = 'recommended' | 'bestselling' | 'cheapest' | 'expensive' | 'alphabetical';
 
@@ -11,6 +11,8 @@ interface ProductFilterProps {
   onSortChange: (sort: SortOption) => void;
   currentSort: SortOption;
   productCount: number;
+  startProduct?: number;
+  endProduct?: number;
 }
 
 interface DropdownPortalProps {
@@ -51,7 +53,6 @@ function DropdownPortal({ children, isOpen, targetRef, onClose }: DropdownPortal
 
   useEffect(() => {
     if (isOpen && mounted) {
-      // Add a style tag to force z-index
       const style = document.createElement('style');
       style.innerHTML = `
         .product-filter-dropdown {
@@ -80,7 +81,7 @@ function DropdownPortal({ children, isOpen, targetRef, onClose }: DropdownPortal
         onClick={onClose}
       />
       <div
-        className="product-filter-dropdown rounded-lg shadow-2xl border border-gray-300 w-48 mt-2"
+        className="product-filter-dropdown rounded-lg shadow-lg border border-gray-200 w-56 mt-1"
         style={{
           position: 'absolute',
           top: `${position.top}px`,
@@ -94,39 +95,60 @@ function DropdownPortal({ children, isOpen, targetRef, onClose }: DropdownPortal
   );
 }
 
-export function ProductFilter({ onSortChange, currentSort, productCount }: ProductFilterProps) {
+export function ProductFilter({ 
+  onSortChange, 
+  currentSort, 
+  productCount,
+  startProduct,
+  endProduct 
+}: ProductFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
 
   const sortOptions = [
-    { value: 'recommended' as SortOption, label: 'Polecane' },
-    { value: 'bestselling' as SortOption, label: 'Najczęściej kupowane' },
-    { value: 'cheapest' as SortOption, label: 'Najtańsze' },
-    { value: 'expensive' as SortOption, label: 'Najdroższe' },
-    { value: 'alphabetical' as SortOption, label: 'Alfabetycznie' },
+    { value: 'recommended' as SortOption, label: 'Polecane', icon: Star },
+    { value: 'bestselling' as SortOption, label: 'Najczęściej kupowane', icon: TrendingUp },
+    { value: 'cheapest' as SortOption, label: 'Najtańsze', icon: Tag },
+    { value: 'expensive' as SortOption, label: 'Najdroższe', icon: Gem },
+    { value: 'alphabetical' as SortOption, label: 'Alfabetycznie', icon: SortAsc },
   ];
 
-  const currentLabel = sortOptions.find(opt => opt.value === currentSort)?.label || 'Polecane';
+  const currentOption = sortOptions.find(opt => opt.value === currentSort) || sortOptions[0];
+  const currentLabel = currentOption.label;
+  const CurrentIcon = currentOption.icon;
 
   const handleSortChange = (value: SortOption) => {
-    console.log('Sort clicked:', value);
     onSortChange(value);
     setIsOpen(false);
   };
 
   return (
-    <div className="flex items-center justify-between mb-6 bg-gray-50 rounded-lg p-4">
-      <h2 className="text-xl font-semibold text-black">
-        Produkty ({productCount})
-      </h2>
+    <div className="flex items-center justify-between mb-3 py-4">
+      <div className="flex items-baseline gap-3">
+        <span className="text-sm font-medium text-gray-700">
+          Produkty
+        </span>
+        <span className="text-sm text-gray-700 font-bold">
+          {productCount}
+        </span>
+        {startProduct && endProduct && (
+          <>
+            <span className="text-gray-500 mx-1">-</span>
+            <span className="text-sm text-gray-700">
+              Zobrazeno <span className="font-bold">{startProduct}–{endProduct}</span>
+            </span>
+          </>
+        )}
+      </div>
       
       <div ref={buttonRef} className="relative">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm w-56"
         >
-          <span className="text-sm font-medium">{currentLabel}</span>
-          <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <CurrentIcon size={16} className="text-gray-500" />
+          <span className="flex-1 text-left">{currentLabel}</span>
+          <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ml-auto ${isOpen ? 'rotate-180' : ''}`} />
         </button>
         
         <DropdownPortal 
@@ -134,7 +156,7 @@ export function ProductFilter({ onSortChange, currentSort, productCount }: Produ
           targetRef={buttonRef}
           onClose={() => setIsOpen(false)}
         >
-          {sortOptions.map((option) => (
+          {sortOptions.map((option, index) => (
             <button
               key={option.value}
               onClick={(e) => {
@@ -143,13 +165,16 @@ export function ProductFilter({ onSortChange, currentSort, productCount }: Produ
                 handleSortChange(option.value);
               }}
               className={`
-                block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors
-                ${currentSort === option.value ? 'font-semibold text-blue-600 bg-blue-50' : 'text-gray-700'}
-                ${option.value === sortOptions[0].value ? 'rounded-t-lg' : ''}
-                ${option.value === sortOptions[sortOptions.length - 1].value ? 'rounded-b-lg' : ''}
+                block w-full text-left px-4 py-2.5 text-sm transition-all duration-150 flex items-center gap-2
+                ${currentSort === option.value 
+                  ? 'font-medium text-blue-600 bg-blue-50' 
+                  : 'text-gray-700 hover:bg-gray-50'
+                }
+                ${index === 0 ? 'rounded-t-lg' : ''}
+                ${index === sortOptions.length - 1 ? 'rounded-b-lg' : ''}
               `}
-              style={{ position: 'relative', zIndex: 999999 }}
             >
+              <option.icon size={16} className={currentSort === option.value ? 'text-blue-600' : 'text-gray-500'} />
               {option.label}
             </button>
           ))}
