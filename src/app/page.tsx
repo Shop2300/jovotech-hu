@@ -9,6 +9,16 @@ import { CategoryProductBoxes } from '@/components/CategoryProductBoxes';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// Helper function to shuffle array
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export default async function HomePage() {
   // Fetch active banners
   const banners = await prisma.banner.findMany({
@@ -79,15 +89,13 @@ export default async function HomePage() {
     }
   });
 
-  // Fetch products for the three category boxes
-  const cleaningProducts = await prisma.product.findMany({
+  // Fetch ALL products for the three category boxes, then shuffle and take 6
+  const allCleaningProducts = await prisma.product.findMany({
     where: {
       category: {
         slug: 'sprzet-czyszczacy'
       }
     },
-    take: 6,
-    orderBy: { createdAt: 'desc' },
     include: {
       category: {
         select: {
@@ -114,15 +122,14 @@ export default async function HomePage() {
       }
     }
   });
+  const cleaningProducts = shuffleArray(allCleaningProducts).slice(0, 6);
 
-  const paintingProducts = await prisma.product.findMany({
+  const allPaintingProducts = await prisma.product.findMany({
     where: {
       category: {
         slug: 'malarstwo'
       }
     },
-    take: 6,
-    orderBy: { createdAt: 'desc' },
     include: {
       category: {
         select: {
@@ -149,15 +156,14 @@ export default async function HomePage() {
       }
     }
   });
+  const paintingProducts = shuffleArray(allPaintingProducts).slice(0, 6);
 
-  const autoMotoProducts = await prisma.product.findMany({
+  const allAutoMotoProducts = await prisma.product.findMany({
     where: {
       category: {
         slug: 'auto-moto'
       }
     },
-    take: 6,
-    orderBy: { createdAt: 'desc' },
     include: {
       category: {
         select: {
@@ -184,6 +190,7 @@ export default async function HomePage() {
       }
     }
   });
+  const autoMotoProducts = shuffleArray(allAutoMotoProducts).slice(0, 6);
 
   // Serialize products for client components
   const serializedProducts = featuredProducts.map(product => ({
