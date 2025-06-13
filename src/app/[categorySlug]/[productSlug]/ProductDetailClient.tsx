@@ -78,7 +78,7 @@ interface ProductDetailClientProps {
     id: string;
     code?: string | null;
     name: string;
-    slug?: string; // Add slug property
+    slug?: string | null; // Change from slug?: string to slug?: string | null
     description: string | null;
     detailDescription: string | null;
     price: number;
@@ -333,8 +333,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         variantName: variantDisplayName,
         variantColor: selectedVariant?.colorCode || undefined,
         variantSize: selectedSize || undefined,
-        categorySlug: product.category?.slug,
-        productSlug: product.slug
+        categorySlug: product.category?.slug, // Add category slug
+        productSlug: product.slug || undefined // Convert null to undefined
       });
     }
   
