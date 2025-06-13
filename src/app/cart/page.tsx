@@ -2,14 +2,14 @@
 'use client';
 
 import { useCart } from '@/lib/cart';
-import { formatPrice } from '@/lib/utils';
-import { Trash2, ShoppingCart, Truck } from 'lucide-react';
+import { formatPrice, calculateDiscount } from '@/lib/utils';
+import { Trash2, ShoppingCart, Truck, CreditCard, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, removeItem, updateQuantity, getTotalPrice } = useCart();
+  const { items, removeItem, updateQuantity, getTotalPrice, getTotalSavings } = useCart();
 
   const handleCheckout = () => {
     if (items.length === 0) return;
@@ -27,10 +27,10 @@ export default function CartPage() {
                 {/* Step 1: Cart */}
                 <div className="flex items-center flex-1">
                   <div className="flex items-center">
-                    <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white font-medium">
-                      1
+                    <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white">
+                      <ShoppingCart size={20} strokeWidth={2} />
                     </div>
-                    <span className="ml-3 text-sm font-medium text-gray-900">Koszyk</span>
+                    <span className="ml-3 text-sm font-medium text-[#131921]">Koszyk</span>
                   </div>
                   <div className="flex-1 mx-4">
                     <div className="h-1 bg-gray-300 rounded">
@@ -42,8 +42,8 @@ export default function CartPage() {
                 {/* Step 2: Checkout */}
                 <div className="flex items-center flex-1">
                   <div className="flex items-center">
-                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
-                      2
+                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
+                      <CreditCard size={20} strokeWidth={2} />
                     </div>
                     <span className="ml-3 text-sm font-medium text-gray-500">Dostawa i płatność</span>
                   </div>
@@ -54,8 +54,8 @@ export default function CartPage() {
                 
                 {/* Step 3: Success */}
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
-                    3
+                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
+                    <CheckCircle size={20} strokeWidth={2} />
                   </div>
                   <span className="ml-3 text-sm font-medium text-gray-500">Potwierdzenie</span>
                 </div>
@@ -67,8 +67,8 @@ export default function CartPage() {
         <div className="max-w-screen-2xl mx-auto px-6 py-16">
           <div className="bg-white rounded-lg shadow-md p-8 text-center max-w-2xl mx-auto">
             <ShoppingCart size={64} className="mx-auto text-gray-300 mb-4" />
-            <h1 className="text-2xl font-bold mb-4 text-black">Twój koszyk jest pusty</h1>
-            <p className="text-black mb-8">Dodaj produkty z naszej oferty</p>
+            <h1 className="text-2xl font-bold mb-4 text-[#131921]">Twój koszyk jest pusty</h1>
+            <p className="text-[#131921] mb-8">Dodaj produkty z naszej oferty</p>
             <Link 
               href="/"
               className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
@@ -82,6 +82,7 @@ export default function CartPage() {
   }
 
   const totalPrice = getTotalPrice();
+  const totalSavings = getTotalSavings();
 
   return (
     <main className="min-h-screen bg-white">
@@ -93,10 +94,10 @@ export default function CartPage() {
               {/* Step 1: Cart */}
               <div className="flex items-center flex-1">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white font-medium">
-                    1
+                  <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white">
+                    <ShoppingCart size={20} strokeWidth={2} />
                   </div>
-                  <span className="ml-3 text-sm font-medium text-gray-900">Koszyk</span>
+                  <span className="ml-3 text-sm font-medium text-[#131921]">Koszyk</span>
                 </div>
                 <div className="flex-1 mx-4">
                   <div className="h-1 bg-gray-300 rounded">
@@ -108,8 +109,8 @@ export default function CartPage() {
               {/* Step 2: Checkout */}
               <div className="flex items-center flex-1">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
-                    2
+                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
+                    <CreditCard size={20} strokeWidth={2} />
                   </div>
                   <span className="ml-3 text-sm font-medium text-gray-500">Dostawa i płatność</span>
                 </div>
@@ -120,8 +121,8 @@ export default function CartPage() {
               
               {/* Step 3: Success */}
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
-                  3
+                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
+                  <CheckCircle size={20} strokeWidth={2} />
                 </div>
                 <span className="ml-3 text-sm font-medium text-gray-500">Potwierdzenie</span>
               </div>
@@ -138,8 +139,13 @@ export default function CartPage() {
               {items.map((item) => (
                 <div key={`${item.id}-${item.variantId || 'default'}`} className="border-b border-gray-200 last:border-b-0 py-4">
                   <div className="flex gap-4">
-                    {/* Product Image */}
-                    <div className="w-24 h-24 bg-gray-200 rounded-md flex-shrink-0">
+                    {/* Product Image - Now Clickable */}
+                    <Link 
+                      href={item.categorySlug && item.productSlug 
+                        ? `/${item.categorySlug}/${item.productSlug}` 
+                        : `/products/${item.id}`}
+                      className="w-24 h-24 bg-gray-200 rounded-md flex-shrink-0 overflow-hidden hover:opacity-80 transition-opacity"
+                    >
                       {item.image ? (
                         <img 
                           src={item.image} 
@@ -151,11 +157,20 @@ export default function CartPage() {
                           <ShoppingCart size={32} />
                         </div>
                       )}
-                    </div>
+                    </Link>
                     
                     {/* Product Info */}
                     <div className="flex-grow">
-                      <h3 className="text-base text-black">{item.name}</h3>
+                      {/* Product Name - Now Clickable with underline on hover */}
+                      <Link 
+                        href={item.categorySlug && item.productSlug 
+                          ? `/${item.categorySlug}/${item.productSlug}` 
+                          : `/products/${item.id}`}
+                        className="text-base text-[#131921] hover:underline transition-all inline-block"
+                      >
+                        <h3 className="font-medium">{item.name}</h3>
+                      </Link>
+                      
                       {item.variantName && (
                         <div className="flex items-center gap-2 mt-1">
                           {item.variantColor && (
@@ -193,7 +208,7 @@ export default function CartPage() {
                                 updateQuantity(item.id, value, item.variantId);
                               }
                             }}
-                            className="w-12 h-8 text-center border-x border-gray-300 focus:outline-none text-black"
+                            className="w-12 h-8 text-center border-x border-gray-300 focus:outline-none text-[#131921]"
                             maxLength={5}
                           />
                           <button
@@ -208,9 +223,23 @@ export default function CartPage() {
                     
                     {/* Price and Remove */}
                     <div className="text-right">
-                      <p className="text-lg text-[#8bc34a]">
-                        {formatPrice(item.price * item.quantity)}
-                      </p>
+                      {item.regularPrice && item.regularPrice > item.price ? (
+                        <div>
+                          <p className="text-lg text-[#8bc34a] font-bold">
+                            {formatPrice(item.price * item.quantity)}
+                          </p>
+                          <p className="text-sm text-gray-500 line-through">
+                            {formatPrice(item.regularPrice * item.quantity)}
+                          </p>
+                          <span className="inline-block bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-bold mt-1">
+                            -{calculateDiscount(item.price, item.regularPrice)}%
+                          </span>
+                        </div>
+                      ) : (
+                        <p className="text-lg text-[#8bc34a]">
+                          {formatPrice(item.price * item.quantity)}
+                        </p>
+                      )}
                       <button
                         onClick={() => removeItem(item.id, item.variantId)}
                         className="text-gray-400 hover:text-gray-600 mt-2 transition"
@@ -227,23 +256,79 @@ export default function CartPage() {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-              <h2 className="text-xl font-semibold mb-4 text-black">Podsumowanie zamówienia</h2>
+              <h2 className="text-xl font-semibold mb-4 text-[#131921]">Podsumowanie zamówienia</h2>
               
-              <div className="space-y-2 mb-4">
+              <div className="space-y-3 mb-4">
                 {items.map((item) => (
-                  <div key={`${item.id}-${item.variantId || 'default'}`} className="flex justify-between text-sm text-black">
-                    <span>{item.quantity}x {item.name}</span>
-                    <span>{formatPrice(item.price * item.quantity)}</span>
+                  <div key={`${item.id}-${item.variantId || 'default'}`} className="flex items-center gap-2">
+                    {/* Small Product Image in Summary */}
+                    <Link 
+                      href={item.categorySlug && item.productSlug 
+                        ? `/${item.categorySlug}/${item.productSlug}` 
+                        : `/products/${item.id}`}
+                      className="w-12 h-12 bg-gray-100 rounded flex-shrink-0 overflow-hidden hover:opacity-80 transition-opacity"
+                    >
+                      {item.image ? (
+                        <img 
+                          src={item.image} 
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <ShoppingCart size={16} />
+                        </div>
+                      )}
+                    </Link>
+                    
+                    {/* Product Details - Vertically Centered */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <Link 
+                        href={item.categorySlug && item.productSlug 
+                          ? `/${item.categorySlug}/${item.productSlug}` 
+                          : `/products/${item.id}`}
+                        className="text-sm text-[#131921] hover:underline transition-all block truncate"
+                      >
+                        {item.quantity}x {item.name}
+                      </Link>
+                      {item.variantName && (
+                        <span className="text-xs text-gray-500">{item.variantName}</span>
+                      )}
+                    </div>
+                    
+                    {/* Price - Also Vertically Centered */}
+                    <div className="text-right flex flex-col justify-center">
+                      {item.regularPrice && item.regularPrice > item.price ? (
+                        <>
+                          <span className="text-sm text-[#131921] font-medium block">
+                            {formatPrice(item.price * item.quantity)}
+                          </span>
+                          <span className="text-xs text-gray-500 line-through">
+                            {formatPrice(item.regularPrice * item.quantity)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-[#131921] font-medium">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
               
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-black">
+              <div className="border-t border-gray-200 pt-4 space-y-2">
+                <div className="flex justify-between text-[#131921]">
                   <span>Suma częściowa</span>
                   <span>{formatPrice(totalPrice)}</span>
                 </div>
-                <div className="flex justify-between text-black">
+                {totalSavings > 0 && (
+                  <div className="flex justify-between text-[#6da306] font-medium">
+                    <span>Zaoszczędzono</span>
+                    <span>-{formatPrice(totalSavings)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-[#131921]">
                   <span>Dostawa</span>
                   <span className="text-[#8bc34a] font-semibold flex items-center gap-1">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -252,8 +337,8 @@ export default function CartPage() {
                     Gratis
                   </span>
                 </div>
-                <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                  <span className="text-black">Razem</span>
+                <div className="flex justify-between font-semibold text-xl border-t border-gray-200 pt-2">
+                  <span className="text-[#131921]">Razem</span>
                   <span className="text-[#8bc34a]">{formatPrice(totalPrice)}</span>
                 </div>
               </div>

@@ -3,12 +3,12 @@
 
 import { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cart';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, calculateDiscount } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { ArrowLeft, Package, Truck, CreditCard, Banknote, Copy, Building2 } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CreditCard, Banknote, Copy, Building2, ShoppingCart, CheckCircle } from 'lucide-react';
 
 interface CheckoutForm {
   email: string;
@@ -49,7 +49,7 @@ const BANK_DETAILS = {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, getTotalPrice, clearCart } = useCart();
+  const { items, getTotalPrice, getTotalSavings, clearCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkmarkIcon, setCheckmarkIcon] = useState<FeatureIcon | null>(null);
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
@@ -110,6 +110,7 @@ export default function CheckoutPage() {
 
   const deliveryPrice = 0; // Always free
   const totalPrice = getTotalPrice() + deliveryPrice;
+  const totalSavings = getTotalSavings();
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -207,10 +208,10 @@ export default function CheckoutPage() {
               {/* Step 1: Cart */}
               <div className="flex items-center flex-1">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white font-medium">
-                    ✓
+                  <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white">
+                    <ShoppingCart size={20} strokeWidth={2} />
                   </div>
-                  <span className="ml-3 text-sm font-medium text-gray-900">Koszyk</span>
+                  <span className="ml-3 text-sm font-medium text-[#131921]">Koszyk</span>
                 </div>
                 <div className="flex-1 mx-4">
                   <div className="h-1 bg-gray-300 rounded">
@@ -222,10 +223,10 @@ export default function CheckoutPage() {
               {/* Step 2: Checkout */}
               <div className="flex items-center flex-1">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white font-medium">
-                    2
+                  <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white">
+                    <CreditCard size={20} strokeWidth={2} />
                   </div>
-                  <span className="ml-3 text-sm font-medium text-gray-900">Dostawa i płatność</span>
+                  <span className="ml-3 text-sm font-medium text-[#131921]">Dostawa i płatność</span>
                 </div>
                 <div className="flex-1 mx-4">
                   <div className="h-1 bg-gray-300 rounded">
@@ -236,8 +237,8 @@ export default function CheckoutPage() {
               
               {/* Step 3: Success */}
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-medium">
-                  3
+                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
+                  <CheckCircle size={20} strokeWidth={2} />
                 </div>
                 <span className="ml-3 text-sm font-medium text-gray-500">Potwierdzenie</span>
               </div>
@@ -254,11 +255,11 @@ export default function CheckoutPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Contact Information */}
               <div className="bg-white rounded-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-black">Dane kontaktowe</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Dane kontaktowe</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                    <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                       <span>Email</span>
                       {isFieldValid('email') ? (
                         <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -285,7 +286,7 @@ export default function CheckoutPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                    <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                       <span>Telefon</span>
                       {isFieldValid('phone') ? (
                         <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -309,11 +310,11 @@ export default function CheckoutPage() {
 
               {/* Billing Address */}
               <div className="bg-white rounded-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-black">Adres rozliczeniowy</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Adres rozliczeniowy</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                    <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                       <span>Imię</span>
                       {isFieldValid('billingFirstName') ? (
                         <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -333,7 +334,7 @@ export default function CheckoutPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                    <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                       <span>Nazwisko</span>
                       {isFieldValid('billingLastName') ? (
                         <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -354,7 +355,7 @@ export default function CheckoutPage() {
                 </div>
                 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                  <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                     <span>Ulica i numer domu</span>
                     {isFieldValid('billingAddress') ? (
                       <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -375,7 +376,7 @@ export default function CheckoutPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                    <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                       <span>Miasto</span>
                       {isFieldValid('billingCity') ? (
                         <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -395,7 +396,7 @@ export default function CheckoutPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                    <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                       <span>Kod pocztowy</span>
                       {isFieldValid('billingPostalCode') ? (
                         <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -419,7 +420,7 @@ export default function CheckoutPage() {
               {/* Delivery Address */}
               <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-black">Adres dostawy</h2>
+                  <h2 className="text-xl font-semibold text-[#131921]">Adres dostawy</h2>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       {...register('useDifferentDelivery')}
@@ -439,7 +440,7 @@ export default function CheckoutPage() {
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                        <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                           <span>Imię</span>
                           {useDifferentDelivery && isFieldValid('deliveryFirstName') ? (
                             <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -461,7 +462,7 @@ export default function CheckoutPage() {
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                        <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                           <span>Nazwisko</span>
                           {useDifferentDelivery && isFieldValid('deliveryLastName') ? (
                             <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -484,7 +485,7 @@ export default function CheckoutPage() {
                     </div>
                     
                     <div className="mb-4">
-                      <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                      <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                         <span>Ulica i numer domu</span>
                         {useDifferentDelivery && isFieldValid('deliveryAddress') ? (
                           <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -507,7 +508,7 @@ export default function CheckoutPage() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                        <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                           <span>Miasto</span>
                           {useDifferentDelivery && isFieldValid('deliveryCity') ? (
                             <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -529,7 +530,7 @@ export default function CheckoutPage() {
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-black flex items-center">
+                        <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                           <span>Kod pocztowy</span>
                           {useDifferentDelivery && isFieldValid('deliveryPostalCode') ? (
                             <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -556,7 +557,7 @@ export default function CheckoutPage() {
 
               {/* Delivery Method */}
               <div className="bg-white rounded-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-black">Sposób dostawy</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Sposób dostawy</h2>
                 
                 <div className="space-y-3">
                   <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
@@ -581,7 +582,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-3 flex-1">
                       <Truck className="text-gray-600" size={24} />
                       <div className="flex-1">
-                        <div className="font-medium text-black">Najwygodniejsza dostawa</div>
+                        <div className="font-medium text-[#131921]">Najwygodniejsza dostawa</div>
                         <div className="text-sm text-gray-600">Dostarczymy paczkę do Twojego domu za pośrednictwem firmy spedycyjnej. Wybieramy pomiędzy DPD, InPost, DHL lub Pocztą Polską.</div>
                       </div>
                     </div>
@@ -597,7 +598,7 @@ export default function CheckoutPage() {
 
               {/* Payment Method */}
               <div className="bg-white rounded-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-black">Sposób płatności</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Sposób płatności</h2>
                 
                 <div className="space-y-3">
                   <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
@@ -620,7 +621,7 @@ export default function CheckoutPage() {
                     </div>
                     <Building2 className="mr-3 text-gray-600" size={24} />
                     <div className="flex-1">
-                      <div className="font-medium text-black">Przelew bankowy</div>
+                      <div className="font-medium text-[#131921]">Przelew bankowy</div>
                       <div className="text-sm text-gray-600">Płatność przelewem na konto</div>
                     </div>
                   </label>
@@ -645,7 +646,7 @@ export default function CheckoutPage() {
                     </div>
                     <Banknote className="mr-3 text-gray-600" size={24} />
                     <div className="flex-1">
-                      <div className="font-medium text-black">Płatność za pobraniem</div>
+                      <div className="font-medium text-[#131921]">Płatność za pobraniem</div>
                       <div className="text-sm text-gray-600">Płatność przy odbiorze</div>
                     </div>
                   </label>
@@ -654,12 +655,12 @@ export default function CheckoutPage() {
                 {/* Bank Details - shown when bank transfer is selected */}
                 {paymentMethod === 'bank' && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <h3 className="font-semibold text-black mb-2">Dane do przelewu:</h3>
+                    <h3 className="font-semibold text-[#131921] mb-2">Dane do przelewu:</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700">Numer konta:</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-medium text-black">{BANK_DETAILS.accountNumber}</span>
+                          <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.accountNumber}</span>
                           <button
                             type="button"
                             onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Numer konta')}
@@ -672,7 +673,7 @@ export default function CheckoutPage() {
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700">IBAN:</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-medium text-black">{BANK_DETAILS.iban}</span>
+                          <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.iban}</span>
                           <button
                             type="button"
                             onClick={() => copyToClipboard(BANK_DETAILS.iban, 'IBAN')}
@@ -685,7 +686,7 @@ export default function CheckoutPage() {
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700">BIC/SWIFT:</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-medium text-black">{BANK_DETAILS.swift}</span>
+                          <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.swift}</span>
                           <button
                             type="button"
                             onClick={() => copyToClipboard(BANK_DETAILS.swift, 'BIC/SWIFT')}
@@ -705,7 +706,7 @@ export default function CheckoutPage() {
 
               {/* Note */}
               <div className="bg-white rounded-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-black">Uwagi do zamówienia</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Uwagi do zamówienia</h2>
                 <textarea
                   {...register('note')}
                   rows={3}
@@ -719,23 +720,79 @@ export default function CheckoutPage() {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-              <h2 className="text-xl font-semibold mb-4 text-black">Podsumowanie zamówienia</h2>
+              <h2 className="text-xl font-semibold mb-4 text-[#131921]">Podsumowanie zamówienia</h2>
               
-              <div className="space-y-2 mb-4">
+              <div className="space-y-3 mb-4">
                 {items.map((item) => (
-                  <div key={`${item.id}-${item.variantId || 'default'}`} className="flex justify-between text-sm text-black">
-                    <span>{item.quantity}x {item.name}</span>
-                    <span>{formatPrice(item.price * item.quantity)}</span>
+                  <div key={`${item.id}-${item.variantId || 'default'}`} className="flex items-center gap-2">
+                    {/* Small Product Image in Summary */}
+                    <Link 
+                      href={item.categorySlug && item.productSlug 
+                        ? `/${item.categorySlug}/${item.productSlug}` 
+                        : `/products/${item.id}`}
+                      className="w-12 h-12 bg-gray-100 rounded flex-shrink-0 overflow-hidden hover:opacity-80 transition-opacity"
+                    >
+                      {item.image ? (
+                        <img 
+                          src={item.image} 
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <ShoppingCart size={16} />
+                        </div>
+                      )}
+                    </Link>
+                    
+                    {/* Product Details - Vertically Centered */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <Link 
+                        href={item.categorySlug && item.productSlug 
+                          ? `/${item.categorySlug}/${item.productSlug}` 
+                          : `/products/${item.id}`}
+                        className="text-sm text-[#131921] hover:underline transition-all block truncate"
+                      >
+                        {item.quantity}x {item.name}
+                      </Link>
+                      {item.variantName && (
+                        <span className="text-xs text-gray-500">{item.variantName}</span>
+                      )}
+                    </div>
+                    
+                    {/* Price - Also Vertically Centered */}
+                    <div className="text-right flex flex-col justify-center">
+                      {item.regularPrice && item.regularPrice > item.price ? (
+                        <>
+                          <span className="text-sm text-[#131921] font-medium block">
+                            {formatPrice(item.price * item.quantity)}
+                          </span>
+                          <span className="text-xs text-gray-500 line-through">
+                            {formatPrice(item.regularPrice * item.quantity)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-[#131921] font-medium">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
               
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-black">
+              <div className="border-t border-gray-200 pt-4 space-y-2">
+                <div className="flex justify-between text-[#131921]">
                   <span>Suma częściowa</span>
                   <span>{formatPrice(getTotalPrice())}</span>
                 </div>
-                <div className="flex justify-between text-black">
+                {totalSavings > 0 && (
+                  <div className="flex justify-between text-[#6da306] font-medium">
+                    <span>Zaoszczędzono</span>
+                    <span>-{formatPrice(totalSavings)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-[#131921]">
                   <span>Dostawa</span>
                   <span className="text-[#8bc34a] font-semibold flex items-center gap-1">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -744,8 +801,8 @@ export default function CheckoutPage() {
                     Gratis
                   </span>
                 </div>
-                <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                  <span className="text-black">Razem</span>
+                <div className="flex justify-between font-semibold text-xl border-t border-gray-200 pt-2">
+                  <span className="text-[#131921]">Razem</span>
                   <span className="text-[#8bc34a]">{formatPrice(totalPrice)}</span>
                 </div>
               </div>

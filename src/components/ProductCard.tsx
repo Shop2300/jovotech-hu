@@ -64,11 +64,14 @@ export function ProductCard({ product }: { product: Product }) {
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.image
+        regularPrice: product.regularPrice || undefined, // Add regular price
+        image: product.image,
+        categorySlug: product.category?.slug, // Add category slug
+        productSlug: product.slug || undefined // Add product slug
       });
       
       // Show success notification with toast
-      toast.success(`${product.name} byl přidán do košíku`);
+      toast.success(`${product.name} dodany do koszyka`);
     }
   };
 
@@ -94,7 +97,7 @@ export function ProductCard({ product }: { product: Product }) {
             )}
             {!inStock && (
               <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <span className="text-white font-bold text-lg" style={{ fontFamily: sfFontFamily }}>Vyprodáno</span>
+                <span className="text-white font-bold text-lg" style={{ fontFamily: sfFontFamily }}>Wyprodáno</span>
               </div>
             )}
             {discount > 0 && inStock && (
@@ -115,7 +118,7 @@ export function ProductCard({ product }: { product: Product }) {
           {/* Availability - Centered */}
           <div className="text-center mb-3">
             <span className={`text-sm font-medium ${inStock ? 'text-green-600' : 'text-red-600'}`} style={{ fontFamily: sfFontFamily }}>
-              {inStock ? 'Na stanie' : 'Vyprodáno'}
+              {inStock ? 'Na stanie' : 'Wyprodáno'}
             </span>
           </div>
 

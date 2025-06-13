@@ -71,7 +71,10 @@ function MiniProductCard({ product }: { product: Product }) {
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.image
+        regularPrice: product.regularPrice || undefined, // Add regular price
+        image: product.image,
+        categorySlug: product.category?.slug, // Add category slug
+        productSlug: product.slug || undefined // Add product slug
       });
       
       toast.success(`${product.name} został dodany do koszyka`);

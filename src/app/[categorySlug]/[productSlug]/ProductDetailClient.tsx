@@ -78,6 +78,7 @@ interface ProductDetailClientProps {
     id: string;
     code?: string | null;
     name: string;
+    slug?: string; // Add slug property
     description: string | null;
     detailDescription: string | null;
     price: number;
@@ -296,17 +297,17 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       toast.error('Produkt niedostępny');
       return;
     }
-
+  
     if (hasColors && !selectedColor) {
       toast.error('Proszę wybrać kolor');
       return;
     }
-
+  
     if (hasSizes && !selectedSize) {
       toast.error('Proszę wybrać rozmiar');
       return;
     }
-
+  
     // Create variant display name
     let variantDisplayName = '';
     if (selectedColor && selectedSize) {
@@ -316,24 +317,27 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     } else if (selectedSize) {
       variantDisplayName = selectedSize;
     }
-
+  
     // Store quantity for popup display
     setAddedQuantity(quantity);
-
+  
     // Add multiple items based on quantity
     for (let i = 0; i < quantity; i++) {
       addItem({
         id: product.id,
         name: product.name,
         price: Number(effectivePrice),
+        regularPrice: product.regularPrice || undefined, // Add regular price
         image: selectedVariant?.imageUrl || product.image,
         variantId: selectedVariant?.id,
         variantName: variantDisplayName,
         variantColor: selectedVariant?.colorCode || undefined,
-        variantSize: selectedSize || undefined
+        variantSize: selectedSize || undefined,
+        categorySlug: product.category?.slug,
+        productSlug: product.slug
       });
     }
-
+  
     // Show popup instead of toast
     setShowCartPopup(true);
     setQuantity(1);

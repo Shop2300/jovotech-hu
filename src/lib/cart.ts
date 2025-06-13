@@ -6,12 +6,15 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
+  regularPrice?: number; // Add regular price for discount display
   quantity: number;
   image: string | null;
   variantId?: string;
-  variantName?: string; // This will now be "Červená / L" format
+  variantName?: string; // This will now be "Czerwona / L" format
   variantColor?: string;
   variantSize?: string; // Add size
+  categorySlug?: string; // Add category slug for navigation
+  productSlug?: string; // Add product slug for navigation
 }
 
 interface CartStore {
@@ -22,6 +25,7 @@ interface CartStore {
   clearCart: () => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
+  getTotalSavings: () => number; // Add method to calculate total savings
 }
 
 export const useCart = create<CartStore>()(
@@ -90,6 +94,16 @@ export const useCart = create<CartStore>()(
       getTotalItems: () => {
         const items = get().items;
         return items.reduce((total, item) => total + item.quantity, 0);
+      },
+      
+      getTotalSavings: () => {
+        const items = get().items;
+        return items.reduce((total, item) => {
+          if (item.regularPrice && item.regularPrice > item.price) {
+            return total + ((item.regularPrice - item.price) * item.quantity);
+          }
+          return total;
+        }, 0);
       },
     }),
     {
