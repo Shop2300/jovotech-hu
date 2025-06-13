@@ -4,14 +4,13 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cart';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
-import { ShoppingCart, Package, Info, MessageCircle, Truck, RotateCcw, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, Package, Info, MessageCircle, Truck, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ProductImageGallery } from '@/components/ProductImageGallery';
-import { StarRating } from '@/components/StarRating';
-import { ReviewForm } from '@/components/ReviewForm';
 import { RelatedProducts } from '@/components/RelatedProducts';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import Image from 'next/image';
+import Link from 'next/link';
 
 // Helper function to calculate next delivery date
 function getNextDeliveryDate(): string {
@@ -74,15 +73,6 @@ interface ProductImage {
   order: number;
 }
 
-interface Review {
-  id: string;
-  rating: number;
-  comment?: string | null;
-  authorName: string;
-  authorEmail: string;
-  createdAt: string;
-}
-
 interface ProductDetailClientProps {
   product: {
     id: string;
@@ -110,14 +100,23 @@ interface ProductDetailClientProps {
 
 export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const addItem = useCart((state) => state.addItem);
+  const getTotalItems = useCart((state) => state.getTotalItems);
+  const getTotalPrice = useCart((state) => state.getTotalPrice);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [rating, setRating] = useState({
+    average: product.averageRating || 0,
+    total: product.totalRatings || 0
+  });
   const [showPriceGuarantee, setShowPriceGuarantee] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
+  const [hasRated, setHasRated] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [showCartPopup, setShowCartPopup] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  const [addedQuantity, setAddedQuantity] = useState(1);
 
   // Get unique colors and sizes
   const colors = Array.from(new Set(product.variants?.filter(v => v.colorName).map(v => v.colorName))) as string[];
@@ -127,22 +126,121 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const hasSizes = sizes.length > 0;
   const hasVariants = product.variants && product.variants.length > 0;
 
-  // Fetch reviews
-  useEffect(() => {
-    fetchReviews();
-  }, [product.id]);
+  // Handle star rating click
+  const handleStarClick = async (selectedRating: number) => {
+    if (hasRated) {
+      toast.error('Już oceniłeś ten produkt');
+      return;
+    }
 
-  const fetchReviews = async () => {
     try {
-      const response = await fetch(`/api/products/${product.id}/reviews`);
+      const response = await fetch(`/api/products/${product.id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rating: selectedRating,
+          comment: '',
+          authorName: 'Anonym',
+          authorEmail: `anon${Date.now()}@example.com`
+        }),
+      });
+
       if (response.ok) {
-        const data = await response.json();
-        setReviews(data);
+        // Update local rating state
+        const newTotal = rating.total + 1;
+        const newAverage = ((rating.average * rating.total) + selectedRating) / newTotal;
+        
+        setRating({
+          average: newAverage,
+          total: newTotal
+        });
+        setHasRated(true);
+        
+        // Store in localStorage to prevent multiple ratings
+        localStorage.setItem(`rated_${product.id}`, 'true');
+        
+        toast.success('Dziękujemy za ocenę!');
       }
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      console.error('Error submitting rating:', error);
+      toast.error('Nie udało się zapisać oceny');
     }
   };
+
+  // Check if user has already rated
+  useEffect(() => {
+    const rated = localStorage.getItem(`rated_${product.id}`);
+    if (rated) {
+      setHasRated(true);
+    }
+  }, [product.id]);
+
+  // Prevent body scroll when popup is open
+  useEffect(() => {
+    if (showCartPopup) {
+      document.body.style.overflow = 'hidden';
+      
+      // Handle ESC key
+      const handleEsc = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setShowCartPopup(false);
+        }
+      };
+      document.addEventListener('keydown', handleEsc);
+      
+      return () => {
+        document.removeEventListener('keydown', handleEsc);
+        document.body.style.overflow = 'unset';
+      };
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [showCartPopup]);
+
+  // Fetch related products from the same category
+  const fetchRelatedProducts = async () => {
+    try {
+      let url = '/api/products';
+      const params = new URLSearchParams();
+      
+      if (product.category) {
+        // First try to get products from the same category
+        const categoryResponse = await fetch(`/api/products?categoryId=${product.category.id}&limit=5`);
+        if (categoryResponse.ok) {
+          const categoryData = await categoryResponse.json();
+          const filtered = categoryData
+            .filter((p: any) => p.id !== product.id)
+            .slice(0, 4);
+          
+          if (filtered.length >= 4) {
+            setRelatedProducts(filtered);
+            return;
+          }
+        }
+      }
+      
+      // If not enough products in category, get general products
+      const response = await fetch('/api/products?limit=8');
+      if (response.ok) {
+        const data = await response.json();
+        // Filter out current product and limit to 4
+        const filtered = data
+          .filter((p: any) => p.id !== product.id)
+          .slice(0, 4);
+        setRelatedProducts(filtered);
+      }
+    } catch (error) {
+      console.error('Error fetching related products:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (showCartPopup) {
+      fetchRelatedProducts();
+    }
+  }, [showCartPopup, product.category?.id, product.id]);
 
   // Update selected variant when color or size changes
   useEffect(() => {
@@ -219,6 +317,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       variantDisplayName = selectedSize;
     }
 
+    // Store quantity for popup display
+    setAddedQuantity(quantity);
+
     // Add multiple items based on quantity
     for (let i = 0; i < quantity; i++) {
       addItem({
@@ -233,7 +334,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       });
     }
 
-    toast.success(`${quantity}x ${product.name} ${variantDisplayName ? `(${variantDisplayName})` : ''} dodano do koszyka!`);
+    // Show popup instead of toast
+    setShowCartPopup(true);
     setQuantity(1);
   };
 
@@ -268,7 +370,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             {/* Detailed Description */}
             {product.detailDescription && (
               <div className="mt-8 border-t border-gray-200 pt-6">
-                <h2 className="text-xl font-bold mb-4 text-black">Szczegółowy opis</h2>
+                <h2 className="text-xl font-bold mb-4 text-[#131921]">Szczegółowy opis</h2>
                 <div 
                   className="prose prose-lg max-w-none text-gray-700"
                   dangerouslySetInnerHTML={{ __html: product.detailDescription }}
@@ -281,7 +383,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           <div className="space-y-6">
             {/* Title and Basic Info Section */}
             <div>
-              <h1 className="text-3xl font-bold text-black mb-2">{product.name}</h1>
+              <h1 className="text-3xl font-bold text-[#131921] mb-2">{product.name}</h1>
               {/* Brand and Product Code */}
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                 {product.brand && (
@@ -293,18 +395,52 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 <span>Kod: {product.code || product.id}</span>
               </div>
               
-              {/* Rating */}
-              {product.totalRatings !== undefined && product.totalRatings > 0 && (
-                <div className="flex items-center gap-2 mb-4">
-                  <StarRating 
-                    rating={product.averageRating || 0} 
-                    size="md"
-                  />
-                  <span className="text-gray-600">
-                    {product.averageRating?.toFixed(1)} z 5 ({product.totalRatings} recenzji)
-                  </span>
+              {/* Rating - Interactive */}
+              <div className="flex items-center gap-3 mb-4">
+                {/* Interactive Stars */}
+                <div 
+                  className="flex items-center"
+                  onMouseLeave={() => setHoverRating(0)}
+                >
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const isFilled = hoverRating > 0 
+                      ? star <= hoverRating 
+                      : star <= Math.round(rating.average);
+                    
+                    return (
+                      <button
+                        key={star}
+                        onClick={() => handleStarClick(star)}
+                        onMouseEnter={() => !hasRated && setHoverRating(star)}
+                        className={`text-2xl transition-all duration-200 ${
+                          hasRated ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:scale-110 active:scale-125'
+                        }`}
+                        disabled={hasRated}
+                        title={hasRated ? 'Już oceniłeś ten produkt' : `Oceń ${star} ${star === 1 ? 'gwiazdkę' : star < 5 ? 'gwiazdki' : 'gwiazdek'}`}
+                      >
+                        <span className={`${isFilled ? 'text-yellow-400' : 'text-gray-300'} transition-colors duration-200`}>
+                          ★
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
+                
+                {/* Rating Info */}
+                {rating.total > 0 && (
+                  <span className="text-gray-600">
+                    {rating.average.toFixed(1)} z 5 ({rating.total} {rating.total === 1 ? 'ocena' : rating.total < 5 ? 'oceny' : 'ocen'})
+                  </span>
+                )}
+                
+                {rating.total === 0 && !hasRated && (
+                  <span className="text-gray-500 text-sm">Kliknij gwiazdkę, aby ocenić!</span>
+                )}
+                
+                {hasRated && (
+                  <span className="text-[#6da306] text-sm">✓ Dziękujemy za ocenę!</span>
+                )}
+              </div>
               
               {/* Product Description - Moved closer to title */}
               {product.description && (
@@ -332,7 +468,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                         -{calculateDiscount(Number(effectivePrice), product.regularPrice)}%
                       </span>
                     </div>
-                    <p className="text-green-600 font-medium text-sm">
+                    <p className="text-[#6da306] font-medium text-sm">
                       Oszczędzasz {formatPrice(product.regularPrice - Number(effectivePrice))}
                     </p>
                   </>
@@ -414,9 +550,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               
               {/* Stock Status */}
               <div className="flex items-center gap-2">
-                <Package className={effectiveStock > 0 ? 'text-green-600' : 'text-red-600'} size={20} />
+                <Package className={effectiveStock > 0 ? 'text-[#6da306]' : 'text-red-600'} size={20} />
                 <div>
-                  <span className={`font-semibold ${effectiveStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`font-semibold ${effectiveStock > 0 ? 'text-[#6da306]' : 'text-red-600'}`}>
                     {formatStockDisplay(effectiveStock)}
                   </span>
                   {effectiveStock > 0 && (
@@ -456,11 +592,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 </div>
               </div>
               
-              {/* Add to Cart Button - Updated Color */}
+              {/* Add to Cart Button - Updated with more rounded corners */}
               <button
                 onClick={handleAddToCart}
                 disabled={effectiveStock === 0}
-                className={`w-full py-4 rounded-lg font-semibold text-lg transition flex items-center justify-center gap-3 ${
+                className={`w-full py-4 rounded-full font-semibold text-lg transition flex items-center justify-center gap-3 ${
                   effectiveStock === 0
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'text-white'
@@ -493,7 +629,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       height={20}
                       className="inline-block"
                     />
-                    <span style={{ color: '#5fb643' }} className="underline font-bold">Gwarancja najlepszej ceny</span>
+                    <span style={{ color: '#6da306' }} className="underline font-bold">Gwarancja najlepszej ceny</span>
                     <button
                       type="button"
                       className="relative"
@@ -555,7 +691,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                       <Truck className="w-6 h-6 text-gray-600" />
                     </div>
-                    <h4 className="text-sm font-semibold text-gray-800 mb-1">Darmowa wysyłka</h4>
+                    <h4 className="text-sm font-semibold text-[#131921] mb-1">Darmowa wysyłka</h4>
                     <p className="text-xs text-gray-600">Już od zakupu 0 zł</p>
                   </div>
                   
@@ -564,7 +700,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                       <RotateCcw className="w-6 h-6 text-gray-600" />
                     </div>
-                    <h4 className="text-sm font-semibold text-gray-800 mb-1">Bezpłatny zwrot</h4>
+                    <h4 className="text-sm font-semibold text-[#131921] mb-1">Bezpłatny zwrot</h4>
                     <p className="text-xs text-gray-600">Do 14 dni</p>
                   </div>
                   
@@ -573,65 +709,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                       <ShieldCheck className="w-6 h-6 text-gray-600" />
                     </div>
-                    <h4 className="text-sm font-semibold text-gray-800 mb-1">Wiarygodny sklep</h4>
+                    <h4 className="text-sm font-semibold text-[#131921] mb-1">Wiarygodny sklep</h4>
                     <p className="text-xs text-gray-600">100% bezpieczne zakupy</p>
                   </div>
-                </div>
-              </div>
-              
-              {/* Reviews Section */}
-              <div className="border-t border-gray-200 pt-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-black">
-                    Recenzje ({reviews.length})
-                  </h3>
-                  <button
-                    onClick={() => setShowReviewForm(!showReviewForm)}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    {showReviewForm ? 'Anuluj' : 'Napisz recenzję'}
-                  </button>
-                </div>
-                
-                {showReviewForm && (
-                  <div className="mb-6">
-                    <ReviewForm 
-                      productId={product.id} 
-                      onSuccess={() => {
-                        setShowReviewForm(false);
-                        fetchReviews();
-                        window.location.reload(); // Refresh to update rating
-                      }} 
-                    />
-                  </div>
-                )}
-                
-                {/* Display Reviews */}
-                <div className="space-y-4">
-                  {reviews.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">
-                      Brak recenzji. Bądź pierwszy!
-                    </p>
-                  ) : (
-                    reviews.map((review) => (
-                      <div key={review.id} className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            {review.authorName && review.authorName !== 'Anonym' && (
-                              <p className="font-semibold text-black mb-1">{review.authorName}</p>
-                            )}
-                            <StarRating rating={review.rating} size="sm" />
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {new Date(review.createdAt).toLocaleDateString('pl-PL')}
-                          </span>
-                        </div>
-                        {review.comment && (
-                          <p className="text-gray-700 mt-2">{review.comment}</p>
-                        )}
-                      </div>
-                    ))
-                  )}
                 </div>
               </div>
             </div>
@@ -743,6 +823,170 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Cart Popup Modal */}
+      {showCartPopup && (
+        <>
+          {/* Backdrop - Transparent with blur */}
+          <div 
+            className="fixed inset-0 z-50"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(2px)' }}
+            onClick={() => setShowCartPopup(false)}
+          />
+          
+          {/* Modal - Wider to prevent scrollbars */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden">
+              {/* Header */}
+              <div className="bg-[#6da306] text-white p-6">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white rounded-full p-2">
+                      <svg className="w-6 h-6 text-[#6da306]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold">
+                      {addedQuantity > 1 
+                        ? `${addedQuantity} ${addedQuantity < 5 ? 'produkty' : 'produktów'} ${addedQuantity < 5 ? 'dodane' : 'dodanych'} do koszyka!` 
+                        : 'Produkt dodany do koszyka!'}
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setShowCartPopup(false)}
+                    className="text-white hover:text-[#131921] transition-colors p-1 rounded-lg"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 120px)' }}>
+                {/* Added Product */}
+                <div className="flex items-center gap-6 pb-6 border-b border-gray-100">
+                  <img
+                    src={selectedVariant?.imageUrl || product.image || '/placeholder.png'}
+                    alt={product.name}
+                    className="w-48 h-48 object-contain rounded-xl bg-gray-50"
+                  />
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-[#131921] text-lg">{product.name}</h4>
+                    {(selectedColor || selectedSize) && (
+                      <p className="text-gray-600 text-sm">
+                        {selectedColor && <span>Kolor: {selectedColor}</span>}
+                        {selectedColor && selectedSize && <span> • </span>}
+                        {selectedSize && <span>Rozmiar: {selectedSize}</span>}
+                      </p>
+                    )}
+                    <div className="mt-1">
+                      {product.regularPrice && product.regularPrice > effectivePrice ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[#6da306] font-bold text-lg">
+                            {formatPrice(Number(effectivePrice))}
+                          </span>
+                          <span className="text-sm text-gray-500 line-through">
+                            {formatPrice(product.regularPrice)}
+                          </span>
+                          <span className="bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-bold">
+                            -{calculateDiscount(Number(effectivePrice), product.regularPrice)}%
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[#6da306] font-bold text-lg">
+                          {formatPrice(Number(effectivePrice))}
+                        </span>
+                      )}
+                      {addedQuantity > 1 && (
+                        <span className="text-sm text-gray-600 ml-2">
+                          x {addedQuantity} = {formatPrice(Number(effectivePrice) * addedQuantity)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Free Shipping Notice */}
+                <div className="bg-green-50 border border-green-200 rounded-xl p-3 my-6 flex items-center gap-3">
+                  <Truck className="text-[#6da306]" size={20} />
+                  <p className="text-sm">
+                    <span className="font-semibold text-[#6da306]">Darmowa dostawa</span>
+                    <span className="text-[#131921]"> już od 0 zł! Dostawa w 1-2 dni robocze.</span>
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4 my-6">
+                  <button
+                    onClick={() => setShowCartPopup(false)}
+                    className="flex-1 py-3 px-6 bg-white border border-gray-100 rounded-xl font-semibold text-[#131921] hover:bg-gray-50 hover:border-gray-200 transition-all duration-200"
+                  >
+                    Kontynuuj zakupy
+                  </button>
+                  <Link
+                    href="/cart"
+                    className="flex-1 py-3 px-6 bg-[#6da306] text-white rounded-xl font-semibold hover:bg-[#5d8f05] transition-colors text-center"
+                    onClick={() => setShowCartPopup(false)}
+                  >
+                    Przejdź do koszyka
+                  </Link>
+                </div>
+
+                {/* Related Products */}
+                {relatedProducts.length > 0 && (
+                  <div className="mt-8">
+                    <h4 className="text-lg font-semibold text-[#131921] mb-4 text-center">Może Cię również zainteresować</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {relatedProducts.map((relatedProduct) => (
+                        <Link
+                          key={relatedProduct.id}
+                          href={`/${relatedProduct.category?.slug || 'product'}/${relatedProduct.slug}`}
+                          className="group"
+                          onClick={() => setShowCartPopup(false)}
+                        >
+                          <div className="rounded-xl p-3 shadow-sm hover:shadow-lg transition-all duration-200 bg-white">
+                            <div className="aspect-square mb-3 overflow-hidden rounded-xl bg-gray-50">
+                              <img
+                                src={relatedProduct.image || '/placeholder.png'}
+                                alt={relatedProduct.name}
+                                className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                              />
+                            </div>
+                            <h5 className="font-medium text-sm text-[#131921] line-clamp-2 mb-2">
+                              {relatedProduct.name}
+                            </h5>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex-shrink-0">
+                                {relatedProduct.regularPrice && relatedProduct.regularPrice > relatedProduct.price ? (
+                                  <>
+                                    <p className="text-[#6da306] font-bold">
+                                      {formatPrice(relatedProduct.price)}
+                                    </p>
+                                    <p className="text-xs text-gray-500 line-through">
+                                      {formatPrice(relatedProduct.regularPrice)}
+                                    </p>
+                                  </>
+                                ) : (
+                                  <p className="text-[#6da306] font-bold">
+                                    {formatPrice(relatedProduct.price)}
+                                  </p>
+                                )}
+                              </div>
+                              <button className="py-1.5 px-3 bg-[#6da306] text-white text-xs font-medium rounded-lg hover:bg-[#5d8f05] transition-colors whitespace-nowrap">
+                                Zobacz
+                              </button>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

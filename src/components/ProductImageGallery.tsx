@@ -1,8 +1,8 @@
 // src/components/ProductImageGallery.tsx
 'use client';
 
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useRef, MouseEvent } from 'react';
+import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 
 interface ProductImage {
   id: string;
@@ -18,7 +18,10 @@ interface ProductImageGalleryProps {
 
 export function ProductImageGallery({ images, productName }: ProductImageGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [showMagnifier, setShowMagnifier] = useState(false);
+  const [magnifierPosition, setMagnifierPosition] = useState({ x: 0, y: 0 });
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLDivElement>(null);
 
   // Sort images by order
   const sortedImages = [...images].sort((a, b) => a.order - b.order);
@@ -41,24 +44,83 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
     setSelectedIndex((prev) => (prev === sortedImages.length - 1 ? 0 : prev + 1));
   };
 
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (!imageRef.current) return;
+
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Calculate percentage position
+    const xPercent = (x / rect.width) * 100;
+    const yPercent = (y / rect.height) * 100;
+
+    setCursorPosition({ x, y });
+    setMagnifierPosition({ x: xPercent, y: yPercent });
+  };
+
+  const handleMouseEnter = () => {
+    setShowMagnifier(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowMagnifier(false);
+  };
+
+  const magnifierSize = 250;
+  const zoomLevel = 3.5;
+
   return (
     <div className="space-y-4">
       {/* Main Image */}
       <div className="relative group">
         <div 
-          className={`relative overflow-hidden rounded-lg bg-white ${
-            isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'
-          }`}
-          onClick={() => setIsZoomed(!isZoomed)}
+          ref={imageRef}
+          className="relative overflow-hidden rounded-lg bg-white cursor-zoom-in"
+          onMouseMove={handleMouseMove}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
-          <div className="aspect-square w-full">
+          <div className="aspect-square w-full relative">
             <img
               src={currentImage.url}
               alt={currentImage.alt || `${productName} - zdjęcie ${selectedIndex + 1}`}
-              className={`w-full h-full object-contain transition-transform duration-300 ${
-                isZoomed ? 'scale-150' : ''
-              }`}
+              className="w-full h-full object-contain"
             />
+            
+            {/* Zoom hint icon */}
+            <div className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              <ZoomIn size={20} className="text-gray-600" />
+            </div>
+
+            {/* Magnifier */}
+            {showMagnifier && (
+              <div
+                className="absolute pointer-events-none border-2 border-gray-300 rounded-full shadow-2xl overflow-hidden bg-white"
+                style={{
+                  width: `${magnifierSize}px`,
+                  height: `${magnifierSize}px`,
+                  left: `${cursorPosition.x - magnifierSize / 2}px`,
+                  top: `${cursorPosition.y - magnifierSize / 2}px`,
+                  zIndex: 50,
+                }}
+              >
+                <div
+                  className="absolute w-full h-full"
+                  style={{
+                    backgroundImage: `url(${currentImage.url})`,
+                    backgroundSize: `${zoomLevel * 100}%`,
+                    backgroundPosition: `${magnifierPosition.x}% ${magnifierPosition.y}%`,
+                    backgroundRepeat: 'no-repeat',
+                  }}
+                />
+                {/* Crosshair in magnifier */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-px h-4 bg-gray-400 opacity-50" />
+                  <div className="w-4 h-px bg-gray-400 opacity-50 absolute" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
@@ -90,7 +152,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
         
         {/* Image counter */}
         {sortedImages.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white shadow-md px-3 py-1 rounded-full text-sm text-gray-700 font-medium">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white shadow-md px-3 py-1 rounded-full text-sm text-gray-700 font-medium opacity-90">
             {selectedIndex + 1} / {sortedImages.length}
           </div>
         )}
