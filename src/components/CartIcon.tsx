@@ -1,24 +1,37 @@
-// src/components/CartIcon.tsx
+// src/components/CartIcon.tsx - Minimal Version
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { useCart } from '@/lib/cart';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export function CartIcon() {
   const { getTotalItems } = useCart();
   const [totalItems, setTotalItems] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const prevItemsRef = useRef(0);
 
   // Update cart count after component mounts to avoid hydration mismatch
   useEffect(() => {
-    setTotalItems(getTotalItems());
+    const items = getTotalItems();
+    setTotalItems(items);
+    prevItemsRef.current = items;
   }, [getTotalItems]);
 
   // Subscribe to cart changes
   useEffect(() => {
     const unsubscribe = useCart.subscribe(() => {
-      setTotalItems(getTotalItems());
+      const newTotal = getTotalItems();
+      
+      // Trigger animation if count increased
+      if (newTotal > prevItemsRef.current) {
+        setIsAnimating(true);
+        setTimeout(() => setIsAnimating(false), 600);
+      }
+      
+      setTotalItems(newTotal);
+      prevItemsRef.current = newTotal;
     });
     
     return unsubscribe;
@@ -27,15 +40,54 @@ export function CartIcon() {
   return (
     <Link 
       href="/cart" 
-      className="relative flex items-center text-gray-600 hover:text-gray-900"
-      title="Koszyk"
+      className="relative group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200"
     >
-      <ShoppingCart size={24} />
-      {totalItems > 0 && (
-        <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-          {totalItems}
+      {/* Icon with subtle animations */}
+      <div className="relative">
+        <ShoppingBag 
+          size={26} 
+          className="text-[#131921] transition-transform duration-200 group-hover:scale-105"
+          strokeWidth={1.5}
+        />
+        
+        {/* Modern minimalist badge */}
+        {totalItems > 0 && (
+          <div
+            className={`
+              absolute -top-2 -right-2 
+              bg-[#6da306] 
+              text-white rounded-full 
+              min-w-[18px] h-[18px] 
+              flex items-center justify-center 
+              text-[11px] font-semibold
+              ring-2 ring-white
+              transform transition-transform duration-500
+              ${isAnimating ? 'scale-110 animate-bounce' : 'scale-100'}
+            `}
+            style={{
+              paddingLeft: totalItems > 9 ? '5px' : '0',
+              paddingRight: totalItems > 9 ? '5px' : '0',
+            }}
+          >
+            {totalItems > 99 ? '99+' : totalItems}
+          </div>
+        )}
+      </div>
+
+      {/* Text label with count */}
+      <div className="hidden md:flex flex-col items-start">
+        <span className="text-xs text-gray-500 leading-tight">Koszyk</span>
+        <span className="text-sm font-semibold text-[#131921] leading-tight">
+          {totalItems === 0 ? 'pusty' : `${totalItems} ${totalItems === 1 ? 'produkt' : totalItems < 5 ? 'produkty' : 'produktów'}`}
         </span>
-      )}
+      </div>
+
+      {/* Hover effect indicator */}
+      <div className={`
+        absolute bottom-0 left-1/2 transform -translate-x-1/2 
+        h-0.5 bg-[#6da306] transition-all duration-300
+        ${totalItems > 0 ? 'w-0 group-hover:w-8' : 'w-0'}
+      `} />
     </Link>
   );
 }

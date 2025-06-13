@@ -9,7 +9,7 @@ import Image from 'next/image';
 
 export function Header() {
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0" style={{ zIndex: 1000 }}>
+    <header className="bg-white sticky top-0" style={{ zIndex: 1000 }}>
       <div className="max-w-screen-2xl mx-auto px-6">
         <div className="flex items-center justify-between py-3">
           {/* Logo */}
