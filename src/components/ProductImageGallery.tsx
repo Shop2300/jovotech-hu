@@ -51,12 +51,14 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // Calculate percentage position
-    const xPercent = (x / rect.width) * 100;
-    const yPercent = (y / rect.height) * 100;
-
     setCursorPosition({ x, y });
-    setMagnifierPosition({ x: xPercent, y: yPercent });
+    
+    // Calculate the background position for proper alignment
+    // This ensures the zoomed area matches exactly where the cursor is
+    const backgroundX = -(x * zoomLevel - magnifierSize / 2);
+    const backgroundY = -(y * zoomLevel - magnifierSize / 2);
+    
+    setMagnifierPosition({ x: backgroundX, y: backgroundY });
   };
 
   const handleMouseEnter = () => {
@@ -67,8 +69,9 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
     setShowMagnifier(false);
   };
 
-  const magnifierSize = 250;
-  const zoomLevel = 3.5;
+  // Increased magnifier size and zoom level
+  const magnifierSize = 300; // Increased from 250px
+  const zoomLevel = 2.5; // Reduced zoom for better balance
 
   return (
     <div className="space-y-4">
@@ -106,18 +109,20 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                 }}
               >
                 <div
-                  className="absolute w-full h-full"
+                  className="absolute"
                   style={{
+                    width: `${imageRef.current?.offsetWidth ? imageRef.current.offsetWidth * zoomLevel : 0}px`,
+                    height: `${imageRef.current?.offsetHeight ? imageRef.current.offsetHeight * zoomLevel : 0}px`,
                     backgroundImage: `url(${currentImage.url})`,
-                    backgroundSize: `${zoomLevel * 100}%`,
-                    backgroundPosition: `${magnifierPosition.x}% ${magnifierPosition.y}%`,
+                    backgroundSize: `${imageRef.current?.offsetWidth ? imageRef.current.offsetWidth * zoomLevel : 0}px ${imageRef.current?.offsetHeight ? imageRef.current.offsetHeight * zoomLevel : 0}px`,
+                    backgroundPosition: `${magnifierPosition.x}px ${magnifierPosition.y}px`,
                     backgroundRepeat: 'no-repeat',
                   }}
                 />
                 {/* Crosshair in magnifier */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-px h-4 bg-gray-400 opacity-50" />
-                  <div className="w-4 h-px bg-gray-400 opacity-50 absolute" />
+                  <div className="w-px h-6 bg-gray-400 opacity-50" />
+                  <div className="w-6 h-px bg-gray-400 opacity-50 absolute" />
                 </div>
               </div>
             )}

@@ -623,7 +623,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               
               {/* Price Guarantee and Warranty */}
               <div className="pt-6 relative">
-                <div className="flex items-center gap-6 text-base">
+                <div className="flex items-center gap-6 text-[14.3px]">
                   {/* Price Guarantee - Updated with custom icon and styling */}
                   <div className="flex items-center gap-2">
                     <Image 
