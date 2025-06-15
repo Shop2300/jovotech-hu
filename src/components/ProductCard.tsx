@@ -110,8 +110,8 @@ export function ProductCard({ product }: { product: Product }) {
 
         {/* Product Info Container */}
         <div className="p-4 flex-1 flex flex-col">
-          {/* Product Title - Centered and Less Bold */}
-          <h3 className="text-lg font-medium mb-3 text-gray-900 hover:underline transition line-clamp-2 min-h-[3.5rem] text-center" style={{ fontFamily: sfFontFamily }}>
+          {/* Product Title - Smaller Font Size */}
+          <h3 className="text-base font-medium mb-3 text-gray-900 hover:underline transition line-clamp-2 min-h-[3rem] text-center" style={{ fontFamily: sfFontFamily }}>
             {product.name}
           </h3>
 

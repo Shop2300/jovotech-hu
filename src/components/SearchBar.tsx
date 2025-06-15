@@ -38,18 +38,44 @@ export function SearchBar() {
   const [totalResults, setTotalResults] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [popularSearches, setPopularSearches] = useState<string[]>([]);
   
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Popular searches (Polish products)
-  const popularSearches = ['router CNC', 'ultradźwięki', 'prasy', 'lasery', 'elektronika'];
-
-  // Load recent searches on mount
+  // Load recent searches and fetch random products on mount
   useEffect(() => {
     setRecentSearches(getRecentSearches());
+    fetchRandomProducts();
   }, []);
+
+  // Fetch random products for popular searches
+  const fetchRandomProducts = async () => {
+    try {
+      const response = await fetch('/api/products?limit=50'); // Fetch more to get better randomization
+      if (response.ok) {
+        const products = await response.json();
+        
+        // Shuffle array and pick 5 random products
+        const shuffled = products.sort(() => 0.5 - Math.random());
+        const randomProducts = shuffled.slice(0, 5);
+        
+        // Extract product names
+        const productNames = randomProducts.map((product: any) => {
+          // Shorten long product names if needed
+          const name = product.name;
+          return name.length > 30 ? name.substring(0, 30) + '...' : name;
+        });
+        
+        setPopularSearches(productNames);
+      }
+    } catch (error) {
+      console.error('Error fetching random products:', error);
+      // Fallback to some default searches if fetch fails
+      setPopularSearches(['router CNC', 'ultradźwięki', 'prasy', 'lasery', 'elektronika']);
+    }
+  };
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -192,7 +218,7 @@ export function SearchBar() {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Czego szukasz? Np. router CNC, ultradźwięki, prasy termotransferowe..."
-          className="w-full px-4 py-2.5 pr-20 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-white placeholder:text-sm placeholder:text-gray-400"
+          className="w-full px-4 py-2.5 pr-20 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#131921] focus:border-[#131921] text-black bg-white placeholder:text-sm placeholder:text-gray-400"
         />
         
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -224,7 +250,7 @@ export function SearchBar() {
             style={{ zIndex: 2147483646 }}
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-[500px] overflow-hidden search-dropdown" style={{ 
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-xl border border-gray-200 max-h-[500px] overflow-hidden search-dropdown" style={{ 
             backgroundColor: '#ffffff',
             zIndex: 2147483647,
             isolation: 'isolate'
@@ -342,7 +368,7 @@ export function SearchBar() {
               <Link
                 href={`/search?q=${encodeURIComponent(query)}`}
                 onClick={() => setIsOpen(false)}
-                className="block px-4 py-3 text-center text-sm text-blue-600 hover:bg-gray-50 transition-colors"
+                className="block px-4 py-3 text-center text-sm text-[#131921] hover:bg-gray-50 transition-colors"
               >
                 Zobacz wszystkie wyniki ({totalResults})
               </Link>
@@ -392,21 +418,23 @@ export function SearchBar() {
                 )}
 
                 {/* Popular Searches */}
-                <div className="bg-white">
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
-                    Popularne wyszukiwania
+                {popularSearches.length > 0 && (
+                  <div className="bg-white">
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                      Popularne wyszukiwania
+                    </div>
+                    {popularSearches.map((search, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(search)}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      >
+                        <TrendingUp size={14} className="text-gray-400" />
+                        <span className="text-sm text-gray-700">{search}</span>
+                      </button>
+                    ))}
                   </div>
-                  {popularSearches.map((search, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSuggestionClick(search)}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
-                    >
-                      <TrendingUp size={14} className="text-gray-400" />
-                      <span className="text-sm text-gray-700">{search}</span>
-                    </button>
-                  ))}
-                </div>
+                )}
               </>
             )}
           </div>
