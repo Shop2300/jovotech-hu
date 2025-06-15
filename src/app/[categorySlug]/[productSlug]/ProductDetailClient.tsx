@@ -843,9 +843,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             onClick={() => setShowCartPopup(false)}
           />
           
-          {/* Modal - Positioned below header */}
-          <div className="fixed inset-x-0 z-50 flex justify-center px-4" style={{ top: '120px' }}>
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl" style={{ maxHeight: 'calc(100vh - 140px)' }}>
+          {/* Modal - Positioned with fixed gap from viewport top */}
+          <div 
+            className="fixed left-0 right-0 z-50 flex justify-center px-4" 
+            style={{ 
+              top: '100px' // Fixed distance from viewport top (header is ~80px + 20px gap)
+            }}
+          >
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl" style={{ maxHeight: 'calc(100vh - 120px)' }}>
               {/* Header */}
               <div className="bg-[#6da306] text-white p-6 rounded-t-2xl">
                 <div className="flex justify-between items-center">
@@ -871,7 +876,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               </div>
 
               {/* Content */}
-              <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+              <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 240px)' }}>
                 {/* Added Product */}
                 <div className="flex items-center gap-6 pb-6 border-b border-gray-100">
                   <img
