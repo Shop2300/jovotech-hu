@@ -838,23 +838,16 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         <>
           {/* Backdrop - Transparent with blur */}
           <div 
-            className="fixed inset-0"
-            style={{ 
-              backgroundColor: 'rgba(0, 0, 0, 0.2)', 
-              backdropFilter: 'blur(2px)',
-              zIndex: 1100  // Higher than header (1000)
-            }}
+            className="fixed inset-0 z-50"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(2px)' }}
             onClick={() => setShowCartPopup(false)}
           />
           
-          {/* Modal - Wider to prevent scrollbars */}
-          <div 
-            className="fixed inset-0 flex items-center justify-center p-4"
-            style={{ zIndex: 1100 }}  // Higher than header (1000)
-          >
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden">
+          {/* Modal - Positioned below header */}
+          <div className="fixed inset-x-0 z-50 flex justify-center px-4" style={{ top: '120px' }}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl" style={{ maxHeight: 'calc(100vh - 140px)' }}>
               {/* Header */}
-              <div className="bg-[#6da306] text-white p-6">
+              <div className="bg-[#6da306] text-white p-6 rounded-t-2xl">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     <div className="bg-white rounded-full p-2">
@@ -878,7 +871,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               </div>
 
               {/* Content */}
-              <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 120px)' }}>
+              <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
                 {/* Added Product */}
                 <div className="flex items-center gap-6 pb-6 border-b border-gray-100">
                   <img
