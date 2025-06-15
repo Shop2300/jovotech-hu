@@ -869,15 +869,15 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           >
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl" style={{ maxHeight: 'calc(100vh - 160px)' }}>
               {/* Header */}
-              <div className="bg-[#6da306] text-white p-6 rounded-t-2xl">
+              <div className="bg-white p-6 rounded-t-2xl border-b border-gray-100">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-3">
-                    <div className="bg-white rounded-full p-2">
-                      <svg className="w-6 h-6 text-[#6da306]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="bg-[#6da306] rounded-full p-2">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-bold">
+                    <h3 className="text-xl font-bold text-[#6da306]">
                       {addedQuantity > 1 
                         ? `${addedQuantity} ${addedQuantity < 5 ? 'produkty' : 'produktów'} ${addedQuantity < 5 ? 'dodane' : 'dodanych'} do koszyka!` 
                         : 'Produkt dodany do koszyka!'}
@@ -885,7 +885,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   </div>
                   <button
                     onClick={() => setShowCartPopup(false)}
-                    className="text-white hover:text-[#131921] transition-colors p-1 rounded-lg"
+                    className="text-black hover:text-gray-600 transition-colors p-1 rounded-lg"
                   >
                     <X size={24} />
                   </button>
