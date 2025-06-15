@@ -847,15 +847,27 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             onClick={() => setShowCartPopup(false)}
           />
           
-          {/* Modal - Positioned below header with consistent gap */}
+          {/* Modal - Position based on promotional bar visibility */}
           <div 
             className="fixed left-0 right-0 flex justify-center px-4" 
             style={{ 
-              top: '100px', // Position from top of viewport
+              top: (() => {
+                // Check if promotional bar is closed (same logic as LayoutWrapper)
+                const promoClosed = typeof window !== 'undefined' 
+                  ? localStorage.getItem('promoClosed') === 'true'
+                  : false;
+                
+                // If promo is closed or we've scrolled past it, use smaller top value
+                if (promoClosed || (typeof window !== 'undefined' && window.scrollY > 40)) {
+                  return '100px'; // Header (~80px) + gap (20px)
+                } else {
+                  return '140px'; // Promo (~40px) + Header (~80px) + gap (20px)
+                }
+              })(),
               zIndex: 1100  // Higher than header (1000)
             }}
           >
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl" style={{ maxHeight: 'calc(100vh - 160px)' }}>
               {/* Header */}
               <div className="bg-[#6da306] text-white p-6 rounded-t-2xl">
                 <div className="flex justify-between items-center">
@@ -881,7 +893,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               </div>
 
               {/* Content */}
-              <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 240px)' }}>
+              <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
                 {/* Added Product */}
                 <div className="flex items-center gap-6 pb-6 border-b border-gray-100">
                   <img
