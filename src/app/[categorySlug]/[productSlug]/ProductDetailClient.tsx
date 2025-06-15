@@ -838,13 +838,20 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         <>
           {/* Backdrop - Transparent with blur */}
           <div 
-            className="fixed inset-0 z-50"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(2px)' }}
+            className="fixed inset-0"
+            style={{ 
+              backgroundColor: 'rgba(0, 0, 0, 0.2)', 
+              backdropFilter: 'blur(2px)',
+              zIndex: 1100  // Higher than header (1000)
+            }}
             onClick={() => setShowCartPopup(false)}
           />
           
           {/* Modal - Wider to prevent scrollbars */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="fixed inset-0 flex items-center justify-center p-4"
+            style={{ zIndex: 1100 }}  // Higher than header (1000)
+          >
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden">
               {/* Header */}
               <div className="bg-[#6da306] text-white p-6">
