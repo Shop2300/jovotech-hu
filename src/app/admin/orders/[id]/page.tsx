@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle } from 'lucide-react';
 import { OrderActions } from './OrderActions';
 import { OrderHistory } from '@/components/admin/OrderHistory';
+import { getDeliveryMethodLabel, getPaymentMethodLabel } from '@/lib/order-options';
 
 interface OrderItem {
   productId: string;
@@ -114,15 +115,6 @@ export default async function OrderDetailPage({
         {config.label}
       </span>
     );
-  };
-
-  const getPaymentMethodLabel = (method: string) => {
-    const labels: Record<string, string> = {
-      card: 'Platba kartou online',
-      bank: 'Bankovní převod',
-      cash: 'Platba na dobírku'
-    };
-    return labels[method] || method;
   };
 
   // Check if we have new address fields
@@ -258,11 +250,11 @@ export default async function OrderDetailPage({
               </p>
               <p className="text-black">
                 <strong>Způsob doručení:</strong><br />
-                {order.deliveryMethod === 'zasilkovna' ? 'Zásilkovna' : 'Osobní odběr'}
+                {getDeliveryMethodLabel(order.deliveryMethod, 'cs')}
               </p>
               <p className="text-black">
                 <strong>Způsob platby:</strong><br />
-                {getPaymentMethodLabel(order.paymentMethod)}
+                {getPaymentMethodLabel(order.paymentMethod, 'cs')}
               </p>
               <p className="text-black">
                 <strong>Stav platby:</strong><br />

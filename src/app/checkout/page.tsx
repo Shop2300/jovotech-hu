@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeft, Package, Truck, CreditCard, Banknote, Copy, Building2, ShoppingCart, CheckCircle } from 'lucide-react';
+import { DELIVERY_METHODS, PAYMENT_METHODS, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
 interface CheckoutForm {
   email: string;
@@ -62,8 +63,8 @@ export default function CheckoutPage() {
     formState: { errors, touchedFields }
   } = useForm<CheckoutForm>({
     defaultValues: {
-      deliveryMethod: 'zasilkovna',
-      paymentMethod: 'bank',
+      deliveryMethod: DELIVERY_METHODS[0].value, // Use first delivery method as default
+      paymentMethod: PAYMENT_METHODS[0].value, // Use first payment method as default
       useDifferentDelivery: false,
     }
   });
@@ -108,7 +109,9 @@ export default function CheckoutPage() {
     }
   }, [items.length, router, isProcessingOrder]);
 
-  const deliveryPrice = 0; // Always free
+  // Calculate delivery price based on selected method
+  const selectedDeliveryMethod = getDeliveryMethod(deliveryMethod);
+  const deliveryPrice = selectedDeliveryMethod?.price || 0;
   const totalPrice = getTotalPrice() + deliveryPrice;
   const totalSavings = getTotalSavings();
 
@@ -161,7 +164,17 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderData),
       });
 
-      const responseData = await response.json();
+      let responseData;
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        // If response is not JSON (like an HTML error page), try to get text
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        responseData = { error: 'Server error - please check console for details' };
+      }
 
       if (!response.ok) {
         throw new Error(responseData.error || 'Failed to create order');
@@ -560,39 +573,47 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-semibold mb-4 text-[#131921]">Sposób dostawy</h2>
                 
                 <div className="space-y-3">
-                  <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                    <input
-                      {...register('deliveryMethod')}
-                      type="radio"
-                      value="zasilkovna"
-                      className="hidden"
-                      defaultChecked
-                    />
-                    <div className={`w-5 h-5 border-2 rounded mr-3 flex items-center justify-center flex-shrink-0 ${
-                      deliveryMethod === 'zasilkovna' 
-                        ? 'bg-[#8bc34a] border-[#8bc34a]' 
-                        : 'border-gray-300'
-                    }`}>
-                      {deliveryMethod === 'zasilkovna' && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 flex-1">
-                      <Truck className="text-gray-600" size={24} />
-                      <div className="flex-1">
-                        <div className="font-medium text-[#131921]">Najwygodniejsza dostawa</div>
-                        <div className="text-sm text-gray-600">Dostarczymy paczkę do Twojego domu za pośrednictwem firmy spedycyjnej. Wybieramy pomiędzy DPD, InPost, DHL lub Pocztą Polską.</div>
-                      </div>
-                    </div>
-                    <span className="font-semibold text-[#8bc34a] flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      Gratis
-                    </span>
-                  </label>
+                  {DELIVERY_METHODS.map((method) => {
+                    const Icon = method.icon;
+                    return (
+                      <label key={method.value} className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input
+                          {...register('deliveryMethod')}
+                          type="radio"
+                          value={method.value}
+                          className="hidden"
+                        />
+                        <div className={`w-5 h-5 border-2 rounded mr-3 flex items-center justify-center flex-shrink-0 ${
+                          deliveryMethod === method.value 
+                            ? 'bg-[#8bc34a] border-[#8bc34a]' 
+                            : 'border-gray-300'
+                        }`}>
+                          {deliveryMethod === method.value && (
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 flex-1">
+                          <Icon className="text-gray-600" size={24} />
+                          <div className="flex-1">
+                            <div className="font-medium text-[#131921]">{method.labelPl}</div>
+                            {method.descriptionPl && (
+                              <div className="text-sm text-gray-600">{method.descriptionPl}</div>
+                            )}
+                          </div>
+                        </div>
+                        {method.price === 0 && (
+                          <span className="font-semibold text-[#8bc34a] flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Gratis
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -601,55 +622,37 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-semibold mb-4 text-[#131921]">Sposób płatności</h2>
                 
                 <div className="space-y-3">
-                  <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                    <input
-                      {...register('paymentMethod')}
-                      type="radio"
-                      value="bank"
-                      className="hidden"
-                    />
-                    <div className={`w-5 h-5 border-2 rounded mr-3 flex items-center justify-center flex-shrink-0 ${
-                      paymentMethod === 'bank' 
-                        ? 'bg-[#8bc34a] border-[#8bc34a]' 
-                        : 'border-gray-300'
-                    }`}>
-                      {paymentMethod === 'bank' && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <Building2 className="mr-3 text-gray-600" size={24} />
-                    <div className="flex-1">
-                      <div className="font-medium text-[#131921]">Przelew bankowy</div>
-                      <div className="text-sm text-gray-600">Płatność przelewem na konto</div>
-                    </div>
-                  </label>
-                  
-                  <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                    <input
-                      {...register('paymentMethod')}
-                      type="radio"
-                      value="cash"
-                      className="hidden"
-                    />
-                    <div className={`w-5 h-5 border-2 rounded mr-3 flex items-center justify-center flex-shrink-0 ${
-                      paymentMethod === 'cash' 
-                        ? 'bg-[#8bc34a] border-[#8bc34a]' 
-                        : 'border-gray-300'
-                    }`}>
-                      {paymentMethod === 'cash' && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <Banknote className="mr-3 text-gray-600" size={24} />
-                    <div className="flex-1">
-                      <div className="font-medium text-[#131921]">Płatność za pobraniem</div>
-                      <div className="text-sm text-gray-600">Płatność przy odbiorze</div>
-                    </div>
-                  </label>
+                  {PAYMENT_METHODS.map((method) => {
+                    const Icon = method.icon;
+                    return (
+                      <label key={method.value} className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input
+                          {...register('paymentMethod')}
+                          type="radio"
+                          value={method.value}
+                          className="hidden"
+                        />
+                        <div className={`w-5 h-5 border-2 rounded mr-3 flex items-center justify-center flex-shrink-0 ${
+                          paymentMethod === method.value 
+                            ? 'bg-[#8bc34a] border-[#8bc34a]' 
+                            : 'border-gray-300'
+                        }`}>
+                          {paymentMethod === method.value && (
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                        <Icon className="mr-3 text-gray-600" size={24} />
+                        <div className="flex-1">
+                          <div className="font-medium text-[#131921]">{method.labelPl}</div>
+                          {method.descriptionPl && (
+                            <div className="text-sm text-gray-600">{method.descriptionPl}</div>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
 
                 {/* Bank Details - shown when bank transfer is selected */}
@@ -794,12 +797,16 @@ export default function CheckoutPage() {
                 )}
                 <div className="flex justify-between text-[#131921]">
                   <span>Dostawa</span>
-                  <span className="text-[#8bc34a] font-semibold flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Gratis
-                  </span>
+                  {deliveryPrice === 0 ? (
+                    <span className="text-[#8bc34a] font-semibold flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Gratis
+                    </span>
+                  ) : (
+                    <span>{formatPrice(deliveryPrice)}</span>
+                  )}
                 </div>
                 <div className="flex justify-between font-semibold text-xl border-t border-gray-200 pt-2">
                   <span className="text-[#131921]">Razem</span>

@@ -19,6 +19,7 @@ import {
 import Link from 'next/link';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SatisfactionRating } from '@/components/SatisfactionRating';
+import { getDeliveryMethodLabel, getPaymentMethodLabel } from '@/lib/order-options';
 
 interface OrderStatusData {
   orderNumber: string;
@@ -113,15 +114,6 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
     }
     // Add more carriers as needed
     return null;
-  };
-
-  const getPaymentMethodLabel = (method: string) => {
-    const labels: Record<string, string> = {
-      card: 'Płatność kartą online',
-      bank: 'Przelew bankowy',
-      cash: 'Płatność za pobraniem'
-    };
-    return labels[method] || method;
   };
 
   const trackingUrl = getTrackingUrl();
@@ -272,7 +264,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                       Numer śledzenia: <span className="font-mono font-semibold">{order.trackingNumber}</span>
                     </p>
                     <p className="text-sm text-green-700">
-                      Przewoźnik: {order.deliveryMethod === 'zasilkovna' ? 'Paczkomat' : 'Odbiór osobisty'}
+                      Przewoźnik: {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
                     </p>
                   </div>
                   {trackingUrl && (
@@ -366,7 +358,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <div>
                     <p className="text-sm font-medium text-gray-900">Sposób dostawy</p>
                     <p className="text-sm text-gray-600">
-                      {order.deliveryMethod === 'zasilkovna' ? 'Paczkomat' : 'Odbiór osobisty'}
+                      {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
                     </p>
                   </div>
                 </div>
@@ -376,7 +368,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <div>
                     <p className="text-sm font-medium text-gray-900">Sposób płatności</p>
                     <p className="text-sm text-gray-600">
-                      {getPaymentMethodLabel(order.paymentMethod)}
+                      {getPaymentMethodLabel(order.paymentMethod, 'pl')}
                     </p>
                     {order.paymentStatus && (
                       <p className={`text-sm font-medium mt-1 ${
