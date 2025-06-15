@@ -838,16 +838,21 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         <>
           {/* Backdrop - Transparent with blur */}
           <div 
-            className="fixed inset-0 z-50"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(2px)' }}
+            className="fixed inset-0"
+            style={{ 
+              backgroundColor: 'rgba(0, 0, 0, 0.2)', 
+              backdropFilter: 'blur(2px)',
+              zIndex: 1100 // Higher than header (1000)
+            }}
             onClick={() => setShowCartPopup(false)}
           />
           
-          {/* Modal - Positioned with fixed gap from viewport top */}
+          {/* Modal - Positioned below header with consistent gap */}
           <div 
-            className="fixed left-0 right-0 z-50 flex justify-center px-4" 
+            className="fixed left-0 right-0 flex justify-center px-4" 
             style={{ 
-              top: '100px' // Fixed distance from viewport top (header is ~80px + 20px gap)
+              top: '100px', // Position from top of viewport
+              zIndex: 1100  // Higher than header (1000)
             }}
           >
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl" style={{ maxHeight: 'calc(100vh - 120px)' }}>
