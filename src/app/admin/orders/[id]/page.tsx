@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle } from 'lucide-react';
 import { OrderActions } from './OrderActions';
 import { OrderHistory } from '@/components/admin/OrderHistory';
-import { getDeliveryMethodLabel, getPaymentMethodLabel } from '@/lib/order-options';
+import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
 interface OrderItem {
   productId: string;
@@ -248,15 +248,59 @@ export default async function OrderDetailPage({
                 <strong>Datum vytvoření:</strong><br />
                 {format(new Date(order.createdAt), 'd. MMMM yyyy HH:mm', { locale: cs })}
               </p>
-              <p className="text-black">
-                <strong>Způsob doručení:</strong><br />
-                {getDeliveryMethodLabel(order.deliveryMethod, 'cs')}
-              </p>
-              <p className="text-black">
-                <strong>Způsob platby:</strong><br />
-                {getPaymentMethodLabel(order.paymentMethod, 'cs')}
-              </p>
-              <p className="text-black">
+              <div className="pt-3 border-t mt-3">
+                <p className="text-black mb-3">
+                  <strong>Způsob doručení:</strong>
+                </p>
+                <div className="bg-blue-50 rounded-lg p-3">
+                  {(() => {
+                    const deliveryMethod = getDeliveryMethod(order.deliveryMethod);
+                    if (deliveryMethod) {
+                      const Icon = deliveryMethod.icon;
+                      return (
+                        <div className="flex items-start gap-3">
+                          <Icon className="text-blue-600 mt-0.5" size={20} />
+                          <div className="flex-1">
+                            <p className="font-medium text-blue-900">{deliveryMethod.labelPl}</p>
+                            {deliveryMethod.descriptionPl && (
+                              <p className="text-sm text-blue-700 mt-1">{deliveryMethod.descriptionPl}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return <span className="text-blue-600">{order.deliveryMethod}</span>;
+                  })()}
+                </div>
+              </div>
+              
+              <div className="pt-3 mt-3">
+                <p className="text-black mb-3">
+                  <strong>Způsob platby:</strong>
+                </p>
+                <div className="bg-green-50 rounded-lg p-3">
+                  {(() => {
+                    const paymentMethod = getPaymentMethod(order.paymentMethod);
+                    if (paymentMethod) {
+                      const Icon = paymentMethod.icon;
+                      return (
+                        <div className="flex items-start gap-3">
+                          <Icon className="text-green-600 mt-0.5" size={20} />
+                          <div className="flex-1">
+                            <p className="font-medium text-green-900">{paymentMethod.labelPl}</p>
+                            {paymentMethod.descriptionPl && (
+                              <p className="text-sm text-green-700 mt-1">{paymentMethod.descriptionPl}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return <span className="text-green-600">{order.paymentMethod}</span>;
+                  })()}
+                </div>
+              </div>
+              
+              <p className="text-black mt-3">
                 <strong>Stav platby:</strong><br />
                 <span className={`inline-flex items-center gap-1 font-semibold ${
                   order.paymentStatus === 'paid' ? 'text-green-600' : 'text-red-600'

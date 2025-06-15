@@ -1,5 +1,5 @@
 // src/lib/order-options.ts
-import { Truck, Building2, Banknote, CreditCard } from 'lucide-react';
+import { Truck, Building2, Banknote } from 'lucide-react';
 
 export interface DeliveryMethod {
   value: string;
@@ -29,15 +29,6 @@ export const DELIVERY_METHODS: DeliveryMethod[] = [
     descriptionPl: 'Dostarczymy paczkę do Twojego domu za pośrednictwem firmy spedycyjnej. Wybieramy pomiędzy DPD, InPost, DHL lub Pocztą Polską.',
     icon: Truck,
     price: 0
-  },
-  {
-    value: 'pickup',
-    label: 'Osobní odběr',
-    labelPl: 'Odbiór osobisty',
-    description: 'Vyzvedněte si objednávku osobně v našem skladu',
-    descriptionPl: 'Odbierz zamówienie osobiście w naszym magazynie',
-    icon: Building2,
-    price: 0
   }
 ];
 
@@ -57,14 +48,6 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
     description: 'Platba při převzetí',
     descriptionPl: 'Płatność przy odbiorze',
     icon: Banknote
-  },
-  {
-    value: 'card',
-    label: 'Platba kartou online',
-    labelPl: 'Płatność kartą online',
-    description: 'Okamžitá platba kartou',
-    descriptionPl: 'Natychmiastowa płatność kartą',
-    icon: CreditCard
   }
 ];
 

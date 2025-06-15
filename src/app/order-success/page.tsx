@@ -1,13 +1,10 @@
 // src/app/order-success/page.tsx
 'use client';
 
-export const dynamic = 'force-dynamic';
-import { Suspense } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, Copy } from 'lucide-react';
-import { useEffect } from 'react';
-import { useCart } from '@/lib/cart';
+import Link from 'next/link';
+import { CheckCircle, Package, Copy, ArrowRight, CreditCard, Truck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const BANK_DETAILS = {
@@ -16,146 +13,293 @@ const BANK_DETAILS = {
   swift: 'FIOBCZPPXXX'
 };
 
-function OrderSuccessContent() {
+interface OrderDetails {
+  orderNumber: string;
+  paymentMethod: string;
+  total: number;
+}
+
+export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get('orderNumber');
-  const { clearCart } = useCart();
-  
-  // Ensure cart is cleared when arriving at success page
+  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    clearCart();
-  }, [clearCart]);
-  
+    async function fetchOrderDetails() {
+      if (!orderNumber) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/order-status/${orderNumber}`);
+        if (response.ok) {
+          const data = await response.json();
+          setOrderDetails({
+            orderNumber: data.orderNumber,
+            paymentMethod: data.paymentMethod,
+            total: data.total
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchOrderDetails();
+  }, [orderNumber]);
+
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} skopiowano do schowka`);
   };
-  return (
-    <main className="min-h-screen bg-white flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
-        <CheckCircle size={64} className="mx-auto text-green-500 mb-4" />
-        
-        <h1 className="text-2xl font-bold mb-4 text-black">Dziękujemy za Twoje zamówienie!</h1>
-        
-        <p className="text-gray-700 mb-6">
-          Twoje zamówienie zostało pomyślnie przyjęte i wkrótce wyślemy potwierdzenie na e-mail.
-        </p>
-        
-        {orderNumber && (
-          <div className="bg-gray-100 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-700 font-medium">Numer zamówienia:</p>
-            <p className="font-semibold text-lg text-black">{orderNumber}</p>
-          </div>
-        )}
 
-        {/* Bank Transfer Information */}
-        <div className="bg-blue-50 rounded-lg p-6 mb-6 text-left">
-          <h3 className="font-semibold text-lg text-black mb-3">Informacje do przelewu bankowego:</h3>
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm text-gray-600">Numer konta:</p>
-              <div className="flex items-center justify-between">
-                <p className="font-mono font-medium text-black">{BANK_DETAILS.accountNumber}</p>
-                <button
-                  onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Numer konta')}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <Copy size={16} />
-                </button>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">IBAN:</p>
-              <div className="flex items-center justify-between">
-                <p className="font-mono font-medium text-black text-sm">{BANK_DETAILS.iban}</p>
-                <button
-                  onClick={() => copyToClipboard(BANK_DETAILS.iban, 'IBAN')}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <Copy size={16} />
-                </button>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">BIC/SWIFT:</p>
-              <div className="flex items-center justify-between">
-                <p className="font-mono font-medium text-black">{BANK_DETAILS.swift}</p>
-                <button
-                  onClick={() => copyToClipboard(BANK_DETAILS.swift, 'BIC/SWIFT')}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <Copy size={16} />
-                </button>
-              </div>
-            </div>
-            {orderNumber && (
-              <div>
-                <p className="text-sm text-gray-600">Tytuł przelewu:</p>
-                <div className="flex items-center justify-between">
-                  <p className="font-mono font-medium text-black">{orderNumber}</p>
-                  <button
-                    onClick={() => copyToClipboard(orderNumber, 'Tytuł przelewu')}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <Copy size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!orderNumber || !orderDetails) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Nie znaleziono numeru zamówienia</p>
+          <Link href="/" className="text-blue-600 hover:text-blue-700">
+            Powrót do sklepu
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('pl-PL', {
+      style: 'currency',
+      currency: 'PLN',
+    }).format(price);
+  };
+
+  const showBankDetails = orderDetails.paymentMethod === 'bank';
+  const isCashOnDelivery = orderDetails.paymentMethod === 'cash';
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-3xl mx-auto px-4">
+        {/* Success Icon and Message */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+            <CheckCircle className="w-12 h-12 text-green-500" />
           </div>
-          <p className="text-xs text-gray-600 mt-3">
-            Towar wyślemy natychmiast po zaksięgowaniu wpłaty na naszym koncie.
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Dziękujemy za złożenie zamówienia!
+          </h1>
+          <p className="text-lg text-gray-600">
+            Twoje zamówienie #{orderNumber} zostało pomyślnie złożone
           </p>
         </div>
-        
-        <div className="space-y-4">
-          <h2 className="font-semibold text-lg text-black">Co dalej?</h2>
-          <div className="text-left space-y-3 text-sm text-gray-700">
-            <div className="flex gap-3">
-              <span className="text-green-500">✓</span>
-              <span>Potwierdzenie zamówienia na Twój e-mail</span>
+
+        {/* Order Information Card */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Package className="text-gray-600" size={24} />
+            Informacje o zamówieniu
+          </h2>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2">
+              <span className="text-gray-600">Numer zamówienia:</span>
+              <span className="font-mono font-medium">{orderNumber}</span>
             </div>
-            <div className="flex gap-3">
-              <span className="text-green-500">✓</span>
-              <span>Opłacenie zamówienia przelewem bankowym</span>
+            
+            <div className="flex justify-between items-center py-2">
+              <span className="text-gray-600">Sposób płatności:</span>
+              <span className="font-medium">
+                {isCashOnDelivery ? 'Płatność za pobraniem' : 'Przelew bankowy'}
+              </span>
             </div>
-            <div className="flex gap-3">
-              <span className="text-green-500">✓</span>
-              <span>Pakowanie i wysyłka po zaksięgowaniu wpłaty</span>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-green-500">✓</span>
-              <span>Numer śledzenia przesyłki</span>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-green-500">✓</span>
-              <span>Dostawa w ciągu 2-3 dni roboczych</span>
+
+            <div className="flex justify-between items-center py-2">
+              <span className="text-gray-600">Kwota do zapłaty:</span>
+              <span className="font-bold text-lg">{formatPrice(orderDetails.total)}</span>
             </div>
           </div>
-        </div>
-        
-        <Link 
-          href="/"
-          className="inline-block mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
-        >
-          Powrót do strony głównej
-        </Link>
-      </div>
-    </main>
-  );
-}
 
-export default function OrderSuccessPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Ładowanie...</p>
+          {/* Payment Instructions */}
+          {showBankDetails && (
+            <>
+              <div className="border-t border-gray-200 mt-6 pt-6">
+                <h3 className="font-semibold mb-4 text-amber-900 bg-amber-50 p-3 rounded-lg">
+                  ⚠️ Aby sfinalizować zamówienie, prosimy o dokonanie przelewu
+                </h3>
+                
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Numer konta:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-medium">{BANK_DETAILS.accountNumber}</span>
+                      <button
+                        onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Numer konta')}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">IBAN:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm">{BANK_DETAILS.iban}</span>
+                      <button
+                        onClick={() => copyToClipboard(BANK_DETAILS.iban, 'IBAN')}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">SWIFT/BIC:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-medium">{BANK_DETAILS.swift}</span>
+                      <button
+                        onClick={() => copyToClipboard(BANK_DETAILS.swift, 'SWIFT')}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Tytuł przelewu:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-medium">{orderNumber}</span>
+                      <button
+                        onClick={() => copyToClipboard(orderNumber, 'Numer zamówienia')}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Kwota:</span>
+                    <span className="font-bold text-lg">{formatPrice(orderDetails.total)}</span>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-gray-600 mt-3">
+                  Zamówienie zostanie wysłane natychmiast po zaksięgowaniu wpłaty na naszym koncie.
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* Cash on Delivery Instructions */}
+          {isCashOnDelivery && (
+            <div className="border-t border-gray-200 mt-6 pt-6">
+              <div className="bg-blue-50 rounded-lg p-4 flex items-start gap-3">
+                <Truck className="text-blue-600 mt-0.5" size={20} />
+                <div>
+                  <h3 className="font-semibold text-blue-900 mb-1">Płatność przy odbiorze</h3>
+                  <p className="text-sm text-blue-800">
+                    Przygotuj kwotę <strong>{formatPrice(orderDetails.total)}</strong> do zapłaty kurierowi przy odbiorze przesyłki.
+                  </p>
+                  <p className="text-sm text-blue-700 mt-2">
+                    Twoje zamówienie zostało przekazane do realizacji i wkrótce zostanie wysłane.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* What's Next */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Co dalej?</h2>
+          <ol className="space-y-3">
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                1
+              </span>
+              <div>
+                <p className="font-medium">Potwierdzenie emailem</p>
+                <p className="text-sm text-gray-600">
+                  Wysłaliśmy potwierdzenie zamówienia na Twój adres email
+                </p>
+              </div>
+            </li>
+            
+            {showBankDetails && (
+              <li className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                  2
+                </span>
+                <div>
+                  <p className="font-medium">Dokonaj płatności</p>
+                  <p className="text-sm text-gray-600">
+                    Przelej kwotę {formatPrice(orderDetails.total)} na podane konto bankowe
+                  </p>
+                </div>
+              </li>
+            )}
+            
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                {showBankDetails ? '3' : '2'}
+              </span>
+              <div>
+                <p className="font-medium">Przygotowanie zamówienia</p>
+                <p className="text-sm text-gray-600">
+                  {showBankDetails 
+                    ? 'Po otrzymaniu płatności przygotujemy Twoje zamówienie do wysyłki'
+                    : 'Przygotujemy Twoje zamówienie do wysyłki'
+                  }
+                </p>
+              </div>
+            </li>
+            
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                {showBankDetails ? '4' : '3'}
+              </span>
+              <div>
+                <p className="font-medium">Wysyłka</p>
+                <p className="text-sm text-gray-600">
+                  Otrzymasz email z numerem śledzenia przesyłki
+                </p>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Link
+            href={`/order-status/${orderNumber}`}
+            className="flex-1 bg-blue-600 text-white text-center py-3 px-6 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
+          >
+            Sprawdź status zamówienia
+            <ArrowRight size={20} />
+          </Link>
+          
+          <Link
+            href="/"
+            className="flex-1 bg-gray-200 text-gray-800 text-center py-3 px-6 rounded-lg hover:bg-gray-300 transition"
+          >
+            Kontynuuj zakupy
+          </Link>
         </div>
       </div>
-    }>
-      <OrderSuccessContent />
-    </Suspense>
+    </div>
   );
 }

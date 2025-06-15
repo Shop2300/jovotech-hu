@@ -155,7 +155,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             </div>
           </div>
 
-          {/* Payment Status Alert */}
+          {/* Payment Status Alert - Only for bank transfers */}
           {order.paymentMethod === 'bank' && order.paymentStatus === 'unpaid' && (
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-start gap-3">
@@ -177,8 +177,23 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             </div>
           )}
 
-          {/* Payment Success Alert */}
-          {order.paymentStatus === 'paid' && (
+          {/* Cash on Delivery Alert */}
+          {order.paymentMethod === 'cash' && order.paymentStatus === 'unpaid' && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Truck className="text-blue-600 mt-0.5" size={20} />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-900 mb-2">Płatność przy odbiorze</h3>
+                  <p className="text-sm text-blue-800">
+                    Przygotuj kwotę <strong>{formatPrice(order.total)}</strong> do zapłaty kurierowi przy odbiorze przesyłki.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Success Alert - For bank transfers and paid cash orders */}
+          {order.paymentStatus === 'paid' && order.paymentMethod === 'bank' && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="text-green-600" size={20} />
@@ -370,11 +385,17 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <p className="text-sm text-gray-600">
                       {getPaymentMethodLabel(order.paymentMethod, 'pl')}
                     </p>
-                    {order.paymentStatus && (
+                    {/* Payment status - different display for cash on delivery */}
+                    {order.paymentMethod === 'bank' && order.paymentStatus && (
                       <p className={`text-sm font-medium mt-1 ${
                         order.paymentStatus === 'paid' ? 'text-green-600' : 'text-amber-600'
                       }`}>
                         {order.paymentStatus === 'paid' ? '✓ Opłacone' : '⏳ Oczekuje na płatność'}
+                      </p>
+                    )}
+                    {order.paymentMethod === 'cash' && (
+                      <p className="text-sm font-medium mt-1 text-blue-600">
+                        💵 Płatność przy odbiorze
                       </p>
                     )}
                   </div>
@@ -382,7 +403,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
               </div>
             </div>
 
-            {/* Bank Details (if unpaid bank transfer) */}
+            {/* Bank Details (only for unpaid bank transfer) */}
             {order.paymentMethod === 'bank' && order.paymentStatus === 'unpaid' && (
               <div className="bg-amber-50 rounded-lg p-6">
                 <h3 className="font-semibold mb-3 text-amber-900">Dane do przelewu</h3>
@@ -404,6 +425,16 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <p className="font-bold text-lg">{formatPrice(order.total)}</p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Cash on Delivery Reminder */}
+            {order.paymentMethod === 'cash' && order.paymentStatus === 'unpaid' && order.status === 'shipped' && (
+              <div className="bg-blue-50 rounded-lg p-6">
+                <h3 className="font-semibold mb-3 text-blue-900">Przygotuj płatność</h3>
+                <p className="text-sm text-blue-800">
+                  Twoje zamówienie jest w drodze. Przygotuj kwotę <strong>{formatPrice(order.total)}</strong> do zapłaty kurierowi.
+                </p>
               </div>
             )}
 
