@@ -1,17 +1,20 @@
 // src/app/api/admin/invoices/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { checkAuth } from '@/lib/auth-middleware';
+import { del } from '@vercel/blob';
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authResponse = await checkAuth(request);
+  if (authResponse) return authResponse;
+
+  const { id } = await params;
+
   try {
-    const { id } = await params;
-    
-    // Fetch the invoice with order info
+    // Fetch the invoice to get the PDF URL before deletion
     const invoice = await prisma.invoice.findUnique({
       where: { id },
       include: { order: true }
@@ -24,39 +27,46 @@ export async function DELETE(
       );
     }
 
-    // Create history entry before deletion
-    await prisma.orderHistory.create({
-      data: {
-        orderId: invoice.orderId,
-        action: 'invoice_deleted',
-        description: `Faktura ${invoice.invoiceNumber} byla smazána`,
-        oldValue: invoice.invoiceNumber,
-        metadata: {
-          invoiceId: invoice.id,
-          deletedAt: new Date().toISOString()
-        }
-      }
-    });
-
-    // Delete the PDF file if it exists
+    // Delete the blob from Vercel Blob Storage if it exists
     if (invoice.pdfUrl) {
       try {
-        const filePath = join(process.cwd(), 'public', invoice.pdfUrl);
-        await unlink(filePath);
-      } catch (error) {
-        console.error('Failed to delete PDF file:', error);
-        // Continue with database deletion even if file deletion fails
+        await del(invoice.pdfUrl);
+        console.log(`Deleted blob: ${invoice.pdfUrl}`);
+      } catch (blobError) {
+        // Log the error but don't fail the operation
+        // The blob might already be deleted or the URL might be invalid
+        console.error('Failed to delete blob:', blobError);
       }
     }
 
-    // Delete the invoice from database
+    // Delete the invoice record
     await prisma.invoice.delete({
       where: { id }
     });
 
-    return NextResponse.json({ success: true });
+    // Add to order history
+    if (invoice.order) {
+      await prisma.orderHistory.create({
+        data: {
+          orderId: invoice.order.id,
+          action: 'invoice_deleted',
+          description: `Faktura ${invoice.invoiceNumber} byla smazána`,
+          oldValue: invoice.invoiceNumber,
+          metadata: {
+            deletedBy: 'Admin',
+            invoiceId: invoice.id
+          }
+        }
+      });
+    }
+
+    return NextResponse.json({ 
+      success: true,
+      message: 'Invoice deleted successfully' 
+    });
+
   } catch (error) {
-    console.error('Failed to delete invoice:', error);
+    console.error('Error deleting invoice:', error);
     return NextResponse.json(
       { error: 'Failed to delete invoice' },
       { status: 500 }

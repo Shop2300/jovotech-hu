@@ -15,7 +15,7 @@ export async function POST(
   const { orderNumber } = await params;
 
   try {
-    // Fetch order by orderNumber
+    // Fetch order by orderNumber with complete data
     const order = await prisma.order.findUnique({
       where: { orderNumber },
       include: { invoice: true }
@@ -92,13 +92,18 @@ export async function POST(
       // Convert jsPDF to Buffer
       const pdfBuffer = Buffer.from(pdfDoc.output('arraybuffer'));
       
-      // Upload to Vercel Blob Storage
+      // Upload to Vercel Blob Storage with overwrite enabled
       const { url } = await put(
         `invoices/${invoiceNumber}.pdf`,
         pdfBuffer,
         {
           access: 'public',
           contentType: 'application/pdf',
+          addRandomSuffix: false,
+          // Allow overwriting existing files
+          // This is important for cases where the invoice was deleted but the blob still exists
+          // @ts-ignore - The type definition might not include this property yet
+          allowOverwrite: true
         }
       );
 
