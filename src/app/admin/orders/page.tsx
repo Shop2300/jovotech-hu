@@ -58,43 +58,35 @@ async function getOrders() {
   // First, update any old pending orders
   await updateOldPendingOrders();
   
-  // Then fetch all orders
+  // Then fetch all orders with invoice relation
   const orders = await prisma.order.findMany({
     orderBy: {
       createdAt: 'desc',
     },
-    select: {
-      id: true,
-      orderNumber: true,
-      customerName: true,
-      customerEmail: true,
-      firstName: true,
-      lastName: true,
-      billingFirstName: true,
-      billingLastName: true,
-      total: true,
-      status: true,
-      paymentStatus: true,
-      trackingNumber: true,
-      createdAt: true,
-    },
+    include: {
+      invoice: true
+    }
   });
 
-  // Transform the orders to include fullName with proper fallbacks
+  // Transform the orders to match the OrdersTable interface
   return orders.map(order => ({
     id: order.id,
     orderNumber: order.orderNumber,
-    fullName: order.customerName || 
+    customerName: order.customerName || 
       (order.billingFirstName && order.billingLastName 
         ? `${order.billingFirstName} ${order.billingLastName}`
         : order.firstName && order.lastName
           ? `${order.firstName} ${order.lastName}`
           : order.customerEmail || 'Unknown Customer'),
+    customerEmail: order.customerEmail,
     total: Number(order.total),
     status: order.status,
     paymentStatus: order.paymentStatus || 'unpaid',
-    trackingNumber: order.trackingNumber,
-    createdAt: order.createdAt,
+    createdAt: order.createdAt.toISOString(),
+    invoice: order.invoice ? {
+      id: order.invoice.id,
+      invoiceNumber: order.invoice.invoiceNumber
+    } : null
   }));
 }
 
