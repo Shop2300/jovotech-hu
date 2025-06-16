@@ -1,4 +1,7 @@
 // src/app/products/page.tsx
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { prisma } from '@/lib/prisma';
 import { ProductCard } from '@/components/ProductCard';
 
@@ -6,7 +9,7 @@ async function getProducts() {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: 'desc' }
   });
-  
+
   // Convert Decimal to number for the client
   return products.map(product => ({
     ...product,
@@ -31,10 +34,10 @@ export default async function ProductsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={{
-    ...product,
-    price: Number(product.price),
-    regularPrice: product.regularPrice ? Number(product.regularPrice) : null
-  }} />
+                ...product,
+                price: Number(product.price),
+                regularPrice: product.regularPrice ? Number(product.regularPrice) : null
+              }} />
             ))}
           </div>
         )}
