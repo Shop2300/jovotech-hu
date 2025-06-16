@@ -1,4 +1,6 @@
 // src/app/admin/products/page.tsx
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 import { prisma } from '@/lib/prisma';
 import { ProductsTable } from '@/components/admin/ProductsTable';
 import { CategoryFilter } from '@/components/admin/CategoryFilter';

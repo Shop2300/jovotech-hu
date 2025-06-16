@@ -1,4 +1,7 @@
 // src/app/products/[id]/page.tsx
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { prisma } from '@/lib/prisma';
 import { ProductDetailClient } from './ProductDetailClient';
 import { notFound } from 'next/navigation';
@@ -8,7 +11,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const product = await prisma.product.findUnique({
     where: { id: resolvedParams.id },
     include: {
-      category: true,  // Added this line
+      category: true, // Added this line
       images: {
         orderBy: { order: 'asc' }
       },
