@@ -1,4 +1,4 @@
-// src/app/admin/orders/[id]/page.tsx
+// src/app/admin/orders/[orderNumber]/page.tsx
 import { prisma } from '@/lib/prisma';
 import { formatPrice } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -20,9 +20,9 @@ interface OrderItem {
   image?: string;
 }
 
-async function getOrder(id: string) {
+async function getOrder(orderNumber: string) {
   const order = await prisma.order.findUnique({
-    where: { id },
+    where: { orderNumber },
     include: {
       history: {
         orderBy: { createdAt: 'desc' }
@@ -90,10 +90,10 @@ async function getOrder(id: string) {
 export default async function OrderDetailPage({ 
   params 
 }: { 
-  params: Promise<{ id: string }> 
+  params: Promise<{ orderNumber: string }> 
 }) {
-  const { id } = await params;
-  const order = await getOrder(id);
+  const { orderNumber } = await params;
+  const order = await getOrder(orderNumber);
 
   if (!order) {
     notFound();
@@ -333,9 +333,10 @@ export default async function OrderDetailPage({
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Actions - Now passing orderNumber instead of orderId */}
           <OrderActions 
-            orderId={order.id} 
+            orderId={order.id}
+            orderNumber={order.orderNumber}
             currentStatus={order.status}
             currentTrackingNumber={order.trackingNumber || ''}
             currentPaymentStatus={order.paymentStatus}

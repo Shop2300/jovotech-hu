@@ -1,4 +1,4 @@
-// src/app/admin/orders/[id]/OrderActions.tsx
+// src/app/admin/orders/[orderNumber]/OrderActions.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,6 +8,7 @@ import { Package, FileText, Download, Loader2, CheckCircle, Trash2, CreditCard }
 
 interface OrderActionsProps {
   orderId: string;
+  orderNumber: string;
   currentStatus: string;
   currentTrackingNumber: string;
   currentPaymentStatus?: string;
@@ -21,7 +22,7 @@ interface Invoice {
   createdAt: string;
 }
 
-export function OrderActions({ orderId, currentStatus, currentTrackingNumber, currentPaymentStatus = 'unpaid' }: OrderActionsProps) {
+export function OrderActions({ orderId, orderNumber, currentStatus, currentTrackingNumber, currentPaymentStatus = 'unpaid' }: OrderActionsProps) {
   const router = useRouter();
   const [status, setStatus] = useState(currentStatus);
   const [paymentStatus, setPaymentStatus] = useState(currentPaymentStatus);
@@ -51,7 +52,7 @@ export function OrderActions({ orderId, currentStatus, currentTrackingNumber, cu
   useEffect(() => {
     async function checkInvoice() {
       try {
-        const response = await fetch(`/api/admin/orders/${orderId}`);
+        const response = await fetch(`/api/admin/orders/${orderNumber}`);
         if (response.ok) {
           const orderData = await response.json();
           if (orderData.invoice) {
@@ -65,12 +66,12 @@ export function OrderActions({ orderId, currentStatus, currentTrackingNumber, cu
       }
     }
     checkInvoice();
-  }, [orderId]);
+  }, [orderNumber]);
 
   const handleStatusChange = async (newStatus: string) => {
     setIsUpdating(true);
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}`, {
+      const response = await fetch(`/api/admin/orders/${orderNumber}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +94,7 @@ export function OrderActions({ orderId, currentStatus, currentTrackingNumber, cu
   const handlePaymentStatusChange = async (newPaymentStatus: string) => {
     setIsUpdating(true);
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}`, {
+      const response = await fetch(`/api/admin/orders/${orderNumber}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +117,7 @@ export function OrderActions({ orderId, currentStatus, currentTrackingNumber, cu
   const handleTrackingNumberUpdate = async () => {
     setIsUpdating(true);
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}`, {
+      const response = await fetch(`/api/admin/orders/${orderNumber}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -139,7 +140,7 @@ export function OrderActions({ orderId, currentStatus, currentTrackingNumber, cu
   const handleGenerateInvoice = async () => {
     setIsGeneratingPdf(true);
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}/invoice/generate`, {
+      const response = await fetch(`/api/admin/orders/${orderNumber}/invoice/generate`, {
         method: 'POST',
       });
 
@@ -189,9 +190,9 @@ export function OrderActions({ orderId, currentStatus, currentTrackingNumber, cu
   };
 
   const handlePrintInvoice = () => {
-    // Open invoice in a new window for printing
+    // Open invoice in a new window for printing using order number
     const invoiceWindow = window.open(
-      `/admin/orders/${orderId}/invoice`,
+      `/admin/orders/${orderNumber}/invoice`,
       '_blank',
       'width=800,height=1000,menubar=no,toolbar=no,location=no,status=no'
     );
