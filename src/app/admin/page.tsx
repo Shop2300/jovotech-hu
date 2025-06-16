@@ -19,31 +19,36 @@ async function getAdminStats() {
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total), 0);
   const pendingOrders = orders.filter(order => order.status === 'pending').length;
 
-  // Get recent orders with correct field names
+  // Get recent orders with correct field names and include invoice
   const recentOrders = await prisma.order.findMany({
     take: 5,
     orderBy: {
       createdAt: 'desc',
     },
-    select: {
-      id: true,
-      orderNumber: true,
-      firstName: true,
-      lastName: true,
-      total: true,
-      status: true,
-      createdAt: true,
-    },
+    include: {
+      invoice: true
+    }
   });
 
-  // Transform the orders to include fullName and convert Decimal to number
+  // Transform the orders to match OrdersTable interface
   const transformedOrders = recentOrders.map(order => ({
     id: order.id,
     orderNumber: order.orderNumber,
-    fullName: `${order.firstName} ${order.lastName}`,
-    total: Number(order.total), // Convert Decimal to number
+    customerName: order.customerName || 
+      (order.billingFirstName && order.billingLastName 
+        ? `${order.billingFirstName} ${order.billingLastName}`
+        : order.firstName && order.lastName
+          ? `${order.firstName} ${order.lastName}`
+          : order.customerEmail || 'Unknown Customer'),
+    customerEmail: order.customerEmail,
+    total: Number(order.total),
     status: order.status,
-    createdAt: order.createdAt,
+    paymentStatus: order.paymentStatus || 'unpaid',
+    createdAt: order.createdAt.toISOString(),
+    invoice: order.invoice ? {
+      id: order.invoice.id,
+      invoiceNumber: order.invoice.invoiceNumber
+    } : null
   }));
 
   return {
