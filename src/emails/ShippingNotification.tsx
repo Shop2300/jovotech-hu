@@ -45,21 +45,6 @@ export const ShippingNotificationEmail = ({
 }: ShippingNotificationEmailProps) => {
   const previewText = `Twoje zamówienie #${orderNumber} zostało wysłane - Galaxy Sklep`;
 
-  // Get tracking URL based on carrier
-  const getTrackingUrl = () => {
-    if (carrier.toLowerCase().includes('inpost') || carrier.toLowerCase().includes('paczkomat')) {
-      return `https://inpost.pl/sledzenie-przesylek?number=${trackingNumber}`;
-    } else if (carrier.toLowerCase().includes('dpd')) {
-      return `https://tracktrace.dpd.com.pl/parcelDetails?p1=${trackingNumber}`;
-    } else if (carrier.toLowerCase().includes('poczta polska')) {
-      return `https://emonitoring.poczta-polska.pl/?numer=${trackingNumber}`;
-    } else if (carrier.toLowerCase().includes('ups')) {
-      return `https://www.ups.com/track?loc=pl_PL&tracknum=${trackingNumber}`;
-    }
-    // Default - generic tracking
-    return `https://www.google.com/search?q=${encodeURIComponent(trackingNumber)}`;
-  };
-
   return (
     <Html>
       <Head />
@@ -98,7 +83,7 @@ export const ShippingNotificationEmail = ({
             {/* Tracking Info Box */}
             <Section style={trackingBox}>
               <Heading as="h3" style={h3}>
-                📦 Informacje o śledzeniu przesyłki
+                📦 Informacje o przesyłce
               </Heading>
               
               <Row style={trackingRow}>
@@ -107,15 +92,6 @@ export const ShippingNotificationEmail = ({
                 </Column>
                 <Column>
                   <Text style={trackingValue}>{trackingNumber}</Text>
-                </Column>
-              </Row>
-              
-              <Row style={trackingRow}>
-                <Column>
-                  <Text style={trackingLabel}>Przewoźnik:</Text>
-                </Column>
-                <Column>
-                  <Text style={trackingValue}>{carrier}</Text>
                 </Column>
               </Row>
               
@@ -135,7 +111,7 @@ export const ShippingNotificationEmail = ({
             <Section style={buttonContainer}>
               <Button
                 style={button}
-                href={getTrackingUrl()}
+                href={`https://www.galaxysklep.pl/order-status/${orderNumber}`}
               >
                 Śledź przesyłkę online
               </Button>
@@ -198,7 +174,6 @@ export const ShippingNotificationEmail = ({
               </Text>
               <Text style={helpContact}>
                 📧 <Link href="mailto:support@galaxysklep.pl" style={link}>support@galaxysklep.pl</Link><br />
-                📱 +48 123 456 789<br />
                 🕐 Pon-Pt: 9:00-17:00
               </Text>
             </Section>
@@ -216,19 +191,9 @@ export const ShippingNotificationEmail = ({
             <Section style={companyInfo}>
               <Text style={companyText}>
                 <strong>Galaxy Sklep</strong><br />
-                1. máje 535/50, 46007 Liberec, Czechy<br />
-                NIP: 04688465<br />
                 <Link href="https://galaxysklep.pl" style={companyLink}>
                   www.galaxysklep.pl
                 </Link>
-              </Text>
-              
-              {/* Social Media */}
-              <Text style={socialText}>
-                Śledź nas: 
-                <Link href="#" style={socialLink}> Facebook</Link> • 
-                <Link href="#" style={socialLink}> Instagram</Link> • 
-                <Link href="#" style={socialLink}> YouTube</Link>
               </Text>
             </Section>
           </Section>
@@ -458,20 +423,6 @@ const companyText = {
 
 const companyLink = {
   color: '#073635',
-  textDecoration: 'none',
-  fontWeight: '500' as const,
-};
-
-const socialText = {
-  color: '#94a3b8',
-  fontSize: '12px',
-  lineHeight: '18px',
-  textAlign: 'center' as const,
-  marginTop: '12px',
-};
-
-const socialLink = {
-  color: '#6da306',
   textDecoration: 'none',
   fontWeight: '500' as const,
 };

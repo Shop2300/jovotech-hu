@@ -255,7 +255,7 @@ export const OrderConfirmationEmail = ({
             <Section style={buttonContainer}>
               <Button
                 style={button}
-                href={`https://galaxysklep.pl/order-status/${orderNumber}`}
+                href={`https://www.galaxysklep.pl/order-status/${orderNumber}`}
               >
                 Śledź zamówienie
               </Button>
@@ -268,7 +268,6 @@ export const OrderConfirmationEmail = ({
               </Text>
               <Text style={helpContact}>
                 📧 <Link href="mailto:support@galaxysklep.pl" style={link}>support@galaxysklep.pl</Link><br />
-                📱 +48 123 456 789<br />
                 🕐 Pon-Pt: 9:00-17:00
               </Text>
             </Section>
@@ -286,19 +285,9 @@ export const OrderConfirmationEmail = ({
             <Section style={companyInfo}>
               <Text style={companyText}>
                 <strong>Galaxy Sklep</strong><br />
-                1. máje 535/50, 46007 Liberec, Czechy<br />
-                NIP: 04688465<br />
                 <Link href="https://galaxysklep.pl" style={companyLink}>
                   www.galaxysklep.pl
                 </Link>
-              </Text>
-              
-              {/* Social Media */}
-              <Text style={socialText}>
-                Śledź nas: 
-                <Link href="#" style={socialLink}> Facebook</Link> • 
-                <Link href="#" style={socialLink}> Instagram</Link> • 
-                <Link href="#" style={socialLink}> YouTube</Link>
               </Text>
             </Section>
           </Section>
@@ -612,20 +601,6 @@ const companyText = {
 
 const companyLink = {
   color: '#073635',
-  textDecoration: 'none',
-  fontWeight: '500' as const,
-};
-
-const socialText = {
-  color: '#94a3b8',
-  fontSize: '12px',
-  lineHeight: '18px',
-  textAlign: 'center' as const,
-  marginTop: '12px',
-};
-
-const socialLink = {
-  color: '#6da306',
   textDecoration: 'none',
   fontWeight: '500' as const,
 };
