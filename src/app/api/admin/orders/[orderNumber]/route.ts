@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { checkAuth } from '@/lib/auth-middleware';
+import { EmailService } from '@/lib/email/email-service';
 
 // GET /api/admin/orders/[orderNumber]
 export async function GET(
@@ -52,10 +53,25 @@ export async function PATCH(
   const { orderNumber } = await params;
 
   try {
-    // First, find the order by orderNumber to get its ID
+    // First, find the order by orderNumber to get its ID and current data
     const existingOrder = await prisma.order.findUnique({
       where: { orderNumber },
-      select: { id: true, status: true, paymentStatus: true }
+      select: { 
+        id: true, 
+        status: true, 
+        paymentStatus: true,
+        customerEmail: true,
+        customerName: true,
+        items: true,
+        deliveryAddress: true,
+        billingAddress: true,
+        deliveryCity: true,
+        deliveryPostalCode: true,
+        billingCity: true,
+        billingPostalCode: true,
+        useDifferentDelivery: true,
+        trackingNumber: true
+      }
     });
 
     if (!existingOrder) {
@@ -89,6 +105,81 @@ export async function PATCH(
         newValue: data.status,
         metadata: { changedBy: 'Admin' }
       });
+
+      // Check if status is being changed to "shipped"
+      if (data.status === 'shipped' && existingOrder.status !== 'shipped') {
+        // Check if we have a tracking number
+        const trackingNumber = data.trackingNumber || existingOrder.trackingNumber;
+        
+        if (!trackingNumber) {
+          return NextResponse.json(
+            { error: 'Sledovací číslo je vyžadováno pro odeslání zásilky' },
+            { status: 400 }
+          );
+        }
+
+        // Send shipping notification email
+        try {
+          console.log('Sending shipping notification email for order:', orderNumber);
+          
+          // Parse items from JSON
+          const items = existingOrder.items as any[];
+          
+          // Prepare delivery address
+          const deliveryAddress = existingOrder.useDifferentDelivery
+            ? {
+                street: existingOrder.deliveryAddress || '',
+                city: existingOrder.deliveryCity || '',
+                postalCode: existingOrder.deliveryPostalCode || ''
+              }
+            : {
+                street: existingOrder.billingAddress || '',
+                city: existingOrder.billingCity || '',
+                postalCode: existingOrder.billingPostalCode || ''
+              };
+
+          await EmailService.sendShippingNotification({
+            orderNumber: orderNumber,
+            customerEmail: existingOrder.customerEmail,
+            customerName: existingOrder.customerName,
+            trackingNumber: trackingNumber,
+            items: items.map(item => ({
+              name: item.name || 'Produkt',
+              quantity: item.quantity,
+              price: item.price
+            })),
+            deliveryAddress: deliveryAddress
+          });
+
+          console.log('Shipping notification email sent successfully');
+          
+          historyEntries.push({
+            orderId: existingOrder.id,
+            action: 'email_sent',
+            description: 'Email s informacemi o odeslání byl zaslán zákazníkovi',
+            newValue: 'shipping_notification',
+            metadata: { 
+              changedBy: 'Admin',
+              trackingNumber: trackingNumber,
+              emailSent: true
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send shipping notification email:', emailError);
+          // Don't fail the status update if email fails
+          // But add a note to history
+          historyEntries.push({
+            orderId: existingOrder.id,
+            action: 'email_failed',
+            description: 'Nepodařilo se odeslat email s informacemi o odeslání',
+            newValue: 'shipping_notification_failed',
+            metadata: { 
+              changedBy: 'Admin',
+              error: emailError instanceof Error ? emailError.message : 'Unknown error'
+            }
+          });
+        }
+      }
     }
 
     // Track payment status changes

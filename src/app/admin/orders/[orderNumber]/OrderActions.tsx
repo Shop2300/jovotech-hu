@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Package, FileText, Download, Loader2, CheckCircle, Trash2, CreditCard } from 'lucide-react';
+import { Package, FileText, Download, Loader2, CheckCircle, Trash2, CreditCard, Mail } from 'lucide-react';
 
 interface OrderActionsProps {
   orderId: string;
@@ -69,6 +69,12 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
   }, [orderNumber]);
 
   const handleStatusChange = async (newStatus: string) => {
+    // Check if changing to shipped without tracking number
+    if (newStatus === 'shipped' && !trackingNumber && !currentTrackingNumber) {
+      toast.error('Prosím zadejte sledovací číslo před označením jako odesláno');
+      return;
+    }
+
     setIsUpdating(true);
     try {
       const response = await fetch(`/api/admin/orders/${orderNumber}`, {
@@ -76,16 +82,35 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ 
+          status: newStatus,
+          trackingNumber: trackingNumber || currentTrackingNumber 
+        }),
       });
 
-      if (!response.ok) throw new Error('Failed to update status');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update status');
+      }
       
       setStatus(newStatus);
-      toast.success('Stav objednávky byl aktualizován');
+      
+      // Show appropriate success message
+      if (newStatus === 'shipped') {
+        toast.success(
+          <div className="flex items-center gap-2">
+            <Mail size={16} />
+            <span>Objednávka označena jako odeslaná a email byl zaslán zákazníkovi</span>
+          </div>,
+          { duration: 5000 }
+        );
+      } else {
+        toast.success('Stav objednávky byl aktualizován');
+      }
+      
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při aktualizaci stavu');
+      toast.error(error instanceof Error ? error.message : 'Chyba při aktualizaci stavu');
     } finally {
       setIsUpdating(false);
     }
@@ -115,6 +140,11 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
   };
 
   const handleTrackingNumberUpdate = async () => {
+    if (!trackingNumber.trim()) {
+      toast.error('Prosím zadejte sledovací číslo');
+      return;
+    }
+
     setIsUpdating(true);
     try {
       const response = await fetch(`/api/admin/orders/${orderNumber}`, {
@@ -245,6 +275,12 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
             </option>
           ))}
         </select>
+        {status === 'shipped' && (
+          <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+            <CheckCircle size={14} />
+            Email s informacemi o odeslání byl zaslán
+          </p>
+        )}
       </div>
 
       {/* Payment Status */}
@@ -283,6 +319,11 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Sledovací číslo zásilky
+          {status !== 'shipped' && !trackingNumber && (
+            <span className="text-xs text-gray-500 ml-2">
+              (vyžadováno pro odeslání)
+            </span>
+          )}
         </label>
         {!isEditingTracking ? (
           <div className="flex items-center gap-2">
@@ -311,7 +352,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
             <div className="flex gap-2">
               <button
                 onClick={handleTrackingNumberUpdate}
-                disabled={isUpdating}
+                disabled={isUpdating || !trackingNumber.trim()}
                 className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:opacity-50"
               >
                 Uložit
@@ -416,16 +457,22 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
             )}
           </button>
         )}
-        
-        {trackingNumber && status === 'shipped' && (
-          <button 
-            className="w-full bg-green-100 text-green-800 py-2 rounded hover:bg-green-200 transition mt-2"
-            onClick={() => toast('Funkce odesílání emailů bude brzy dostupná')}
-          >
-            Poslat sledovací číslo zákazníkovi
-          </button>
-        )}
       </div>
+
+      {/* Shipping Email Info */}
+      {status === 'shipped' && trackingNumber && (
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="flex items-start gap-2 text-blue-700 text-sm">
+            <Mail size={16} className="mt-0.5" />
+            <div>
+              <p className="font-medium">Email s informacemi o odeslání</p>
+              <p className="text-xs mt-1">
+                Zákazník obdržel email s sledovacím číslem: {trackingNumber}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
