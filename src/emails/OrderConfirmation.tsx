@@ -251,7 +251,7 @@ export const OrderConfirmationEmail = ({
                   </Text>
                   <Hr style={miniDivider} />
                   <Text style={bankDetailRow}>
-                    <strong>Tytuł przelewu:</strong> <span style={highlightText}>{orderNumber}</span>
+                    <strong>Tytuł przelewu:</strong> <span style={highlightText}>{orderNumber.replace('-', '')}</span>
                   </Text>
                 </Section>
                 
@@ -325,6 +325,22 @@ export const OrderConfirmationEmail = ({
                 </Link>
               </Text>
             </Section>
+
+            {/* Legal Information */}
+            <Section style={legalSection}>
+              <Text style={legalText}>
+                Niniejsza wiadomość została wygenerowana automatycznie, prosimy na nią nie odpowiadać. Jeśli masz pytania, skontaktuj się z nami pod adresem support@galaxysklep.pl.
+              </Text>
+              <Text style={legalText}>
+                Zgodnie z Ustawą o prawach konsumenta z dnia 30 maja 2014 r., masz prawo odstąpić od umowy w terminie 14 dni bez podania jakiejkolwiek przyczyny. Szczegółowe informacje znajdziesz w naszym regulaminie.
+              </Text>
+              <Text style={legalText}>
+                Administratorem Twoich danych osobowych jest Galaxysklep.pl, 1. máje 535/50, 46007 Liberec, Czechy, NIP: 04688465. Twoje dane są przetwarzane w celu realizacji zamówienia zgodnie z naszą polityką prywatności dostępną na stronie www.galaxysklep.pl/polityka-prywatnosci.
+              </Text>
+              <Text style={legalText}>
+                © {new Date().getFullYear()} Galaxysklep.pl. Wszelkie prawa zastrzeżone.
+              </Text>
+            </Section>
           </Section>
         </Container>
       </Body>
@@ -344,8 +360,9 @@ const container = {
   margin: '0 auto',
   padding: '0',
   marginBottom: '64px',
-  maxWidth: '100%', // Changed from 600px to 100%
+  maxWidth: '650px', // Reduced width
   overflow: 'hidden',
+  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
 };
 
 const header = {
@@ -703,6 +720,23 @@ const companyLink = {
   color: '#073635',
   textDecoration: 'none',
   fontWeight: '500' as const,
+};
+
+const legalSection = {
+  marginTop: '24px',
+  paddingTop: '24px',
+  borderTop: '1px solid #f1f5f9',
+  paddingLeft: '24px',
+  paddingRight: '24px',
+  paddingBottom: '24px',
+};
+
+const legalText = {
+  color: '#cbd5e1',
+  fontSize: '11px',
+  lineHeight: '16px',
+  textAlign: 'center' as const,
+  marginBottom: '8px',
 };
 
 export default OrderConfirmationEmail;
