@@ -1,5 +1,6 @@
 // src/app/order-status/[orderNumber]/page.tsx
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import { formatPrice } from '@/lib/utils';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -19,7 +20,7 @@ import {
 import Link from 'next/link';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SatisfactionRating } from '@/components/SatisfactionRating';
-import { getDeliveryMethodLabel, getPaymentMethodLabel } from '@/lib/order-options';
+import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
 interface OrderStatusData {
   orderNumber: string;
@@ -32,11 +33,16 @@ interface OrderStatusData {
   paymentMethod: string;
   total: number;
   items: Array<{
+    id?: string;
     name: string;
     quantity: number;
     price: number;
+    image?: string | null;
+    variantName?: string | null;
+    variantColor?: string | null;
   }>;
   deliveryAddress: {
+    street?: string;
     city: string;
     postalCode: string;
   };
@@ -105,19 +111,6 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
   const currentStepIndex = statusSteps.findIndex(step => step.key === order.status);
   const isCancelled = order.status === 'cancelled';
 
-  // Get tracking URL
-  const getTrackingUrl = () => {
-    if (!order.trackingNumber) return null;
-    
-    if (order.deliveryMethod === 'zasilkovna') {
-      return `https://tracking.packeta.com/pl/?id=${order.trackingNumber}`;
-    }
-    // Add more carriers as needed
-    return null;
-  };
-
-  const trackingUrl = getTrackingUrl();
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content - Now starts from the top without header */}
@@ -162,7 +155,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <div className="bg-white rounded-md p-3 space-y-1 text-sm">
                     <p><strong>Numer konta:</strong> {BANK_DETAILS.accountNumber}</p>
                     <p><strong>IBAN:</strong> <span className="font-mono">{BANK_DETAILS.iban}</span></p>
-                    <p><strong>Tytuł przelewu:</strong> {order.orderNumber}</p>
+                    <p><strong>Tytuł przelewu:</strong> {order.orderNumber.replace('-', '')}</p>
                     <p className="text-xs text-gray-600 mt-2">
                       Zamówienie wyślemy natychmiast po zaksięgowaniu wpłaty na naszym koncie.
                     </p>
@@ -283,16 +276,14 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                       Przewoźnik: {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
                     </p>
                   </div>
-                  {trackingUrl && (
-                    <a
-                      href={trackingUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {order.trackingNumber && (
+                    <Link
+                      href="/dostawa-i-platnosc"
                       className="flex items-center gap-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                     >
                       Śledź online
                       <ExternalLink size={16} />
-                    </a>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -303,23 +294,121 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
               <h2 className="text-lg font-semibold mb-4">Pozycje zamówienia</h2>
               <div className="space-y-4">
                 {order.items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center pb-4 border-b last:border-0">
-                    <div>
-                      <h3 className="font-medium">{item.name}</h3>
-                      <p className="text-sm text-gray-600">
+                  <div key={index} className="flex gap-4 pb-4 border-b border-gray-200 last:border-0">
+                    {/* Product Image */}
+                    <Link 
+                      href={item.id ? `/products/${item.id}` : '#'}
+                      className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                    >
+                      {item.image ? (
+                        <div className="relative w-20 h-20">
+                          <Image 
+                            src={item.image} 
+                            alt={item.name}
+                            fill
+                            className="object-cover rounded-lg"
+                            sizes="80px"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Package className="w-8 h-8 text-gray-400" />
+                        </div>
+                      )}
+                    </Link>
+                    
+                    {/* Product Details */}
+                    <div className="flex-1">
+                      <Link 
+                        href={item.id ? `/products/${item.id}` : '#'}
+                        className="font-medium hover:text-blue-600 transition-colors"
+                      >
+                        {item.name}
+                      </Link>
+                      {item.variantName && (
+                        <p className="text-sm text-gray-600">
+                          {item.variantName}
+                          {item.variantColor && ` - ${item.variantColor}`}
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-600 mt-1">
                         {item.quantity}x {formatPrice(item.price)}
                       </p>
                     </div>
-                    <p className="font-medium">
-                      {formatPrice(item.price * item.quantity)}
-                    </p>
+                    
+                    {/* Price */}
+                    <div className="text-right">
+                      <p className="font-medium">
+                        {formatPrice(item.price * item.quantity)}
+                      </p>
+                    </div>
                   </div>
                 ))}
+                
+                {/* Shipping Row */}
+                <div className="flex gap-4 pb-4 border-b border-gray-200">
+                  <div className="flex-shrink-0 flex items-center h-20">
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Truck className="w-5 h-5 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1 flex items-center">
+                    <div>
+                      <h3 className="font-medium">Dostawa</h3>
+                      <p className="text-sm text-gray-600">
+                        {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right flex items-center">
+                    <p className="font-medium">
+                      {formatPrice(getDeliveryMethod(order.deliveryMethod)?.price || 0)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Payment Row */}
+                <div className="flex gap-4 pb-4 border-b border-gray-200">
+                  <div className="flex-shrink-0 flex items-center h-20">
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <CreditCard className="w-5 h-5 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1 flex items-center">
+                    <div>
+                      <h3 className="font-medium">Płatność</h3>
+                      <p className="text-sm text-gray-600">
+                        {getPaymentMethodLabel(order.paymentMethod, 'pl')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right flex items-center">
+                    <p className="font-medium">
+                      {formatPrice(getPaymentMethod(order.paymentMethod)?.price || 0)}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Razem</span>
-                  <span>{formatPrice(order.total)}</span>
+              
+              {/* Total Section */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Suma częściowa</span>
+                    <span>{formatPrice(order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0))}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Dostawa</span>
+                    <span>{formatPrice(getDeliveryMethod(order.deliveryMethod)?.price || 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Płatność</span>
+                    <span>{formatPrice(getPaymentMethod(order.paymentMethod)?.price || 0)}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
+                    <span>Razem</span>
+                    <span>{formatPrice(order.total)}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -363,9 +452,12 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <MapPin className="text-gray-400 mt-0.5" size={16} />
                   <div>
                     <p className="text-sm font-medium text-gray-900">Adres dostawy</p>
-                    <p className="text-sm text-gray-600">
-                      {order.deliveryAddress.city}, {order.deliveryAddress.postalCode}
-                    </p>
+                    <div className="text-sm text-gray-600">
+                      {order.deliveryAddress.street && (
+                        <p>{order.deliveryAddress.street}</p>
+                      )}
+                      <p>{order.deliveryAddress.postalCode} {order.deliveryAddress.city}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -419,7 +511,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   </div>
                   <div>
                     <p className="text-gray-600">Tytuł przelewu:</p>
-                    <p className="font-mono font-medium">{order.orderNumber}</p>
+                    <p className="font-mono font-medium">{order.orderNumber.replace('-', '')}</p>
                   </div>
                   <div>
                     <p className="text-gray-600">Kwota:</p>

@@ -41,6 +41,19 @@ export async function GET(
     // Parse items for display
     const items = order.items as any[];
 
+    // Determine delivery address based on useDifferentDelivery flag
+    const deliveryStreet = order.useDifferentDelivery 
+      ? order.deliveryAddress 
+      : order.billingAddress || order.address;
+      
+    const deliveryCity = order.useDifferentDelivery
+      ? order.deliveryCity
+      : order.billingCity || order.city;
+      
+    const deliveryPostalCode = order.useDifferentDelivery
+      ? order.deliveryPostalCode
+      : order.billingPostalCode || order.postalCode;
+
     // Return limited order information (no sensitive data)
     const publicOrderData = {
       orderNumber: order.orderNumber,
@@ -53,13 +66,18 @@ export async function GET(
       paymentMethod: order.paymentMethod,
       total: Number(order.total),
       items: items.map(item => ({
+        id: item.productId || item.id,
         name: item.name,
         quantity: item.quantity,
-        price: item.price
+        price: item.price,
+        image: item.image || null,
+        variantName: item.variantName || null,
+        variantColor: item.variantColor || null
       })),
       deliveryAddress: {
-        city: order.deliveryCity || order.billingCity || order.city,
-        postalCode: order.deliveryPostalCode || order.billingPostalCode || order.postalCode,
+        street: deliveryStreet,
+        city: deliveryCity,
+        postalCode: deliveryPostalCode,
       },
       history: order.history.map(entry => ({
         id: entry.id,

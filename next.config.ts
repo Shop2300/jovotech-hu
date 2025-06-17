@@ -27,15 +27,30 @@ const nextConfig: NextConfig = {
         port: '3000',
         pathname: '/uploads/**',
       },
-      // Add your production domain when you deploy
-      // {
-      //   protocol: 'https',
-      //   hostname: 'your-domain.com',
-      //   pathname: '/uploads/**',
-      // },
+      // Vercel Blob Storage
+      {
+        protocol: 'https',
+        hostname: '9n6egvca0xi0rbfa.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
+      // Alternative Vercel Blob Storage patterns
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
+      // Production domain
+      {
+        protocol: 'https',
+        hostname: 'galaxysklep.pl',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.galaxysklep.pl',
+        pathname: '/uploads/**',
+      },
     ],
-    // Alternative simpler approach (less secure but easier):
-    // domains: ['localhost', 'your-production-domain.com'],
   },
 }
 
