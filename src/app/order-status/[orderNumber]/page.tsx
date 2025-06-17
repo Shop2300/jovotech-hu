@@ -161,6 +161,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   </p>
                   <div className="bg-white rounded-md p-3 space-y-1 text-sm">
                     <p><strong>Numer konta:</strong> {BANK_DETAILS.accountNumber}</p>
+                    <p><strong>IBAN:</strong> <span className="font-mono">{BANK_DETAILS.iban}</span></p>
                     <p><strong>Tytuł przelewu:</strong> {order.orderNumber}</p>
                     <p className="text-xs text-gray-600 mt-2">
                       Zamówienie wyślemy natychmiast po zaksięgowaniu wpłaty na naszym koncie.
@@ -414,7 +415,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   </div>
                   <div>
                     <p className="text-gray-600">IBAN:</p>
-                    <p className="font-mono font-medium text-xs">{BANK_DETAILS.iban}</p>
+                    <p className="font-mono font-medium">{BANK_DETAILS.iban}</p>
                   </div>
                   <div>
                     <p className="text-gray-600">Tytuł przelewu:</p>

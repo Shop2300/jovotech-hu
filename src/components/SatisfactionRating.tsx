@@ -12,11 +12,11 @@ export function SatisfactionRating({ orderNumber }: SatisfactionRatingProps) {
 
   // Rating emojis
   const ratingOptions = [
-    { value: 1, emoji: '😢', label: 'Velmi nespokojený' },
-    { value: 2, emoji: '😕', label: 'Nespokojený' },
-    { value: 3, emoji: '😐', label: 'Neutrální' },
-    { value: 4, emoji: '😊', label: 'Spokojený' },
-    { value: 5, emoji: '😍', label: 'Velmi spokojený' },
+    { value: 1, emoji: '😢', label: 'Bardzo niezadowolony' },
+    { value: 2, emoji: '😕', label: 'Niezadowolony' },
+    { value: 3, emoji: '😐', label: 'Neutralny' },
+    { value: 4, emoji: '😊', label: 'Zadowolony' },
+    { value: 5, emoji: '😍', label: 'Bardzo zadowolony' },
   ];
 
   const handleRating = (rating: number) => {
@@ -34,7 +34,7 @@ export function SatisfactionRating({ orderNumber }: SatisfactionRatingProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
-      <h3 className="font-semibold mb-4">Jak jste spokojeni s objednávkou?</h3>
+      <h3 className="font-semibold mb-4">Jak oceniasz swoje zamówienie?</h3>
       <div className="flex justify-around">
         {ratingOptions.map((option) => (
           <button
@@ -55,7 +55,7 @@ export function SatisfactionRating({ orderNumber }: SatisfactionRatingProps) {
       </div>
       {selectedRating && (
         <p className="text-sm text-green-600 text-center mt-4">
-          Děkujeme za vaše hodnocení!
+          Dziękujemy za Twoją opinię!
         </p>
       )}
     </div>
