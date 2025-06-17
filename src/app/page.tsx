@@ -26,10 +26,8 @@ export default async function HomePage() {
     orderBy: { order: 'asc' }
   });
 
-  // Fetch featured products with images
-  const featuredProducts = await prisma.product.findMany({
-    take: 8,
-    orderBy: { createdAt: 'desc' },
+  // Fetch ALL products for random selection
+  const allProducts = await prisma.product.findMany({
     include: {
       category: {
         select: {
@@ -57,37 +55,14 @@ export default async function HomePage() {
     }
   });
 
-  // Fetch new products (Nowości) with images - Skip the first 8 to avoid duplicates
-  const newProducts = await prisma.product.findMany({
-    skip: 8,
-    take: 8,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      category: {
-        select: {
-          id: true,
-          name: true,
-          slug: true
-        }
-      },
-      images: {
-        orderBy: { order: 'asc' },
-        take: 1,
-        select: {
-          url: true
-        }
-      },
-      variants: {
-        where: { isActive: true },
-        select: {
-          id: true,
-          colorName: true,
-          colorCode: true,
-          stock: true
-        }
-      }
-    }
-  });
+  // Shuffle all products randomly
+  const shuffledProducts = shuffleArray(allProducts);
+
+  // Take first 8 for featured products (Polecane produkty)
+  const featuredProducts = shuffledProducts.slice(0, 8);
+
+  // Take next 8 for new products (Nowości) - no overlap with featured
+  const newProducts = shuffledProducts.slice(8, 16);
 
   // Fetch ALL products for the three category boxes, then shuffle and take 6
   const allCleaningProducts = await prisma.product.findMany({
