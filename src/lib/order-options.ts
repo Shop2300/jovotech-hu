@@ -18,6 +18,7 @@ export interface PaymentMethod {
   description?: string;
   descriptionPl?: string;
   icon: any;
+  price: number; // Added price field
 }
 
 export const DELIVERY_METHODS: DeliveryMethod[] = [
@@ -39,7 +40,8 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
     labelPl: 'Przelew bankowy',
     description: 'Platba převodem na účet',
     descriptionPl: 'Płatność przelewem na konto',
-    icon: Building2
+    icon: Building2,
+    price: 0 // Free
   },
   {
     value: 'cash',
@@ -47,7 +49,8 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
     labelPl: 'Płatność za pobraniem',
     description: 'Platba při převzetí',
     descriptionPl: 'Płatność przy odbiorze',
-    icon: Banknote
+    icon: Banknote,
+    price: 0 // Changed to free as requested
   }
 ];
 

@@ -92,7 +92,7 @@ export const ShippingNotificationEmail = ({
             </Text>
             
             <Text style={paragraph}>
-              Świetna wiadomość! Twoje zamówienie <strong>#{orderNumber}</strong> zostało właśnie wysłane i jest w drodze do Ciebie.
+              Świetna wiadomość! Twoje zamówienie <strong style={primaryText}>#{orderNumber}</strong> zostało właśnie wysłane i jest w drodze do Ciebie.
             </Text>
 
             {/* Tracking Info Box */}
@@ -160,10 +160,12 @@ export const ShippingNotificationEmail = ({
                 📍 Adres dostawy
               </Heading>
               
-              <Text style={addressText}>
-                {deliveryAddress.street}<br />
-                {deliveryAddress.city}, {deliveryAddress.postalCode}
-              </Text>
+              <Section style={addressBox}>
+                <Text style={addressText}>
+                  {deliveryAddress.street}<br />
+                  {deliveryAddress.city}, {deliveryAddress.postalCode}
+                </Text>
+              </Section>
             </Section>
 
             {/* Tips */}
@@ -189,29 +191,44 @@ export const ShippingNotificationEmail = ({
               </Text>
             </Section>
 
+            {/* Help Section */}
+            <Section style={helpSection}>
+              <Text style={helpText}>
+                Masz pytania? Jesteśmy tutaj, aby pomóc!
+              </Text>
+              <Text style={helpContact}>
+                📧 <Link href="mailto:support@galaxysklep.pl" style={link}>support@galaxysklep.pl</Link><br />
+                📱 +48 123 456 789<br />
+                🕐 Pon-Pt: 9:00-17:00
+              </Text>
+            </Section>
+
             {/* Footer */}
             <Hr style={divider} />
             
             <Text style={footer}>
-              Jeśli masz jakiekolwiek pytania dotyczące Twojego zamówienia, skontaktuj się z nami pod adresem{' '}
-              <Link href="mailto:support@galaxysklep.pl" style={link}>
-                support@galaxysklep.pl
-              </Link>
-            </Text>
-            
-            <Text style={footer}>
               Dziękujemy za zakupy i życzymy miłego dnia!<br />
-              Zespół Galaxy Sklep
+              Z pozdrowieniami,<br />
+              <strong>Zespół Galaxy Sklep</strong>
             </Text>
 
             {/* Company Info */}
             <Section style={companyInfo}>
               <Text style={companyText}>
                 <strong>Galaxy Sklep</strong><br />
-                Twój ulubiony sklep internetowy<br />
-                <Link href="https://galaxysklep.pl" style={link}>
+                1. máje 535/50, 46007 Liberec, Czechy<br />
+                NIP: 04688465<br />
+                <Link href="https://galaxysklep.pl" style={companyLink}>
                   www.galaxysklep.pl
                 </Link>
+              </Text>
+              
+              {/* Social Media */}
+              <Text style={socialText}>
+                Śledź nas: 
+                <Link href="#" style={socialLink}> Facebook</Link> • 
+                <Link href="#" style={socialLink}> Instagram</Link> • 
+                <Link href="#" style={socialLink}> YouTube</Link>
               </Text>
             </Section>
           </Section>
@@ -221,7 +238,7 @@ export const ShippingNotificationEmail = ({
   );
 };
 
-// Styles
+// Styles with brand colors
 const main = {
   backgroundColor: '#f6f9fc',
   fontFamily:
@@ -234,13 +251,14 @@ const container = {
   padding: '0',
   marginBottom: '64px',
   maxWidth: '600px',
-  borderRadius: '8px',
+  borderRadius: '12px',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
   overflow: 'hidden',
 };
 
 const header = {
-  backgroundColor: '#8b5cf6',
-  padding: '32px 24px',
+  backgroundColor: '#6da306', // Primary green
+  padding: '40px 24px',
   textAlign: 'center' as const,
 };
 
@@ -264,7 +282,7 @@ const shippingIcon = {
 };
 
 const h2 = {
-  color: '#1e293b',
+  color: '#020b1d', // Dark blue/black
   fontSize: '28px',
   fontWeight: '700',
   lineHeight: '36px',
@@ -273,7 +291,7 @@ const h2 = {
 };
 
 const h3 = {
-  color: '#1e293b',
+  color: '#073635', // Dark green
   fontSize: '20px',
   fontWeight: '600',
   lineHeight: '28px',
@@ -287,12 +305,16 @@ const paragraph = {
   marginBottom: '16px',
 };
 
+const primaryText = {
+  color: '#6da306',
+};
+
 const trackingBox = {
-  backgroundColor: '#f0f4ff',
+  backgroundColor: '#f0fdf4', // Light green tint
   borderRadius: '8px',
   padding: '24px',
   marginBottom: '24px',
-  border: '2px solid #8b5cf6',
+  border: '2px solid #6da306',
 };
 
 const trackingRow = {
@@ -307,7 +329,7 @@ const trackingLabel = {
 };
 
 const trackingValue = {
-  color: '#1e293b',
+  color: '#020b1d',
   fontSize: '18px',
   fontWeight: '700',
   margin: '0',
@@ -319,7 +341,7 @@ const buttonContainer = {
 };
 
 const button = {
-  backgroundColor: '#8b5cf6',
+  backgroundColor: '#6da306',
   borderRadius: '8px',
   color: '#ffffff',
   display: 'inline-block',
@@ -329,10 +351,11 @@ const button = {
   padding: '0 32px',
   textDecoration: 'none',
   textAlign: 'center' as const,
+  boxShadow: '0 2px 4px rgba(109, 163, 6, 0.2)',
 };
 
 const orderContents = {
-  backgroundColor: '#f8fafc',
+  backgroundColor: '#f8f9fa',
   borderRadius: '8px',
   padding: '24px',
   marginBottom: '24px',
@@ -346,25 +369,30 @@ const itemText = {
 };
 
 const addressSection = {
-  backgroundColor: '#f8fafc',
-  borderRadius: '8px',
-  padding: '24px',
   marginBottom: '24px',
+};
+
+const addressBox = {
+  backgroundColor: '#f8f9fa',
+  borderRadius: '6px',
+  padding: '16px',
+  borderLeft: '4px solid #6da306',
 };
 
 const addressText = {
-  color: '#475569',
+  color: '#020b1d',
   fontSize: '14px',
   lineHeight: '20px',
   margin: '0',
+  fontWeight: '500' as const,
 };
 
 const tipsSection = {
-  backgroundColor: '#fef9c3',
+  backgroundColor: '#fef9e7', // Light yellow for attention
   borderRadius: '8px',
   padding: '24px',
   marginBottom: '24px',
-  border: '1px solid #fde047',
+  border: '1px solid #fde68a',
 };
 
 const tipText = {
@@ -372,6 +400,28 @@ const tipText = {
   fontSize: '14px',
   lineHeight: '20px',
   marginBottom: '12px',
+};
+
+const helpSection = {
+  backgroundColor: '#f8f9fa',
+  borderRadius: '8px',
+  padding: '20px',
+  marginBottom: '24px',
+  textAlign: 'center' as const,
+};
+
+const helpText = {
+  color: '#073635',
+  fontSize: '16px',
+  fontWeight: '600',
+  marginBottom: '12px',
+};
+
+const helpContact = {
+  color: '#475569',
+  fontSize: '14px',
+  lineHeight: '22px',
+  margin: '0',
 };
 
 const divider = {
@@ -389,7 +439,7 @@ const footer = {
 };
 
 const link = {
-  color: '#8b5cf6',
+  color: '#6da306',
   textDecoration: 'underline',
 };
 
@@ -404,6 +454,26 @@ const companyText = {
   fontSize: '12px',
   lineHeight: '18px',
   textAlign: 'center' as const,
+};
+
+const companyLink = {
+  color: '#073635',
+  textDecoration: 'none',
+  fontWeight: '500' as const,
+};
+
+const socialText = {
+  color: '#94a3b8',
+  fontSize: '12px',
+  lineHeight: '18px',
+  textAlign: 'center' as const,
+  marginTop: '12px',
+};
+
+const socialLink = {
+  color: '#6da306',
+  textDecoration: 'none',
+  fontWeight: '500' as const,
 };
 
 export default ShippingNotificationEmail;

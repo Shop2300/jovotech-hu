@@ -109,10 +109,12 @@ export default function CheckoutPage() {
     }
   }, [items.length, router, isProcessingOrder]);
 
-  // Calculate delivery price based on selected method
+  // Calculate delivery and payment prices based on selected methods
   const selectedDeliveryMethod = getDeliveryMethod(deliveryMethod);
+  const selectedPaymentMethod = getPaymentMethod(paymentMethod);
   const deliveryPrice = selectedDeliveryMethod?.price || 0;
-  const totalPrice = getTotalPrice() + deliveryPrice;
+  const paymentPrice = selectedPaymentMethod?.price || 0;
+  const totalPrice = getTotalPrice() + deliveryPrice + paymentPrice;
   const totalSavings = getTotalSavings();
 
   const copyToClipboard = (text: string, label: string) => {
@@ -153,7 +155,7 @@ export default function CheckoutPage() {
         paymentMethod: data.paymentMethod,
         note: data.note,
         items: items,
-        total: totalPrice,
+        total: totalPrice, // This now includes delivery and payment fees
       };
 
       const response = await fetch('/api/orders', {
@@ -603,12 +605,16 @@ export default function CheckoutPage() {
                             )}
                           </div>
                         </div>
-                        {method.price === 0 && (
+                        {method.price === 0 ? (
                           <span className="font-semibold text-[#8bc34a] flex items-center gap-1">
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
                             Gratis
+                          </span>
+                        ) : (
+                          <span className="font-medium text-[#131921]">
+                            {formatPrice(method.price)}
                           </span>
                         )}
                       </label>
@@ -650,6 +656,18 @@ export default function CheckoutPage() {
                             <div className="text-sm text-gray-600">{method.descriptionPl}</div>
                           )}
                         </div>
+                        {method.price === 0 ? (
+                          <span className="font-semibold text-[#8bc34a] flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Gratis
+                          </span>
+                        ) : (
+                          <span className="font-medium text-[#131921]">
+                            +{formatPrice(method.price)}
+                          </span>
+                        )}
                       </label>
                     );
                   })}
@@ -808,6 +826,12 @@ export default function CheckoutPage() {
                     <span>{formatPrice(deliveryPrice)}</span>
                   )}
                 </div>
+                {paymentPrice > 0 && (
+                  <div className="flex justify-between text-[#131921]">
+                    <span>Opłata za płatność</span>
+                    <span>{formatPrice(paymentPrice)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-semibold text-xl border-t border-gray-200 pt-2">
                   <span className="text-[#131921]">Razem</span>
                   <span className="text-[#8bc34a]">{formatPrice(totalPrice)}</span>

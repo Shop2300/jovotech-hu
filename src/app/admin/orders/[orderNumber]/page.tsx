@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { cs } from 'date-fns/locale';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle } from 'lucide-react';
+import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle, Package, Banknote } from 'lucide-react';
 import { OrderActions } from './OrderActions';
 import { OrderHistory } from '@/components/admin/OrderHistory';
 import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
@@ -120,6 +120,13 @@ export default async function OrderDetailPage({
   // Check if we have new address fields
   const hasNewAddressFormat = order.billingFirstName && order.billingLastName;
 
+  // Get delivery and payment methods
+  const deliveryMethod = getDeliveryMethod(order.deliveryMethod);
+  const paymentMethod = getPaymentMethod(order.paymentMethod);
+
+  // Calculate subtotal (sum of all product items)
+  const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -145,22 +152,95 @@ export default async function OrderDetailPage({
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4 text-black">Položky objednávky</h2>
             <div className="space-y-4">
+              {/* Product Items */}
               {order.items.map((item, index) => (
-                <div key={index} className="flex justify-between items-center pb-4 border-b last:border-0">
-                  <div>
-                    <h3 className="font-medium text-black">{item.product.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {item.quantity}x {formatPrice(item.price)}
-                    </p>
+                <div key={index} className="flex justify-between items-center pb-4 border-b">
+                  <div className="flex items-start gap-3">
+                    <Package size={20} className="text-gray-400 mt-0.5" />
+                    <div>
+                      <h3 className="font-medium text-black">{item.product.name}</h3>
+                      <p className="text-sm text-gray-600">
+                        {item.quantity}x {formatPrice(item.price)}
+                      </p>
+                      {(item.size || item.color) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {item.size && `Velikost: ${item.size}`}
+                          {item.size && item.color && ' • '}
+                          {item.color && `Barva: ${item.color}`}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <p className="font-medium text-black">
                     {formatPrice(item.price * item.quantity)}
                   </p>
                 </div>
               ))}
+
+              {/* Delivery Method as Item */}
+              {deliveryMethod && (
+                <div className="flex justify-between items-center pb-4 border-b">
+                  <div className="flex items-start gap-3">
+                    <Truck size={20} className="text-blue-600 mt-0.5" />
+                    <div>
+                      <h3 className="font-medium text-black">{deliveryMethod.labelPl}</h3>
+                      {deliveryMethod.descriptionPl && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          {deliveryMethod.descriptionPl}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <p className="font-medium text-black">
+                    {deliveryMethod.price > 0 ? formatPrice(deliveryMethod.price) : 'Zdarma'}
+                  </p>
+                </div>
+              )}
+
+              {/* Payment Method as Item */}
+              {paymentMethod && (
+                <div className="flex justify-between items-center pb-4 border-b last:border-0">
+                  <div className="flex items-start gap-3">
+                    {paymentMethod.value === 'bank' ? (
+                      <CreditCard size={20} className="text-green-600 mt-0.5" />
+                    ) : (
+                      <Banknote size={20} className="text-green-600 mt-0.5" />
+                    )}
+                    <div>
+                      <h3 className="font-medium text-black">{paymentMethod.labelPl}</h3>
+                      {paymentMethod.descriptionPl && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          {paymentMethod.descriptionPl}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <p className="font-medium text-black">
+                    {paymentMethod.price > 0 ? formatPrice(paymentMethod.price) : 'Zdarma'}
+                  </p>
+                </div>
+              )}
             </div>
-            <div className="mt-4 pt-4 border-t">
-              <div className="flex justify-between font-bold text-lg">
+
+            {/* Summary */}
+            <div className="mt-6 pt-4 border-t space-y-2">
+              <div className="flex justify-between text-gray-600">
+                <span>Mezisoučet (produkty)</span>
+                <span>{formatPrice(subtotal)}</span>
+              </div>
+              {deliveryMethod && deliveryMethod.price > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>Doprava</span>
+                  <span>{formatPrice(deliveryMethod.price)}</span>
+                </div>
+              )}
+              {paymentMethod && paymentMethod.price > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>Poplatek za platbu</span>
+                  <span>{formatPrice(paymentMethod.price)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg pt-2 border-t">
                 <span>Celkem</span>
                 <span>{formatPrice(order.total)}</span>
               </div>
@@ -248,60 +328,11 @@ export default async function OrderDetailPage({
                 <strong>Datum vytvoření:</strong><br />
                 {format(new Date(order.createdAt), 'd. MMMM yyyy HH:mm', { locale: cs })}
               </p>
-              <div className="pt-3 border-t mt-3">
-                <p className="text-black mb-3">
-                  <strong>Způsob doručení:</strong>
-                </p>
-                <div className="bg-blue-50 rounded-lg p-3">
-                  {(() => {
-                    const deliveryMethod = getDeliveryMethod(order.deliveryMethod);
-                    if (deliveryMethod) {
-                      const Icon = deliveryMethod.icon;
-                      return (
-                        <div className="flex items-start gap-3">
-                          <Icon className="text-blue-600 mt-0.5" size={20} />
-                          <div className="flex-1">
-                            <p className="font-medium text-blue-900">{deliveryMethod.labelPl}</p>
-                            {deliveryMethod.descriptionPl && (
-                              <p className="text-sm text-blue-700 mt-1">{deliveryMethod.descriptionPl}</p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    }
-                    return <span className="text-blue-600">{order.deliveryMethod}</span>;
-                  })()}
-                </div>
-              </div>
               
               <div className="pt-3 mt-3">
-                <p className="text-black mb-3">
-                  <strong>Způsob platby:</strong>
+                <p className="text-black mb-1">
+                  <strong>Stav platby:</strong>
                 </p>
-                <div className="bg-green-50 rounded-lg p-3">
-                  {(() => {
-                    const paymentMethod = getPaymentMethod(order.paymentMethod);
-                    if (paymentMethod) {
-                      const Icon = paymentMethod.icon;
-                      return (
-                        <div className="flex items-start gap-3">
-                          <Icon className="text-green-600 mt-0.5" size={20} />
-                          <div className="flex-1">
-                            <p className="font-medium text-green-900">{paymentMethod.labelPl}</p>
-                            {paymentMethod.descriptionPl && (
-                              <p className="text-sm text-green-700 mt-1">{paymentMethod.descriptionPl}</p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    }
-                    return <span className="text-green-600">{order.paymentMethod}</span>;
-                  })()}
-                </div>
-              </div>
-              
-              <p className="text-black mt-3">
-                <strong>Stav platby:</strong><br />
                 <span className={`inline-flex items-center gap-1 font-semibold ${
                   order.paymentStatus === 'paid' ? 'text-green-600' : 'text-red-600'
                 }`}>
@@ -317,23 +348,29 @@ export default async function OrderDetailPage({
                     </>
                   )}
                 </span>
-              </p>
+              </div>
+
               {order.trackingNumber && (
-                <p className="text-black">
-                  <strong>Sledovací číslo:</strong><br />
-                  <span className="text-blue-600">{order.trackingNumber}</span>
-                </p>
+                <div className="pt-3">
+                  <p className="text-black">
+                    <strong>Sledovací číslo:</strong><br />
+                    <span className="text-blue-600">{order.trackingNumber}</span>
+                  </p>
+                </div>
               )}
+              
               {order.note && (
-                <p className="text-black">
-                  <strong>Poznámka:</strong><br />
-                  {order.note}
-                </p>
+                <div className="pt-3">
+                  <p className="text-black">
+                    <strong>Poznámka:</strong><br />
+                    {order.note}
+                  </p>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Actions - Now passing orderNumber instead of orderId */}
+          {/* Actions */}
           <OrderActions 
             orderId={order.id}
             orderNumber={order.orderNumber}
