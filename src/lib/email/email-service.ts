@@ -8,13 +8,14 @@ import React from 'react';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email configuration - Using support@galaxysklep.pl
-const FROM_EMAIL = process.env.EMAIL_FROM || 'Galaxy Sklep <support@galaxysklep.pl>';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'Galaxysklep.pl <support@galaxysklep.pl>';
 const REPLY_TO = process.env.EMAIL_REPLY_TO || 'support@galaxysklep.pl';
 
 interface OrderItem {
   name?: string;
   quantity: number;
   price: number;
+  image?: string | null; // Added image field
 }
 
 interface OrderEmailData {
@@ -56,6 +57,7 @@ export class EmailService {
         name: item.name || 'Produkt',
         quantity: item.quantity,
         price: item.price,
+        image: item.image || null, // Include image
       }));
 
       // Send the email using React component
@@ -63,7 +65,7 @@ export class EmailService {
         from: FROM_EMAIL,
         to: data.customerEmail,
         replyTo: REPLY_TO,
-        subject: `Potwierdzenie zamówienia #${data.orderNumber} - Galaxy Sklep`,
+        subject: `Potwierdzenie zamówienia #${data.orderNumber} - Galaxysklep.pl`,
         react: OrderConfirmationEmail({
           orderNumber: data.orderNumber,
           customerName: data.customerName,
@@ -124,7 +126,7 @@ export class EmailService {
         from: FROM_EMAIL,
         to: data.customerEmail,
         replyTo: REPLY_TO,
-        subject: `Twoje zamówienie #${data.orderNumber} zostało wysłane - Galaxy Sklep`,
+        subject: `Twoje zamówienie #${data.orderNumber} zostało wysłane - Galaxysklep.pl`,
         react: ShippingNotificationEmail({
           orderNumber: data.orderNumber,
           customerName: data.customerName,
@@ -156,14 +158,14 @@ export class EmailService {
         from: FROM_EMAIL,
         to: toEmail,
         replyTo: REPLY_TO,
-        subject: 'Test Email - Galaxy Sklep',
+        subject: 'Test Email - Galaxysklep.pl',
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background-color: #8b5cf6; padding: 20px; text-align: center;">
-              <h1 style="color: white; margin: 0;">Galaxy Sklep</h1>
+          <div style="font-family: Arial, sans-serif; max-width: 100%; margin: 0 auto;">
+            <div style="background-color: #6da306; padding: 20px;">
+              <h1 style="color: white; margin: 0;">Galaxysklep.pl</h1>
             </div>
             <div style="padding: 30px;">
-              <h2 style="color: #1e293b;">Test Email z Galaxy Sklep</h2>
+              <h2 style="color: #1e293b;">Test Email z Galaxysklep.pl</h2>
               <p>Ten email potwierdza, że usługa emailowa działa prawidłowo.</p>
               <p>Jeśli widzisz ten email, oznacza to, że:</p>
               <ul>
@@ -173,8 +175,8 @@ export class EmailService {
               </ul>
               <hr style="border: 1px solid #e2e8f0; margin: 30px 0;">
               <p style="color: #64748b; font-size: 14px;">
-                Ten testowy email został wysłany z Galaxy Sklep<br>
-                <a href="https://galaxysklep.pl" style="color: #8b5cf6;">www.galaxysklep.pl</a>
+                Ten testowy email został wysłany z Galaxysklep.pl<br>
+                <a href="https://galaxysklep.pl" style="color: #6da306;">www.galaxysklep.pl</a>
               </p>
             </div>
           </div>
@@ -200,6 +202,7 @@ export class EmailService {
       name: item.name || 'Produkt',
       quantity: item.quantity,
       price: item.price,
+      image: item.image || null,
     }));
 
     return React.createElement(OrderConfirmationEmail, {

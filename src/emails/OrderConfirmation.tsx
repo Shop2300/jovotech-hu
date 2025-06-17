@@ -25,6 +25,7 @@ interface OrderConfirmationEmailProps {
     name: string;
     quantity: number;
     price: number;
+    image?: string | null;
   }>;
   total: number;
   deliveryMethod: string;
@@ -40,6 +41,8 @@ const formatPrice = (price: number) => {
   return new Intl.NumberFormat('pl-PL', {
     style: 'currency',
     currency: 'PLN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   }).format(price);
 };
 
@@ -58,7 +61,7 @@ export const OrderConfirmationEmail = ({
   paymentMethod,
   deliveryAddress,
 }: OrderConfirmationEmailProps) => {
-  const previewText = `Potwierdzenie zamówienia #${orderNumber} - Galaxy Sklep`;
+  const previewText = `Potwierdzenie zamówienia #${orderNumber} - Galaxysklep.pl`;
 
   // Get delivery and payment method details
   const deliveryMethodInfo = getDeliveryMethod(deliveryMethod);
@@ -75,14 +78,23 @@ export const OrderConfirmationEmail = ({
       <Preview>{previewText}</Preview>
       <Body style={main}>
         <Container style={container}>
-          {/* Header with Logo */}
+          {/* Header with Logo - Smaller and with order number */}
           <Section style={header}>
-            <Img 
-              src="https://galaxysklep.pl/images/galaxyskleplogo.png" 
-              alt="Galaxy Sklep" 
-              height="60" 
-              style={logo}
-            />
+            <Row>
+              <Column style={logoColumn}>
+                <Img 
+                  src="https://galaxysklep.pl/images/galaxyskleplogo.png" 
+                  alt="Galaxysklep.pl" 
+                  height="40" 
+                  style={logo}
+                />
+              </Column>
+              <Column style={orderNumberColumn}>
+                <Text style={headerOrderNumber}>
+                  Zamówienie: #{orderNumber}
+                </Text>
+              </Column>
+            </Row>
           </Section>
 
           {/* Main Content */}
@@ -110,16 +122,39 @@ export const OrderConfirmationEmail = ({
                 📦 Podsumowanie zamówienia
               </Heading>
               
-              {/* Product Items */}
+              {/* Product Items with Images */}
               {items.map((item, index) => (
                 <Row key={index} style={itemRow}>
-                  <Column style={itemName}>
-                    <Text style={itemText}>
-                      {item.name} × {item.quantity}
+                  {/* Product Image */}
+                  <Column style={itemImageColumn}>
+                    {item.image ? (
+                      <Img 
+                        src={item.image} 
+                        alt={item.name}
+                        width="60"
+                        height="60"
+                        style={itemImage}
+                      />
+                    ) : (
+                      <div style={itemImagePlaceholder}>
+                        📦
+                      </div>
+                    )}
+                  </Column>
+                  
+                  {/* Product Name and Quantity */}
+                  <Column style={itemDetailsColumn}>
+                    <Text style={itemNameText}>
+                      {item.name}
+                    </Text>
+                    <Text style={itemQuantityText}>
+                      Ilość: {item.quantity}
                     </Text>
                   </Column>
-                  <Column style={itemPrice}>
-                    <Text style={itemText}>
+                  
+                  {/* Price */}
+                  <Column style={itemPriceColumn}>
+                    <Text style={itemPriceText}>
                       {formatPrice(item.price * item.quantity)}
                     </Text>
                   </Column>
@@ -276,15 +311,15 @@ export const OrderConfirmationEmail = ({
             <Hr style={footerDivider} />
             
             <Text style={footer}>
-              Dziękujemy za zaufanie i zakupy w Galaxy Sklep!<br />
+              Dziękujemy za zaufanie i zakupy w Galaxysklep.pl!<br />
               Z pozdrowieniami,<br />
-              <strong>Zespół Galaxy Sklep</strong>
+              <strong>Zespół Galaxysklep.pl</strong>
             </Text>
 
             {/* Company Info */}
             <Section style={companyInfo}>
               <Text style={companyText}>
-                <strong>Galaxy Sklep</strong><br />
+                <strong>Galaxysklep.pl</strong><br />
                 <Link href="https://galaxysklep.pl" style={companyLink}>
                   www.galaxysklep.pl
                 </Link>
@@ -309,21 +344,36 @@ const container = {
   margin: '0 auto',
   padding: '0',
   marginBottom: '64px',
-  maxWidth: '600px',
-  borderRadius: '12px',
-  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+  maxWidth: '100%', // Changed from 600px to 100%
   overflow: 'hidden',
 };
 
 const header = {
   backgroundColor: '#6da306', // Primary green
-  padding: '40px 24px',
-  textAlign: 'center' as const,
+  padding: '20px 24px', // Reduced from 40px to 20px
+};
+
+const logoColumn = {
+  width: '50%',
+  textAlign: 'left' as const,
+};
+
+const orderNumberColumn = {
+  width: '50%',
+  textAlign: 'right' as const,
 };
 
 const logo = {
-  margin: '0 auto',
-  borderRadius: '8px',
+  margin: '0',
+  borderRadius: '4px',
+};
+
+const headerOrderNumber = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0',
+  lineHeight: '40px', // Match logo height
 };
 
 const content = {
@@ -384,7 +434,57 @@ const orderSummary = {
 };
 
 const itemRow = {
-  marginBottom: '12px',
+  marginBottom: '16px',
+};
+
+const itemImageColumn = {
+  width: '60px',
+  paddingRight: '12px',
+};
+
+const itemImage = {
+  borderRadius: '6px',
+  border: '1px solid #e5e7eb',
+};
+
+const itemImagePlaceholder = {
+  width: '60px',
+  height: '60px',
+  backgroundColor: '#f3f4f6',
+  borderRadius: '6px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '24px',
+};
+
+const itemDetailsColumn = {
+  paddingRight: '12px',
+};
+
+const itemNameText = {
+  color: '#020b1d',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0 0 4px 0',
+};
+
+const itemQuantityText = {
+  color: '#64748b',
+  fontSize: '13px',
+  margin: '0',
+};
+
+const itemPriceColumn = {
+  textAlign: 'right' as const,
+  verticalAlign: 'top' as const,
+};
+
+const itemPriceText = {
+  color: '#020b1d',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0',
 };
 
 const itemName = {
