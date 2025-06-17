@@ -144,14 +144,8 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                 Utworzone: {format(new Date(order.createdAt), 'd MMMM yyyy HH:mm', { locale: pl })}
               </p>
             </div>
-            <div className="mt-4 sm:mt-0 flex gap-3">
+            <div className="mt-4 sm:mt-0">
               <CopyLinkButton />
-              <Link 
-                href="/" 
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-              >
-                Strona główna
-              </Link>
             </div>
           </div>
 
@@ -204,10 +198,16 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
 
           {/* Status Progress */}
           {!isCancelled ? (
-            <div className="mt-8">
+            <div className="mt-8 px-16 pb-8">
               <div className="relative">
-                {/* Progress Line - adjusted to end at last icon */}
-                <div className="absolute left-6 right-6 top-6 h-1 bg-gray-200">
+                {/* Progress Line - adjusted for edge positioning */}
+                <div 
+                  className="absolute top-6 h-1 bg-gray-200"
+                  style={{ 
+                    left: '24px',   // Half of circle width
+                    right: '24px'   // Half of circle width
+                  }}
+                >
                   <div 
                     className="h-full bg-green-500 transition-all duration-500"
                     style={{ 
@@ -224,32 +224,32 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     const isCurrent = index === currentStepIndex;
 
                     return (
-                      <div key={step.key} className="flex flex-col items-center">
-                        <div
-                          className={`
-                            w-12 h-12 rounded-full flex items-center justify-center
-                            transition-all duration-300 relative z-10
-                            ${isCompleted 
-                              ? 'bg-green-500 text-white' 
-                              : 'bg-gray-200 text-gray-400'
-                            }
-                            ${isCurrent ? 'ring-4 ring-green-200' : ''}
-                          `}
-                        >
-                          <Icon size={24} />
-                        </div>
-                        <div className="mt-2 text-center">
-                          <p className={`text-sm font-medium ${
+                      <div key={step.key} className="relative">
+                        <div className="flex flex-col items-center">
+                          <div
+                            className={`
+                              w-12 h-12 rounded-full flex items-center justify-center
+                              transition-all duration-300 relative z-10
+                              ${isCompleted 
+                                ? 'bg-green-500 text-white' 
+                                : 'bg-gray-200 text-gray-400'
+                              }
+                              ${isCurrent ? 'ring-4 ring-green-200' : ''}
+                            `}
+                          >
+                            <Icon size={24} />
+                          </div>
+                          <p className={`text-sm font-medium mt-2 ${
                             isCompleted ? 'text-gray-900' : 'text-gray-400'
                           }`}>
                             {step.label}
                           </p>
-                          {isCurrent && (
-                            <p className="text-xs text-gray-500 mt-1 hidden sm:block">
-                              {step.description}
-                            </p>
-                          )}
                         </div>
+                        {isCurrent && (
+                          <p className="absolute top-20 left-1/2 transform -translate-x-1/2 text-xs text-gray-500 hidden sm:block text-center whitespace-nowrap">
+                            {step.description}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -446,16 +446,10 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
               </p>
               <div className="space-y-2">
                 <a 
-                  href="mailto:info@galaxysklep.pl" 
+                  href="mailto:support@galaxysklep.pl" 
                   className="block text-sm text-blue-600 hover:text-blue-700"
                 >
                   support@galaxysklep.pl
-                </a>
-                <a 
-                  href="tel:+48123456789" 
-                  className="block text-sm text-blue-600 hover:text-blue-700"
-                >
-                  +48 123 456 789
                 </a>
               </div>
             </div>

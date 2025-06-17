@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         data: {
           orderId: order.id,
           action: 'order_created',
-          description: 'Objednávka byla vytvořena',
+          description: 'Zamówienie zostało utworzone',
           newValue: 'pending',
           metadata: {
             customerEmail: formData.email,

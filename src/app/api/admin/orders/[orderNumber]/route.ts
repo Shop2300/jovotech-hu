@@ -90,17 +90,17 @@ export async function PATCH(
       updateData.status = data.status;
       
       const statusLabels: Record<string, string> = {
-        pending: 'Čeká na vyřízení',
-        processing: 'Zpracovává se',
-        shipped: 'Odesláno',
-        delivered: 'Doručeno',
-        cancelled: 'Zrušeno'
+        pending: 'Oczekuje na realizację',
+        processing: 'W trakcie realizacji',
+        shipped: 'Wysłane',
+        delivered: 'Dostarczone',
+        cancelled: 'Anulowane'
       };
 
       historyEntries.push({
         orderId: existingOrder.id,
         action: 'status_change',
-        description: `Stav objednávky změněn na: ${statusLabels[data.status] || data.status}`,
+        description: `Status zamówienia zmieniony na: ${statusLabels[data.status] || data.status}`,
         oldValue: existingOrder.status,
         newValue: data.status,
         metadata: { changedBy: 'Admin' }
@@ -113,7 +113,7 @@ export async function PATCH(
         
         if (!trackingNumber) {
           return NextResponse.json(
-            { error: 'Sledovací číslo je vyžadováno pro odeslání zásilky' },
+            { error: 'Numer śledzenia jest wymagany do wysyłki' },
             { status: 400 }
           );
         }
@@ -156,7 +156,7 @@ export async function PATCH(
           historyEntries.push({
             orderId: existingOrder.id,
             action: 'email_sent',
-            description: 'Email s informacemi o odeslání byl zaslán zákazníkovi',
+            description: 'E-mail z informacją o wysyłce został wysłany do klienta',
             newValue: 'shipping_notification',
             metadata: { 
               changedBy: 'Admin',
@@ -171,7 +171,7 @@ export async function PATCH(
           historyEntries.push({
             orderId: existingOrder.id,
             action: 'email_failed',
-            description: 'Nepodařilo se odeslat email s informacemi o odeslání',
+            description: 'Nie udało się wysłać e-maila z informacją o wysyłce',
             newValue: 'shipping_notification_failed',
             metadata: { 
               changedBy: 'Admin',
@@ -189,7 +189,7 @@ export async function PATCH(
       historyEntries.push({
         orderId: existingOrder.id,
         action: 'payment_status_change',
-        description: `Stav platby změněn na: ${data.paymentStatus === 'paid' ? 'Zaplaceno' : 'Nezaplaceno'}`,
+        description: `Status płatności zmieniony na: ${data.paymentStatus === 'paid' ? 'Opłacone' : 'Nieopłacone'}`,
         oldValue: existingOrder.paymentStatus,
         newValue: data.paymentStatus,
         metadata: { changedBy: 'Admin' }
@@ -204,7 +204,7 @@ export async function PATCH(
         historyEntries.push({
           orderId: existingOrder.id,
           action: 'tracking_added',
-          description: `Přidáno sledovací číslo: ${data.trackingNumber}`,
+          description: `Dodano numer śledzenia: ${data.trackingNumber}`,
           newValue: data.trackingNumber,
           metadata: { changedBy: 'Admin' }
         });

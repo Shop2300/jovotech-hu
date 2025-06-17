@@ -2,7 +2,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { cs } from 'date-fns/locale';
+import { pl } from 'date-fns/locale';
 import { 
   Clock, 
   Package, 
@@ -85,10 +85,10 @@ export function OrderHistory({ history }: OrderHistoryProps) {
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center gap-2 mb-4">
           <History className="w-5 h-5 text-gray-600" />
-          <h2 className="text-xl font-semibold text-black">Historie objednávky</h2>
+          <h2 className="text-xl font-semibold text-black">Historia zamówienia</h2>
         </div>
         <p className="text-gray-500 text-center py-8">
-          Zatím nejsou žádné záznamy v historii
+          Brak wpisów w historii zamówienia
         </p>
       </div>
     );
@@ -98,7 +98,7 @@ export function OrderHistory({ history }: OrderHistoryProps) {
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center gap-2 mb-4">
         <History className="w-5 h-5 text-gray-600" />
-        <h2 className="text-xl font-semibold text-black">Historie objednávky</h2>
+        <h2 className="text-xl font-semibold text-black">Historia zamówienia</h2>
       </div>
       
       <div className="space-y-3">
@@ -132,7 +132,7 @@ export function OrderHistory({ history }: OrderHistoryProps) {
                 )}
                 <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
                   <span>
-                    {format(new Date(entry.createdAt), 'd. MMMM yyyy HH:mm', { locale: cs })}
+                    {format(new Date(entry.createdAt), 'd MMMM yyyy HH:mm', { locale: pl })}
                   </span>
                   <span>•</span>
                   <span>{entry.performedBy}</span>

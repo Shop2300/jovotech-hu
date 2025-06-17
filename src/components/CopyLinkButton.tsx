@@ -25,12 +25,12 @@ export function CopyLinkButton() {
       {copied ? (
         <>
           <Check size={16} className="text-green-600" />
-          <span className="text-green-600">Zkopírováno!</span>
+          <span className="text-green-600">Skopiowano!</span>
         </>
       ) : (
         <>
           <Copy size={16} />
-          <span>Kopírovat odkaz</span>
+          <span>Kopiuj link</span>
         </>
       )}
     </button>
