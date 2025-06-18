@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { cs } from 'date-fns/locale';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle, Package, Banknote } from 'lucide-react';
 import { OrderActions } from './OrderActions';
 import { OrderHistory } from '@/components/admin/OrderHistory';
@@ -156,9 +157,39 @@ export default async function OrderDetailPage({
               {order.items.map((item, index) => (
                 <div key={index} className="flex justify-between items-center pb-4 border-b">
                   <div className="flex items-start gap-3">
-                    <Package size={20} className="text-gray-400 mt-0.5" />
+                    {/* Product Image */}
+                    {item.image ? (
+                      <Link 
+                        href={item.product.id !== 'unknown' ? `/admin/products/${item.product.id}/edit` : '#'}
+                        className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                      >
+                        <div className="relative w-16 h-16">
+                          <Image 
+                            src={item.image} 
+                            alt={item.product.name}
+                            fill
+                            className="object-cover rounded-lg"
+                            sizes="64px"
+                          />
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Package size={24} className="text-gray-400" />
+                      </div>
+                    )}
+                    
                     <div>
-                      <h3 className="font-medium text-black">{item.product.name}</h3>
+                      {item.product.id !== 'unknown' ? (
+                        <Link 
+                          href={`/admin/products/${item.product.id}/edit`}
+                          className="font-medium text-black hover:text-blue-600 transition-colors"
+                        >
+                          {item.product.name}
+                        </Link>
+                      ) : (
+                        <h3 className="font-medium text-black">{item.product.name}</h3>
+                      )}
                       <p className="text-sm text-gray-600">
                         {item.quantity}x {formatPrice(item.price)}
                       </p>
