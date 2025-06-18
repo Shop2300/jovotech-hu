@@ -105,10 +105,12 @@ export default function ContactPage() {
               <CreditCard className="w-5 h-5 text-gray-600 mt-1" />
               <div>
                 <h3 className="font-semibold">Dane bankowe</h3>
-                <p className="text-gray-600"><strong>IBAN:</strong> CZ79 2010 0000 0023 0203 4483</p>
-                <p className="text-gray-600"><strong>BIC/SWIFT:</strong> FIOBCZPPXXX</p>
-                <p className="text-gray-600"><strong>Bank:</strong> Fio banka, a.s.</p>
-                <p className="text-gray-600"><strong>Waluta:</strong> PLN, EUR, CZK</p>
+                <p className="text-gray-600"><strong>Numer konta:</strong> 21291000062469800208837403</p>
+                <p className="text-gray-600"><strong>IBAN:</strong> PL21 2910 0006 2469 8002 0883 7403</p>
+                <p className="text-gray-600"><strong>BIC/SWIFT:</strong> BMPBPLPP</p>
+                <p className="text-gray-600"><strong>Bank:</strong> Aion S.A. Spolka Akcyjna Oddzial w Polsce</p>
+                <p className="text-gray-600"><strong>Adres banku:</strong> Dobra 40, 00-344, Warszawa, Poland</p>
+                <p className="text-gray-600"><strong>Waluta:</strong> PLN, EUR</p>
               </div>
             </div>
 

@@ -255,11 +255,14 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   yPosition += 7;
-  doc.text(czechToAscii(`Číslo účtu: 2302034483 / 2010`), leftMargin + 3, yPosition);
+  doc.text(czechToAscii(`Číslo účtu: 21291000062469800208837403`), leftMargin + 3, yPosition);
   doc.text(czechToAscii(`Variabilní symbol: ${invoiceData.orderNumber}`), leftMargin + 100, yPosition);
   yPosition += 6;
-  doc.text('IBAN: CZ79 2010 0000 0023 0203 4483', leftMargin + 3, yPosition);
-  doc.text('SWIFT: FIOBCZPPXXX', leftMargin + 100, yPosition);
+  doc.text('IBAN: PL21 2910 0006 2469 8002 0883 7403', leftMargin + 3, yPosition);
+  doc.text('SWIFT: BMPBPLPP', leftMargin + 100, yPosition);
+  yPosition += 6;
+  doc.text('Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce', leftMargin + 3, yPosition);
+  doc.text('Dobra 40, 00-344, Warszawa, Poland', leftMargin + 100, yPosition);
 
   // Footer
   const footerY = pageHeight - 20;

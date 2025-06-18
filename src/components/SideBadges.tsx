@@ -311,8 +311,12 @@ export function SideBadges() {
           <div>E-mail: support@galaxysklep.pl</div>
           
           <div className="bank-details">Dane bankowe</div>
-          <div>IBAN: CZ79 2010 0000 0023 0203 4483</div>
-          <div>BIC/SWIFT: FIOBCZPPXXX</div>
+          <div className="bank-details">Dane bankowe</div>
+          <div>Numer konta: 21291000062469800208837403</div>
+          <div>IBAN: PL21 2910 0006 2469 8002 0883 7403</div>
+          <div>BIC/SWIFT: BMPBPLPP</div>
+          <div>Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce</div>
+          <div>Adres banku: Dobra 40, 00-344, Warszawa, Poland</div>
           
           <div className="google-map">
             <iframe 

@@ -188,12 +188,14 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <span className="font-bold">Sposób płatności:</span> {order.paymentMethod === 'card' ? 'Płatność kartą' : order.paymentMethod === 'bank' ? 'Przelew bankowy' : 'Płatność za pobraniem'}<br/>
-            <span className="font-bold">Numer konta:</span> 2302034483 / 2010<br/>
+            <span className="font-bold">Numer konta:</span> 21291000062469800208837403<br/>
             <span className="font-bold">Tytuł przelewu:</span> {order.orderNumber}
           </div>
           <div>
-            <span className="font-bold">IBAN:</span> CZ79 2010 0000 0023 0203 4483<br/>
-            <span className="font-bold">SWIFT:</span> FIOBCZPPXXX
+            <span className="font-bold">IBAN:</span> PL21 2910 0006 2469 8002 0883 7403<br/>
+            <span className="font-bold">SWIFT:</span> BMPBPLPP<br/>
+            <span className="font-bold">Bank:</span> Aion S.A. Spolka Akcyjna Oddzial w Polsce<br/>
+            <span className="text-xs">Dobra 40, 00-344, Warszawa, Poland</span>
           </div>
         </div>
       </div>

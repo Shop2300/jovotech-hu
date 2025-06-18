@@ -9,9 +9,11 @@ import { CheckCircle, Package, Copy, ArrowRight, CreditCard, Truck } from 'lucid
 import toast from 'react-hot-toast';
 
 const BANK_DETAILS = {
-  accountNumber: '2302034483 / 2010',
-  iban: 'CZ79 2010 0000 0023 0203 4483',
-  swift: 'FIOBCZPPXXX'
+  accountNumber: '21291000062469800208837403',
+  iban: 'PL21 2910 0006 2469 8002 0883 7403',
+  swift: 'BMPBPLPP',
+  bankName: 'Aion S.A. Spolka Akcyjna Oddzial w Polsce',
+  bankAddress: 'Dobra 40, 00-344, Warszawa, Poland'
 };
 
 interface OrderDetails {

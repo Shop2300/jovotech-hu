@@ -73,9 +73,11 @@ async function getOrderStatus(orderNumber: string): Promise<OrderStatusData | nu
 }
 
 const BANK_DETAILS = {
-  accountNumber: '2302034483 / 2010',
-  iban: 'CZ79 2010 0000 0023 0203 4483',
-  swift: 'FIOBCZPPXXX'
+  accountNumber: '21291000062469800208837403',
+  iban: 'PL21 2910 0006 2469 8002 0883 7403',
+  swift: 'BMPBPLPP',
+  bankName: 'Aion S.A. Spolka Akcyjna Oddzial w Polsce',
+  bankAddress: 'Dobra 40, 00-344, Warszawa, Poland'
 };
 
 export default async function OrderStatusPage({ params }: { params: Promise<{ orderNumber: string }> }) {
@@ -155,6 +157,9 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <div className="bg-white rounded-md p-3 space-y-1 text-sm">
                     <p><strong>Numer konta:</strong> {BANK_DETAILS.accountNumber}</p>
                     <p><strong>IBAN:</strong> <span className="font-mono">{BANK_DETAILS.iban}</span></p>
+                    <p><strong>SWIFT/BIC:</strong> {BANK_DETAILS.swift}</p>
+                    <p><strong>Bank:</strong> {BANK_DETAILS.bankName}</p>
+                    <p className="text-xs">{BANK_DETAILS.bankAddress}</p>
                     <p><strong>Tytuł przelewu:</strong> {order.orderNumber.replace('-', '')}</p>
                     <p className="text-xs text-gray-600 mt-2">
                       Zamówienie wyślemy natychmiast po zaksięgowaniu wpłaty na naszym koncie.
@@ -476,26 +481,35 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             {/* Bank Details (only for unpaid bank transfer) */}
             {order.paymentMethod === 'bank' && order.paymentStatus === 'unpaid' && (
               <div className="bg-amber-50 rounded-lg p-6">
-                <h3 className="font-semibold mb-3 text-amber-900">Dane do przelewu</h3>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <p className="text-gray-600">Numer konta:</p>
-                    <p className="font-mono font-medium">{BANK_DETAILS.accountNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">IBAN:</p>
-                    <p className="font-mono font-medium">{BANK_DETAILS.iban}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Tytuł przelewu:</p>
-                    <p className="font-mono font-medium">{order.orderNumber.replace('-', '')}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Kwota:</p>
-                    <p className="font-bold text-lg">{formatPrice(order.total)}</p>
-                  </div>
+              <h3 className="font-semibold mb-3 text-amber-900">Dane do przelewu</h3>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <p className="text-gray-600">Numer konta:</p>
+                  <p className="font-mono font-medium">{BANK_DETAILS.accountNumber}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">IBAN:</p>
+                  <p className="font-mono font-medium">{BANK_DETAILS.iban}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">SWIFT/BIC:</p>
+                  <p className="font-mono font-medium">{BANK_DETAILS.swift}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Bank:</p>
+                  <p className="font-medium">{BANK_DETAILS.bankName}</p>
+                  <p className="text-xs text-gray-500">{BANK_DETAILS.bankAddress}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Tytuł przelewu:</p>
+                  <p className="font-mono font-medium">{order.orderNumber.replace('-', '')}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Kwota:</p>
+                  <p className="font-bold text-lg">{formatPrice(order.total)}</p>
                 </div>
               </div>
+            </div>
             )}
 
             {/* Cash on Delivery Reminder */}

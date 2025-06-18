@@ -47,9 +47,11 @@ const formatPrice = (price: number) => {
 };
 
 const BANK_DETAILS = {
-  accountNumber: '2302034483 / 2010',
-  iban: 'CZ79 2010 0000 0023 0203 4483',
-  swift: 'FIOBCZPPXXX'
+  accountNumber: '21291000062469800208837403',
+  iban: 'PL21 2910 0006 2469 8002 0883 7403',
+  swift: 'BMPBPLPP',
+  bankName: 'Aion S.A. Spolka Akcyjna Oddzial w Polsce',
+  bankAddress: 'Dobra 40, 00-344, Warszawa, Poland'
 };
 
 export const OrderConfirmationEmail = ({
@@ -248,6 +250,12 @@ export const OrderConfirmationEmail = ({
                   </Text>
                   <Text style={bankDetailRow}>
                     <strong>BIC/SWIFT:</strong> {BANK_DETAILS.swift}
+                  </Text>
+                  <Text style={bankDetailRow}>
+                    <strong>Bank:</strong> {BANK_DETAILS.bankName}
+                  </Text>
+                  <Text style={bankDetailRow}>
+                    <strong>Adres banku:</strong> {BANK_DETAILS.bankAddress}
                   </Text>
                   <Hr style={miniDivider} />
                   <Text style={bankDetailRow}>

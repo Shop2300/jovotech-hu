@@ -249,9 +249,11 @@ export default function DostawaIPlatnoscPage() {
                     </p>
                     <div className="text-sm text-gray-600 space-y-1 bg-gray-50 p-3 rounded mt-2">
                       <p><strong>Nazwa:</strong> Galaxy Sklep</p>
-                      <p><strong>IBAN:</strong> CZ79 2010 0000 0023 0203 4483</p>
-                      <p><strong>BIC/SWIFT:</strong> FIOBCZPPXXX</p>
-                      <p><strong>Bank:</strong> Fio banka</p>
+                      <p><strong>Numer konta:</strong> 21291000062469800208837403</p>
+                      <p><strong>IBAN:</strong> PL21 2910 0006 2469 8002 0883 7403</p>
+                      <p><strong>BIC/SWIFT:</strong> BMPBPLPP</p>
+                      <p><strong>Bank:</strong> Aion S.A. Spolka Akcyjna Oddzial w Polsce</p>
+                      <p><strong>Adres banku:</strong> Dobra 40, 00-344, Warszawa, Poland</p>
                       <p className="text-xs text-gray-500 mt-2">W tytule przelewu proszę podać numer zamówienia</p>
                     </div>
                   </div>

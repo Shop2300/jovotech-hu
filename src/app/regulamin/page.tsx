@@ -114,7 +114,7 @@ export default function TermsPage() {
                 Cenę towaru i ewentualne koszty związane z dostawą towaru zgodnie z umową sprzedaży kupujący może uiścić sprzedawcy w następujący sposób:
                 <ul className="list-disc ml-6 mt-2">
                   <li>gotówką przy odbiorze w miejscu określonym przez kupującego w zamówieniu;</li>
-                  <li>bezgotówkowo przelewem na rachunek sprzedawcy IBAN: CZ79 2010 0000 0023 0203 4483, BIC/SWIFT: FIOBCZPPXXX, prowadzony w Fio banka, a.s., Na Florenci 2139/2, 11000 Praha (dalej jako „<strong>rachunek sprzedawcy</strong>");</li>
+                  <li>bezgotówkowo przelewem na rachunek sprzedawcy IBAN: PL21 2910 0006 2469 8002 0883 7403, BIC/SWIFT: BMPBPLPP, prowadzony w Aion S.A. Spolka Akcyjna Oddzial w Polsce, Dobra 40, 00-344, Warszawa, Poland (dalej jako „<strong>rachunek sprzedawcy</strong>");</li>
                   <li>bezgotówkowo za pośrednictwem systemu płatności;</li>
                   <li>bezgotówkowo kartą płatniczą;</li>
                   <li>gotówką lub kartą płatniczą przy odbiorze osobistym w punkcie odbioru;</li>
@@ -355,9 +355,11 @@ export default function TermsPage() {
 
         <div className="mt-12 border-t pt-8">
           <h2 className="text-xl font-bold mb-4">Dane bankowe</h2>
-          <p><strong>IBAN:</strong> CZ79 2010 0000 0023 0203 4483</p>
-          <p><strong>BIC/SWIFT:</strong> FIOBCZPPXXX</p>
-          <p><strong>Bank:</strong> Fio banka, a.s.</p>
+          <p><strong>Numer konta:</strong> 21291000062469800208837403</p>
+          <p><strong>IBAN:</strong> PL21 2910 0006 2469 8002 0883 7403</p>
+          <p><strong>BIC/SWIFT:</strong> BMPBPLPP</p>
+          <p><strong>Bank:</strong> Aion S.A. Spolka Akcyjna Oddzial w Polsce</p>
+          <p><strong>Adres banku:</strong> Dobra 40, 00-344, Warszawa, Poland</p>
         </div>
       </div>
     </div>
