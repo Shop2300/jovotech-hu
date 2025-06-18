@@ -156,7 +156,7 @@ function OrderSuccessContent() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">IBAN:</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm">{BANK_DETAILS.iban}</span>
+                      <span className="font-mono font-medium">{BANK_DETAILS.iban}</span>
                       <button
                         onClick={() => copyToClipboard(BANK_DETAILS.iban, 'IBAN')}
                         className="text-blue-600 hover:text-blue-700"
@@ -184,7 +184,7 @@ function OrderSuccessContent() {
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-medium">{orderNumber}</span>
                       <button
-                        onClick={() => copyToClipboard(orderNumber, 'Numer zamówienia')}
+                        onClick={() => copyToClipboard(orderNumber, 'Tytuł przelewu')}
                         className="text-blue-600 hover:text-blue-700"
                       >
                         <Copy size={16} />
@@ -286,18 +286,18 @@ function OrderSuccessContent() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Link
+            href="/"
+            className="flex-1 bg-gray-200 text-gray-800 text-center py-3 px-6 rounded-lg hover:bg-gray-300 transition"
+          >
+            Kontynuuj zakupy
+          </Link>
+          
+          <Link
             href={`/order-status/${orderNumber}`}
             className="flex-1 bg-blue-600 text-white text-center py-3 px-6 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
           >
             Sprawdź status zamówienia
             <ArrowRight size={20} />
-          </Link>
-          
-          <Link
-            href="/"
-            className="flex-1 bg-gray-200 text-gray-800 text-center py-3 px-6 rounded-lg hover:bg-gray-300 transition"
-          >
-            Kontynuuj zakupy
           </Link>
         </div>
       </div>
