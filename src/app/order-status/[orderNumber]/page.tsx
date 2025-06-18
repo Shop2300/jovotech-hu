@@ -299,6 +299,8 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <Link 
                       href={item.id ? `/products/${item.id}` : '#'}
                       className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {item.image ? (
                         <div className="relative w-20 h-20">
@@ -322,6 +324,8 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                       <Link 
                         href={item.id ? `/products/${item.id}` : '#'}
                         className="font-medium hover:text-blue-600 transition-colors"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         {item.name}
                       </Link>
