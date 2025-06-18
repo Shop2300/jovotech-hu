@@ -42,15 +42,6 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
     descriptionPl: 'Płatność przelewem na konto',
     icon: Building2,
     price: 0 // Free
-  },
-  {
-    value: 'cash',
-    label: 'Platba na dobírku',
-    labelPl: 'Płatność za pobraniem',
-    description: 'Platba při převzetí',
-    descriptionPl: 'Płatność przy odbiorze',
-    icon: Banknote,
-    price: 0 // Changed to free as requested
   }
 ];
 
