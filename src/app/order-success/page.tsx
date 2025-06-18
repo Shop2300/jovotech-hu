@@ -182,9 +182,9 @@ function OrderSuccessContent() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Tytuł przelewu:</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-medium">{orderNumber}</span>
+                      <span className="font-mono font-medium">{orderNumber.replace(/-/g, '')}</span>
                       <button
-                        onClick={() => copyToClipboard(orderNumber, 'Tytuł przelewu')}
+                        onClick={() => copyToClipboard(orderNumber.replace(/-/g, ''), 'Tytuł przelewu')}
                         className="text-blue-600 hover:text-blue-700"
                       >
                         <Copy size={16} />
@@ -284,7 +284,7 @@ function OrderSuccessContent() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 mb-12">
           <Link
             href="/"
             className="flex-1 bg-gray-200 text-gray-800 text-center py-3 px-6 rounded-lg hover:bg-gray-300 transition"

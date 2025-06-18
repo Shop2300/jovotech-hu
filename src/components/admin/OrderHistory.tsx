@@ -2,7 +2,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { 
   Clock, 
   Package, 
@@ -85,10 +85,10 @@ export function OrderHistory({ history }: OrderHistoryProps) {
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center gap-2 mb-4">
           <History className="w-5 h-5 text-gray-600" />
-          <h2 className="text-xl font-semibold text-black">Historia zamówienia</h2>
+          <h2 className="text-xl font-semibold text-black">Order History</h2>
         </div>
         <p className="text-gray-500 text-center py-8">
-          Brak wpisów w historii zamówienia
+          No order history entries
         </p>
       </div>
     );
@@ -98,7 +98,7 @@ export function OrderHistory({ history }: OrderHistoryProps) {
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center gap-2 mb-4">
         <History className="w-5 h-5 text-gray-600" />
-        <h2 className="text-xl font-semibold text-black">Historia zamówienia</h2>
+        <h2 className="text-xl font-semibold text-black">Order History</h2>
       </div>
       
       <div className="space-y-3">
@@ -119,20 +119,20 @@ export function OrderHistory({ history }: OrderHistoryProps) {
                   <div className="mt-1 text-xs text-gray-600">
                     {entry.oldValue && (
                       <span>
-                        <span className="font-medium">Z:</span> {entry.oldValue}
+                        <span className="font-medium">From:</span> {entry.oldValue}
                       </span>
                     )}
                     {entry.oldValue && entry.newValue && ' → '}
                     {entry.newValue && (
                       <span>
-                        <span className="font-medium">Na:</span> {entry.newValue}
+                        <span className="font-medium">To:</span> {entry.newValue}
                       </span>
                     )}
                   </div>
                 )}
                 <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
                   <span>
-                    {format(new Date(entry.createdAt), 'd MMMM yyyy HH:mm', { locale: pl })}
+                    {format(new Date(entry.createdAt), 'MMMM d, yyyy HH:mm', { locale: enUS })}
                   </span>
                   <span>•</span>
                   <span>{entry.performedBy}</span>

@@ -1,27 +1,16 @@
 // src/app/products/[id]/page.tsx
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 import { prisma } from '@/lib/prisma';
-import { ProductDetailClient } from './ProductDetailClient';
+import { redirect } from 'next/navigation';
 import { notFound } from 'next/navigation';
 
-export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProductRedirectPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
+  
+  // Find the product with its category
   const product = await prisma.product.findUnique({
     where: { id: resolvedParams.id },
     include: {
-      category: true, // Added this line
-      images: {
-        orderBy: { order: 'asc' }
-      },
-      variants: {
-        where: { isActive: true },
-        orderBy: [
-          { sizeOrder: 'asc' },
-          { order: 'asc' }
-        ]
-      }
+      category: true
     }
   });
 
@@ -29,23 +18,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  // Convert Decimal to number for client component
-  const serializedProduct = {
-    ...product,
-    price: Number(product.price),
-    regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
-    averageRating: product.averageRating,
-    totalRatings: product.totalRatings,
-    variants: product.variants.map(variant => ({
-      ...variant,
-      price: variant.price ? Number(variant.price) : null
-    })),
-    category: product.category ? {
-      id: product.category.id,
-      name: product.category.name,
-      slug: product.category.slug
-    } : undefined
-  };
-
-  return <ProductDetailClient product={serializedProduct} />;
+  // Redirect to the new URL structure
+  if (product.category && product.slug) {
+    redirect(`/${product.category.slug}/${product.slug}`);
+  } else {
+    // If no slug, redirect to home or show not found
+    notFound();
+  }
 }

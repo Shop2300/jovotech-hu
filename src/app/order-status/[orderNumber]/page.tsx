@@ -412,33 +412,6 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                 </div>
               </div>
             </div>
-
-            {/* Order History */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Clock size={20} />
-                Historia zamówienia
-              </h2>
-              <div className="space-y-3">
-                {order.history.map((entry) => (
-                  <div key={entry.id} className="flex items-start gap-3">
-                    <div className="mt-1">
-                      {entry.action === 'order_created' && <CheckCircle className="text-green-500" size={16} />}
-                      {entry.action === 'status_change' && <Package className="text-blue-500" size={16} />}
-                      {entry.action === 'tracking_added' && <Truck className="text-purple-500" size={16} />}
-                      {entry.action === 'email_sent' && <Mail className="text-gray-500" size={16} />}
-                      {entry.action === 'payment_status_change' && <CreditCard className="text-green-500" size={16} />}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900">{entry.description}</p>
-                      <p className="text-xs text-gray-500">
-                        {format(new Date(entry.createdAt), 'd MMMM yyyy HH:mm', { locale: pl })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Right Column - Summary */}
