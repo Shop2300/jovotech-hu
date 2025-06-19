@@ -68,6 +68,13 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   const deliveryPrice = deliveryMethod?.price ?? 0;
   const paymentFee = paymentMethod?.price ?? 0;
   
+  // Prepare dates early
+  const issueDate = new Date();
+  const saleDate = new Date(invoiceData.createdAt);
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 14);
+  const orderNumberWithoutDash = invoiceData.orderNumber.replace('-', '');
+  
   // Fallback delivery names if not in configuration
   const fallbackDeliveryNames: { [key: string]: string } = {
     'paczkomat': 'Paczkomat InPost',
@@ -90,10 +97,35 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   const contentWidth = rightMargin - leftMargin;
   let yPosition = 15;
 
-  // Header - Invoice Title
+  // Header - Invoice Title with barcode
   doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
   doc.text('FAKTURA', leftMargin, yPosition);
+  
+  // Draw barcode next to FAKTURA
+  const barcodeX = leftMargin + 45;
+  const barcodeY = yPosition - 7;
+  const barcodeHeight = 8;
+  
+  // Draw barcode lines (visual representation only)
+  doc.setFillColor(0, 0, 0);
+  doc.rect(barcodeX, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 1, barcodeY, 1, barcodeHeight, 'F');
+  doc.rect(barcodeX + 2.5, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 3.5, barcodeY, 1.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 5.5, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 6.5, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 7.5, barcodeY, 1, barcodeHeight, 'F');
+  doc.rect(barcodeX + 9, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 10, barcodeY, 1.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 12, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 13, barcodeY, 1, barcodeHeight, 'F');
+  doc.rect(barcodeX + 14.5, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 15.5, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 16.5, barcodeY, 1.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 18.5, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 19.5, barcodeY, 1, barcodeHeight, 'F');
+  doc.rect(barcodeX + 21, barcodeY, 0.5, barcodeHeight, 'F');
   
   // Invoice number and details
   doc.setFontSize(12);
@@ -103,8 +135,15 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.text(polishToAscii(`Numer zamówienia: ${invoiceData.orderNumber}`), rightMargin, yPosition + 2, { align: 'right' });
+  
+  // Add sale date
+  doc.setFontSize(8);
+  doc.text(polishToAscii(`Data sprzedaży: `), rightMargin - 25, yPosition + 6, { align: 'right' });
+  doc.setFont('helvetica', 'bold');
+  doc.text(format(saleDate, 'dd.MM.yyyy'), rightMargin, yPosition + 6, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
 
-  yPosition += 12;
+  yPosition += 16;
 
   // Horizontal line
   doc.setDrawColor(0, 0, 0);
@@ -201,11 +240,6 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   const dateY = yPosition;
   
-  const issueDate = new Date();
-  const saleDate = new Date(invoiceData.createdAt);
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 14);
-  
   doc.setFontSize(8);
   // First row - dates
   doc.text('Data wystawienia: ', leftMargin + 3, dateY);
@@ -231,9 +265,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.text(polishToAscii('Tytuł przelewu: '), leftMargin + 90, dateY + 5);
   doc.setFont('helvetica', 'bold');
-  // Remove dash from order number
-  const orderNumberWithoutDash = invoiceData.orderNumber.replace('-', '');
-  doc.text(polishToAscii(`Zamówienie ${orderNumberWithoutDash}`), leftMargin + 115, dateY + 5);
+  doc.text(polishToAscii(orderNumberWithoutDash), leftMargin + 115, dateY + 5);
   
   doc.setFont('helvetica', 'normal');
   yPosition += 18;
@@ -346,7 +378,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.text(polishToAscii('Tytuł przelewu: '), leftMargin + 100, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(`Zamówienie ${orderNumberWithoutDash}`), leftMargin + 125, yPosition);
+  doc.text(polishToAscii(orderNumberWithoutDash), leftMargin + 125, yPosition);
   
   doc.setFont('helvetica', 'normal');
   yPosition += 5;
@@ -475,17 +507,21 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
     { align: 'center' }
   );
   doc.setFontSize(6);
+  // Wider text by adjusting maxWidth parameter
+  const footerText1 = polishToAscii('Przedsiębiorca zagraniczny prowadzący sprzedaż na terytorium RP. Podmiot zwolniony z obowiązku ewidencjonowania przy zastosowaniu kas rejestrujących.');
+  const footerText2 = polishToAscii('Faktura wystawiona zgodnie z art. 106e ustawy z dnia 11 marca 2004 r. o podatku od towarów i usług.');
+  
   doc.text(
-    polishToAscii('Przedsiębiorca zagraniczny prowadzący sprzedaż na terytorium RP. Podmiot zwolniony z obowiązku ewidencjonowania przy zastosowaniu kas rejestrujących.'),
+    footerText1,
     pageWidth / 2,
     pageHeight - 12,
-    { align: 'center' }
+    { align: 'center', maxWidth: 170 }
   );
   doc.text(
-    polishToAscii('Faktura wystawiona zgodnie z art. 106e ustawy z dnia 11 marca 2004 r. o podatku od towarów i usług.'),
+    footerText2,
     pageWidth / 2,
     pageHeight - 9,
-    { align: 'center' }
+    { align: 'center', maxWidth: 150 }
   );
   
   // Page number

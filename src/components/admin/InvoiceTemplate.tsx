@@ -120,10 +120,35 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
 
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">FAKTURA</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-900">FAKTURA</h1>
+          {/* Barcode visual */}
+          <div className="flex items-center h-8">
+            <div className="flex gap-0.5">
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1.5 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1.5 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1.5 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+            </div>
+          </div>
+        </div>
         <div className="text-right">
           <p className="text-lg font-bold text-gray-900">{invoiceNumber}</p>
           <p className="text-gray-600 text-xs">Numer zamówienia: {order.orderNumber}</p>
+          <p className="text-gray-700 text-xs mt-1">Data sprzedaży: <strong>{format(saleDate, 'dd.MM.yyyy')}</strong></p>
         </div>
       </div>
 
@@ -184,7 +209,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
         </div>
         <div className="flex justify-between">
           <span>Sposób płatności: <strong>{paymentName}</strong></span>
-          <span>Tytuł przelewu: <strong>Zamówienie {orderNumberWithoutDash}</strong></span>
+          <span>Tytuł przelewu: <strong>{orderNumberWithoutDash}</strong></span>
         </div>
       </div>
 
@@ -253,7 +278,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             <p><span className="font-semibold">IBAN:</span> PL21 2910 0006 2469 8002 0883 7403</p>
           </div>
           <div>
-            <p><span className="font-semibold">Tytuł przelewu:</span> Zamówienie {orderNumberWithoutDash}</p>
+            <p><span className="font-semibold">Tytuł przelewu:</span> {orderNumberWithoutDash}</p>
             <p><span className="font-semibold">SWIFT/BIC:</span> BMPBPLPP</p>
             <p className="text-xs">Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce, Dobra 40, 00-344 Warszawa, Poland</p>
           </div>
@@ -308,10 +333,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
         <p className="text-xs text-gray-600">
           Email: support@galaxysklep.pl • www.galaxysklep.pl
         </p>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-[10px] text-gray-500 mt-1 px-4">
           Przedsiębiorca zagraniczny prowadzący sprzedaż na terytorium RP. Podmiot zwolniony z obowiązku ewidencjonowania przy zastosowaniu kas rejestrujących.
         </p>
-        <p className="text-xs text-gray-500">
+        <p className="text-[10px] text-gray-500 px-8">
           Faktura wystawiona zgodnie z art. 106e ustawy z dnia 11 marca 2004 r. o podatku od towarów i usług.
         </p>
         <p className="text-xs text-gray-400 mt-1">Strona 1 z 1</p>
