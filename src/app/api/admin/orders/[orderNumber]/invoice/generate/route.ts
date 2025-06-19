@@ -101,18 +101,17 @@ export async function POST(
       // Convert jsPDF to Buffer
       const pdfBuffer = Buffer.from(pdfDoc.output('arraybuffer'));
       
-      // Upload to Vercel Blob Storage with overwrite enabled
+      // Upload to Vercel Blob Storage with a unique timestamp to avoid caching issues
+      // This ensures we always get a fresh PDF even if regenerating
+      const timestamp = Date.now();
       const { url } = await put(
-        `invoices/${invoiceNumber}.pdf`,
+        `invoices/${invoiceNumber}_${timestamp}.pdf`,
         pdfBuffer,
         {
           access: 'public',
           contentType: 'application/pdf',
           addRandomSuffix: false,
-          // Allow overwriting existing files
-          // This is important for cases where the invoice was deleted but the blob still exists
-          // @ts-ignore - The type definition might not include this property yet
-          allowOverwrite: true
+          cacheControlMaxAge: 0, // Disable caching
         }
       );
 
