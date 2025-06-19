@@ -191,13 +191,16 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   // Bank info under company
   sellerY += 5;
+  doc.setFontSize(9); // Bigger font for the headline
   doc.setFont('helvetica', 'bold');
   doc.text('Konto bankowe:', leftMargin, sellerY);
+  sellerY += 4;
   doc.setFont('helvetica', 'normal');
-  sellerY += 3.5;
+  doc.setFontSize(8);
+  doc.text('Numer konta: ', leftMargin, sellerY);
   doc.setFontSize(9); // Bigger font for account number
   doc.setFont('helvetica', 'bold');
-  doc.text('21291000062469800208837403', leftMargin, sellerY);
+  doc.text('21291000062469800208837403', leftMargin + 20, sellerY);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   sellerY += 4;
@@ -253,7 +256,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   buyerY += 3.5;
   doc.text(`Tel: ${invoiceData.customerPhone}`, buyerX, buyerY);
 
-  yPosition = Math.max(sellerY + 2, buyerY) + 8;
+  yPosition = Math.max(sellerY + 3, buyerY) + 8;
 
   // Dates section with payment info - horizontal layout
   doc.setDrawColor(0, 0, 0);
@@ -364,10 +367,10 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   yPosition += 6;
 
   // Total
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii('RAZEM DO ZAPŁATY:'), leftMargin + 100, yPosition);
-  doc.setFontSize(12);
+  doc.text(polishToAscii('RAZEM DO ZAPŁATY:'), leftMargin + 95, yPosition);
+  doc.setFontSize(14);
   doc.text(formatCurrency(invoiceData.total), rightMargin - 2, yPosition, { align: 'right' });
   
   yPosition += 6;
@@ -495,7 +498,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   }
 
   // Signature areas - with light grey
-  const footerY = Math.min(yPosition + 10, pageHeight - 35);
+  const footerY = Math.min(yPosition + 10, pageHeight - 42);
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
@@ -517,30 +520,18 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setTextColor(0, 0, 0);
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
-  doc.line(leftMargin, pageHeight - 23, rightMargin, pageHeight - 23);
+  doc.line(leftMargin, pageHeight - 24, rightMargin, pageHeight - 24);
   
-  // Company footer with more jurisdictional text - full width
-  doc.setFontSize(7);
+  // Company footer with more jurisdictional text - all in one line
+  doc.setFontSize(6); // Slightly smaller to fit in one line
   doc.setFont('helvetica', 'normal');
   
-  // First line - spread across full width
+  // All info in one line
   doc.text(
-    polishToAscii('Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465'),
-    leftMargin,
-    pageHeight - 19
-  );
-  
-  // Second line - email on left, website on right
-  doc.text(
-    polishToAscii('Email: support@galaxysklep.pl'),
-    leftMargin,
-    pageHeight - 16
-  );
-  doc.text(
-    polishToAscii('www.galaxysklep.pl'),
-    rightMargin,
-    pageHeight - 16,
-    { align: 'right' }
+    polishToAscii('Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465 • Email: support@galaxysklep.pl • www.galaxysklep.pl'),
+    pageWidth / 2,
+    pageHeight - 21,
+    { align: 'center', maxWidth: 180 }
   );
   
   doc.setFontSize(6);
@@ -551,19 +542,19 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.text(
     footerText1,
     pageWidth / 2,
-    pageHeight - 12,
+    pageHeight - 17,
     { align: 'center', maxWidth: 170 }
   );
   doc.text(
     footerText2,
     pageWidth / 2,
-    pageHeight - 9,
+    pageHeight - 14,
     { align: 'center', maxWidth: 150 }
   );
   
   // Page number
   doc.setFontSize(6);
-  doc.text('Strona 1 z 1', pageWidth / 2, pageHeight - 5, { align: 'center' });
+  doc.text('Strona 1 z 1', pageWidth / 2, pageHeight - 10, { align: 'center' });
 
   return doc;
 }

@@ -180,8 +180,8 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             <p className="text-gray-500 text-xs">Sprzedawca nie jest płatnikiem VAT</p>
             
             <div className="mt-3">
-              <p className="font-bold">Konto bankowe:</p>
-              <p className="text-sm font-medium">21291000062469800208837403</p>
+              <p className="font-bold text-sm">Konto bankowe:</p>
+              <p className="text-sm font-medium">Numer konta: 21291000062469800208837403</p>
               <p className="text-sm">IBAN: <span className="font-medium">PL21 2910 0006 2469 8002 0883 7403</span></p>
               <p className="text-sm">SWIFT: <span className="font-medium">BMPBPLPP</span></p>
               <p className="text-xs">Aion S.A. Spolka Akcyjna Oddzial w Polsce</p>
@@ -270,8 +270,8 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       {/* Summary */}
       <div className="flex justify-end mb-3">
         <div className="text-right">
-          <div className="font-bold text-sm">
-            RAZEM DO ZAPŁATY: <span className="text-base ml-4">{formatCurrency(order.total)}</span>
+          <div className="font-bold text-base">
+            RAZEM DO ZAPŁATY: <span className="text-lg ml-4">{formatCurrency(order.total)}</span>
           </div>
         </div>
       </div>
@@ -339,11 +339,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       {/* Footer with more jurisdictional text */}
       <div className="pt-2 border-t-2 border-gray-900">
         <div className="flex justify-between text-xs text-gray-600 px-1">
-          <span>Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465</span>
-        </div>
-        <div className="flex justify-between text-xs text-gray-600 px-1">
-          <span>Email: support@galaxysklep.pl</span>
-          <span>www.galaxysklep.pl</span>
+          <span>Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465 • Email: support@galaxysklep.pl • www.galaxysklep.pl</span>
         </div>
         <div className="text-center">
           <p className="text-[10px] text-gray-500 mt-1 px-4">
