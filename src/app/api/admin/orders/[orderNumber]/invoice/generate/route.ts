@@ -64,6 +64,13 @@ export async function POST(
       // Parse order items
       const items = order.items as any[];
       
+      // Calculate the delivery price from the order total and items
+      let itemsTotal = 0;
+      items.forEach(item => {
+        itemsTotal += item.price * item.quantity;
+      });
+      const deliveryPrice = Number(order.total) - itemsTotal;
+      
       // Prepare invoice data in the format expected by generateInvoicePDF
       const invoiceData = {
         invoiceNumber: invoice.invoiceNumber,
@@ -92,6 +99,7 @@ export async function POST(
         total: Number(order.total),
         paymentMethod: order.paymentMethod || 'bank',
         deliveryMethod: order.deliveryMethod || 'courier',
+        deliveryPrice: deliveryPrice > 0 ? deliveryPrice : 0, // Pass the calculated delivery price
         notes: order.note || ''
       };
       

@@ -2,6 +2,7 @@
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -25,6 +26,7 @@ interface InvoiceData {
   total: number;
   paymentMethod: string;
   deliveryMethod: string;
+  deliveryPrice?: number; // Add delivery price field
   shippingFirstName?: string;
   shippingLastName?: string;
   shippingAddress?: string;
@@ -52,71 +54,21 @@ function formatCurrency(amount: number): string {
   return `${amount.toFixed(2)} zl`;
 }
 
-// Calculate delivery price based on method
-function getDeliveryPrice(method: string): number {
-  switch(method) {
-    case 'zasilkovna':
-    case 'paczkomat':
-      return 8.99;
-    case 'courier':
-    case 'kurier':
-      return 14.99;
-    case 'dpd':
-      return 12.99;
-    case 'personal':
-    case 'odbior-osobisty':
-      return 0;
-    default:
-      return 12.99;
-  }
-}
-
-// Get delivery method name in Polish
-function getDeliveryMethodName(method: string): string {
-  switch(method) {
-    case 'zasilkovna':
-    case 'paczkomat':
-      return 'Dostawa - Paczkomat InPost';
-    case 'courier':
-    case 'kurier':
-      return 'Dostawa - Kurier DPD';
-    case 'dpd':
-      return 'Dostawa - Kurier DPD';
-    case 'personal':
-    case 'odbior-osobisty':
-      return 'Odbiór osobisty';
-    default:
-      return 'Dostawa';
-  }
-}
-
-// Get payment method name in Polish
-function getPaymentMethodName(method: string): string {
-  switch(method) {
-    case 'card':
-      return 'Karta płatnicza online';
-    case 'bank':
-    case 'transfer':
-      return 'Przelew bankowy';
-    case 'blik':
-      return 'BLIK';
-    case 'cash':
-    case 'gotowka':
-      return 'Gotówka przy odbiorze';
-    case 'cod':
-    case 'pobranie':
-      return 'Płatność przy odbiorze';
-    default:
-      return 'Przelew bankowy';
-  }
-}
-
 export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4'
   });
+
+  // Get delivery and payment methods from configuration
+  const deliveryMethod = getDeliveryMethod(invoiceData.deliveryMethod);
+  const paymentMethod = getPaymentMethod(invoiceData.paymentMethod);
+  
+  // Use the actual delivery price from order or from method configuration
+  const deliveryPrice = invoiceData.deliveryPrice ?? deliveryMethod?.price ?? 0;
+  const deliveryName = deliveryMethod?.labelPl || 'Dostawa';
+  const paymentName = paymentMethod?.labelPl || 'Przelew bankowy';
 
   // Page setup - reduced margins for more space
   const pageWidth = 210;
@@ -262,7 +214,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.text(polishToAscii('Sposób płatności: '), leftMargin + 3, dateY + 5);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(getPaymentMethodName(invoiceData.paymentMethod)), leftMargin + 30, dateY + 5);
+  doc.text(polishToAscii(paymentName), leftMargin + 30, dateY + 5);
   
   doc.setFont('helvetica', 'normal');
   doc.text(polishToAscii('Tytuł przelewu: '), leftMargin + 90, dateY + 5);
@@ -320,10 +272,9 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   });
 
   // Delivery
-  const deliveryPrice = getDeliveryPrice(invoiceData.deliveryMethod);
   if (deliveryPrice > 0) {
     doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
-    doc.text(polishToAscii(getDeliveryMethodName(invoiceData.deliveryMethod)), leftMargin + 10, yPosition);
+    doc.text(polishToAscii(`Dostawa - ${deliveryName}`), leftMargin + 10, yPosition);
     doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
     doc.text(formatCurrency(deliveryPrice), leftMargin + 150, yPosition, { align: 'right' });
     doc.text(formatCurrency(deliveryPrice), rightMargin - 2, yPosition, { align: 'right' });
@@ -369,7 +320,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   // Payment info in columns
   doc.text(polishToAscii('Sposób płatności: '), leftMargin + 3, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(getPaymentMethodName(invoiceData.paymentMethod)), leftMargin + 28, yPosition);
+  doc.text(polishToAscii(paymentName), leftMargin + 28, yPosition);
   
   doc.setFont('helvetica', 'normal');
   doc.text(polishToAscii('Tytuł przelewu: '), leftMargin + 100, yPosition);

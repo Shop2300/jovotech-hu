@@ -3,6 +3,7 @@
 // src/components/admin/InvoiceTemplate.tsx
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
 interface InvoiceItem {
   name?: string;
@@ -37,6 +38,7 @@ interface InvoiceData {
   // Payment info
   paymentMethod: string;
   deliveryMethod: string;
+  deliveryPrice?: number; // Add delivery price field
   notes?: string;
 }
 
@@ -49,62 +51,6 @@ function formatCurrency(amount: number): string {
   return `${amount.toFixed(2)} PLN`;
 }
 
-function getDeliveryPrice(method: string): number {
-  switch(method) {
-    case 'zasilkovna':
-    case 'paczkomat':
-      return 8.99;
-    case 'courier':
-    case 'kurier':
-      return 14.99;
-    case 'dpd':
-      return 12.99;
-    case 'personal':
-    case 'odbior-osobisty':
-      return 0;
-    default:
-      return 12.99;
-  }
-}
-
-function getDeliveryMethodName(method: string): string {
-  switch(method) {
-    case 'zasilkovna':
-    case 'paczkomat':
-      return 'Paczkomat InPost';
-    case 'courier':
-    case 'kurier':
-      return 'Kurier DPD';
-    case 'dpd':
-      return 'Kurier DPD';
-    case 'personal':
-    case 'odbior-osobisty':
-      return 'Odbiór osobisty';
-    default:
-      return 'Dostawa';
-  }
-}
-
-function getPaymentMethodName(method: string): string {
-  switch(method) {
-    case 'card':
-      return 'Karta płatnicza online';
-    case 'bank':
-    case 'transfer':
-      return 'Przelew bankowy';
-    case 'blik':
-      return 'BLIK';
-    case 'cash':
-    case 'gotowka':
-      return 'Gotówka przy odbiorze';
-    case 'cod':
-    case 'pobranie':
-      return 'Płatność przy odbiorze';
-    default:
-      return 'Przelew bankowy';
-  }
-}
-
 export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   const invoiceNumber = `FAK${new Date().getFullYear()}${order.orderNumber}`;
   const issueDate = new Date();
@@ -113,13 +59,21 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   dueDate.setDate(dueDate.getDate() + 14); // 14 days payment term
   const orderNumberWithoutDash = order.orderNumber.replace('-', '');
 
+  // Get delivery and payment methods from configuration
+  const deliveryMethod = getDeliveryMethod(order.deliveryMethod);
+  const paymentMethod = getPaymentMethod(order.paymentMethod);
+  
+  // Use the actual delivery price from order or from method configuration
+  const deliveryPrice = order.deliveryPrice ?? deliveryMethod?.price ?? 0;
+  const deliveryName = deliveryMethod?.labelPl || 'Dostawa';
+  const paymentName = paymentMethod?.labelPl || 'Przelew bankowy';
+
   // Calculate totals - NO VAT
   let subtotal = 0;
   order.items.forEach(item => {
     subtotal += item.price * item.quantity;
   });
   
-  const deliveryPrice = getDeliveryPrice(order.deliveryMethod);
   if (deliveryPrice > 0) {
     subtotal += deliveryPrice;
   }
@@ -217,7 +171,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
           <span>Termin płatności: <strong>{format(dueDate, 'dd.MM.yyyy')}</strong></span>
         </div>
         <div className="flex justify-between">
-          <span>Sposób płatności: <strong>{getPaymentMethodName(order.paymentMethod)}</strong></span>
+          <span>Sposób płatności: <strong>{paymentName}</strong></span>
           <span>Tytuł przelewu: <strong>Zamówienie {orderNumberWithoutDash}</strong></span>
         </div>
       </div>
@@ -250,7 +204,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
           {deliveryPrice > 0 && (
             <tr className="border-b border-gray-300">
               <td className="py-1 px-1">{order.items.length + 1}.</td>
-              <td className="py-1">Dostawa - {getDeliveryMethodName(order.deliveryMethod)}</td>
+              <td className="py-1">Dostawa - {deliveryName}</td>
               <td className="text-center py-1">1</td>
               <td className="text-right py-1">{formatCurrency(deliveryPrice)}</td>
               <td className="text-right py-1 px-1">{formatCurrency(deliveryPrice)}</td>
@@ -276,7 +230,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
         <h3 className="font-bold mb-1">DANE DO PŁATNOŚCI:</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p><span className="font-semibold">Sposób płatności:</span> {getPaymentMethodName(order.paymentMethod)}</p>
+            <p><span className="font-semibold">Sposób płatności:</span> {paymentName}</p>
             <p><span className="font-semibold">Numer konta:</span> 21291000062469800208837403</p>
             <p><span className="font-semibold">IBAN:</span> PL21 2910 0006 2469 8002 0883 7403</p>
           </div>
