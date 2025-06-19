@@ -294,17 +294,15 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   yPosition += 5;
   itemNumber++;
   
-  // Payment fee if applicable
-  if (paymentFee > 0) {
-    doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
-    doc.text(polishToAscii(`Opłata za płatność - ${paymentName}`), leftMargin + 10, yPosition);
-    doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
-    doc.text(formatCurrency(paymentFee), leftMargin + 150, yPosition, { align: 'right' });
-    doc.text(formatCurrency(paymentFee), rightMargin - 2, yPosition, { align: 'right' });
-    
-    subtotal += paymentFee;
-    yPosition += 5;
-  }
+  // Payment method - Always show
+  doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
+  doc.text(polishToAscii(`Płatność - ${paymentName}`), leftMargin + 10, yPosition);
+  doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
+  doc.text(formatCurrency(paymentFee), leftMargin + 150, yPosition, { align: 'right' });
+  doc.text(formatCurrency(paymentFee), rightMargin - 2, yPosition, { align: 'right' });
+  
+  subtotal += paymentFee;
+  yPosition += 5;
 
   // Summary line
   doc.setLineWidth(0.5);

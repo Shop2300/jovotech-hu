@@ -88,9 +88,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   
   // Always add delivery price and payment fee to subtotal
   subtotal += deliveryPrice;
-  if (paymentFee > 0) {
-    subtotal += paymentFee;
-  }
+  subtotal += paymentFee;
 
   return (
     <div className="invoice-container bg-white p-4 max-w-[210mm] mx-auto text-xs">
@@ -222,16 +220,14 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             <td className="text-right py-1">{formatCurrency(deliveryPrice)}</td>
             <td className="text-right py-1 px-1">{formatCurrency(deliveryPrice)}</td>
           </tr>
-          {/* Payment fee if applicable */}
-          {paymentFee > 0 && (
-            <tr className="border-b border-gray-300">
-              <td className="py-1 px-1">{order.items.length + 2}.</td>
-              <td className="py-1">Opłata za płatność - {paymentName}</td>
-              <td className="text-center py-1">1</td>
-              <td className="text-right py-1">{formatCurrency(paymentFee)}</td>
-              <td className="text-right py-1 px-1">{formatCurrency(paymentFee)}</td>
-            </tr>
-          )}
+          {/* Payment method - Always show */}
+          <tr className="border-b border-gray-300">
+            <td className="py-1 px-1">{order.items.length + 2}.</td>
+            <td className="py-1">Płatność - {paymentName}</td>
+            <td className="text-center py-1">1</td>
+            <td className="text-right py-1">{formatCurrency(paymentFee)}</td>
+            <td className="text-right py-1 px-1">{formatCurrency(paymentFee)}</td>
+          </tr>
         </tbody>
       </table>
 
