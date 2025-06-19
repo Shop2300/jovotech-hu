@@ -54,7 +54,7 @@ export async function POST(
         invoiceNumber,
         orderId: order.id,
         totalAmount: order.total,
-        vatAmount: 0, // No VAT
+        vatAmount: 0, // No VAT - not a VAT payer
         dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
       }
     });

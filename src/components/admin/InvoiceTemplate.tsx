@@ -1,5 +1,7 @@
 'use client';
 
+'use client';
+
 // src/components/admin/InvoiceTemplate.tsx
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -313,6 +315,43 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
         <div className="text-center">
           <div className="border-t-2 border-gray-400 w-48 mb-2"></div>
           <p className="text-xs text-gray-600">Podpis kupującego</p>
+        </div>
+      </div>
+
+      {/* Shipping Address if different */}
+      {((order.shippingAddress && order.shippingAddress !== order.billingAddress) || 
+        (order.shippingCity && order.shippingCity !== order.billingCity)) && (
+        <div className="mb-4 p-2 border border-gray-200 rounded">
+          <h3 className="font-bold text-xs text-gray-900 mb-1">ADRES DOSTAWY:</h3>
+          <div className="text-xs text-gray-700">
+            <p>{order.shippingFirstName || order.billingFirstName} {order.shippingLastName || order.billingLastName}</p>
+            {order.shippingAddress && <p>{order.shippingAddress}</p>}
+            {(order.shippingPostalCode || order.shippingCity) && (
+              <p>{order.shippingPostalCode || ''} {order.shippingCity || ''}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Notes */}
+      {order.notes && (
+        <div className="mb-4 p-2 bg-gray-50 rounded">
+          <h3 className="font-bold text-xs text-gray-900 mb-1">UWAGI:</h3>
+          <p className="text-xs text-gray-700">{order.notes}</p>
+        </div>
+      )}
+
+      {/* Signature Areas */}
+      <div className="flex justify-between mt-8 mb-4">
+        <div className="text-center">
+          <div className="border-t border-gray-400 w-40 mb-1"></div>
+          <p className="text-xs text-gray-600">Podpis osoby upoważnionej</p>
+          <p className="text-xs text-gray-600">do wystawienia faktury</p>
+        </div>
+        <div className="text-center">
+          <div className="border-t border-gray-400 w-40 mb-1"></div>
+          <p className="text-xs text-gray-600">Podpis osoby upoważnionej</p>
+          <p className="text-xs text-gray-600">do odbioru faktury</p>
         </div>
       </div>
 
