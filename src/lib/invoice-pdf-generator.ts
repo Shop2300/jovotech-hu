@@ -118,108 +118,118 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
     format: 'a4'
   });
 
-  // Page setup
+  // Page setup - reduced margins for more space
   const pageWidth = 210;
   const pageHeight = 297;
-  const leftMargin = 25;
-  const rightMargin = pageWidth - 25;
+  const leftMargin = 15;
+  const rightMargin = pageWidth - 15;
   const contentWidth = rightMargin - leftMargin;
-  let yPosition = 25;
+  let yPosition = 15;
 
   // Header - Invoice Title
-  doc.setFontSize(26);
+  doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
   doc.text('FAKTURA', leftMargin, yPosition);
   
   // Invoice number and details
-  doc.setFontSize(14);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text(invoiceData.invoiceNumber, rightMargin, yPosition - 5, { align: 'right' });
+  doc.text(invoiceData.invoiceNumber, rightMargin, yPosition - 3, { align: 'right' });
   
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.text(polishToAscii(`Numer zamówienia: ${invoiceData.orderNumber}`), rightMargin, yPosition + 2, { align: 'right' });
 
-  yPosition += 15;
+  yPosition += 12;
 
   // Horizontal line
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
   doc.line(leftMargin, yPosition, rightMargin, yPosition);
-  yPosition += 10;
+  yPosition += 8;
 
   // Two columns for seller and buyer
-  const columnWidth = (contentWidth - 20) / 2;
+  const columnWidth = (contentWidth - 10) / 2;
   
-  // Seller section
-  doc.setFontSize(12);
+  // Seller section with bank info
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text('SPRZEDAWCA:', leftMargin, yPosition);
   
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  let sellerY = yPosition + 7;
+  let sellerY = yPosition + 5;
   
   doc.setFont('helvetica', 'bold');
   doc.text('Galaxy Sklep', leftMargin, sellerY);
   doc.setFont('helvetica', 'normal');
-  sellerY += 5;
+  sellerY += 3.5;
   doc.text(polishToAscii('1. máje 535/50'), leftMargin, sellerY);
-  sellerY += 5;
-  doc.text('46007 Liberec', leftMargin, sellerY);
-  sellerY += 5;
-  doc.text('Republika Czeska', leftMargin, sellerY);
-  sellerY += 7;
+  sellerY += 3.5;
+  doc.text('46007 Liberec, Republika Czeska', leftMargin, sellerY);
+  sellerY += 3.5;
   doc.text('NIP: 04688465', leftMargin, sellerY);
-  sellerY += 7;
+  sellerY += 3.5;
   doc.text('Email: support@galaxysklep.pl', leftMargin, sellerY);
+  
+  // Bank info under company
   sellerY += 5;
-  doc.text('Tel: +420 123 456 789', leftMargin, sellerY);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Konto bankowe:', leftMargin, sellerY);
+  doc.setFont('helvetica', 'normal');
+  sellerY += 3.5;
+  doc.text('21291000062469800208837403', leftMargin, sellerY);
+  sellerY += 3.5;
+  doc.text('IBAN: PL21 2910 0006 2469 8002 0883 7403', leftMargin, sellerY);
+  sellerY += 3.5;
+  doc.text('SWIFT: BMPBPLPP', leftMargin, sellerY);
+  sellerY += 3.5;
+  doc.text('Aion S.A. Spolka Akcyjna Oddzial w Polsce', leftMargin, sellerY);
 
   // Buyer section
-  const buyerX = leftMargin + columnWidth + 20;
-  doc.setFontSize(12);
+  const buyerX = leftMargin + columnWidth + 10;
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text('NABYWCA:', buyerX, yPosition);
   
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  let buyerY = yPosition + 7;
+  let buyerY = yPosition + 5;
   
   // Company name if exists
   if (invoiceData.billingCompany) {
     doc.setFont('helvetica', 'bold');
     doc.text(polishToAscii(invoiceData.billingCompany), buyerX, buyerY);
     doc.setFont('helvetica', 'normal');
-    buyerY += 5;
+    buyerY += 3.5;
     if (invoiceData.billingNip) {
       doc.text(`NIP: ${invoiceData.billingNip}`, buyerX, buyerY);
-      buyerY += 5;
+      buyerY += 3.5;
     }
   }
   
   doc.setFont('helvetica', 'bold');
   doc.text(polishToAscii(`${invoiceData.billingFirstName} ${invoiceData.billingLastName}`), buyerX, buyerY);
   doc.setFont('helvetica', 'normal');
-  buyerY += 5;
+  buyerY += 3.5;
   doc.text(polishToAscii(invoiceData.billingAddress), buyerX, buyerY);
-  buyerY += 5;
+  buyerY += 3.5;
   doc.text(polishToAscii(`${invoiceData.billingPostalCode} ${invoiceData.billingCity}`), buyerX, buyerY);
-  buyerY += 5;
+  buyerY += 3.5;
   doc.text(polishToAscii(invoiceData.billingCountry || 'Polska'), buyerX, buyerY);
-  buyerY += 7;
+  buyerY += 3.5;
   doc.text(`Email: ${invoiceData.customerEmail}`, buyerX, buyerY);
-  buyerY += 5;
+  buyerY += 3.5;
   doc.text(`Tel: ${invoiceData.customerPhone}`, buyerX, buyerY);
 
-  yPosition = Math.max(sellerY, buyerY) + 10;
+  yPosition = Math.max(sellerY, buyerY) + 8;
 
-  // Dates section with border
+  // Dates section - horizontal layout
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.2);
-  doc.rect(leftMargin, yPosition - 5, contentWidth, 16);
+  doc.rect(leftMargin, yPosition - 4, contentWidth, 10);
   
-  const dateY = yPosition + 2;
+  const dateY = yPosition;
   const dateSpacing = contentWidth / 3;
   
   const issueDate = new Date();
@@ -227,204 +237,160 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + 14);
   
-  doc.setFontSize(9);
-  doc.text('Data wystawienia:', leftMargin + 5, dateY);
+  doc.setFontSize(8);
+  doc.text('Data wystawienia: ', leftMargin + 3, dateY);
   doc.setFont('helvetica', 'bold');
-  doc.text(format(issueDate, 'dd.MM.yyyy'), leftMargin + 5, dateY + 5);
+  doc.text(format(issueDate, 'dd.MM.yyyy'), leftMargin + 30, dateY);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii('Data sprzedaży:'), leftMargin + dateSpacing, dateY);
+  doc.text(polishToAscii('Data sprzedaży: '), leftMargin + dateSpacing, dateY);
   doc.setFont('helvetica', 'bold');
-  doc.text(format(saleDate, 'dd.MM.yyyy'), leftMargin + dateSpacing, dateY + 5);
+  doc.text(format(saleDate, 'dd.MM.yyyy'), leftMargin + dateSpacing + 25, dateY);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii('Termin płatności:'), leftMargin + dateSpacing * 2, dateY);
+  doc.text(polishToAscii('Termin płatności: '), leftMargin + dateSpacing * 2, dateY);
   doc.setFont('helvetica', 'bold');
-  doc.text(format(dueDate, 'dd.MM.yyyy'), leftMargin + dateSpacing * 2, dateY + 5);
+  doc.text(format(dueDate, 'dd.MM.yyyy'), leftMargin + dateSpacing * 2 + 25, dateY);
   
   doc.setFont('helvetica', 'normal');
-  yPosition += 20;
+  yPosition += 12;
 
-  // No VAT notice
+  // No VAT notice - compact
   doc.setDrawColor(0, 0, 0);
   doc.setFillColor(240, 240, 240);
-  doc.rect(leftMargin, yPosition - 4, contentWidth, 12, 'FD');
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii('FAKTURA WYSTAWIONA BEZ PODATKU VAT'), pageWidth / 2, yPosition, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text(polishToAscii('Sprzedawca nie jest płatnikiem VAT'), pageWidth / 2, yPosition + 5, { align: 'center' });
-  
-  yPosition += 18;
-
-  // Items table
-  // Table header
-  doc.setFillColor(0, 0, 0);
-  doc.rect(leftMargin, yPosition - 5, contentWidth, 8, 'F');
-  
-  doc.setTextColor(255, 255, 255);
+  doc.rect(leftMargin, yPosition - 3, contentWidth, 8, 'FD');
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
+  doc.text(polishToAscii('FAKTURA WYSTAWIONA BEZ PODATKU VAT - Sprzedawca nie jest płatnikiem VAT'), pageWidth / 2, yPosition + 1, { align: 'center' });
+  
+  yPosition += 12;
+
+  // Items table - simplified
+  doc.setFillColor(0, 0, 0);
+  doc.rect(leftMargin, yPosition - 4, contentWidth, 6, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
   doc.text('Lp.', leftMargin + 2, yPosition);
-  doc.text(polishToAscii('Nazwa towaru/usługi'), leftMargin + 12, yPosition);
-  doc.text(polishToAscii('Ilość'), leftMargin + 125, yPosition, { align: 'center' });
-  doc.text('Cena jedn.', leftMargin + 145, yPosition, { align: 'right' });
+  doc.text(polishToAscii('Nazwa towaru/usługi'), leftMargin + 10, yPosition);
+  doc.text(polishToAscii('Ilość'), leftMargin + 130, yPosition, { align: 'center' });
+  doc.text('Cena jedn.', leftMargin + 150, yPosition, { align: 'right' });
   doc.text(polishToAscii('Wartość'), rightMargin - 2, yPosition, { align: 'right' });
   
   doc.setTextColor(0, 0, 0);
-  yPosition += 10;
+  yPosition += 7;
   
   // Table items
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   
   let itemNumber = 1;
   let subtotal = 0;
   
-  // Draw table borders
-  const tableStartY = yPosition - 10;
-  let currentY = yPosition - 5;
-  
   // Products
-  invoiceData.items.forEach((item, index) => {
+  invoiceData.items.forEach((item) => {
     const itemTotal = item.price * item.quantity;
     subtotal += itemTotal;
-    
-    // Row background for even rows
-    if (index % 2 === 1) {
-      doc.setFillColor(250, 250, 250);
-      doc.rect(leftMargin, currentY - 4, contentWidth, 7, 'F');
-    }
     
     doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
     
     // Truncate long product names
-    const maxNameLength = 65;
+    const maxNameLength = 75;
     const itemName = polishToAscii(item.name || 'Produkt');
     const displayName = itemName.length > maxNameLength ? 
       itemName.substring(0, maxNameLength) + '...' : itemName;
     
-    doc.text(displayName, leftMargin + 12, yPosition);
-    doc.text(item.quantity.toString(), leftMargin + 125, yPosition, { align: 'center' });
-    doc.text(formatCurrency(item.price), leftMargin + 145, yPosition, { align: 'right' });
+    doc.text(displayName, leftMargin + 10, yPosition);
+    doc.text(item.quantity.toString(), leftMargin + 130, yPosition, { align: 'center' });
+    doc.text(formatCurrency(item.price), leftMargin + 150, yPosition, { align: 'right' });
     doc.text(formatCurrency(itemTotal), rightMargin - 2, yPosition, { align: 'right' });
     
-    currentY += 7;
-    yPosition += 7;
+    yPosition += 5;
     itemNumber++;
   });
 
   // Delivery
   const deliveryPrice = getDeliveryPrice(invoiceData.deliveryMethod);
   if (deliveryPrice > 0) {
-    if (itemNumber % 2 === 0) {
-      doc.setFillColor(250, 250, 250);
-      doc.rect(leftMargin, currentY - 4, contentWidth, 7, 'F');
-    }
-    
     doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
-    doc.text(polishToAscii(getDeliveryMethodName(invoiceData.deliveryMethod)), leftMargin + 12, yPosition);
-    doc.text('1', leftMargin + 125, yPosition, { align: 'center' });
-    doc.text(formatCurrency(deliveryPrice), leftMargin + 145, yPosition, { align: 'right' });
+    doc.text(polishToAscii(getDeliveryMethodName(invoiceData.deliveryMethod)), leftMargin + 10, yPosition);
+    doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
+    doc.text(formatCurrency(deliveryPrice), leftMargin + 150, yPosition, { align: 'right' });
     doc.text(formatCurrency(deliveryPrice), rightMargin - 2, yPosition, { align: 'right' });
     
     subtotal += deliveryPrice;
-    currentY += 7;
-    yPosition += 7;
+    yPosition += 5;
   }
 
-  // Draw table borders
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.2);
-  // Vertical lines
-  doc.line(leftMargin, tableStartY, leftMargin, currentY - 4);
-  doc.line(leftMargin + 10, tableStartY, leftMargin + 10, currentY - 4);
-  doc.line(leftMargin + 115, tableStartY, leftMargin + 115, currentY - 4);
-  doc.line(leftMargin + 135, tableStartY, leftMargin + 135, currentY - 4);
-  doc.line(rightMargin, tableStartY, rightMargin, currentY - 4);
-  // Bottom line
-  doc.line(leftMargin, currentY - 4, rightMargin, currentY - 4);
-
-  // Summary
-  yPosition += 5;
+  // Summary line
   doc.setLineWidth(0.5);
-  doc.line(leftMargin + 100, yPosition, rightMargin, yPosition);
-  yPosition += 8;
+  doc.line(leftMargin, yPosition, rightMargin, yPosition);
+  yPosition += 6;
 
   // Total
-  doc.setFontSize(12);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text(polishToAscii('RAZEM DO ZAPŁATY:'), leftMargin + 100, yPosition);
-  doc.setFontSize(14);
+  doc.setFontSize(12);
   doc.text(formatCurrency(invoiceData.total), rightMargin - 2, yPosition, { align: 'right' });
   
-  yPosition += 8;
+  yPosition += 6;
   
   // Amount in words
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   const amountInWords = polishToAscii(numberToPolishWords(invoiceData.total));
   doc.text(polishToAscii(`Słownie: ${amountInWords}`), leftMargin, yPosition);
 
-  // Payment details section
-  yPosition += 15;
+  // Payment details section - compact
+  yPosition += 10;
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.2);
-  doc.rect(leftMargin, yPosition - 5, contentWidth, 42);
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii('DANE DO PŁATNOŚCI:'), leftMargin + 5, yPosition);
+  doc.rect(leftMargin, yPosition - 4, contentWidth, 25);
   
   doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  yPosition += 7;
-  
-  // Two columns for payment info
-  const paymentColWidth = (contentWidth - 10) / 2;
-  
-  // Left column
-  doc.text(polishToAscii('Sposób płatności:'), leftMargin + 5, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(getPaymentMethodName(invoiceData.paymentMethod)), leftMargin + 5, yPosition + 5);
-  doc.setFont('helvetica', 'normal');
+  doc.text(polishToAscii('DANE DO PŁATNOŚCI:'), leftMargin + 3, yPosition);
   
-  yPosition += 12;
-  doc.text('Numer konta:', leftMargin + 5, yPosition);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  yPosition += 5;
+  
+  // Payment info in columns
+  doc.text(polishToAscii('Sposób płatności: '), leftMargin + 3, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text('21291000062469800208837403', leftMargin + 5, yPosition + 5);
+  doc.text(polishToAscii(getPaymentMethodName(invoiceData.paymentMethod)), leftMargin + 28, yPosition);
+  
   doc.setFont('helvetica', 'normal');
-  
-  yPosition += 12;
-  doc.text('Bank:', leftMargin + 5, yPosition);
-  doc.text('Aion S.A. Spolka Akcyjna Oddzial w Polsce', leftMargin + 5, yPosition + 5);
-  doc.text('Dobra 40, 00-344 Warszawa, Poland', leftMargin + 5, yPosition + 10);
-  
-  // Right column
-  yPosition = yPosition - 24; // Reset to top of payment box
-  const rightColX = leftMargin + paymentColWidth + 10;
-  
-  doc.text(polishToAscii('Tytuł przelewu:'), rightColX, yPosition);
+  doc.text(polishToAscii('Tytuł przelewu: '), leftMargin + 100, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(`Zamówienie ${invoiceData.orderNumber}`), rightColX, yPosition + 5);
-  doc.setFont('helvetica', 'normal');
+  doc.text(polishToAscii(`Zamówienie ${invoiceData.orderNumber}`), leftMargin + 125, yPosition);
   
-  yPosition += 12;
-  doc.text('IBAN:', rightColX, yPosition);
+  doc.setFont('helvetica', 'normal');
+  yPosition += 5;
+  doc.text('Numer konta: ', leftMargin + 3, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text('PL21 2910 0006 2469 8002 0883 7403', rightColX, yPosition + 5);
-  doc.setFont('helvetica', 'normal');
+  doc.text('21291000062469800208837403', leftMargin + 25, yPosition);
   
-  yPosition += 12;
-  doc.text('SWIFT/BIC:', rightColX, yPosition);
+  doc.setFont('helvetica', 'normal');
+  yPosition += 5;
+  doc.text('IBAN: ', leftMargin + 3, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text('BMPBPLPP', rightColX, yPosition + 5);
+  doc.text('PL21 2910 0006 2469 8002 0883 7403', leftMargin + 13, yPosition);
   
   doc.setFont('helvetica', 'normal');
-  yPosition += 20;
+  doc.text('SWIFT/BIC: ', leftMargin + 100, yPosition);
+  doc.setFont('helvetica', 'bold');
+  doc.text('BMPBPLPP', leftMargin + 120, yPosition);
+  
+  doc.setFont('helvetica', 'normal');
+  yPosition += 5;
+  doc.text('Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce, Dobra 40, 00-344 Warszawa, Poland', leftMargin + 3, yPosition);
 
-  // Shipping address if different
+  yPosition += 12;
+
+  // Shipping address if different - compact
   const showShippingAddress = invoiceData.shippingAddress && 
     (invoiceData.shippingAddress !== invoiceData.billingAddress ||
      invoiceData.shippingCity !== invoiceData.billingCity);
@@ -432,97 +398,93 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   if (showShippingAddress) {
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.2);
-    const shippingBoxHeight = 30;
-    doc.rect(leftMargin, yPosition - 5, contentWidth, shippingBoxHeight);
-    
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text('ADRES DOSTAWY:', leftMargin + 5, yPosition);
+    doc.rect(leftMargin, yPosition - 4, contentWidth / 2 - 5, 20);
     
     doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ADRES DOSTAWY:', leftMargin + 3, yPosition);
+    
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    yPosition += 7;
-    doc.text(polishToAscii(`${invoiceData.shippingFirstName || invoiceData.billingFirstName} ${invoiceData.shippingLastName || invoiceData.billingLastName}`), leftMargin + 5, yPosition);
-    yPosition += 5;
+    yPosition += 4;
+    doc.text(polishToAscii(`${invoiceData.shippingFirstName || invoiceData.billingFirstName} ${invoiceData.shippingLastName || invoiceData.billingLastName}`), leftMargin + 3, yPosition);
+    yPosition += 3.5;
     if (invoiceData.shippingAddress) {
-      doc.text(polishToAscii(invoiceData.shippingAddress), leftMargin + 5, yPosition);
-      yPosition += 5;
+      doc.text(polishToAscii(invoiceData.shippingAddress), leftMargin + 3, yPosition);
+      yPosition += 3.5;
     }
     if (invoiceData.shippingPostalCode || invoiceData.shippingCity) {
-      doc.text(polishToAscii(`${invoiceData.shippingPostalCode || ''} ${invoiceData.shippingCity || ''}`), leftMargin + 5, yPosition);
+      doc.text(polishToAscii(`${invoiceData.shippingPostalCode || ''} ${invoiceData.shippingCity || ''}`), leftMargin + 3, yPosition);
     }
-    yPosition += 15;
   }
 
-  // Notes section if any
+  // Notes section if any - compact, next to shipping address
   if (invoiceData.notes && invoiceData.notes.trim()) {
+    const notesX = showShippingAddress ? (leftMargin + contentWidth / 2 + 5) : leftMargin;
+    const notesY = showShippingAddress ? (yPosition - 11) : yPosition - 4;
+    const notesWidth = showShippingAddress ? (contentWidth / 2 - 5) : contentWidth;
+    
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.2);
-    
-    // Calculate box height based on text
-    const noteLines = doc.splitTextToSize(polishToAscii(invoiceData.notes), contentWidth - 10);
-    const noteBoxHeight = Math.max(15, 8 + (noteLines.length * 5));
-    
-    doc.rect(leftMargin, yPosition - 5, contentWidth, noteBoxHeight);
-    
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text('UWAGI:', leftMargin + 5, yPosition);
+    doc.rect(notesX, notesY, notesWidth, 20);
     
     doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    yPosition += 7;
+    doc.setFont('helvetica', 'bold');
+    doc.text('UWAGI:', notesX + 3, notesY + 4);
     
-    noteLines.forEach((line: string) => {
-      doc.text(line, leftMargin + 5, yPosition);
-      yPosition += 5;
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    
+    const noteLines = doc.splitTextToSize(polishToAscii(invoiceData.notes), notesWidth - 6);
+    let noteY = notesY + 8;
+    noteLines.slice(0, 3).forEach((line: string) => {
+      doc.text(line, notesX + 3, noteY);
+      noteY += 3.5;
     });
     
-    yPosition += 5;
+    if (!showShippingAddress) {
+      yPosition += 22;
+    }
   }
 
-  // Footer - ensure we have enough space
-  const footerY = Math.max(yPosition + 20, pageHeight - 45);
+  if (showShippingAddress) {
+    yPosition += 10;
+  }
+
+  // Signature areas - compact
+  const footerY = Math.min(yPosition + 15, pageHeight - 30);
   
-  // Signature areas
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   
   // Draw signature lines
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.2);
-  doc.line(leftMargin, footerY, leftMargin + 65, footerY);
-  doc.line(rightMargin - 65, footerY, rightMargin, footerY);
+  doc.line(leftMargin, footerY, leftMargin + 60, footerY);
+  doc.line(rightMargin - 60, footerY, rightMargin, footerY);
   
-  doc.text(polishToAscii('Podpis osoby upoważnionej'), leftMargin + 32.5, footerY + 5, { align: 'center' });
-  doc.text(polishToAscii('do wystawienia faktury'), leftMargin + 32.5, footerY + 10, { align: 'center' });
+  doc.text(polishToAscii('Podpis osoby upoważnionej'), leftMargin + 30, footerY + 4, { align: 'center' });
+  doc.text(polishToAscii('do wystawienia faktury'), leftMargin + 30, footerY + 7, { align: 'center' });
   
-  doc.text(polishToAscii('Podpis osoby upoważnionej'), rightMargin - 32.5, footerY + 5, { align: 'center' });
-  doc.text(polishToAscii('do odbioru faktury'), rightMargin - 32.5, footerY + 10, { align: 'center' });
+  doc.text(polishToAscii('Podpis osoby upoważnionej'), rightMargin - 30, footerY + 4, { align: 'center' });
+  doc.text(polishToAscii('do odbioru faktury'), rightMargin - 30, footerY + 7, { align: 'center' });
 
   // Bottom line
   doc.setLineWidth(0.5);
-  doc.line(leftMargin, pageHeight - 25, rightMargin, pageHeight - 25);
+  doc.line(leftMargin, pageHeight - 18, rightMargin, pageHeight - 18);
   
   // Company footer
-  doc.setFontSize(8);
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
   doc.text(
-    polishToAscii('Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465'),
+    polishToAscii('Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465 • Email: support@galaxysklep.pl • www.galaxysklep.pl'),
     pageWidth / 2,
-    pageHeight - 20,
-    { align: 'center' }
-  );
-  
-  doc.text(
-    polishToAscii('Email: support@galaxysklep.pl • Tel: +420 123 456 789 • www.galaxysklep.pl'),
-    pageWidth / 2,
-    pageHeight - 15,
+    pageHeight - 13,
     { align: 'center' }
   );
   
   // Page number
-  doc.setFontSize(7);
+  doc.setFontSize(6);
   doc.text('Strona 1 z 1', pageWidth / 2, pageHeight - 8, { align: 'center' });
 
   return doc;
