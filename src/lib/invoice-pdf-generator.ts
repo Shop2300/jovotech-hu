@@ -26,7 +26,6 @@ interface InvoiceData {
   total: number;
   paymentMethod: string;
   deliveryMethod: string;
-  deliveryPrice?: number; // Add delivery price field
   shippingFirstName?: string;
   shippingLastName?: string;
   shippingAddress?: string;
@@ -65,10 +64,23 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   const deliveryMethod = getDeliveryMethod(invoiceData.deliveryMethod);
   const paymentMethod = getPaymentMethod(invoiceData.paymentMethod);
   
-  // Use the actual delivery price from order or from method configuration
-  const deliveryPrice = invoiceData.deliveryPrice ?? deliveryMethod?.price ?? 0;
-  const deliveryName = deliveryMethod?.labelPl || 'Dostawa';
-  const paymentName = paymentMethod?.labelPl || 'Przelew bankowy';
+  // Use prices from configuration
+  const deliveryPrice = deliveryMethod?.price ?? 0;
+  const paymentFee = paymentMethod?.price ?? 0;
+  
+  // Fallback delivery names if not in configuration
+  const fallbackDeliveryNames: { [key: string]: string } = {
+    'paczkomat': 'Paczkomat InPost',
+    'kurier': 'Kurier DPD',
+    'courier': 'Kurier DPD',
+    'dpd': 'Kurier DPD',
+    'zasilkovna': 'Najwygodniejsza dostawa',
+    'odbior-osobisty': 'Odbiór osobisty',
+    'personal': 'Odbiór osobisty'
+  };
+  
+  const deliveryName = deliveryMethod?.labelPl || fallbackDeliveryNames[invoiceData.deliveryMethod] || invoiceData.deliveryMethod || 'Dostawa';
+  const paymentName = paymentMethod?.labelPl || invoiceData.paymentMethod || 'Przelew bankowy';
 
   // Page setup - reduced margins for more space
   const pageWidth = 210;
@@ -271,15 +283,26 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
     itemNumber++;
   });
 
-  // Delivery
-  if (deliveryPrice > 0) {
+  // Delivery - Always show delivery line
+  doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
+  doc.text(polishToAscii(`Dostawa - ${deliveryName}`), leftMargin + 10, yPosition);
+  doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
+  doc.text(formatCurrency(deliveryPrice), leftMargin + 150, yPosition, { align: 'right' });
+  doc.text(formatCurrency(deliveryPrice), rightMargin - 2, yPosition, { align: 'right' });
+  
+  subtotal += deliveryPrice;
+  yPosition += 5;
+  itemNumber++;
+  
+  // Payment fee if applicable
+  if (paymentFee > 0) {
     doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
-    doc.text(polishToAscii(`Dostawa - ${deliveryName}`), leftMargin + 10, yPosition);
+    doc.text(polishToAscii(`Opłata za płatność - ${paymentName}`), leftMargin + 10, yPosition);
     doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
-    doc.text(formatCurrency(deliveryPrice), leftMargin + 150, yPosition, { align: 'right' });
-    doc.text(formatCurrency(deliveryPrice), rightMargin - 2, yPosition, { align: 'right' });
+    doc.text(formatCurrency(paymentFee), leftMargin + 150, yPosition, { align: 'right' });
+    doc.text(formatCurrency(paymentFee), rightMargin - 2, yPosition, { align: 'right' });
     
-    subtotal += deliveryPrice;
+    subtotal += paymentFee;
     yPosition += 5;
   }
 

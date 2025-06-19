@@ -38,7 +38,6 @@ interface InvoiceData {
   // Payment info
   paymentMethod: string;
   deliveryMethod: string;
-  deliveryPrice?: number; // Add delivery price field
   notes?: string;
 }
 
@@ -63,10 +62,23 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   const deliveryMethod = getDeliveryMethod(order.deliveryMethod);
   const paymentMethod = getPaymentMethod(order.paymentMethod);
   
-  // Use the actual delivery price from order or from method configuration
-  const deliveryPrice = order.deliveryPrice ?? deliveryMethod?.price ?? 0;
-  const deliveryName = deliveryMethod?.labelPl || 'Dostawa';
-  const paymentName = paymentMethod?.labelPl || 'Przelew bankowy';
+  // Use prices from configuration
+  const deliveryPrice = deliveryMethod?.price ?? 0;
+  const paymentFee = paymentMethod?.price ?? 0;
+  
+  // Fallback delivery names if not in configuration
+  const fallbackDeliveryNames: { [key: string]: string } = {
+    'paczkomat': 'Paczkomat InPost',
+    'kurier': 'Kurier DPD',
+    'courier': 'Kurier DPD',
+    'dpd': 'Kurier DPD',
+    'zasilkovna': 'Najwygodniejsza dostawa',
+    'odbior-osobisty': 'Odbiór osobisty',
+    'personal': 'Odbiór osobisty'
+  };
+  
+  const deliveryName = deliveryMethod?.labelPl || fallbackDeliveryNames[order.deliveryMethod] || order.deliveryMethod || 'Dostawa';
+  const paymentName = paymentMethod?.labelPl || order.paymentMethod || 'Przelew bankowy';
 
   // Calculate totals - NO VAT
   let subtotal = 0;
@@ -74,8 +86,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
     subtotal += item.price * item.quantity;
   });
   
-  if (deliveryPrice > 0) {
-    subtotal += deliveryPrice;
+  // Always add delivery price and payment fee to subtotal
+  subtotal += deliveryPrice;
+  if (paymentFee > 0) {
+    subtotal += paymentFee;
   }
 
   return (
@@ -200,14 +214,22 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
               </tr>
             );
           })}
-          {/* Delivery */}
-          {deliveryPrice > 0 && (
+          {/* Delivery - Always show delivery line */}
+          <tr className="border-b border-gray-300">
+            <td className="py-1 px-1">{order.items.length + 1}.</td>
+            <td className="py-1">Dostawa - {deliveryName}</td>
+            <td className="text-center py-1">1</td>
+            <td className="text-right py-1">{formatCurrency(deliveryPrice)}</td>
+            <td className="text-right py-1 px-1">{formatCurrency(deliveryPrice)}</td>
+          </tr>
+          {/* Payment fee if applicable */}
+          {paymentFee > 0 && (
             <tr className="border-b border-gray-300">
-              <td className="py-1 px-1">{order.items.length + 1}.</td>
-              <td className="py-1">Dostawa - {deliveryName}</td>
+              <td className="py-1 px-1">{order.items.length + 2}.</td>
+              <td className="py-1">Opłata za płatność - {paymentName}</td>
               <td className="text-center py-1">1</td>
-              <td className="text-right py-1">{formatCurrency(deliveryPrice)}</td>
-              <td className="text-right py-1 px-1">{formatCurrency(deliveryPrice)}</td>
+              <td className="text-right py-1">{formatCurrency(paymentFee)}</td>
+              <td className="text-right py-1 px-1">{formatCurrency(paymentFee)}</td>
             </tr>
           )}
         </tbody>
