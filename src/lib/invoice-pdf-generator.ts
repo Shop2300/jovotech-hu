@@ -171,6 +171,12 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.text('NIP: 04688465', leftMargin, sellerY);
   sellerY += 3.5;
   doc.text('Email: support@galaxysklep.pl', leftMargin, sellerY);
+  sellerY += 3.5;
+  doc.setFontSize(7);
+  doc.setTextColor(100, 100, 100);
+  doc.text(polishToAscii('Sprzedawca nie jest płatnikiem VAT'), leftMargin, sellerY);
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(8);
   
   // Bank info under company
   sellerY += 5;
@@ -224,13 +230,12 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
 
   yPosition = Math.max(sellerY, buyerY) + 8;
 
-  // Dates section - horizontal layout
+  // Dates section with payment info - horizontal layout
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.2);
-  doc.rect(leftMargin, yPosition - 4, contentWidth, 10);
+  doc.rect(leftMargin, yPosition - 4, contentWidth, 15);
   
   const dateY = yPosition;
-  const dateSpacing = contentWidth / 3;
   
   const issueDate = new Date();
   const saleDate = new Date(invoiceData.createdAt);
@@ -238,32 +243,36 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   dueDate.setDate(dueDate.getDate() + 14);
   
   doc.setFontSize(8);
+  // First row - dates
   doc.text('Data wystawienia: ', leftMargin + 3, dateY);
   doc.setFont('helvetica', 'bold');
   doc.text(format(issueDate, 'dd.MM.yyyy'), leftMargin + 30, dateY);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii('Data sprzedaży: '), leftMargin + dateSpacing, dateY);
+  doc.text(polishToAscii('Data sprzedaży: '), leftMargin + 65, dateY);
   doc.setFont('helvetica', 'bold');
-  doc.text(format(saleDate, 'dd.MM.yyyy'), leftMargin + dateSpacing + 25, dateY);
+  doc.text(format(saleDate, 'dd.MM.yyyy'), leftMargin + 90, dateY);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii('Termin płatności: '), leftMargin + dateSpacing * 2, dateY);
+  doc.text(polishToAscii('Termin płatności: '), leftMargin + 125, dateY);
   doc.setFont('helvetica', 'bold');
-  doc.text(format(dueDate, 'dd.MM.yyyy'), leftMargin + dateSpacing * 2 + 25, dateY);
+  doc.text(format(dueDate, 'dd.MM.yyyy'), leftMargin + 150, dateY);
+  
+  // Second row - payment info
+  doc.setFont('helvetica', 'normal');
+  doc.text(polishToAscii('Sposób płatności: '), leftMargin + 3, dateY + 5);
+  doc.setFont('helvetica', 'bold');
+  doc.text(polishToAscii(getPaymentMethodName(invoiceData.paymentMethod)), leftMargin + 30, dateY + 5);
   
   doc.setFont('helvetica', 'normal');
-  yPosition += 12;
-
-  // No VAT notice - compact
-  doc.setDrawColor(0, 0, 0);
-  doc.setFillColor(240, 240, 240);
-  doc.rect(leftMargin, yPosition - 3, contentWidth, 8, 'FD');
-  doc.setFontSize(9);
+  doc.text(polishToAscii('Tytuł przelewu: '), leftMargin + 90, dateY + 5);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii('FAKTURA WYSTAWIONA BEZ PODATKU VAT - Sprzedawca nie jest płatnikiem VAT'), pageWidth / 2, yPosition + 1, { align: 'center' });
+  // Remove dash from order number
+  const orderNumberWithoutDash = invoiceData.orderNumber.replace('-', '');
+  doc.text(polishToAscii(`Zamówienie ${orderNumberWithoutDash}`), leftMargin + 115, dateY + 5);
   
-  yPosition += 12;
+  doc.setFont('helvetica', 'normal');
+  yPosition += 18;
 
   // Items table - simplified
   doc.setFillColor(0, 0, 0);
@@ -365,7 +374,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.text(polishToAscii('Tytuł przelewu: '), leftMargin + 100, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(`Zamówienie ${invoiceData.orderNumber}`), leftMargin + 125, yPosition);
+  doc.text(polishToAscii(`Zamówienie ${orderNumberWithoutDash}`), leftMargin + 125, yPosition);
   
   doc.setFont('helvetica', 'normal');
   yPosition += 5;
@@ -390,75 +399,78 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
 
   yPosition += 12;
 
-  // Shipping address if different - compact
+  // Shipping address and notes - same height
   const showShippingAddress = invoiceData.shippingAddress && 
     (invoiceData.shippingAddress !== invoiceData.billingAddress ||
      invoiceData.shippingCity !== invoiceData.billingCity);
-     
-  if (showShippingAddress) {
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.2);
-    doc.rect(leftMargin, yPosition - 4, contentWidth / 2 - 5, 20);
+  
+  const hasNotes = invoiceData.notes && invoiceData.notes.trim();
+  
+  if (showShippingAddress || hasNotes) {
+    const boxHeight = 20;
+    const boxY = yPosition - 4;
     
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('ADRES DOSTAWY:', leftMargin + 3, yPosition);
+    // Shipping address box
+    if (showShippingAddress) {
+      const shippingBoxWidth = hasNotes ? (contentWidth / 2 - 2.5) : contentWidth;
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.2);
+      doc.rect(leftMargin, boxY, shippingBoxWidth, boxHeight);
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ADRES DOSTAWY:', leftMargin + 3, boxY + 4);
+      
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      let shippingY = boxY + 8;
+      doc.text(polishToAscii(`${invoiceData.shippingFirstName || invoiceData.billingFirstName} ${invoiceData.shippingLastName || invoiceData.billingLastName}`), leftMargin + 3, shippingY);
+      shippingY += 3.5;
+      if (invoiceData.shippingAddress) {
+        doc.text(polishToAscii(invoiceData.shippingAddress), leftMargin + 3, shippingY);
+        shippingY += 3.5;
+      }
+      if (invoiceData.shippingPostalCode || invoiceData.shippingCity) {
+        doc.text(polishToAscii(`${invoiceData.shippingPostalCode || ''} ${invoiceData.shippingCity || ''}`), leftMargin + 3, shippingY);
+      }
+    }
     
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    yPosition += 4;
-    doc.text(polishToAscii(`${invoiceData.shippingFirstName || invoiceData.billingFirstName} ${invoiceData.shippingLastName || invoiceData.billingLastName}`), leftMargin + 3, yPosition);
-    yPosition += 3.5;
-    if (invoiceData.shippingAddress) {
-      doc.text(polishToAscii(invoiceData.shippingAddress), leftMargin + 3, yPosition);
-      yPosition += 3.5;
+    // Notes box
+    if (hasNotes) {
+      const notesX = showShippingAddress ? (leftMargin + contentWidth / 2 + 2.5) : leftMargin;
+      const notesWidth = showShippingAddress ? (contentWidth / 2 - 2.5) : contentWidth;
+      
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.2);
+      doc.rect(notesX, boxY, notesWidth, boxHeight);
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('UWAGI:', notesX + 3, boxY + 4);
+      
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      
+      const noteLines = doc.splitTextToSize(polishToAscii(invoiceData.notes || ''), notesWidth - 6);
+      let noteY = boxY + 8;
+      noteLines.slice(0, 3).forEach((line: string) => {
+        doc.text(line, notesX + 3, noteY);
+        noteY += 3.5;
+      });
     }
-    if (invoiceData.shippingPostalCode || invoiceData.shippingCity) {
-      doc.text(polishToAscii(`${invoiceData.shippingPostalCode || ''} ${invoiceData.shippingCity || ''}`), leftMargin + 3, yPosition);
-    }
+    
+    yPosition += boxHeight + 5;
   }
 
-  // Notes section if any - compact, next to shipping address
-  if (invoiceData.notes && invoiceData.notes.trim()) {
-    const notesX = showShippingAddress ? (leftMargin + contentWidth / 2 + 5) : leftMargin;
-    const notesY = showShippingAddress ? (yPosition - 11) : yPosition - 4;
-    const notesWidth = showShippingAddress ? (contentWidth / 2 - 5) : contentWidth;
-    
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.2);
-    doc.rect(notesX, notesY, notesWidth, 20);
-    
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('UWAGI:', notesX + 3, notesY + 4);
-    
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    
-    const noteLines = doc.splitTextToSize(polishToAscii(invoiceData.notes), notesWidth - 6);
-    let noteY = notesY + 8;
-    noteLines.slice(0, 3).forEach((line: string) => {
-      doc.text(line, notesX + 3, noteY);
-      noteY += 3.5;
-    });
-    
-    if (!showShippingAddress) {
-      yPosition += 22;
-    }
-  }
-
-  if (showShippingAddress) {
-    yPosition += 10;
-  }
-
-  // Signature areas - compact
-  const footerY = Math.min(yPosition + 15, pageHeight - 30);
+  // Signature areas - with light grey
+  const footerY = Math.min(yPosition + 10, pageHeight - 35);
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(150, 150, 150); // Light grey
   
-  // Draw signature lines
-  doc.setDrawColor(0, 0, 0);
+  // Draw signature lines in grey
+  doc.setDrawColor(150, 150, 150);
   doc.setLineWidth(0.2);
   doc.line(leftMargin, footerY, leftMargin + 60, footerY);
   doc.line(rightMargin - 60, footerY, rightMargin, footerY);
@@ -470,22 +482,43 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.text(polishToAscii('do odbioru faktury'), rightMargin - 30, footerY + 7, { align: 'center' });
 
   // Bottom line
+  doc.setTextColor(0, 0, 0);
+  doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
-  doc.line(leftMargin, pageHeight - 18, rightMargin, pageHeight - 18);
+  doc.line(leftMargin, pageHeight - 23, rightMargin, pageHeight - 23);
   
-  // Company footer
+  // Company footer with more jurisdictional text
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
   doc.text(
-    polishToAscii('Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465 • Email: support@galaxysklep.pl • www.galaxysklep.pl'),
+    polishToAscii('Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465'),
     pageWidth / 2,
-    pageHeight - 13,
+    pageHeight - 19,
+    { align: 'center' }
+  );
+  doc.text(
+    polishToAscii('Email: support@galaxysklep.pl • www.galaxysklep.pl'),
+    pageWidth / 2,
+    pageHeight - 16,
+    { align: 'center' }
+  );
+  doc.setFontSize(6);
+  doc.text(
+    polishToAscii('Przedsiębiorca zagraniczny prowadzący sprzedaż na terytorium RP. Podmiot zwolniony z obowiązku ewidencjonowania przy zastosowaniu kas rejestrujących.'),
+    pageWidth / 2,
+    pageHeight - 12,
+    { align: 'center' }
+  );
+  doc.text(
+    polishToAscii('Faktura wystawiona zgodnie z art. 106e ustawy z dnia 11 marca 2004 r. o podatku od towarów i usług.'),
+    pageWidth / 2,
+    pageHeight - 9,
     { align: 'center' }
   );
   
   // Page number
   doc.setFontSize(6);
-  doc.text('Strona 1 z 1', pageWidth / 2, pageHeight - 8, { align: 'center' });
+  doc.text('Strona 1 z 1', pageWidth / 2, pageHeight - 5, { align: 'center' });
 
   return doc;
 }

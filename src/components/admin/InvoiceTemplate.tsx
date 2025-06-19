@@ -111,6 +111,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   const saleDate = new Date(order.createdAt);
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + 14); // 14 days payment term
+  const orderNumberWithoutDash = order.orderNumber.replace('-', '');
 
   // Calculate totals - NO VAT
   let subtotal = 0;
@@ -174,6 +175,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             <p>46007 Liberec, Republika Czeska</p>
             <p>NIP: 04688465</p>
             <p>Email: support@galaxysklep.pl</p>
+            <p className="text-gray-500 text-xs">Sprzedawca nie jest płatnikiem VAT</p>
             
             <div className="mt-3">
               <p className="font-bold">Konto bankowe:</p>
@@ -207,16 +209,17 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
         </div>
       </div>
 
-      {/* Dates - horizontal */}
-      <div className="border border-gray-300 p-2 mb-3 flex justify-between text-xs">
-        <span>Data wystawienia: <strong>{format(issueDate, 'dd.MM.yyyy')}</strong></span>
-        <span>Data sprzedaży: <strong>{format(saleDate, 'dd.MM.yyyy')}</strong></span>
-        <span>Termin płatności: <strong>{format(dueDate, 'dd.MM.yyyy')}</strong></span>
-      </div>
-
-      {/* No VAT Notice */}
-      <div className="mb-3 p-1.5 bg-gray-200 text-center">
-        <p className="font-bold text-xs">FAKTURA WYSTAWIONA BEZ PODATKU VAT - Sprzedawca nie jest płatnikiem VAT</p>
+      {/* Dates with payment info - expanded */}
+      <div className="border border-gray-300 p-2 mb-3 text-xs">
+        <div className="flex justify-between mb-1">
+          <span>Data wystawienia: <strong>{format(issueDate, 'dd.MM.yyyy')}</strong></span>
+          <span>Data sprzedaży: <strong>{format(saleDate, 'dd.MM.yyyy')}</strong></span>
+          <span>Termin płatności: <strong>{format(dueDate, 'dd.MM.yyyy')}</strong></span>
+        </div>
+        <div className="flex justify-between">
+          <span>Sposób płatności: <strong>{getPaymentMethodName(order.paymentMethod)}</strong></span>
+          <span>Tytuł przelewu: <strong>Zamówienie {orderNumberWithoutDash}</strong></span>
+        </div>
       </div>
 
       {/* Items Table - simplified */}
@@ -278,19 +281,19 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             <p><span className="font-semibold">IBAN:</span> PL21 2910 0006 2469 8002 0883 7403</p>
           </div>
           <div>
-            <p><span className="font-semibold">Tytuł przelewu:</span> Zamówienie {order.orderNumber}</p>
+            <p><span className="font-semibold">Tytuł przelewu:</span> Zamówienie {orderNumberWithoutDash}</p>
             <p><span className="font-semibold">SWIFT/BIC:</span> BMPBPLPP</p>
             <p className="text-xs">Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce, Dobra 40, 00-344 Warszawa, Poland</p>
           </div>
         </div>
       </div>
 
-      {/* Shipping Address and Notes - side by side if both exist */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      {/* Shipping Address and Notes - same height */}
+      <div className="grid grid-cols-2 gap-4 mb-4" style={{ minHeight: '80px' }}>
         {/* Shipping Address if different */}
         {((order.shippingAddress && order.shippingAddress !== order.billingAddress) || 
           (order.shippingCity && order.shippingCity !== order.billingCity)) && (
-          <div className="border border-gray-300 p-2">
+          <div className="border border-gray-300 p-2 h-full">
             <h3 className="font-bold text-xs mb-1">ADRES DOSTAWY:</h3>
             <div className="text-xs text-gray-700">
               <p>{order.shippingFirstName || order.billingFirstName} {order.shippingLastName || order.billingLastName}</p>
@@ -304,31 +307,40 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
 
         {/* Notes */}
         {order.notes && (
-          <div className="border border-gray-300 p-2">
+          <div className="border border-gray-300 p-2 h-full">
             <h3 className="font-bold text-xs mb-1">UWAGI:</h3>
             <p className="text-xs text-gray-700">{order.notes}</p>
           </div>
         )}
       </div>
 
-      {/* Signature Areas */}
+      {/* Signature Areas - light grey */}
       <div className="flex justify-between mt-8 mb-4">
         <div className="text-center">
-          <div className="border-t border-gray-600 w-36 mb-1"></div>
-          <p className="text-xs text-gray-600">Podpis osoby upoważnionej</p>
-          <p className="text-xs text-gray-600">do wystawienia faktury</p>
+          <div className="border-t border-gray-400 w-36 mb-1"></div>
+          <p className="text-xs text-gray-400">Podpis osoby upoważnionej</p>
+          <p className="text-xs text-gray-400">do wystawienia faktury</p>
         </div>
         <div className="text-center">
-          <div className="border-t border-gray-600 w-36 mb-1"></div>
-          <p className="text-xs text-gray-600">Podpis osoby upoważnionej</p>
-          <p className="text-xs text-gray-600">do odbioru faktury</p>
+          <div className="border-t border-gray-400 w-36 mb-1"></div>
+          <p className="text-xs text-gray-400">Podpis osoby upoważnionej</p>
+          <p className="text-xs text-gray-400">do odbioru faktury</p>
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer with more jurisdictional text */}
       <div className="text-center pt-2 border-t-2 border-gray-900">
         <p className="text-xs text-gray-600">
-          Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465 • Email: support@galaxysklep.pl • www.galaxysklep.pl
+          Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465
+        </p>
+        <p className="text-xs text-gray-600">
+          Email: support@galaxysklep.pl • www.galaxysklep.pl
+        </p>
+        <p className="text-xs text-gray-500 mt-1">
+          Przedsiębiorca zagraniczny prowadzący sprzedaż na terytorium RP. Podmiot zwolniony z obowiązku ewidencjonowania przy zastosowaniu kas rejestrujących.
+        </p>
+        <p className="text-xs text-gray-500">
+          Faktura wystawiona zgodnie z art. 106e ustawy z dnia 11 marca 2004 r. o podatku od towarów i usług.
         </p>
         <p className="text-xs text-gray-400 mt-1">Strona 1 z 1</p>
       </div>
