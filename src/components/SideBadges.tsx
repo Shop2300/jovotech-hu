@@ -311,7 +311,6 @@ export function SideBadges() {
           <div>E-mail: support@galaxysklep.pl</div>
           
           <div className="bank-details">Dane bankowe</div>
-          <div className="bank-details">Dane bankowe</div>
           <div>Numer konta: 21291000062469800208837403</div>
           <div>IBAN: PL21 2910 0006 2469 8002 0883 7403</div>
           <div>BIC/SWIFT: BMPBPLPP</div>

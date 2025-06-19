@@ -48,13 +48,13 @@ export async function POST(
     
     const invoiceNumber = `FAK${year}${order.orderNumber}`;
 
-    // Create invoice record
+    // Create invoice record - NO VAT since Galaxy Sklep is not a VAT payer
     const invoice = await prisma.invoice.create({
       data: {
         invoiceNumber,
         orderId: order.id,
         totalAmount: order.total,
-        vatAmount: order.total * 0.21, // 21% VAT
+        vatAmount: 0, // No VAT
         dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
       }
     });
@@ -76,14 +76,23 @@ export async function POST(
         billingAddress: order.billingAddress || order.address || '',
         billingCity: order.billingCity || order.city || '',
         billingPostalCode: order.billingPostalCode || order.postalCode || '',
+        billingCountry: 'Polska', // Default to Poland
+        billingCompany: order.companyName || '', // Company name from order
+        billingNip: order.companyNip || '', // Company NIP from order
+        shippingFirstName: order.useDifferentDelivery ? (order.deliveryFirstName || '') : (order.billingFirstName || ''),
+        shippingLastName: order.useDifferentDelivery ? (order.deliveryLastName || '') : (order.billingLastName || ''),
+        shippingAddress: order.useDifferentDelivery ? (order.deliveryAddress || '') : (order.billingAddress || ''),
+        shippingCity: order.useDifferentDelivery ? (order.deliveryCity || '') : (order.billingCity || ''),
+        shippingPostalCode: order.useDifferentDelivery ? (order.deliveryPostalCode || '') : (order.billingPostalCode || ''),
         items: items.map(item => ({
           name: item.name || 'Product',
           quantity: item.quantity,
           price: item.price
         })),
         total: Number(order.total),
-        paymentMethod: order.paymentMethod || '',
-        deliveryMethod: order.deliveryMethod || ''
+        paymentMethod: order.paymentMethod || 'bank',
+        deliveryMethod: order.deliveryMethod || 'courier',
+        notes: order.note || ''
       };
       
       // Generate PDF (returns jsPDF instance)
@@ -118,7 +127,7 @@ export async function POST(
         data: {
           orderId: order.id,
           action: 'invoice_generated',
-          description: `Faktura ${invoiceNumber} byla vygenerována`,
+          description: `Faktura ${invoiceNumber} została wygenerowana`,
           newValue: invoiceNumber,
           metadata: {
             invoiceId: invoice.id,
