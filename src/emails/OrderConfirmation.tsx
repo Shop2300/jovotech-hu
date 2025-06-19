@@ -21,6 +21,8 @@ import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPa
 interface OrderConfirmationEmailProps {
   orderNumber: string;
   customerName: string;
+  companyName?: string | null;
+  companyNip?: string | null;
   items: Array<{
     name: string;
     quantity: number;
@@ -57,6 +59,8 @@ const BANK_DETAILS = {
 export const OrderConfirmationEmail = ({
   orderNumber,
   customerName,
+  companyName,
+  companyNip,
   items,
   total,
   deliveryMethod,
@@ -113,6 +117,23 @@ export const OrderConfirmationEmail = ({
             <Text style={paragraph}>
               Dzień dobry {customerName},
             </Text>
+
+            {/* Company Information - NEW SECTION */}
+            {(companyName || companyNip) && (
+              <Section style={companyDetailsSection}>
+                <Text style={companyDetailsHeader}>Dane firmy:</Text>
+                {companyName && (
+                  <Text style={companyDetailsText}>
+                    <strong>Nazwa firmy:</strong> {companyName}
+                  </Text>
+                )}
+                {companyNip && (
+                  <Text style={companyDetailsText}>
+                    <strong>NIP:</strong> {companyNip}
+                  </Text>
+                )}
+              </Section>
+            )}
             
             <Text style={paragraph}>
               Twoje zamówienie <strong style={primaryText}>#{orderNumber}</strong> zostało pomyślnie przyjęte i jest obecnie przetwarzane.
@@ -368,14 +389,14 @@ const container = {
   margin: '0 auto',
   padding: '0',
   marginBottom: '64px',
-  maxWidth: '650px', // Reduced width
+  maxWidth: '650px',
   overflow: 'hidden',
   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
 };
 
 const header = {
-  backgroundColor: '#6da306', // Primary green
-  padding: '20px 24px', // Reduced from 40px to 20px
+  backgroundColor: '#6da306',
+  padding: '20px 24px',
 };
 
 const logoColumn = {
@@ -398,7 +419,7 @@ const headerOrderNumber = {
   fontSize: '16px',
   fontWeight: '600',
   margin: '0',
-  lineHeight: '40px', // Match logo height
+  lineHeight: '40px',
 };
 
 const content = {
@@ -423,7 +444,7 @@ const successIcon = {
 };
 
 const h2 = {
-  color: '#020b1d', // Dark blue/black
+  color: '#020b1d',
   fontSize: '28px',
   fontWeight: '700',
   lineHeight: '36px',
@@ -432,7 +453,7 @@ const h2 = {
 };
 
 const h3 = {
-  color: '#073635', // Dark green
+  color: '#073635',
   fontSize: '20px',
   fontWeight: '600',
   lineHeight: '28px',
@@ -450,8 +471,31 @@ const primaryText = {
   color: '#6da306',
 };
 
+// NEW STYLES FOR COMPANY DETAILS
+const companyDetailsSection = {
+  backgroundColor: '#f0f9ff',
+  borderRadius: '6px',
+  padding: '12px 16px',
+  marginBottom: '16px',
+  border: '1px solid #bae6fd',
+};
+
+const companyDetailsHeader = {
+  color: '#0c4a6e',
+  fontSize: '14px',
+  fontWeight: '600' as const,
+  marginBottom: '8px',
+};
+
+const companyDetailsText = {
+  color: '#075985',
+  fontSize: '13px',
+  lineHeight: '18px',
+  marginBottom: '4px',
+};
+
 const orderSummary = {
-  backgroundColor: '#f8fdf4', // Light green tint
+  backgroundColor: '#f8fdf4',
   borderRadius: '8px',
   padding: '24px',
   marginBottom: '24px',
@@ -587,7 +631,7 @@ const methodDescription = {
 };
 
 const bankSection = {
-  backgroundColor: '#fef9e7', // Light yellow for attention
+  backgroundColor: '#fef9e7',
   borderRadius: '8px',
   padding: '24px',
   marginBottom: '24px',
@@ -631,7 +675,7 @@ const bankNote = {
 };
 
 const nextSteps = {
-  backgroundColor: '#f0fdf4', // Very light green
+  backgroundColor: '#f0fdf4',
   borderRadius: '8px',
   padding: '24px',
   marginBottom: '24px',

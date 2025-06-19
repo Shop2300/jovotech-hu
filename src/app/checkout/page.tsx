@@ -14,6 +14,10 @@ import { DELIVERY_METHODS, PAYMENT_METHODS, getDeliveryMethod, getPaymentMethod 
 interface CheckoutForm {
   email: string;
   phone: string;
+  // Company details
+  isCompany: boolean;
+  companyName?: string;
+  companyNip?: string;
   // Billing address
   billingFirstName: string;
   billingLastName: string;
@@ -65,15 +69,17 @@ export default function CheckoutPage() {
     formState: { errors, touchedFields }
   } = useForm<CheckoutForm>({
     defaultValues: {
-      deliveryMethod: DELIVERY_METHODS[0].value, // Use first delivery method as default
-      paymentMethod: PAYMENT_METHODS[0].value, // Use first payment method as default
+      deliveryMethod: DELIVERY_METHODS[0].value,
+      paymentMethod: PAYMENT_METHODS[0].value,
       useDifferentDelivery: false,
+      isCompany: false,
     }
   });
 
   const deliveryMethod = watch('deliveryMethod');
   const paymentMethod = watch('paymentMethod');
   const useDifferentDelivery = watch('useDifferentDelivery');
+  const isCompany = watch('isCompany');
 
   // Watch all form fields for checkmark display
   const formValues = watch();
@@ -124,14 +130,50 @@ export default function CheckoutPage() {
     toast.success(`${label} skopiowano do schowka`);
   };
 
+  const validateNIP = (nip: string | undefined) => {
+    // Handle undefined or empty values
+    if (!nip || nip.trim() === '') {
+      return true; // Will be handled by 'required' validation
+    }
+    
+    // Remove all non-digit characters
+    const cleanNIP = nip.replace(/[^0-9]/g, '');
+    
+    // NIP must be 10 digits
+    if (cleanNIP.length !== 10) {
+      return 'NIP musi zawierać 10 cyfr';
+    }
+    
+    // NIP validation algorithm
+    const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+    let sum = 0;
+    
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(cleanNIP[i]) * weights[i];
+    }
+    
+    const checksum = sum % 11;
+    const lastDigit = parseInt(cleanNIP[9]);
+    
+    if (checksum !== lastDigit) {
+      return 'Nieprawidłowy numer NIP';
+    }
+    
+    return true;
+  };
+
   const onSubmit = async (data: CheckoutForm) => {
     setIsSubmitting(true);
-    setIsProcessingOrder(true); // Prevent redirect during processing
+    setIsProcessingOrder(true);
 
     try {
       const orderData = {
         email: data.email,
         phone: data.phone,
+        // Company details
+        isCompany: data.isCompany,
+        companyName: data.isCompany ? data.companyName : null,
+        companyNip: data.isCompany ? data.companyNip : null,
         // Billing address
         billingFirstName: data.billingFirstName,
         billingLastName: data.billingLastName,
@@ -157,7 +199,7 @@ export default function CheckoutPage() {
         paymentMethod: data.paymentMethod,
         note: data.note,
         items: items,
-        total: totalPrice, // This now includes delivery and payment fees
+        total: totalPrice,
       };
 
       const response = await fetch('/api/orders', {
@@ -174,7 +216,6 @@ export default function CheckoutPage() {
       if (contentType && contentType.includes('application/json')) {
         responseData = await response.json();
       } else {
-        // If response is not JSON (like an HTML error page), try to get text
         const text = await response.text();
         console.error('Non-JSON response:', text);
         responseData = { error: 'Server error - please check console for details' };
@@ -184,13 +225,9 @@ export default function CheckoutPage() {
         throw new Error(responseData.error || 'Failed to create order');
       }
 
-      // Show success message
       toast.success('Zamówienie zostało pomyślnie utworzone!');
-      
-      // Navigate to success page first, then clear cart
       router.push(`/order-success?orderNumber=${responseData.orderNumber}`);
       
-      // Clear cart after navigation starts
       setTimeout(() => {
         clearCart();
       }, 500);
@@ -261,7 +298,7 @@ export default function CheckoutPage() {
               </div>
             </div>
             
-            <div className="w-[140px]"></div> {/* Spacer for balance */}
+            <div className="w-[140px]"></div>
           </div>
         </div>
       </div>
@@ -323,11 +360,81 @@ export default function CheckoutPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Company Toggle */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      {...register('isCompany')}
+                      type="checkbox"
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Building2 size={20} className="text-gray-600" />
+                      <span className="text-sm font-medium text-[#131921]">Kupuję jako firma</span>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Company Fields */}
+                {isCompany && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
+                        <span>Nazwa firmy</span>
+                        {isCompany && isFieldValid('companyName') ? (
+                          <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <span className="text-red-500 ml-0.5">*</span>
+                        )}
+                      </label>
+                      <input
+                        {...register('companyName', { 
+                          required: isCompany ? 'Nazwa firmy jest wymagana' : false 
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Nazwa Twojej firmy"
+                      />
+                      {errors.companyName && (
+                        <p className="text-red-500 text-sm mt-1">{errors.companyName.message}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
+                        <span>NIP</span>
+                        {isCompany && isFieldValid('companyNip') ? (
+                          <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <span className="text-red-500 ml-0.5">*</span>
+                        )}
+                      </label>
+                      <input
+                        {...register('companyNip', { 
+                          required: isCompany ? 'NIP jest wymagany' : false,
+                          validate: isCompany ? validateNIP : undefined
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="123-456-78-90"
+                        maxLength={13}
+                      />
+                      {errors.companyNip && (
+                        <p className="text-red-500 text-sm mt-1">{errors.companyNip.message}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Billing Address */}
               <div className="bg-white rounded-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Adres rozliczeniowy</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">
+                  {isCompany ? 'Adres firmy (rozliczeniowy)' : 'Adres rozliczeniowy'}
+                </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
@@ -451,7 +558,7 @@ export default function CheckoutPage() {
                 {!useDifferentDelivery ? (
                   <div className="text-gray-600 text-sm flex items-center gap-2">
                     <Copy size={16} />
-                    <span>Będzie użyty adres rozliczeniowy</span>
+                    <span>Będzie użyty adres {isCompany ? 'firmy' : 'rozliczeniowy'}</span>
                   </div>
                 ) : (
                   <>
@@ -872,6 +979,11 @@ export default function CheckoutPage() {
                 </Link>
                 .
               </p>
+              {isCompany && (
+                <p className="text-xs text-gray-400 text-center mt-2">
+                  Faktura VAT zostanie wystawiona automatycznie
+                </p>
+              )}
             </div>
           </div>
         </div>

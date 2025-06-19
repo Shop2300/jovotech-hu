@@ -40,12 +40,28 @@ export async function POST(request: Request) {
       );
     }
     
+    // If it's a company order, validate company fields
+    if (formData.isCompany) {
+      if (!formData.companyName || !formData.companyNip) {
+        console.error('Missing required company fields');
+        return NextResponse.json(
+          { error: 'Missing required company fields' },
+          { status: 400 }
+        );
+      }
+    }
+    
     // Create the order with variant information preserved
     const orderData = {
       orderNumber,
       customerEmail: formData.email,
       customerName: `${formData.billingFirstName} ${formData.billingLastName}`,
       customerPhone: formData.phone || '',
+      
+      // Company details
+      isCompany: formData.isCompany || false,
+      companyName: formData.isCompany ? formData.companyName : null,
+      companyNip: formData.isCompany ? formData.companyNip : null,
       
       // Billing address
       billingFirstName: formData.billingFirstName,
@@ -103,14 +119,19 @@ export async function POST(request: Request) {
         data: {
           orderId: order.id,
           action: 'order_created',
-          description: 'Zamówienie zostało utworzone',
+          description: formData.isCompany 
+            ? `Zamówienie zostało utworzone przez firmę ${formData.companyName}` 
+            : 'Zamówienie zostało utworzone',
           newValue: 'pending',
           metadata: {
             customerEmail: formData.email,
             total: formData.total,
             itemCount: formData.items.length,
             paymentMethod: formData.paymentMethod,
-            paymentStatus: 'unpaid'
+            paymentStatus: 'unpaid',
+            isCompany: formData.isCompany || false,
+            companyName: formData.companyName || null,
+            companyNip: formData.companyNip || null
           }
         }
       });
@@ -152,13 +173,15 @@ export async function POST(request: Request) {
       }
     }
     
-    // Send confirmation email
+    // Send confirmation email with company details if applicable
     try {
       console.log('Attempting to send confirmation email');
       await EmailService.sendOrderConfirmation({
         orderNumber: order.orderNumber,
         customerEmail: order.customerEmail,
         customerName: order.customerName,
+        companyName: order.companyName,
+        companyNip: order.companyNip,
         items: order.items as any[],
         total: order.total,
         deliveryMethod: order.deliveryMethod,
@@ -178,7 +201,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ 
       success: true, 
       orderNumber: order.orderNumber,
-      orderId: order.id 
+      orderId: order.id,
+      isCompany: order.isCompany
     });
   } catch (error) {
     console.error('Error creating order:', error);

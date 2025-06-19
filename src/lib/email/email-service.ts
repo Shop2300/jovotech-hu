@@ -22,6 +22,8 @@ interface OrderEmailData {
   orderNumber: string;
   customerEmail: string;
   customerName: string;
+  companyName?: string | null;  // Added for business orders
+  companyNip?: string | null;   // Added for business orders
   items: OrderItem[];
   total: number;
   deliveryMethod: string;
@@ -69,6 +71,8 @@ export class EmailService {
         react: OrderConfirmationEmail({
           orderNumber: data.orderNumber,
           customerName: data.customerName,
+          companyName: data.companyName,  // Pass company details to email template
+          companyNip: data.companyNip,    // Pass company details to email template
           items: emailItems,
           total: data.total,
           deliveryMethod: data.deliveryMethod,
@@ -208,6 +212,8 @@ export class EmailService {
     return React.createElement(OrderConfirmationEmail, {
       orderNumber: data.orderNumber,
       customerName: data.customerName,
+      companyName: data.companyName,  // Include company details in preview
+      companyNip: data.companyNip,    // Include company details in preview
       items: emailItems,
       total: data.total,
       deliveryMethod: data.deliveryMethod,

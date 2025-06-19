@@ -81,6 +81,9 @@ model Order {
   customerEmail        String
   customerName         String
   customerPhone        String
+  isCompany            Boolean        @default(false)
+  companyName          String?
+  companyNip           String?
   billingFirstName     String
   billingLastName      String
   billingAddress       String
@@ -144,7 +147,7 @@ model Product {
   price             Decimal
   regularPrice      Decimal?
   stock             Int              @default(0)
-  soldCount         Int              @default(0)  // ADD THIS LINE
+  soldCount         Int              @default(0)
   image             String?
   categoryId        String?
   brand             String?
