@@ -219,19 +219,6 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
     }
   };
 
-  const handlePrintInvoice = () => {
-    // Open invoice in a new window for printing using order number
-    const invoiceWindow = window.open(
-      `/admin/orders/${orderNumber}/invoice`,
-      '_blank',
-      'width=800,height=1000,menubar=no,toolbar=no,location=no,status=no'
-    );
-    
-    if (!invoiceWindow) {
-      toast.error('Nepodařilo se otevřít fakturu. Povolte prosím vyskakovací okna.');
-    }
-  };
-
   const handleDeleteInvoice = async () => {
     if (!invoice) return;
 
@@ -425,13 +412,6 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
 
             <button 
               className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition flex items-center justify-center gap-2"
-              onClick={handlePrintInvoice}
-            >
-              <FileText size={18} />
-              Vytisknout fakturu
-            </button>
-            <button 
-              className="w-full bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 transition flex items-center justify-center gap-2"
               onClick={handleDownloadInvoice}
             >
               <Download size={18} />
