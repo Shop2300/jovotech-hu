@@ -107,7 +107,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   const barcodeY = yPosition - 7;
   const barcodeHeight = 8;
   
-  // Draw barcode lines (visual representation only)
+  // Draw barcode lines (visual representation only) - longer version
   doc.setFillColor(0, 0, 0);
   doc.rect(barcodeX, barcodeY, 0.5, barcodeHeight, 'F');
   doc.rect(barcodeX + 1, barcodeY, 1, barcodeHeight, 'F');
@@ -126,6 +126,14 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.rect(barcodeX + 18.5, barcodeY, 0.5, barcodeHeight, 'F');
   doc.rect(barcodeX + 19.5, barcodeY, 1, barcodeHeight, 'F');
   doc.rect(barcodeX + 21, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 22, barcodeY, 1.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 24, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 25, barcodeY, 1, barcodeHeight, 'F');
+  doc.rect(barcodeX + 26.5, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 27.5, barcodeY, 0.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 28.5, barcodeY, 1, barcodeHeight, 'F');
+  doc.rect(barcodeX + 30, barcodeY, 1.5, barcodeHeight, 'F');
+  doc.rect(barcodeX + 32, barcodeY, 0.5, barcodeHeight, 'F');
   
   // Invoice number and details
   doc.setFontSize(12);
@@ -134,13 +142,13 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii(`Numer zamówienia: ${invoiceData.orderNumber}`), rightMargin, yPosition + 2, { align: 'right' });
+  doc.text(polishToAscii(`Numer zamówienia: ${invoiceData.orderNumber}`), rightMargin, yPosition + 1.5, { align: 'right' });
   
-  // Add sale date
+  // Add sale date with closer spacing
   doc.setFontSize(8);
-  doc.text(polishToAscii(`Data sprzedaży: `), rightMargin - 25, yPosition + 6, { align: 'right' });
+  doc.text(polishToAscii(`Data sprzedaży:`), rightMargin - 17, yPosition + 5, { align: 'right' });
   doc.setFont('helvetica', 'bold');
-  doc.text(format(saleDate, 'dd.MM.yyyy'), rightMargin, yPosition + 6, { align: 'right' });
+  doc.text(format(saleDate, 'dd.MM.yyyy'), rightMargin, yPosition + 5, { align: 'right' });
   doc.setFont('helvetica', 'normal');
 
   yPosition += 16;
@@ -166,7 +174,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFont('helvetica', 'bold');
   doc.text('Galaxy Sklep', leftMargin, sellerY);
   doc.setFont('helvetica', 'normal');
-  sellerY += 3.5;
+  sellerY += 4; // Adjusted for bigger font
   doc.text(polishToAscii('1. máje 535/50'), leftMargin, sellerY);
   sellerY += 3.5;
   doc.text('46007 Liberec, Republika Czeska', leftMargin, sellerY);
@@ -187,11 +195,25 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.text('Konto bankowe:', leftMargin, sellerY);
   doc.setFont('helvetica', 'normal');
   sellerY += 3.5;
+  doc.setFontSize(9); // Bigger font for account number
+  doc.setFont('helvetica', 'bold');
   doc.text('21291000062469800208837403', leftMargin, sellerY);
-  sellerY += 3.5;
-  doc.text('IBAN: PL21 2910 0006 2469 8002 0883 7403', leftMargin, sellerY);
-  sellerY += 3.5;
-  doc.text('SWIFT: BMPBPLPP', leftMargin, sellerY);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  sellerY += 4;
+  doc.text('IBAN: ', leftMargin, sellerY);
+  doc.setFontSize(9); // Bigger font for IBAN
+  doc.setFont('helvetica', 'bold');
+  doc.text('PL21 2910 0006 2469 8002 0883 7403', leftMargin + 10, sellerY);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  sellerY += 4;
+  doc.text('SWIFT: ', leftMargin, sellerY);
+  doc.setFontSize(9); // Bigger font for SWIFT
+  doc.setFont('helvetica', 'bold');
+  doc.text('BMPBPLPP', leftMargin + 12, sellerY);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
   sellerY += 3.5;
   doc.text('Aion S.A. Spolka Akcyjna Oddzial w Polsce', leftMargin, sellerY);
 
@@ -231,7 +253,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   buyerY += 3.5;
   doc.text(`Tel: ${invoiceData.customerPhone}`, buyerX, buyerY);
 
-  yPosition = Math.max(sellerY, buyerY) + 8;
+  yPosition = Math.max(sellerY + 2, buyerY) + 8;
 
   // Dates section with payment info - horizontal layout
   doc.setDrawColor(0, 0, 0);
@@ -383,21 +405,27 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setFont('helvetica', 'normal');
   yPosition += 5;
   doc.text('Numer konta: ', leftMargin + 3, yPosition);
+  doc.setFontSize(9); // Bigger font for account number
   doc.setFont('helvetica', 'bold');
   doc.text('21291000062469800208837403', leftMargin + 25, yPosition);
   
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
   yPosition += 5;
   doc.text('IBAN: ', leftMargin + 3, yPosition);
+  doc.setFontSize(9); // Bigger font for IBAN
   doc.setFont('helvetica', 'bold');
   doc.text('PL21 2910 0006 2469 8002 0883 7403', leftMargin + 13, yPosition);
   
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
   doc.text('SWIFT/BIC: ', leftMargin + 100, yPosition);
+  doc.setFontSize(9); // Bigger font for SWIFT
   doc.setFont('helvetica', 'bold');
   doc.text('BMPBPLPP', leftMargin + 120, yPosition);
   
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
   yPosition += 5;
   doc.text('Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce, Dobra 40, 00-344 Warszawa, Poland', leftMargin + 3, yPosition);
 
@@ -491,21 +519,30 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setLineWidth(0.5);
   doc.line(leftMargin, pageHeight - 23, rightMargin, pageHeight - 23);
   
-  // Company footer with more jurisdictional text
+  // Company footer with more jurisdictional text - full width
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
+  
+  // First line - spread across full width
   doc.text(
     polishToAscii('Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465'),
-    pageWidth / 2,
-    pageHeight - 19,
-    { align: 'center' }
+    leftMargin,
+    pageHeight - 19
+  );
+  
+  // Second line - email on left, website on right
+  doc.text(
+    polishToAscii('Email: support@galaxysklep.pl'),
+    leftMargin,
+    pageHeight - 16
   );
   doc.text(
-    polishToAscii('Email: support@galaxysklep.pl • www.galaxysklep.pl'),
-    pageWidth / 2,
+    polishToAscii('www.galaxysklep.pl'),
+    rightMargin,
     pageHeight - 16,
-    { align: 'center' }
+    { align: 'right' }
   );
+  
   doc.setFontSize(6);
   // Wider text by adjusting maxWidth parameter
   const footerText1 = polishToAscii('Przedsiębiorca zagraniczny prowadzący sprzedaż na terytorium RP. Podmiot zwolniony z obowiązku ewidencjonowania przy zastosowaniu kas rejestrujących.');

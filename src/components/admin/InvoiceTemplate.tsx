@@ -122,7 +122,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-900">FAKTURA</h1>
-          {/* Barcode visual */}
+          {/* Barcode visual - longer version */}
           <div className="flex items-center h-8">
             <div className="flex gap-0.5">
               <div className="w-0.5 h-8 bg-black"></div>
@@ -142,13 +142,24 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
               <div className="w-0.5 h-8 bg-black"></div>
               <div className="w-1 h-8 bg-black"></div>
               <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1.5 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
+              <div className="w-1 h-8 bg-black"></div>
+              <div className="w-1.5 h-8 bg-black"></div>
+              <div className="w-0.5 h-8 bg-black"></div>
             </div>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-lg font-bold text-gray-900">{invoiceNumber}</p>
-          <p className="text-gray-600 text-xs">Numer zamówienia: {order.orderNumber}</p>
-          <p className="text-gray-700 text-xs mt-1">Data sprzedaży: <strong>{format(saleDate, 'dd.MM.yyyy')}</strong></p>
+          <p className="text-lg font-bold text-gray-900 mb-1">{invoiceNumber}</p>
+          <p className="text-gray-600 text-xs mb-1">Numer zamówienia: {order.orderNumber}</p>
+          <p className="text-gray-700 text-xs">
+            Data sprzedaży:{' '}
+            <strong className="ml-0.5">{format(saleDate, 'dd.MM.yyyy')}</strong>
+          </p>
         </div>
       </div>
 
@@ -170,10 +181,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             
             <div className="mt-3">
               <p className="font-bold">Konto bankowe:</p>
-              <p>21291000062469800208837403</p>
-              <p>IBAN: PL21 2910 0006 2469 8002 0883 7403</p>
-              <p>SWIFT: BMPBPLPP</p>
-              <p>Aion S.A. Spolka Akcyjna Oddzial w Polsce</p>
+              <p className="text-sm font-medium">21291000062469800208837403</p>
+              <p className="text-sm">IBAN: <span className="font-medium">PL21 2910 0006 2469 8002 0883 7403</span></p>
+              <p className="text-sm">SWIFT: <span className="font-medium">BMPBPLPP</span></p>
+              <p className="text-xs">Aion S.A. Spolka Akcyjna Oddzial w Polsce</p>
             </div>
           </div>
         </div>
@@ -274,13 +285,13 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p><span className="font-semibold">Sposób płatności:</span> {paymentName}</p>
-            <p><span className="font-semibold">Numer konta:</span> 21291000062469800208837403</p>
-            <p><span className="font-semibold">IBAN:</span> PL21 2910 0006 2469 8002 0883 7403</p>
+            <p className="mt-1"><span className="font-semibold">Numer konta:</span> <span className="text-sm font-medium">21291000062469800208837403</span></p>
+            <p className="mt-1"><span className="font-semibold">IBAN:</span> <span className="text-sm font-medium">PL21 2910 0006 2469 8002 0883 7403</span></p>
           </div>
           <div>
             <p><span className="font-semibold">Tytuł przelewu:</span> {orderNumberWithoutDash}</p>
-            <p><span className="font-semibold">SWIFT/BIC:</span> BMPBPLPP</p>
-            <p className="text-xs">Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce, Dobra 40, 00-344 Warszawa, Poland</p>
+            <p className="mt-1"><span className="font-semibold">SWIFT/BIC:</span> <span className="text-sm font-medium">BMPBPLPP</span></p>
+            <p className="text-xs mt-1">Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce, Dobra 40, 00-344 Warszawa, Poland</p>
           </div>
         </div>
       </div>
@@ -326,20 +337,23 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       </div>
 
       {/* Footer with more jurisdictional text */}
-      <div className="text-center pt-2 border-t-2 border-gray-900">
-        <p className="text-xs text-gray-600">
-          Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465
-        </p>
-        <p className="text-xs text-gray-600">
-          Email: support@galaxysklep.pl • www.galaxysklep.pl
-        </p>
-        <p className="text-[10px] text-gray-500 mt-1 px-4">
-          Przedsiębiorca zagraniczny prowadzący sprzedaż na terytorium RP. Podmiot zwolniony z obowiązku ewidencjonowania przy zastosowaniu kas rejestrujących.
-        </p>
-        <p className="text-[10px] text-gray-500 px-8">
-          Faktura wystawiona zgodnie z art. 106e ustawy z dnia 11 marca 2004 r. o podatku od towarów i usług.
-        </p>
-        <p className="text-xs text-gray-400 mt-1">Strona 1 z 1</p>
+      <div className="pt-2 border-t-2 border-gray-900">
+        <div className="flex justify-between text-xs text-gray-600 px-1">
+          <span>Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465</span>
+        </div>
+        <div className="flex justify-between text-xs text-gray-600 px-1">
+          <span>Email: support@galaxysklep.pl</span>
+          <span>www.galaxysklep.pl</span>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] text-gray-500 mt-1 px-4">
+            Przedsiębiorca zagraniczny prowadzący sprzedaż na terytorium RP. Podmiot zwolniony z obowiązku ewidencjonowania przy zastosowaniu kas rejestrujących.
+          </p>
+          <p className="text-[10px] text-gray-500 px-8">
+            Faktura wystawiona zgodnie z art. 106e ustawy z dnia 11 marca 2004 r. o podatku od towarów i usług.
+          </p>
+          <p className="text-xs text-gray-400 mt-1">Strona 1 z 1</p>
+        </div>
       </div>
     </div>
   );
