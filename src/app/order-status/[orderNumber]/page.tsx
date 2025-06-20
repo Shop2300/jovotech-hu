@@ -129,11 +129,11 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
         {/* Back Navigation and Invoice Download */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <Link 
-            href="/order-status" 
+            href="/" 
             className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 transition-colors"
           >
             <ArrowLeft size={18} className="mr-1.5" />
-            Powrót do wyszukiwania zamówienia
+            Powrót do strony głównej
           </Link>
           
           {/* Invoice Download Button */}
@@ -465,7 +465,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <a
                       href={`/api/invoices/${order.orderNumber}/download`}
                       download
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
                     >
                       <Download size={16} />
                       Pobierz PDF

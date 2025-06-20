@@ -24,12 +24,12 @@ export function CopyLinkButton() {
     >
       {copied ? (
         <>
-          <Check size={16} className="text-green-600" />
+          <Check size={15} className="text-green-600" />
           <span className="text-green-600">Skopiowano!</span>
         </>
       ) : (
         <>
-          <Copy size={16} />
+          <Copy size={15} />
           <span>Kopiuj link</span>
         </>
       )}
