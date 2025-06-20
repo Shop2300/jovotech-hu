@@ -210,6 +210,30 @@ export async function PATCH(
     if (data.companyName !== undefined) updateData.companyName = data.companyName;
     if (data.companyNip !== undefined) updateData.companyNip = data.companyNip;
 
+    // Handle address updates
+    if (data.billingAddress !== undefined) updateData.billingAddress = data.billingAddress;
+    if (data.billingCity !== undefined) updateData.billingCity = data.billingCity;
+    if (data.billingPostalCode !== undefined) updateData.billingPostalCode = data.billingPostalCode;
+    
+    if (data.useDifferentDelivery !== undefined) updateData.useDifferentDelivery = data.useDifferentDelivery;
+    if (data.deliveryFirstName !== undefined) updateData.deliveryFirstName = data.deliveryFirstName;
+    if (data.deliveryLastName !== undefined) updateData.deliveryLastName = data.deliveryLastName;
+    if (data.deliveryAddress !== undefined) updateData.deliveryAddress = data.deliveryAddress;
+    if (data.deliveryCity !== undefined) updateData.deliveryCity = data.deliveryCity;
+    if (data.deliveryPostalCode !== undefined) updateData.deliveryPostalCode = data.deliveryPostalCode;
+    
+    // Add history entry for address changes
+    if (data.billingAddress || data.billingCity || data.billingPostalCode || 
+        data.deliveryAddress || data.deliveryCity || data.deliveryPostalCode ||
+        data.useDifferentDelivery !== undefined) {
+      historyEntries.push({
+        orderId: existingOrder.id,
+        action: 'address_updated',
+        description: 'Adresy byly aktualizovány',
+        metadata: { changedBy: 'Admin' }
+      });
+    }
+
     // Handle admin notes update
     if (data.adminNotes !== undefined) {
       updateData.adminNotes = data.adminNotes;

@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle, Package, Banknote, Building2, User } from 'lucide-react';
 import { OrderActions } from './OrderActions';
 import { CustomerInfoEdit } from './CustomerInfoEdit';
+import { AddressEdit } from './AddressEdit';
 import { AdminNotes } from './AdminNotes';
 import { OrderHistory } from '@/components/admin/OrderHistory';
 import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
@@ -87,7 +88,7 @@ async function getOrder(orderNumber: string) {
     total: Number(order.total),
     items: itemsWithProducts,
     paymentStatus: order.paymentStatus || 'unpaid',
-    adminNotes: order.adminNotes || '' // Add this line
+    adminNotes: order.adminNotes || ''
   };
 }
 
@@ -293,67 +294,22 @@ export default async function OrderDetailPage({
             companyNip={order.companyNip}
           />
 
-          {/* Addresses */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Billing Address */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <FileText size={20} className="text-gray-600" />
-                <h2 className="text-xl font-semibold text-black">
-                  {order.isCompany ? 'Adres firmy' : 'Fakturační adresa'}
-                </h2>
-              </div>
-              <div className="space-y-2">
-                <p className="text-black">
-                  <strong>
-                    {hasNewAddressFormat 
-                      ? `${order.billingFirstName} ${order.billingLastName}`
-                      : `${order.firstName} ${order.lastName}`
-                    }
-                  </strong>
-                </p>
-                <p className="text-black">{hasNewAddressFormat ? order.billingAddress : order.address}</p>
-                <p className="text-black">
-                  {hasNewAddressFormat ? order.billingCity : order.city}, {hasNewAddressFormat ? order.billingPostalCode : order.postalCode}
-                </p>
-              </div>
-            </div>
-
-            {/* Delivery Address */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Truck size={20} className="text-gray-600" />
-                <h2 className="text-xl font-semibold text-black">Doručovací adresa</h2>
-              </div>
-              <div className="space-y-2">
-                {hasNewAddressFormat && order.useDifferentDelivery ? (
-                  <>
-                    <p className="text-black">
-                      <strong>{order.deliveryFirstName} {order.deliveryLastName}</strong>
-                    </p>
-                    <p className="text-black">{order.deliveryAddress}</p>
-                    <p className="text-black">{order.deliveryCity}, {order.deliveryPostalCode}</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-gray-600 text-sm italic">Stejná jako fakturační</p>
-                    <p className="text-black">
-                      <strong>
-                        {hasNewAddressFormat 
-                          ? `${order.billingFirstName} ${order.billingLastName}`
-                          : `${order.firstName} ${order.lastName}`
-                        }
-                      </strong>
-                    </p>
-                    <p className="text-black">{hasNewAddressFormat ? order.billingAddress : order.address}</p>
-                    <p className="text-black">
-                      {hasNewAddressFormat ? order.billingCity : order.city}, {hasNewAddressFormat ? order.billingPostalCode : order.postalCode}
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+          {/* Addresses - Now Editable */}
+          <AddressEdit
+            orderNumber={order.orderNumber}
+            billingFirstName={order.billingFirstName || order.firstName || ''}
+            billingLastName={order.billingLastName || order.lastName || ''}
+            billingAddress={order.billingAddress || order.address || ''}
+            billingCity={order.billingCity || order.city || ''}
+            billingPostalCode={order.billingPostalCode || order.postalCode || ''}
+            useDifferentDelivery={order.useDifferentDelivery}
+            deliveryFirstName={order.deliveryFirstName}
+            deliveryLastName={order.deliveryLastName}
+            deliveryAddress={order.deliveryAddress}
+            deliveryCity={order.deliveryCity}
+            deliveryPostalCode={order.deliveryPostalCode}
+            isCompany={order.isCompany}
+          />
 
           {/* Admin Notes - NEW */}
           <AdminNotes 
