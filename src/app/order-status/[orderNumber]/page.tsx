@@ -15,7 +15,9 @@ import {
   ExternalLink,
   AlertCircle,
   CheckCircle2,
-  ArrowLeft
+  ArrowLeft,
+  FileText,
+  Download
 } from 'lucide-react';
 import Link from 'next/link';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
@@ -52,6 +54,13 @@ interface OrderStatusData {
     description: string;
     createdAt: string;
   }>;
+  invoice?: {
+    id: string;
+    invoiceNumber: string;
+    status: string;
+    issuedAt: string;
+    pdfUrl: string | null;
+  } | null;
 }
 
 async function getOrderStatus(orderNumber: string): Promise<OrderStatusData | null> {
@@ -117,8 +126,8 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
     <div className="min-h-screen bg-gray-50">
       {/* Main Content - Now starts from the top without header */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Back Navigation */}
-        <div className="mb-6">
+        {/* Back Navigation and Invoice Download */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <Link 
             href="/order-status" 
             className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors"
@@ -126,6 +135,24 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             <ArrowLeft size={20} className="mr-2" />
             Powrót do wyszukiwania zamówienia
           </Link>
+          
+          {/* Invoice Download Button */}
+          {order.invoice && order.invoice.pdfUrl ? (
+            <a
+              href={`/api/invoices/${order.orderNumber}/download`}
+              download
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <FileText size={20} />
+              <span>Pobierz fakturę</span>
+              <Download size={16} />
+            </a>
+          ) : (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed">
+              <FileText size={20} />
+              <span>Faktura niedostępna</span>
+            </div>
+          )}
         </div>
 
         {/* Order Header */}
@@ -421,6 +448,36 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                 </div>
               </div>
             </div>
+
+            {/* Invoice Section - Only if invoice exists */}
+            {order.invoice && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-lg font-semibold mb-4">Faktura</h2>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Numer faktury:</p>
+                    <p className="font-medium">{order.invoice.invoiceNumber}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Wystawiono: {format(new Date(order.invoice.issuedAt), 'd MMMM yyyy', { locale: pl })}
+                    </p>
+                  </div>
+                  {order.invoice.pdfUrl ? (
+                    <a
+                      href={`/api/invoices/${order.orderNumber}/download`}
+                      download
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      <Download size={20} />
+                      Pobierz PDF
+                    </a>
+                  ) : (
+                    <div className="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg">
+                      PDF niedostępny
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column - Summary */}

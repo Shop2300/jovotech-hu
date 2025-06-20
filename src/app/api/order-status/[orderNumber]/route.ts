@@ -9,10 +9,11 @@ export async function GET(
   try {
     const { orderNumber } = await params;
     
-    // Find order by order number
+    // Find order by order number - NOW INCLUDING INVOICE
     const order = await prisma.order.findUnique({
       where: { orderNumber },
       include: {
+        invoice: true, // Include invoice information
         history: {
           where: {
             action: {
@@ -84,7 +85,15 @@ export async function GET(
         action: entry.action,
         description: entry.description,
         createdAt: entry.createdAt
-      }))
+      })),
+      // Include invoice information if available
+      invoice: order.invoice ? {
+        id: order.invoice.id,
+        invoiceNumber: order.invoice.invoiceNumber,
+        status: order.invoice.status,
+        issuedAt: order.invoice.issuedAt,
+        pdfUrl: order.invoice.pdfUrl
+      } : null
     };
 
     return NextResponse.json(publicOrderData);
