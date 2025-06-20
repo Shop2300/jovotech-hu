@@ -55,23 +55,7 @@ export async function PATCH(
   try {
     // First, find the order by orderNumber to get its ID and current data
     const existingOrder = await prisma.order.findUnique({
-      where: { orderNumber },
-      select: { 
-        id: true, 
-        status: true, 
-        paymentStatus: true,
-        customerEmail: true,
-        customerName: true,
-        items: true,
-        deliveryAddress: true,
-        billingAddress: true,
-        deliveryCity: true,
-        deliveryPostalCode: true,
-        billingCity: true,
-        billingPostalCode: true,
-        useDifferentDelivery: true,
-        trackingNumber: true
-      }
+      where: { orderNumber }
     });
 
     if (!existingOrder) {
@@ -206,6 +190,37 @@ export async function PATCH(
           action: 'tracking_added',
           description: `Dodano numer śledzenia: ${data.trackingNumber}`,
           newValue: data.trackingNumber,
+          metadata: { changedBy: 'Admin' }
+        });
+      }
+    }
+
+    // Handle customer information updates
+    if (data.billingFirstName !== undefined) updateData.billingFirstName = data.billingFirstName;
+    if (data.billingLastName !== undefined) updateData.billingLastName = data.billingLastName;
+    if (data.customerEmail !== undefined) {
+      updateData.customerEmail = data.customerEmail;
+      // Update customerName based on first and last name
+      if (data.billingFirstName || data.billingLastName) {
+        updateData.customerName = `${data.billingFirstName || existingOrder.billingFirstName || ''} ${data.billingLastName || existingOrder.billingLastName || ''}`.trim();
+      }
+    }
+    if (data.customerPhone !== undefined) updateData.customerPhone = data.customerPhone;
+    if (data.isCompany !== undefined) updateData.isCompany = data.isCompany;
+    if (data.companyName !== undefined) updateData.companyName = data.companyName;
+    if (data.companyNip !== undefined) updateData.companyNip = data.companyNip;
+
+    // Handle admin notes update
+    if (data.adminNotes !== undefined) {
+      updateData.adminNotes = data.adminNotes;
+      
+      if (data.adminNotes !== existingOrder.adminNotes) {
+        historyEntries.push({
+          orderId: existingOrder.id,
+          action: 'admin_note_updated',
+          description: data.adminNotes ? 'Dodano/zaktualizowano interní poznámky' : 'Usunięto interní poznámky',
+          oldValue: existingOrder.adminNotes,
+          newValue: data.adminNotes,
           metadata: { changedBy: 'Admin' }
         });
       }

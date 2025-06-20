@@ -33,7 +33,6 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isCheckingInvoice, setIsCheckingInvoice] = useState(true);
   const [isDeletingInvoice, setIsDeletingInvoice] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const statusOptions = [
     { value: 'pending', label: 'Čeká na vyřízení' },
@@ -68,6 +67,26 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
     checkInvoice();
   }, [orderNumber]);
 
+  const handleGenerateInvoice = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${orderNumber}/invoice/generate`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) throw new Error('Failed to generate invoice');
+      
+      const data = await response.json();
+      setInvoice(data.invoice);
+      return true;
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      return false;
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   const handleStatusChange = async (newStatus: string) => {
     // Check if changing to shipped without tracking number
     if (newStatus === 'shipped' && !trackingNumber && !currentTrackingNumber) {
@@ -76,6 +95,18 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
     }
 
     setIsUpdating(true);
+    
+    // Auto-generate invoice when changing to processing
+    if (newStatus === 'processing' && !invoice) {
+      toast.loading('Generuji fakturu...', { id: 'invoice-gen' });
+      const invoiceGenerated = await handleGenerateInvoice();
+      if (invoiceGenerated) {
+        toast.success('Faktura byla automaticky vygenerována', { id: 'invoice-gen' });
+      } else {
+        toast.error('Nepodařilo se vygenerovat fakturu', { id: 'invoice-gen' });
+      }
+    }
+
     try {
       const response = await fetch(`/api/admin/orders/${orderNumber}`, {
         method: 'PATCH',
@@ -104,6 +135,8 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
           </div>,
           { duration: 5000 }
         );
+      } else if (newStatus === 'processing') {
+        toast.success('Stav změněn na "Zpracovává se"');
       } else {
         toast.success('Stav objednávky byl aktualizován');
       }
@@ -167,26 +200,6 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
     }
   };
 
-  const handleGenerateInvoice = async () => {
-    setIsGeneratingPdf(true);
-    try {
-      const response = await fetch(`/api/admin/orders/${orderNumber}/invoice/generate`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) throw new Error('Failed to generate invoice');
-      
-      const data = await response.json();
-      setInvoice(data.invoice);
-      toast.success('Faktura byla úspěšně vygenerována');
-      router.refresh();
-    } catch (error) {
-      toast.error('Chyba při generování faktury');
-    } finally {
-      setIsGeneratingPdf(false);
-    }
-  };
-
   const handleDownloadInvoice = async () => {
     if (!invoice) return;
 
@@ -231,8 +244,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
       if (!response.ok) throw new Error('Failed to delete invoice');
       
       setInvoice(null);
-      setShowDeleteConfirm(false);
-      toast.success('Faktura byla úspěšně smazána');
+      toast.success('Faktura byla smazána');
       router.refresh();
     } catch (error) {
       toast.error('Chyba při mazání faktury');
@@ -266,6 +278,12 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
           <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
             <CheckCircle size={14} />
             Email s informacemi o odeslání byl zaslán
+          </p>
+        )}
+        {status === 'processing' && invoice && (
+          <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+            <FileText size={14} />
+            Faktura byla automaticky vygenerována
           </p>
         )}
       </div>
@@ -376,39 +394,15 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
                   <span>Faktura {invoice.invoiceNumber} byla vygenerována</span>
                 </div>
                 <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="text-red-600 hover:text-red-700 p-1"
+                  onClick={handleDeleteInvoice}
+                  disabled={isDeletingInvoice}
+                  className="text-red-600 hover:text-red-700 p-1 disabled:opacity-50"
                   title="Smazat fakturu"
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
             </div>
-
-            {/* Delete Confirmation Dialog */}
-            {showDeleteConfirm && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-2">
-                <p className="text-sm text-red-700 mb-2">
-                  Opravdu chcete smazat fakturu {invoice.invoiceNumber}?
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleDeleteInvoice}
-                    disabled={isDeletingInvoice}
-                    className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {isDeletingInvoice ? 'Mažu...' : 'Ano, smazat'}
-                  </button>
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    disabled={isDeletingInvoice}
-                    className="px-3 py-1 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-                  >
-                    Zrušit
-                  </button>
-                </div>
-              </div>
-            )}
 
             <button 
               className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition flex items-center justify-center gap-2"

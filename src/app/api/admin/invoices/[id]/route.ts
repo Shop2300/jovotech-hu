@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { checkAuth } from '@/lib/auth-middleware';
-import { del } from '@vercel/blob';
 
 export async function DELETE(
   request: NextRequest,
@@ -14,45 +13,20 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    // Fetch the invoice to get the PDF URL before deletion
-    const invoice = await prisma.invoice.findUnique({
-      where: { id },
-      include: { order: true }
-    });
-
-    if (!invoice) {
-      return NextResponse.json(
-        { error: 'Invoice not found' },
-        { status: 404 }
-      );
-    }
-
-    // Delete the blob from Vercel Blob Storage if it exists
-    if (invoice.pdfUrl) {
-      try {
-        await del(invoice.pdfUrl);
-        console.log(`Deleted blob: ${invoice.pdfUrl}`);
-      } catch (blobError) {
-        // Log the error but don't fail the operation
-        // The blob might already be deleted or the URL might be invalid
-        console.error('Failed to delete blob:', blobError);
-      }
-    }
-
-    // Delete the invoice record
-    await prisma.invoice.delete({
+    // Delete the invoice
+    const invoice = await prisma.invoice.delete({
       where: { id }
     });
 
-    // Add to order history
-    if (invoice.order) {
+    // Add history entry
+    if (invoice.orderId) {
       await prisma.orderHistory.create({
         data: {
-          orderId: invoice.order.id,
+          orderId: invoice.orderId,
           action: 'invoice_deleted',
-          description: `Faktura ${invoice.invoiceNumber} byla smazána`,
+          description: `Faktura ${invoice.invoiceNumber} została usunięta`,
           oldValue: invoice.invoiceNumber,
-          metadata: {
+          metadata: { 
             deletedBy: 'Admin',
             invoiceId: invoice.id
           }
@@ -60,11 +34,7 @@ export async function DELETE(
       });
     }
 
-    return NextResponse.json({ 
-      success: true,
-      message: 'Invoice deleted successfully' 
-    });
-
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting invoice:', error);
     return NextResponse.json(

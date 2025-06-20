@@ -8,6 +8,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle, Package, Banknote, Building2, User } from 'lucide-react';
 import { OrderActions } from './OrderActions';
+import { CustomerInfoEdit } from './CustomerInfoEdit';
+import { AdminNotes } from './AdminNotes';
 import { OrderHistory } from '@/components/admin/OrderHistory';
 import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
@@ -85,6 +87,7 @@ async function getOrder(orderNumber: string) {
     total: Number(order.total),
     items: itemsWithProducts,
     paymentStatus: order.paymentStatus || 'unpaid',
+    adminNotes: order.adminNotes || '' // Add this line
   };
 }
 
@@ -278,56 +281,17 @@ export default async function OrderDetailPage({
             </div>
           </div>
 
-          {/* Customer Details - Updated to show if it's a business order */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <User className="w-5 h-5 text-gray-600" />
-              {order.isCompany ? 'Dane osoby kontaktowej' : 'Dane klienta'}
-            </h3>
-            <div className="space-y-2">
-              <div className="flex items-start">
-                <span className="text-gray-600 font-medium w-32">Jméno:</span>
-                <span className="text-gray-900">
-                  {hasNewAddressFormat 
-                    ? `${order.billingFirstName} ${order.billingLastName}`
-                    : `${order.firstName} ${order.lastName}`
-                  }
-                </span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-gray-600 font-medium w-32">Email:</span>
-                <span className="text-gray-900">{order.customerEmail}</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-gray-600 font-medium w-32">Telefon:</span>
-                <span className="text-gray-900">{order.customerPhone || '-'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Company Details - NEW SECTION */}
-          {order.isCompany && (order.companyName || order.companyNip) && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-gray-600" />
-                Dane firmy
-              </h3>
-              <div className="space-y-2">
-                {order.companyName && (
-                  <div className="flex items-start">
-                    <span className="text-gray-600 font-medium w-32">Nazwa firmy:</span>
-                    <span className="text-gray-900">{order.companyName}</span>
-                  </div>
-                )}
-                {order.companyNip && (
-                  <div className="flex items-start">
-                    <span className="text-gray-600 font-medium w-32">NIP:</span>
-                    <span className="text-gray-900 font-mono">{order.companyNip}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Customer Details - Now Editable */}
+          <CustomerInfoEdit
+            orderNumber={order.orderNumber}
+            billingFirstName={order.billingFirstName || order.firstName || ''}
+            billingLastName={order.billingLastName || order.lastName || ''}
+            customerEmail={order.customerEmail}
+            customerPhone={order.customerPhone}
+            isCompany={order.isCompany}
+            companyName={order.companyName}
+            companyNip={order.companyNip}
+          />
 
           {/* Addresses */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -391,6 +355,12 @@ export default async function OrderDetailPage({
             </div>
           </div>
 
+          {/* Admin Notes - NEW */}
+          <AdminNotes 
+            orderNumber={order.orderNumber}
+            initialNotes={order.adminNotes}
+          />
+
           {/* Order History */}
           <OrderHistory history={order.history.map(h => ({
             ...h,
@@ -442,7 +412,7 @@ export default async function OrderDetailPage({
               {order.note && (
                 <div className="pt-3">
                   <p className="text-black">
-                    <strong>Poznámka:</strong><br />
+                    <strong>Poznámka od zákazníka:</strong><br />
                     {order.note}
                   </p>
                 </div>

@@ -84,6 +84,7 @@ model Order {
   isCompany            Boolean        @default(false)
   companyName          String?
   companyNip           String?
+  adminNotes           String?
   billingFirstName     String
   billingLastName      String
   billingAddress       String
