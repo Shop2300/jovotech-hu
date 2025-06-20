@@ -130,9 +130,9 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <Link 
             href="/order-status" 
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors"
+            className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 transition-colors"
           >
-            <ArrowLeft size={20} className="mr-2" />
+            <ArrowLeft size={18} className="mr-1.5" />
             Powrót do wyszukiwania zamówienia
           </Link>
           
@@ -141,15 +141,15 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             <a
               href={`/api/invoices/${order.orderNumber}/download`}
               download
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
             >
-              <FileText size={20} />
+              <FileText size={16} />
               <span>Pobierz fakturę</span>
-              <Download size={16} />
+              <Download size={14} />
             </a>
           ) : (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed">
-              <FileText size={20} />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-gray-100 text-gray-500 rounded-md cursor-not-allowed">
+              <FileText size={16} />
               <span>Faktura niedostępna</span>
             </div>
           )}
@@ -451,27 +451,27 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
 
             {/* Invoice Section - Only if invoice exists */}
             {order.invoice && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4">Faktura</h2>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-base font-medium mb-3 text-gray-700">Faktura</h3>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Numer faktury:</p>
-                    <p className="font-medium">{order.invoice.invoiceNumber}</p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Wystawiono: {format(new Date(order.invoice.issuedAt), 'd MMMM yyyy', { locale: pl })}
+                    <p className="text-xs text-gray-500">Numer faktury:</p>
+                    <p className="text-sm font-medium text-gray-900">{order.invoice.invoiceNumber}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Wystawiono: {format(new Date(order.invoice.issuedAt), 'd MMM yyyy', { locale: pl })}
                     </p>
                   </div>
                   {order.invoice.pdfUrl ? (
                     <a
                       href={`/api/invoices/${order.orderNumber}/download`}
                       download
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                     >
-                      <Download size={20} />
+                      <Download size={16} />
                       Pobierz PDF
                     </a>
                   ) : (
-                    <div className="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg">
+                    <div className="px-3 py-1.5 text-sm bg-gray-200 text-gray-500 rounded-md">
                       PDF niedostępny
                     </div>
                   )}
