@@ -9,7 +9,7 @@ import Image from 'next/image';
 
 export function Header() {
   return (
-    <header className="bg-white sticky top-0" style={{ zIndex: 1000 }}>
+    <header className="w-full bg-white shadow-md">
       <div className="max-w-screen-2xl mx-auto px-6">
         <div className="flex items-center justify-between py-3">
           {/* Logo */}
@@ -27,7 +27,7 @@ export function Header() {
           {/* Center Section - Search Bar with Order Tracking */}
           <div className="hidden md:flex items-center justify-center gap-12 flex-1 px-8">
             {/* Search Bar */}
-            <div className="w-full max-w-2xl" style={{ position: 'relative', zIndex: 1001 }}>
+            <div className="w-full max-w-2xl">
               <SearchBar />
             </div>
             
@@ -48,7 +48,7 @@ export function Header() {
         {/* Mobile Section */}
         <div className="md:hidden pb-4">
           {/* Search Bar - Mobile */}
-          <div className="pb-3" style={{ position: 'relative', zIndex: 1001 }}>
+          <div className="pb-3">
             <SearchBar />
           </div>
           
