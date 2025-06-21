@@ -203,35 +203,54 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   // Fetch related products from the same category
   const fetchRelatedProducts = async () => {
     try {
-      let url = '/api/products';
-      const params = new URLSearchParams();
+      // Helper function to shuffle array
+      const shuffleArray = (array: any[]) => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      };
+
+      let productsToShow: any[] = [];
       
       if (product.category) {
         // First try to get products from the same category
-        const categoryResponse = await fetch(`/api/products?categoryId=${product.category.id}&limit=5`);
+        const categoryResponse = await fetch(`/api/products?categoryId=${product.category.id}&limit=20`);
         if (categoryResponse.ok) {
           const categoryData = await categoryResponse.json();
-          const filtered = categoryData
-            .filter((p: any) => p.id !== product.id)
-            .slice(0, 4);
+          const filtered = categoryData.filter((p: any) => p.id !== product.id);
           
           if (filtered.length >= 4) {
-            setRelatedProducts(filtered);
+            // Shuffle and take 4 random products from the same category
+            productsToShow = shuffleArray(filtered).slice(0, 4);
+            setRelatedProducts(productsToShow);
             return;
+          } else if (filtered.length > 0) {
+            // If less than 4, use what we have
+            productsToShow = shuffleArray(filtered);
           }
         }
       }
       
-      // If not enough products in category, get general products
-      const response = await fetch('/api/products?limit=8');
-      if (response.ok) {
-        const data = await response.json();
-        // Filter out current product and limit to 4
-        const filtered = data
-          .filter((p: any) => p.id !== product.id)
-          .slice(0, 4);
-        setRelatedProducts(filtered);
+      // If we need more products, get from all products
+      if (productsToShow.length < 4) {
+        const response = await fetch('/api/products?limit=50'); // Get more products for better randomization
+        if (response.ok) {
+          const data = await response.json();
+          // Filter out current product and products already in the list
+          const existingIds = new Set([product.id, ...productsToShow.map(p => p.id)]);
+          const filtered = data.filter((p: any) => !existingIds.has(p.id));
+          
+          // Shuffle all products and take enough to fill up to 4
+          const shuffled = shuffleArray(filtered);
+          const needed = 4 - productsToShow.length;
+          productsToShow = [...productsToShow, ...shuffled.slice(0, needed)];
+        }
       }
+      
+      setRelatedProducts(productsToShow);
     } catch (error) {
       console.error('Error fetching related products:', error);
     }
