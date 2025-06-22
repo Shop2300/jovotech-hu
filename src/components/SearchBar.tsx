@@ -208,7 +208,7 @@ export function SearchBar() {
   };
 
   return (
-    <div ref={searchRef} className="relative w-full search-bar-container" style={{ zIndex: 2147483645 }}>
+    <div ref={searchRef} className="relative w-full search-bar-container">
       <form onSubmit={handleSubmit} className="relative">
         <input
           ref={inputRef}
@@ -246,199 +246,196 @@ export function SearchBar() {
         <>
           {/* Invisible backdrop to ensure isolation */}
           <div 
-            className="fixed inset-0 search-backdrop-overlay" 
-            style={{ zIndex: 2147483646 }}
+            className="search-backdrop-overlay" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-xl border border-gray-200 max-h-[500px] overflow-hidden search-dropdown" style={{ 
-            backgroundColor: '#ffffff',
-            zIndex: 2147483647,
-            isolation: 'isolate'
-          }}>
-          <div className="overflow-y-auto max-h-[500px] bg-white">
-            {/* Categories Section */}
-            {categories.length > 0 && (
-              <div className="border-b border-gray-100 bg-white">
-                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
-                  Kategorie
-                </div>
-                {categories.map((category, index) => (
-                  <Link
-                    key={category.id}
-                    href={`/category/${category.slug}`}
-                    onClick={() => setIsOpen(false)}
-                    className={`block px-4 py-2 hover:bg-gray-50 transition-colors ${
-                      selectedIndex === index ? 'bg-gray-50' : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span 
-                        className="text-sm text-gray-700"
-                        dangerouslySetInnerHTML={{ 
-                          __html: highlightText(category.name, query) 
-                        }}
-                      />
-                      <ChevronRight size={16} className="text-gray-400" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-
-            {/* Products Section */}
-            {results.length > 0 && (
-              <div className="border-b border-gray-100 bg-white">
-                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
-                  Produkty
-                </div>
-                {results.map((product, index) => {
-                  const actualIndex = categories.length + index;
-                  const productUrl = product.category?.slug && product.slug
-                    ? `/${product.category.slug}/${product.slug}`
-                    : `/products/${product.id}`;
-                  const discount = product.regularPrice 
-                    ? calculateDiscount(product.price, product.regularPrice) 
-                    : 0;
-
-                  return (
+          <div 
+            className="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-xl border border-gray-200 max-h-[500px] overflow-hidden search-dropdown"
+          >
+            <div className="overflow-y-auto max-h-[500px] bg-white">
+              {/* Categories Section */}
+              {categories.length > 0 && (
+                <div className="border-b border-gray-100 bg-white">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                    Kategorie
+                  </div>
+                  {categories.map((category, index) => (
                     <Link
-                      key={product.id}
-                      href={productUrl}
+                      key={category.id}
+                      href={`/category/${category.slug}`}
                       onClick={() => setIsOpen(false)}
-                      className={`block px-4 py-3 hover:bg-gray-50 transition-colors ${
-                        selectedIndex === actualIndex ? 'bg-gray-50' : ''
+                      className={`block px-4 py-2 hover:bg-gray-50 transition-colors ${
+                        selectedIndex === index ? 'bg-gray-50' : ''
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        {/* Product Image */}
-                        <div className="w-12 h-12 flex-shrink-0">
-                          {product.image ? (
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-full h-full object-contain"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center">
-                              <Search size={20} className="text-gray-400" />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Product Info */}
-                        <div className="flex-1 min-w-0">
-                          <div 
-                            className="text-sm text-gray-900 font-medium truncate"
-                            dangerouslySetInnerHTML={{ 
-                              __html: highlightText(product.name, query) 
-                            }}
-                          />
-                          <div className="flex items-center gap-2 mt-1">
-                            {discount > 0 ? (
-                              <>
-                                <span className="text-sm font-semibold text-red-600">
-                                  {formatPrice(product.price)}
-                                </span>
-                                <span className="text-xs text-gray-500 line-through">
-                                  {formatPrice(product.regularPrice!)}
-                                </span>
-                                <span className="text-xs text-red-600 font-medium">
-                                  -{discount}%
-                                </span>
-                              </>
-                            ) : (
-                              <span className="text-sm font-semibold text-gray-900">
-                                {formatPrice(product.price)}
-                              </span>
-                            )}
-                            {product.stock === 0 && (
-                              <span className="text-xs text-red-500">Wyprzedane</span>
-                            )}
-                          </div>
-                        </div>
+                      <div className="flex items-center justify-between">
+                        <span 
+                          className="text-sm text-gray-700"
+                          dangerouslySetInnerHTML={{ 
+                            __html: highlightText(category.name, query) 
+                          }}
+                        />
+                        <ChevronRight size={16} className="text-gray-400" />
                       </div>
                     </Link>
-                  );
-                })}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {/* Show "View all results" if there are more results */}
-            {query && totalResults > 5 && (
-              <Link
-                href={`/search?q=${encodeURIComponent(query)}`}
-                onClick={() => setIsOpen(false)}
-                className="block px-4 py-3 text-center text-sm text-[#131921] hover:bg-gray-50 transition-colors"
-              >
-                Zobacz wszystkie wyniki ({totalResults})
-              </Link>
-            )}
-
-            {/* No results message */}
-            {query && !loading && results.length === 0 && categories.length === 0 && (
-              <div className="px-4 py-8 text-center bg-white">
-                <Search size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-sm text-gray-500">
-                  Nie znaleźliśmy żadnych wyników dla "{query}"
-                </p>
-              </div>
-            )}
-
-            {/* Recent & Popular Searches (when no query) */}
-            {!query && !loading && (
-              <>
-                {/* Recent Searches */}
-                {recentSearches.length > 0 && (
-                  <div className="border-b border-gray-100 bg-white">
-                    <div className="px-4 py-2 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-gray-500 uppercase">
-                        Ostatnie wyszukiwania
-                      </span>
-                      <button
-                        onClick={() => {
-                          clearRecentSearches();
-                          setRecentSearches([]);
-                        }}
-                        className="text-xs text-gray-400 hover:text-gray-600"
-                      >
-                        Wyczyść
-                      </button>
-                    </div>
-                    {recentSearches.map((search, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSuggestionClick(search)}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
-                      >
-                        <Clock size={14} className="text-gray-400" />
-                        <span className="text-sm text-gray-700">{search}</span>
-                      </button>
-                    ))}
+              {/* Products Section */}
+              {results.length > 0 && (
+                <div className="border-b border-gray-100 bg-white">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                    Produkty
                   </div>
-                )}
+                  {results.map((product, index) => {
+                    const actualIndex = categories.length + index;
+                    const productUrl = product.category?.slug && product.slug
+                      ? `/${product.category.slug}/${product.slug}`
+                      : `/products/${product.id}`;
+                    const discount = product.regularPrice 
+                      ? calculateDiscount(product.price, product.regularPrice) 
+                      : 0;
 
-                {/* Popular Searches */}
-                {popularSearches.length > 0 && (
-                  <div className="bg-white">
-                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
-                      Popularne wyszukiwania
-                    </div>
-                    {popularSearches.map((search, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSuggestionClick(search)}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    return (
+                      <Link
+                        key={product.id}
+                        href={productUrl}
+                        onClick={() => setIsOpen(false)}
+                        className={`block px-4 py-3 hover:bg-gray-50 transition-colors ${
+                          selectedIndex === actualIndex ? 'bg-gray-50' : ''
+                        }`}
                       >
-                        <TrendingUp size={14} className="text-gray-400" />
-                        <span className="text-sm text-gray-700">{search}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+                        <div className="flex items-center gap-3">
+                          {/* Product Image */}
+                          <div className="w-12 h-12 flex-shrink-0">
+                            {product.image ? (
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center">
+                                <Search size={20} className="text-gray-400" />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Product Info */}
+                          <div className="flex-1 min-w-0">
+                            <div 
+                              className="text-sm text-gray-900 font-medium truncate"
+                              dangerouslySetInnerHTML={{ 
+                                __html: highlightText(product.name, query) 
+                              }}
+                            />
+                            <div className="flex items-center gap-2 mt-1">
+                              {discount > 0 ? (
+                                <>
+                                  <span className="text-sm font-semibold text-red-600">
+                                    {formatPrice(product.price)}
+                                  </span>
+                                  <span className="text-xs text-gray-500 line-through">
+                                    {formatPrice(product.regularPrice!)}
+                                  </span>
+                                  <span className="text-xs text-red-600 font-medium">
+                                    -{discount}%
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-sm font-semibold text-gray-900">
+                                  {formatPrice(product.price)}
+                                </span>
+                              )}
+                              {product.stock === 0 && (
+                                <span className="text-xs text-red-500">Wyprzedane</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Show "View all results" if there are more results */}
+              {query && totalResults > 5 && (
+                <Link
+                  href={`/search?q=${encodeURIComponent(query)}`}
+                  onClick={() => setIsOpen(false)}
+                  className="block px-4 py-3 text-center text-sm text-[#131921] hover:bg-gray-50 transition-colors"
+                >
+                  Zobacz wszystkie wyniki ({totalResults})
+                </Link>
+              )}
+
+              {/* No results message */}
+              {query && !loading && results.length === 0 && categories.length === 0 && (
+                <div className="px-4 py-8 text-center bg-white">
+                  <Search size={40} className="mx-auto text-gray-300 mb-3" />
+                  <p className="text-sm text-gray-500">
+                    Nie znaleźliśmy żadnych wyników dla "{query}"
+                  </p>
+                </div>
+              )}
+
+              {/* Recent & Popular Searches (when no query) */}
+              {!query && !loading && (
+                <>
+                  {/* Recent Searches */}
+                  {recentSearches.length > 0 && (
+                    <div className="border-b border-gray-100 bg-white">
+                      <div className="px-4 py-2 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-gray-500 uppercase">
+                          Ostatnie wyszukiwania
+                        </span>
+                        <button
+                          onClick={() => {
+                            clearRecentSearches();
+                            setRecentSearches([]);
+                          }}
+                          className="text-xs text-gray-400 hover:text-gray-600"
+                        >
+                          Wyczyść
+                        </button>
+                      </div>
+                      {recentSearches.map((search, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleSuggestionClick(search)}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
+                        >
+                          <Clock size={14} className="text-gray-400" />
+                          <span className="text-sm text-gray-700">{search}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Popular Searches */}
+                  {popularSearches.length > 0 && (
+                    <div className="bg-white">
+                      <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                        Popularne wyszukiwania
+                      </div>
+                      {popularSearches.map((search, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleSuggestionClick(search)}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
+                        >
+                          <TrendingUp size={14} className="text-gray-400" />
+                          <span className="text-sm text-gray-700">{search}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
         </>
       )}
     </div>

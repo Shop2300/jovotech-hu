@@ -2,161 +2,112 @@
 
 /* Search dropdown animations */
 @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  
-  /* Apply animation to search dropdown */
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply animation to search dropdown */
+.search-dropdown {
+  animation: slideDown 0.2s ease-out;
+  background-color: #ffffff !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  z-index: 50 !important;
+  position: absolute !important;
+  isolation: isolate !important;
+  transform: translateZ(0) !important; /* Force GPU layer */
+  -webkit-transform: translateZ(0) !important;
+  will-change: transform !important;
+  /* REMOVED: contain: layout style !important; - This was causing the z-index issue */
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* Custom scrollbar for search results */
+.search-results-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results-scroll::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.search-results-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.search-results-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Highlight animation for search matches */
+mark {
+  animation: highlight 0.3s ease-out;
+}
+
+@keyframes highlight {
+  from {
+    background-color: #fef08a;
+  }
+  to {
+    background-color: #fde047;
+  }
+}
+
+/* Ensure search dropdown is properly positioned */
+.search-bar-container {
+  position: relative !important;
+  z-index: 40 !important;
+}
+
+/* Backdrop for click outside */
+.search-backdrop-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 40 !important;
+  background: transparent !important;
+}
+
+/* Ensure dropdown is above other content */
+.search-dropdown {
+  z-index: 50 !important;
+}
+
+/* Mobile-specific search styles */
+@media (max-width: 768px) {
   .search-dropdown {
-    animation: slideDown 0.2s ease-out;
-    background-color: #ffffff !important;
-    backdrop-filter: none !important;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-    z-index: 2147483647 !important; /* Maximum z-index */
-    position: absolute !important;
-    isolation: isolate !important;
-    transform: translateZ(0) !important; /* Force GPU layer */
-    -webkit-transform: translateZ(0) !important;
-    will-change: transform !important;
-    contain: layout style !important; /* Create containment */
-    backface-visibility: hidden !important;
-    -webkit-backface-visibility: hidden !important;
-  }
-  
-  /* Custom scrollbar for search results */
-  .search-results-scroll::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  .search-results-scroll::-webkit-scrollbar-track {
-    background: #f3f4f6;
-  }
-  
-  .search-results-scroll::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 3px;
-  }
-  
-  .search-results-scroll::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
-  }
-  
-  /* Highlight animation for search matches */
-  mark {
-    animation: highlight 0.3s ease-out;
-  }
-  
-  @keyframes highlight {
-    from {
-      background-color: #fef08a;
-    }
-    to {
-      background-color: #fde047;
-    }
-  }
-  
-  /* Global override to ensure search dropdown is always on top */
-  body * {
-    z-index: auto;
-  }
-  
-  /* Ensure dropdown is above everything including modals */
-  .search-dropdown {
-    z-index: 2147483647 !important; /* Maximum z-index value */
-  }
-  
-  /* Backdrop for click outside */
-  .search-backdrop-overlay {
-    z-index: 2147483646 !important;
-  }
-  
-  /* Ensure header doesn't interfere */
-  header {
-    z-index: 1000 !important;
-  }
-  
-  /* Other page content should be below */
-  main,
-  section,
-  article,
-  div:not(.search-dropdown):not([style*="z-index: 9998"]) {
-    z-index: auto !important;
-  }
-  
-  /* Mobile-specific search styles */
-  @media (max-width: 768px) {
-    .search-dropdown {
-      position: fixed;
-      left: 0;
-      right: 0;
-      top: 60px; /* Adjust based on your header height */
-      max-height: calc(100vh - 60px);
-      border-radius: 0;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-      z-index: 2147483647 !important;
-      background-color: #ffffff !important;
-    }
-    
-    .search-backdrop {
-      position: fixed;
-      inset: 0;
-      background: transparent;
-      z-index: 2147483646 !important;
-    }
-  }
-  
-  /* Search bar container to create proper stacking context */
-  .search-bar-container {
-    position: relative !important;
-    z-index: 2147483645 !important;
-    isolation: isolate !important;
-  }
-  
-  /* Ensure search container doesn't inherit opacity */
-  .search-container {
-    isolation: isolate !important;
-    transform: translateZ(0) !important;
-  }
-  
-  /* Ensure all dropdown elements are opaque */
-  .search-dropdown * {
-    opacity: 1 !important;
-    background-color: inherit;
-  }
-  
-  /* Force opaque background on all child elements */
-  .search-dropdown div,
-  .search-dropdown a,
-  .search-dropdown button,
-  .search-dropdown span {
-    background-color: transparent !important;
-    opacity: 1 !important;
-  }
-  
-  /* White background for sections */
-  .search-dropdown > div {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 60px; /* Adjust based on your header height */
+    max-height: calc(100vh - 60px);
+    border-radius: 0;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    z-index: 50 !important;
     background-color: #ffffff !important;
   }
   
-  /* Hover states remain opaque */
-  .search-dropdown button:hover,
-  .search-dropdown a:hover {
-    background-color: #f9fafb !important; /* gray-50 */
+  .search-backdrop {
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    z-index: 40 !important;
   }
-  
-  /* Focus styles for accessibility */
-  .search-input:focus-visible {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-  }
-  
-  .search-suggestion:focus-visible {
-    outline: 2px solid #3b82f6;
-    outline-offset: -2px;
-  }
+}
+
+/* Focus styles for accessibility */
+.search-input:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.search-suggestion:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
