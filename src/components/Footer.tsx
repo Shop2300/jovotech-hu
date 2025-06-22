@@ -5,8 +5,8 @@ import { MapPin, Check, Mail, Clock, Truck, CreditCard } from 'lucide-react';
 export function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="max-w-screen-2xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
           {/* Column 1 - Informacje */}
           <div>
             <h3 className="text-white font-semibold text-lg mb-4">Informacje</h3>
@@ -51,6 +51,16 @@ export function Footer() {
             <h3 className="text-white font-semibold text-lg mb-4">O nas</h3>
             <ul className="space-y-2">
               <li>
+                <Link href="/gwarancja-najnizszej-ceny" className="hover:text-white transition">
+                  Gwarancja najniższej ceny
+                </Link>
+              </li>
+              <li>
+                <Link href="/dla-firm" className="hover:text-white transition">
+                  Dla firm +
+                </Link>
+              </li>
+              <li>
                 <Link href="/o-nas" className="hover:text-white transition">
                   O firmie
                 </Link>
@@ -63,7 +73,39 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Column 4 - Dane kontaktowe */}
+          {/* Column 4 - Odwiedź także */}
+          <div>
+            <h3 className="text-white font-semibold text-lg mb-4">Odwiedź także</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/category/artyku-y-biurowe" className="hover:text-white transition">
+                  Artykuły biurowe
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/zwierzeta-domowe" className="hover:text-white transition">
+                  Zwierzęta domowe
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/inzynieria-elektryczna" className="hover:text-white transition">
+                  Inżynieria elektryczna
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/ogrod-i-trawnik" className="hover:text-white transition">
+                  Ogród i trawnik
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/sklep-z-narzedziami" className="hover:text-white transition">
+                  Sklep z narzędziami
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 5 - Dane kontaktowe */}
           <div>
             <h3 className="text-white font-semibold text-lg mb-4">Dane kontaktowe</h3>
             <ul className="space-y-3">
@@ -81,7 +123,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={18} className="text-blue-400" />
-                <a href="mailto:support@galaxysklep.pl" className="hover:text-white transition">
+                <a href="mailto:support@galaxysklep.pl" className="hover:text-white transition text-sm">
                   support@galaxysklep.pl
                 </a>
               </li>
@@ -175,7 +217,7 @@ export function Footer() {
 
       {/* Copyright Bar */}
       <div className="bg-gray-950 py-4">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm">
+        <div className="max-w-screen-2xl mx-auto px-6 text-center text-sm">
           <p>&copy; 2012 Galaxy Sklep. Wszelkie prawa zastrzeżone. | 
             <Link href="/regulamin" className="hover:text-white ml-1">
               Regulamin
