@@ -4,7 +4,6 @@ import {
   Container,
   Column,
   Head,
-  Heading,
   Html,
   Img,
   Link,
@@ -57,7 +56,6 @@ const formatPrice = (price: number) => {
 };
 
 const formatDate = (date: Date | string | undefined | null) => {
-  // Handle undefined or null dates
   if (!date) {
     return new Intl.DateTimeFormat('pl-PL', {
       year: 'numeric',
@@ -69,10 +67,8 @@ const formatDate = (date: Date | string | undefined | null) => {
     }).format(new Date());
   }
   
-  // Convert to Date object if string
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   
-  // Check if date is valid
   if (isNaN(dateObj.getTime())) {
     return new Intl.DateTimeFormat('pl-PL', {
       year: 'numeric',
@@ -84,7 +80,6 @@ const formatDate = (date: Date | string | undefined | null) => {
     }).format(new Date());
   }
   
-  // Format with Polish timezone
   return new Intl.DateTimeFormat('pl-PL', {
     year: 'numeric',
     month: '2-digit',
@@ -120,16 +115,13 @@ export const OrderConfirmationEmail = ({
 }: OrderConfirmationEmailProps) => {
   const previewText = `Potwierdzenie zamówienia #${orderNumber} - Galaxysklep.pl`;
 
-  // Get delivery and payment method details - Force to always get the method
   const deliveryMethodInfo = deliveryMethod ? getDeliveryMethod(deliveryMethod) : null;
   const paymentMethodInfo = paymentMethod ? getPaymentMethod(paymentMethod) : null;
   
-  // Calculate subtotal and fees
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = deliveryMethodInfo?.price || 0;
   const paymentFee = paymentMethodInfo?.price || 0;
 
-  // Check if addresses are different
   const isDifferentAddress = billingAddress && (
     billingAddress.street !== deliveryAddress.street ||
     billingAddress.city !== deliveryAddress.city ||
@@ -142,7 +134,7 @@ export const OrderConfirmationEmail = ({
       <Preview>{previewText}</Preview>
       <Body style={main}>
         <Container style={container}>
-          {/* Minimal Header */}
+          {/* Header */}
           <Section style={header}>
             <Row>
               <Column style={headerLeft}>
@@ -161,17 +153,16 @@ export const OrderConfirmationEmail = ({
             </Row>
           </Section>
 
-          {/* Main Content */}
           <Section style={content}>
-            {/* Order Confirmation */}
+            {/* Title with checkmark */}
             <Section style={titleSection}>
               <Text style={confirmationTitle}>
-                <span style={{ color: '#4caf50', fontSize: '20px', marginRight: '8px' }}>✓</span>
+                <span style={checkmarkStyle}>✓</span>
                 POTWIERDZENIE ZAMÓWIENIA
               </Text>
             </Section>
 
-            {/* Customer Information Block */}
+            {/* Customer Information */}
             <Section style={infoBlock}>
               <Row>
                 <Column style={infoColumn}>
@@ -235,7 +226,7 @@ export const OrderConfirmationEmail = ({
               </Row>
             </Section>
 
-            {/* Order Items Table */}
+            {/* Order Items */}
             <Section style={itemsSection}>
               <table style={itemsTable}>
                 <thead>
@@ -271,14 +262,13 @@ export const OrderConfirmationEmail = ({
                     </tr>
                   ))}
                   
-                  {/* Subtotal */}
                   <tr>
                     <td colSpan={3} style={separatorCell}>
                       <Hr style={tableSeparator} />
                     </td>
                   </tr>
                   
-                  {/* Delivery - Always show */}
+                  {/* Delivery */}
                   <tr>
                     <td style={methodCell} colSpan={2}>
                       🚚 Dostawa: {deliveryMethodInfo ? deliveryMethodInfo.labelPl : deliveryMethod}
@@ -288,7 +278,7 @@ export const OrderConfirmationEmail = ({
                     </td>
                   </tr>
                   
-                  {/* Payment - Always show */}
+                  {/* Payment */}
                   <tr>
                     <td style={methodCell} colSpan={2}>
                       💳 Płatność: {paymentMethodInfo ? paymentMethodInfo.labelPl : paymentMethod}
@@ -298,12 +288,12 @@ export const OrderConfirmationEmail = ({
                     </td>
                   </tr>
                   
-                  {/* Total */}
                   <tr>
                     <td colSpan={3} style={separatorCell}>
                       <Hr style={tableSeparator} />
                     </td>
                   </tr>
+                  
                   <tr>
                     <td style={totalCell} colSpan={2}>
                       <strong>RAZEM</strong>
@@ -316,39 +306,57 @@ export const OrderConfirmationEmail = ({
               </table>
             </Section>
 
-            {/* Bank Transfer Instructions - Compact */}
-            {paymentMethod === 'bank' && (
-              <Section style={bankSection}>
-                <Text style={bankTitle}>DANE DO PRZELEWU</Text>
-                <table style={bankTable}>
-                  <tbody>
-                    <tr>
-                      <td style={bankLabel}>Kwota:</td>
-                      <td style={bankValue}><strong>{formatPrice(total)}</strong></td>
-                    </tr>
-                    <tr>
-                      <td style={bankLabel}>Numer konta:</td>
-                      <td style={bankValue}>{BANK_DETAILS.accountNumber}</td>
-                    </tr>
-                    <tr>
-                      <td style={bankLabel}>IBAN:</td>
-                      <td style={bankValue}>{BANK_DETAILS.iban}</td>
-                    </tr>
-                    <tr>
-                      <td style={bankLabel}>SWIFT:</td>
-                      <td style={bankValue}>{BANK_DETAILS.swift}</td>
-                    </tr>
-                    <tr>
-                      <td style={bankLabel}>Tytuł przelewu:</td>
-                      <td style={bankValue}><strong>{orderNumber.replace('-', '')}</strong></td>
-                    </tr>
-                  </tbody>
-                </table>
-                <Text style={bankNote}>
-                  Zamówienie zostanie wysłane po zaksięgowaniu wpłaty.
+            {/* Delivery Method Description */}
+            {deliveryMethodInfo?.descriptionPl && (
+              <Section style={infoSection}>
+                <Text style={methodDescription}>
+                  <strong>ℹ️ {deliveryMethodInfo.labelPl}:</strong> {deliveryMethodInfo.descriptionPl}
                 </Text>
               </Section>
             )}
+
+            {/* Bank Payment Instructions */}
+            {paymentMethod === 'bank' && (
+              <Section style={bankSection}>
+                <Text style={bankTitle}>INSTRUKCJE PŁATNOŚCI</Text>
+                <Text style={bankText}>
+                  Aby sfinalizować zamówienie, prosimy o wpłatę kwoty <strong>{formatPrice(total)}</strong> na nasze konto bankowe.
+                </Text>
+                <Section style={bankHighlight}>
+                  <Text style={bankDetailRow}>
+                    <strong>Kwota do zapłaty:</strong> {formatPrice(total)}
+                  </Text>
+                  <Text style={bankDetailRow}>
+                    <strong>Tytuł przelewu:</strong> <span style={highlightText}>{orderNumber.replace('-', '')}</span>
+                  </Text>
+                </Section>
+                <Text style={bankNote}>
+                  ⏱️ Twoje zamówienie zostanie wysłane natychmiast po zaksięgowaniu wpłaty na naszym koncie.
+                </Text>
+              </Section>
+            )}
+
+            {/* Next Steps */}
+            <Section style={nextSteps}>
+              <Text style={nextStepsTitle}>📋 CO DALEJ?</Text>
+              <div style={stepsList}>
+                {paymentMethod === 'bank' ? (
+                  <>
+                    <Text style={stepItem}>✅ Proszę opłacić zamówienie przelewem bankowym</Text>
+                    <Text style={stepItem}>✅ Po zaksięgowaniu wpłaty wyślemy potwierdzenie</Text>
+                    <Text style={stepItem}>✅ Twoje zamówienie zostanie spakowane i wysłane</Text>
+                    <Text style={stepItem}>✅ Otrzymasz e-mail z informacjami o śledzeniu przesyłki</Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={stepItem}>✅ Twoje zamówienie jest obecnie przetwarzane</Text>
+                    <Text style={stepItem}>✅ Gdy zamówienie zostanie wysłane, otrzymasz e-mail z informacjami o śledzeniu</Text>
+                    <Text style={stepItem}>✅ Będziesz mógł śledzić przesyłkę za pomocą numeru śledzenia</Text>
+                    <Text style={stepItem}>✅ Ciesz się nowymi produktami!</Text>
+                  </>
+                )}
+              </div>
+            </Section>
 
             {/* Track Order Button */}
             <Section style={buttonSection}>
@@ -360,7 +368,36 @@ export const OrderConfirmationEmail = ({
               </Button>
             </Section>
 
-            {/* Contact Info */}
+            {/* Bank Details - Always visible */}
+            <Section style={bankDetailsAlways}>
+              <Text style={bankDetailsTitle}>DANE DO PRZELEWU</Text>
+              <table style={bankTable}>
+                <tbody>
+                  <tr>
+                    <td style={bankLabel}>Nazwa odbiorcy:</td>
+                    <td style={bankValue}>Galaxysklep.pl</td>
+                  </tr>
+                  <tr>
+                    <td style={bankLabel}>Numer konta:</td>
+                    <td style={bankValue}>{BANK_DETAILS.accountNumber}</td>
+                  </tr>
+                  <tr>
+                    <td style={bankLabel}>IBAN:</td>
+                    <td style={bankValue}>{BANK_DETAILS.iban}</td>
+                  </tr>
+                  <tr>
+                    <td style={bankLabel}>SWIFT/BIC:</td>
+                    <td style={bankValue}>{BANK_DETAILS.swift}</td>
+                  </tr>
+                  <tr>
+                    <td style={bankLabel}>Bank:</td>
+                    <td style={bankValue}>{BANK_DETAILS.bankName}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </Section>
+
+            {/* Contact */}
             <Text style={contactText}>
               Pytania? Skontaktuj się z nami:<br />
               <Link href="mailto:support@galaxysklep.pl" style={contactLink}>support@galaxysklep.pl</Link>
@@ -368,21 +405,37 @@ export const OrderConfirmationEmail = ({
 
             {/* Footer */}
             <Hr style={footerDivider} />
-            <Text style={footerText}>
-              Galaxysklep.pl • 1. máje 535/50, 46007 Liberec, Czechy • NIP: 04688465
+            <Text style={footer}>
+              Dziękujemy za zaufanie i zakupy w Galaxysklep.pl!<br />
+              Z pozdrowieniami,<br />
+              <strong>Zespół Galaxysklep.pl</strong>
             </Text>
-            <Text style={legalText}>
-              Zgodnie z przepisami Ustawy z dnia 30 maja 2014 r. o prawach konsumenta (Dz.U. 2014 poz. 827 z późn. zm.), 
-              przysługuje Państwu prawo odstąpienia od niniejszej umowy sprzedaży w terminie 14 dni kalendarzowych od dnia 
-              otrzymania towaru bez podania jakiejkolwiek przyczyny. Termin do odstąpienia od umowy wygasa po upływie 14 dni 
-              od dnia, w którym weszli Państwo w posiadanie rzeczy lub w którym osoba trzecia inna niż przewoźnik i wskazana 
-              przez Państwa weszła w posiadanie rzeczy. Aby skorzystać z prawa odstąpienia od umowy, muszą Państwo poinformować 
-              nas o swojej decyzji o odstąpieniu od niniejszej umowy w drodze jednoznacznego oświadczenia (na przykład pismo 
-              wysłane pocztą lub pocztą elektroniczną). Szczegółowe warunki odstąpienia od umowy, w tym wzór formularza odstąpienia, 
-              znajdują się w regulaminie sklepu dostępnym pod adresem www.galaxysklep.pl/regulamin. Niniejsze postanowienia 
-              nie wyłączają, nie ograniczają ani nie zawieszają uprawnień kupującego wynikających z przepisów o rękojmi za wady 
-              rzeczy sprzedanej zgodnie z Kodeksem cywilnym.
-            </Text>
+
+            {/* Company Info */}
+            <Section style={companyInfo}>
+              <Text style={companyText}>
+                <strong>Galaxysklep.pl</strong><br />
+                <Link href="https://galaxysklep.pl" style={companyLink}>
+                  www.galaxysklep.pl
+                </Link>
+              </Text>
+            </Section>
+
+            {/* Legal */}
+            <Section style={legalSection}>
+              <Text style={legalText}>
+                Zgodnie z przepisami Ustawy z dnia 30 maja 2014 r. o prawach konsumenta (Dz.U. 2014 poz. 827 z późn. zm.), 
+                przysługuje Państwu prawo odstąpienia od niniejszej umowy sprzedaży w terminie 14 dni kalendarzowych od dnia 
+                otrzymania towaru bez podania jakiejkolwiek przyczyny. Termin do odstąpienia od umowy wygasa po upływie 14 dni 
+                od dnia, w którym weszli Państwo w posiadanie rzeczy lub w którym osoba trzecia inna niż przewoźnik i wskazana 
+                przez Państwa weszła w posiadanie rzeczy. Aby skorzystać z prawa odstąpienia od umowy, muszą Państwo poinformować 
+                nas o swojej decyzji o odstąpieniu od niniejszej umowy w drodze jednoznacznego oświadczenia (na przykład pismo 
+                wysłane pocztą lub pocztą elektroniczną). Szczegółowe warunki odstąpienia od umowy, w tym wzór formularza odstąpienia, 
+                znajdują się w regulaminie sklepu dostępnym pod adresem www.galaxysklep.pl/regulamin. Niniejsze postanowienia 
+                nie wyłączają, nie ograniczają ani nie zawieszają uprawnień kupującego wynikających z przepisów o rękojmi za wady 
+                rzeczy sprzedanej zgodnie z Kodeksem cywilnym.
+              </Text>
+            </Section>
           </Section>
         </Container>
       </Body>
@@ -390,7 +443,7 @@ export const OrderConfirmationEmail = ({
   );
 };
 
-// Industrial/Minimal Styles
+// Styles
 const main = {
   backgroundColor: '#f5f5f5',
   fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
@@ -441,6 +494,12 @@ const titleSection = {
   marginBottom: '24px',
 };
 
+const checkmarkStyle = {
+  color: '#4caf50',
+  fontSize: '20px',
+  marginRight: '8px',
+};
+
 const confirmationTitle = {
   color: '#000000',
   fontSize: '18px',
@@ -455,10 +514,6 @@ const infoBlock = {
   border: '1px solid #e0e0e0',
   borderRadius: '4px',
   padding: '16px',
-  marginBottom: '20px',
-};
-
-const infoSection = {
   marginBottom: '20px',
 };
 
@@ -515,23 +570,6 @@ const addressNote = {
   marginTop: '4px',
 };
 
-const h3 = {
-  color: '#000000',
-  fontSize: '14px',
-  fontWeight: '600',
-  letterSpacing: '0.5px',
-  textTransform: 'uppercase' as const,
-  marginBottom: '12px',
-};
-
-const addressBox = {
-  backgroundColor: '#fafafa',
-  borderLeft: '3px solid #333333',
-  padding: '12px 16px',
-  borderRadius: '0 3px 3px 0',
-  marginBottom: '12px',
-};
-
 const itemsSection = {
   marginBottom: '24px',
 };
@@ -581,23 +619,6 @@ const tableCell = {
   padding: '12px 0',
 };
 
-const methodCell = {
-  borderBottom: '1px solid #f0f0f0',
-  color: '#666666',
-  fontSize: '13px',
-  padding: '12px 0',
-};
-
-const methodIcon: React.CSSProperties = {
-  fontSize: '14px',
-  marginRight: '4px',
-};
-
-const freeText: React.CSSProperties = {
-  color: '#4caf50',
-  fontWeight: '600' as const,
-};
-
 const tableCellCenter = {
   borderBottom: '1px solid #f0f0f0',
   color: '#333333',
@@ -623,7 +644,7 @@ const tableCellRightFree = {
   textAlign: 'right' as const,
 };
 
-const productImage: React.CSSProperties = {
+const productImage = {
   borderRadius: '2px',
   border: '1px solid #e0e0e0',
 };
@@ -643,6 +664,13 @@ const tableSeparator = {
   margin: '8px 0',
 };
 
+const methodCell = {
+  borderBottom: '1px solid #f0f0f0',
+  color: '#666666',
+  fontSize: '13px',
+  padding: '12px 0',
+};
+
 const totalCell = {
   color: '#000000',
   fontSize: '14px',
@@ -656,6 +684,10 @@ const totalAmountCell = {
   fontWeight: '700',
   padding: '12px 0',
   textAlign: 'right' as const,
+};
+
+const infoSection = {
+  marginBottom: '20px',
 };
 
 const methodDescription = {
@@ -684,6 +716,107 @@ const bankTitle = {
   marginBottom: '12px',
 };
 
+const bankText = {
+  color: '#020b1d',
+  fontSize: '14px',
+  lineHeight: '20px',
+  marginBottom: '16px',
+};
+
+const bankHighlight = {
+  backgroundColor: '#ffffff',
+  borderRadius: '4px',
+  padding: '12px',
+  marginBottom: '12px',
+  border: '1px solid #e5e7eb',
+};
+
+const bankDetailRow = {
+  color: '#020b1d',
+  fontSize: '14px',
+  lineHeight: '20px',
+  marginBottom: '8px',
+  fontFamily: 'monospace',
+};
+
+const highlightText = {
+  backgroundColor: '#fef3c7',
+  padding: '2px 6px',
+  borderRadius: '4px',
+  fontWeight: 'bold' as const,
+};
+
+const bankNote = {
+  color: '#666666',
+  fontSize: '11px',
+  marginTop: '12px',
+  fontStyle: 'italic' as const,
+};
+
+const nextSteps = {
+  backgroundColor: '#f0fdf4',
+  borderRadius: '8px',
+  padding: '24px',
+  marginBottom: '24px',
+  border: '1px solid #bbf7d0',
+};
+
+const nextStepsTitle = {
+  color: '#000000',
+  fontSize: '14px',
+  fontWeight: '600',
+  letterSpacing: '0.5px',
+  marginBottom: '12px',
+};
+
+const stepsList = {
+  marginTop: '12px',
+};
+
+const stepItem = {
+  color: '#073635',
+  fontSize: '14px',
+  lineHeight: '20px',
+  marginBottom: '10px',
+  paddingLeft: '8px',
+};
+
+const buttonSection = {
+  textAlign: 'center' as const,
+  margin: '32px 0 24px 0',
+};
+
+const trackButton = {
+  backgroundColor: '#333333',
+  borderRadius: '3px',
+  color: '#ffffff',
+  display: 'inline-block',
+  fontSize: '13px',
+  fontWeight: '600',
+  letterSpacing: '0.5px',
+  lineHeight: '40px',
+  padding: '0 24px',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+};
+
+const bankDetailsAlways = {
+  backgroundColor: '#fafafa',
+  border: '1px solid #e0e0e0',
+  borderRadius: '4px',
+  padding: '16px',
+  marginBottom: '24px',
+};
+
+const bankDetailsTitle = {
+  color: '#000000',
+  fontSize: '12px',
+  fontWeight: '600',
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase' as const,
+  marginBottom: '12px',
+};
+
 const bankTable = {
   width: '100%',
 };
@@ -700,32 +833,6 @@ const bankValue = {
   fontSize: '12px',
   fontFamily: 'monospace',
   padding: '4px 0',
-};
-
-const bankNote = {
-  color: '#666666',
-  fontSize: '11px',
-  marginTop: '12px',
-  fontStyle: 'italic' as const,
-};
-
-const buttonSection = {
-  textAlign: 'center' as const,
-  margin: '32px 0',
-};
-
-const trackButton = {
-  backgroundColor: '#333333',
-  borderRadius: '3px',
-  color: '#ffffff',
-  display: 'inline-block',
-  fontSize: '13px',
-  fontWeight: '600',
-  letterSpacing: '0.5px',
-  lineHeight: '40px',
-  padding: '0 24px',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
 };
 
 const contactText = {
@@ -747,12 +854,40 @@ const footerDivider = {
   marginBottom: '16px',
 };
 
-const footerText = {
-  color: '#999999',
-  fontSize: '11px',
-  lineHeight: '16px',
-  textAlign: 'center' as const,
+const footer = {
+  color: '#64748b',
+  fontSize: '14px',
+  lineHeight: '20px',
   marginBottom: '8px',
+  textAlign: 'center' as const,
+};
+
+const companyInfo = {
+  marginTop: '32px',
+  paddingTop: '24px',
+  borderTop: '1px solid #e2e8f0',
+};
+
+const companyText = {
+  color: '#94a3b8',
+  fontSize: '12px',
+  lineHeight: '18px',
+  textAlign: 'center' as const,
+};
+
+const companyLink = {
+  color: '#073635',
+  textDecoration: 'none',
+  fontWeight: '500' as const,
+};
+
+const legalSection = {
+  marginTop: '24px',
+  paddingTop: '24px',
+  borderTop: '1px solid #f1f5f9',
+  paddingLeft: '24px',
+  paddingRight: '24px',
+  paddingBottom: '24px',
 };
 
 const legalText = {
