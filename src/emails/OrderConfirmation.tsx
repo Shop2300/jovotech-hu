@@ -16,7 +16,7 @@ import {
   Hr,
 } from '@react-email/components';
 import * as React from 'react';
-import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
+import { getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
 interface OrderConfirmationEmailProps {
   orderNumber: string;
@@ -56,14 +56,15 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-const formatDate = (date: Date) => {
+const formatDate = (date: Date | string) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('pl-PL', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit'
-  }).format(new Date(date));
+  }).format(dateObj);
 };
 
 const BANK_DETAILS = {
@@ -91,9 +92,9 @@ export const OrderConfirmationEmail = ({
 }: OrderConfirmationEmailProps) => {
   const previewText = `Potwierdzenie zamówienia #${orderNumber} - Galaxysklep.pl`;
 
-  // Get delivery and payment method details
-  const deliveryMethodInfo = getDeliveryMethod(deliveryMethod);
-  const paymentMethodInfo = getPaymentMethod(paymentMethod);
+  // Get delivery and payment method details - Force to always get the method
+  const deliveryMethodInfo = deliveryMethod ? getDeliveryMethod(deliveryMethod) : null;
+  const paymentMethodInfo = paymentMethod ? getPaymentMethod(paymentMethod) : null;
   
   // Calculate subtotal and fees
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -249,29 +250,25 @@ export const OrderConfirmationEmail = ({
                     </td>
                   </tr>
                   
-                  {/* Delivery */}
-                  {deliveryMethodInfo && (
-                    <tr>
-                      <td style={methodCell} colSpan={2}>
-                        🚚 Dostawa: {deliveryMethodInfo.labelPl}
-                      </td>
-                      <td style={deliveryFee > 0 ? tableCellRight : tableCellRightFree}>
-                        {deliveryFee > 0 ? formatPrice(deliveryFee) : 'Gratis'}
-                      </td>
-                    </tr>
-                  )}
+                  {/* Delivery - Always show */}
+                  <tr>
+                    <td style={methodCell} colSpan={2}>
+                      🚚 Dostawa: {deliveryMethodInfo ? deliveryMethodInfo.labelPl : deliveryMethod}
+                    </td>
+                    <td style={deliveryFee > 0 ? tableCellRight : tableCellRightFree}>
+                      {deliveryFee > 0 ? formatPrice(deliveryFee) : 'Gratis'}
+                    </td>
+                  </tr>
                   
-                  {/* Payment */}
-                  {paymentMethodInfo && (
-                    <tr>
-                      <td style={methodCell} colSpan={2}>
-                        💳 Płatność: {paymentMethodInfo.labelPl}
-                      </td>
-                      <td style={paymentFee > 0 ? tableCellRight : tableCellRightFree}>
-                        {paymentFee > 0 ? formatPrice(paymentFee) : 'Gratis'}
-                      </td>
-                    </tr>
-                  )}
+                  {/* Payment - Always show */}
+                  <tr>
+                    <td style={methodCell} colSpan={2}>
+                      💳 Płatność: {paymentMethodInfo ? paymentMethodInfo.labelPl : paymentMethod}
+                    </td>
+                    <td style={paymentFee > 0 ? tableCellRight : tableCellRightFree}>
+                      {paymentFee > 0 ? formatPrice(paymentFee) : 'Gratis'}
+                    </td>
+                  </tr>
                   
                   {/* Total */}
                   <tr>
@@ -433,6 +430,10 @@ const infoBlock = {
   marginBottom: '20px',
 };
 
+const infoSection = {
+  marginBottom: '20px',
+};
+
 const infoColumn = {
   width: '50%',
   verticalAlign: 'top' as const,
@@ -484,6 +485,23 @@ const addressNote = {
   fontSize: '11px',
   fontStyle: 'italic' as const,
   marginTop: '4px',
+};
+
+const h3 = {
+  color: '#000000',
+  fontSize: '14px',
+  fontWeight: '600',
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase' as const,
+  marginBottom: '12px',
+};
+
+const addressBox = {
+  backgroundColor: '#fafafa',
+  borderLeft: '3px solid #333333',
+  padding: '12px 16px',
+  borderRadius: '0 3px 3px 0',
+  marginBottom: '12px',
 };
 
 const itemsSection = {
@@ -610,6 +628,16 @@ const totalAmountCell = {
   fontWeight: '700',
   padding: '12px 0',
   textAlign: 'right' as const,
+};
+
+const methodDescription = {
+  color: '#666666',
+  fontSize: '12px',
+  lineHeight: '18px',
+  fontStyle: 'italic' as const,
+  backgroundColor: '#f0f0f0',
+  padding: '12px',
+  borderRadius: '4px',
 };
 
 const bankSection = {
