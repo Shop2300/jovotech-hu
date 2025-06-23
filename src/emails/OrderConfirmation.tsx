@@ -135,9 +135,12 @@ export const OrderConfirmationEmail = ({
           {/* Main Content */}
           <Section style={content}>
             {/* Order Confirmation */}
-            <Text style={confirmationTitle}>
-              POTWIERDZENIE ZAMÓWIENIA
-            </Text>
+            <Section style={titleSection}>
+              <Text style={confirmationTitle}>
+                <span style={{ color: '#4caf50', fontSize: '20px', marginRight: '8px' }}>✓</span>
+                POTWIERDZENIE ZAMÓWIENIA
+              </Text>
+            </Section>
 
             {/* Customer Information Block */}
             <Section style={infoBlock}>
@@ -249,23 +252,23 @@ export const OrderConfirmationEmail = ({
                   {/* Delivery */}
                   {deliveryMethodInfo && (
                     <tr>
-                      <td style={tableCell} colSpan={2}>
-                        Dostawa: {deliveryMethodInfo.labelPl}
+                      <td style={methodCell} colSpan={2}>
+                        🚚 Dostawa: {deliveryMethodInfo.labelPl}
                       </td>
-                      <td style={tableCellRight}>
+                      <td style={deliveryFee > 0 ? tableCellRight : tableCellRightFree}>
                         {deliveryFee > 0 ? formatPrice(deliveryFee) : 'Gratis'}
                       </td>
                     </tr>
                   )}
                   
                   {/* Payment */}
-                  {paymentMethodInfo && paymentFee > 0 && (
+                  {paymentMethodInfo && (
                     <tr>
-                      <td style={tableCell} colSpan={2}>
-                        Płatność: {paymentMethodInfo.labelPl}
+                      <td style={methodCell} colSpan={2}>
+                        💳 Płatność: {paymentMethodInfo.labelPl}
                       </td>
-                      <td style={tableCellRight}>
-                        {formatPrice(paymentFee)}
+                      <td style={paymentFee > 0 ? tableCellRight : tableCellRightFree}>
+                        {paymentFee > 0 ? formatPrice(paymentFee) : 'Gratis'}
                       </td>
                     </tr>
                   )}
@@ -344,8 +347,16 @@ export const OrderConfirmationEmail = ({
               Galaxysklep.pl • 1. máje 535/50, 46007 Liberec, Czechy • NIP: 04688465
             </Text>
             <Text style={legalText}>
-              Masz prawo odstąpić od umowy w terminie 14 dni bez podania przyczyny. 
-              Szczegóły w regulaminie na www.galaxysklep.pl/regulamin
+              Zgodnie z przepisami Ustawy z dnia 30 maja 2014 r. o prawach konsumenta (Dz.U. 2014 poz. 827 z późn. zm.), 
+              przysługuje Państwu prawo odstąpienia od niniejszej umowy sprzedaży w terminie 14 dni kalendarzowych od dnia 
+              otrzymania towaru bez podania jakiejkolwiek przyczyny. Termin do odstąpienia od umowy wygasa po upływie 14 dni 
+              od dnia, w którym weszli Państwo w posiadanie rzeczy lub w którym osoba trzecia inna niż przewoźnik i wskazana 
+              przez Państwa weszła w posiadanie rzeczy. Aby skorzystać z prawa odstąpienia od umowy, muszą Państwo poinformować 
+              nas o swojej decyzji o odstąpieniu od niniejszej umowy w drodze jednoznacznego oświadczenia (na przykład pismo 
+              wysłane pocztą lub pocztą elektroniczną). Szczegółowe warunki odstąpienia od umowy, w tym wzór formularza odstąpienia, 
+              znajdują się w regulaminie sklepu dostępnym pod adresem www.galaxysklep.pl/regulamin. Niniejsze postanowienia 
+              nie wyłączają, nie ograniczają ani nie zawieszają uprawnień kupującego wynikających z przepisów o rękojmi za wady 
+              rzeczy sprzedanej zgodnie z Kodeksem cywilnym.
             </Text>
           </Section>
         </Container>
@@ -400,12 +411,17 @@ const content = {
   padding: '24px',
 };
 
+const titleSection = {
+  textAlign: 'center' as const,
+  marginBottom: '24px',
+};
+
 const confirmationTitle = {
   color: '#000000',
   fontSize: '18px',
   fontWeight: '700',
   letterSpacing: '0.5px',
-  margin: '0 0 24px 0',
+  margin: '0',
   textAlign: 'center' as const,
 };
 
@@ -519,6 +535,23 @@ const tableCell = {
   padding: '12px 0',
 };
 
+const methodCell = {
+  borderBottom: '1px solid #f0f0f0',
+  color: '#666666',
+  fontSize: '13px',
+  padding: '12px 0',
+};
+
+const methodIcon: React.CSSProperties = {
+  fontSize: '14px',
+  marginRight: '4px',
+};
+
+const freeText: React.CSSProperties = {
+  color: '#4caf50',
+  fontWeight: '600' as const,
+};
+
 const tableCellCenter = {
   borderBottom: '1px solid #f0f0f0',
   color: '#333333',
@@ -535,7 +568,16 @@ const tableCellRight = {
   textAlign: 'right' as const,
 };
 
-const productImage = {
+const tableCellRightFree = {
+  borderBottom: '1px solid #f0f0f0',
+  color: '#4caf50',
+  fontSize: '13px',
+  fontWeight: '600' as const,
+  padding: '12px 0',
+  textAlign: 'right' as const,
+};
+
+const productImage: React.CSSProperties = {
   borderRadius: '2px',
   border: '1px solid #e0e0e0',
 };
@@ -661,7 +703,8 @@ const legalText = {
   color: '#aaaaaa',
   fontSize: '10px',
   lineHeight: '14px',
-  textAlign: 'center' as const,
+  textAlign: 'justify' as const,
+  padding: '0 20px',
 };
 
 export default OrderConfirmationEmail;
