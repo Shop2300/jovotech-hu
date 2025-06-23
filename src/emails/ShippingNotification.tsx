@@ -22,7 +22,7 @@ interface ShippingNotificationEmailProps {
   customerName: string;
   trackingNumber: string;
   carrier: string;
-  estimatedDelivery?: string;
+  estimatedDelivery: string;
   items: Array<{
     name: string;
     quantity: number;
@@ -43,7 +43,29 @@ export const ShippingNotificationEmail = ({
   items,
   deliveryAddress,
 }: ShippingNotificationEmailProps) => {
-  const previewText = `Twoje zamówienie #${orderNumber} zostało wysłane - Galaxy Sklep`;
+  const previewText = `Twoje zamówienie #${orderNumber} zostało wysłane`;
+
+  // Get tracking URL based on carrier
+  const getTrackingUrl = (trackingNumber: string, carrier: string) => {
+    const carrierLower = carrier.toLowerCase();
+    
+    if (carrierLower.includes('inpost') || carrierLower.includes('paczkomat')) {
+      return `https://inpost.pl/sledzenie-przesylek?number=${trackingNumber}`;
+    } else if (carrierLower.includes('dpd')) {
+      return `https://www.dpd.com.pl/tracking?parcels=${trackingNumber}`;
+    } else if (carrierLower.includes('dhl')) {
+      return `https://www.dhl.com/pl-pl/home/tracking.html?tracking-id=${trackingNumber}`;
+    } else if (carrierLower.includes('poczta') || carrierLower.includes('polska')) {
+      return `https://emonitoring.poczta-polska.pl/?numer=${trackingNumber}`;
+    } else if (carrierLower.includes('ups')) {
+      return `https://www.ups.com/track?tracknum=${trackingNumber}`;
+    } else {
+      // Default to order status page if carrier not recognized
+      return `https://www.galaxysklep.pl/order-status/${orderNumber}`;
+    }
+  };
+
+  const trackingUrl = getTrackingUrl(trackingNumber, carrier);
 
   return (
     <Html>
@@ -51,151 +73,136 @@ export const ShippingNotificationEmail = ({
       <Preview>{previewText}</Preview>
       <Body style={main}>
         <Container style={container}>
-          {/* Header with Logo */}
+          {/* Minimal Header */}
           <Section style={header}>
-            <Img 
-              src="https://galaxysklep.pl/images/galaxyskleplogo.png" 
-              alt="Galaxy Sklep" 
-              height="60" 
-              style={logo}
-            />
+            <Row>
+              <Column style={headerLeft}>
+                <Img 
+                  src="https://galaxysklep.pl/images/galaxyskleplogo.png" 
+                  alt="Galaxysklep.pl" 
+                  height="32" 
+                  style={logo}
+                />
+              </Column>
+              <Column style={headerRight}>
+                <Text style={headerText}>
+                  POTWIERDZENIE WYSYŁKI
+                </Text>
+              </Column>
+            </Row>
           </Section>
 
           {/* Main Content */}
           <Section style={content}>
-            {/* Success Icon */}
-            <Section style={iconSection}>
-              <Text style={shippingIcon}>🚀</Text>
+            {/* Shipping Icon and Title */}
+            <Section style={titleSection}>
+              <Text style={confirmationTitle}>
+                <span style={packageIconStyle}>📦</span>
+                TWOJE ZAMÓWIENIE ZOSTAŁO WYSŁANE
+              </Text>
             </Section>
 
-            <Heading as="h2" style={h2}>
-              Twoje zamówienie jest w drodze!
-            </Heading>
-            
-            <Text style={paragraph}>
+            <Text style={greeting}>
               Dzień dobry {customerName},
             </Text>
             
             <Text style={paragraph}>
-              Świetna wiadomość! Twoje zamówienie <strong style={primaryText}>#{orderNumber}</strong> zostało właśnie wysłane i jest w drodze do Ciebie.
+              Informujemy, że Twoje zamówienie <strong>#{orderNumber}</strong> zostało przekazane do przewoźnika i jest w drodze.
             </Text>
 
-            {/* Tracking Info Box */}
-            <Section style={trackingBox}>
-              <Heading as="h3" style={h3}>
-                📦 Informacje o przesyłce
-              </Heading>
+            {/* Tracking Information */}
+            <Section style={trackingSection}>
+              <Text style={sectionTitle}>INFORMACJE O PRZESYŁCE</Text>
               
-              <Row style={trackingRow}>
-                <Column>
-                  <Text style={trackingLabel}>Numer śledzenia:</Text>
-                </Column>
-                <Column>
-                  <Text style={trackingValue}>{trackingNumber}</Text>
-                </Column>
-              </Row>
-              
-              {estimatedDelivery && (
-                <Row style={trackingRow}>
-                  <Column>
-                    <Text style={trackingLabel}>Przewidywana dostawa:</Text>
-                  </Column>
-                  <Column>
-                    <Text style={trackingValue}>{estimatedDelivery}</Text>
-                  </Column>
-                </Row>
-              )}
-            </Section>
+              <table style={infoTable}>
+                <tbody>
+                  <tr>
+                    <td style={infoLabel}>Numer śledzenia:</td>
+                    <td style={infoValue}>
+                      <strong>{trackingNumber}</strong>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={infoLabel}>Przewoźnik:</td>
+                    <td style={infoValue}>{carrier}</td>
+                  </tr>
+                  <tr>
+                    <td style={infoLabel}>Przewidywana dostawa:</td>
+                    <td style={infoValue}>{estimatedDelivery}</td>
+                  </tr>
+                </tbody>
+              </table>
 
-            {/* CTA Button */}
-            <Section style={buttonContainer}>
-              <Button
-                style={button}
-                href={`https://www.galaxysklep.pl/order-status/${orderNumber}`}
-              >
-                Śledź przesyłkę online
-              </Button>
-            </Section>
-
-            {/* Order Contents */}
-            <Section style={orderContents}>
-              <Heading as="h3" style={h3}>
-                📋 Zawartość przesyłki
-              </Heading>
-              
-              {items.map((item, index) => (
-                <Text key={index} style={itemText}>
-                  • {item.name} × {item.quantity}
-                </Text>
-              ))}
+              <Section style={buttonSection}>
+                <Button
+                  style={trackButton}
+                  href={trackingUrl}
+                >
+                  ŚLEDŹ PRZESYŁKĘ
+                </Button>
+              </Section>
             </Section>
 
             {/* Delivery Address */}
             <Section style={addressSection}>
-              <Heading as="h3" style={h3}>
-                📍 Adres dostawy
-              </Heading>
-              
+              <Text style={sectionTitle}>ADRES DOSTAWY</Text>
               <Section style={addressBox}>
                 <Text style={addressText}>
                   {deliveryAddress.street}<br />
-                  {deliveryAddress.city}, {deliveryAddress.postalCode}
+                  {deliveryAddress.postalCode} {deliveryAddress.city}
                 </Text>
               </Section>
             </Section>
 
-            {/* Tips */}
-            <Section style={tipsSection}>
-              <Heading as="h3" style={h3}>
-                💡 Przydatne wskazówki
-              </Heading>
-              
-              <Text style={tipText}>
-                <strong>🔔</strong> Upewnij się, że ktoś będzie w domu, aby odebrać przesyłkę
-              </Text>
-              
-              <Text style={tipText}>
-                <strong>📱</strong> Śledź przesyłkę online za pomocą numeru śledzenia
-              </Text>
-              
-              <Text style={tipText}>
-                <strong>📧</strong> Przewoźnik może skontaktować się z Tobą w sprawie dostawy
-              </Text>
+            {/* Order Items */}
+            <Section style={itemsSection}>
+              <Text style={sectionTitle}>ZAWARTOŚĆ PRZESYŁKI</Text>
+              <table style={itemsTable}>
+                <tbody>
+                  {items.map((item, index) => (
+                    <tr key={index}>
+                      <td style={itemName}>{item.name}</td>
+                      <td style={itemQuantity}>x{item.quantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Section>
 
-              <Text style={tipText}>
-                <strong>📦</strong> Przy odbiorze sprawdź, czy przesyłka nie jest uszkodzona
+            {/* Delivery Instructions */}
+            <Section style={instructionsSection}>
+              <Text style={sectionTitle}>WAŻNE INFORMACJE</Text>
+              <Text style={instructionItem}>
+                • Podczas odbioru przesyłki sprawdź stan opakowania
+              </Text>
+              <Text style={instructionItem}>
+                • W przypadku uszkodzeń spisz protokół z kurierem
+              </Text>
+              <Text style={instructionItem}>
+                • Zachowaj dokument dostawy na wypadek reklamacji
+              </Text>
+              <Text style={instructionItem}>
+                • Jeśli nie możesz odebrać przesyłki, skontaktuj się z kurierem
               </Text>
             </Section>
 
             {/* Help Section */}
-            <Section style={helpSection}>
-              <Text style={helpText}>
-                Masz pytania? Jesteśmy tutaj, aby pomóc!
-              </Text>
-              <Text style={helpContact}>
-                📧 <Link href="mailto:support@galaxysklep.pl" style={link}>support@galaxysklep.pl</Link><br />
-                🕐 Pon-Pt: 9:00-17:00
-              </Text>
-            </Section>
-
-            {/* Footer */}
-            <Hr style={divider} />
-            
-            <Text style={footer}>
-              Dziękujemy za zakupy i życzymy miłego dnia!<br />
-              Z pozdrowieniami,<br />
-              <strong>Zespół Galaxy Sklep</strong>
+            <Text style={helpText}>
+              Masz pytania dotyczące dostawy?<br />
+              Skontaktuj się z nami: <Link href="mailto:support@galaxysklep.pl" style={contactLink}>support@galaxysklep.pl</Link>
             </Text>
 
-            {/* Company Info */}
-            <Section style={companyInfo}>
-              <Text style={companyText}>
-                <strong>Galaxy Sklep</strong><br />
-                <Link href="https://galaxysklep.pl" style={companyLink}>
-                  www.galaxysklep.pl
-                </Link>
-              </Text>
-            </Section>
+            {/* Footer */}
+            <Hr style={footerDivider} />
+            <Text style={footerText}>
+              Galaxysklep.pl • 1. máje 535/50, 46007 Liberec, Czechy • NIP: 04688465
+            </Text>
+
+            {/* Legal */}
+            <Text style={legalText}>
+              Ta wiadomość została wygenerowana automatycznie. Prosimy na nią nie odpowiadać. 
+              Jeśli masz pytania, skontaktuj się z nami pod adresem support@galaxysklep.pl.
+            </Text>
           </Section>
         </Container>
       </Body>
@@ -203,134 +210,141 @@ export const ShippingNotificationEmail = ({
   );
 };
 
-// Styles with brand colors
+// Industrial/Minimal Styles
 const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  backgroundColor: '#f5f5f5',
+  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
 };
 
 const container = {
   backgroundColor: '#ffffff',
   margin: '0 auto',
-  padding: '0',
-  marginBottom: '64px',
   maxWidth: '600px',
-  borderRadius: '12px',
-  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
-  overflow: 'hidden',
+  border: '1px solid #e0e0e0',
 };
 
 const header = {
-  backgroundColor: '#6da306', // Primary green
-  padding: '40px 24px',
-  textAlign: 'center' as const,
+  backgroundColor: '#fafafa',
+  borderBottom: '1px solid #e0e0e0',
+  padding: '16px 24px',
+};
+
+const headerLeft = {
+  width: '50%',
+  textAlign: 'left' as const,
+};
+
+const headerRight = {
+  width: '50%',
+  textAlign: 'right' as const,
 };
 
 const logo = {
-  margin: '0 auto',
-  borderRadius: '8px',
-};
-
-const content = {
-  padding: '32px 24px 48px',
-};
-
-const iconSection = {
-  textAlign: 'center' as const,
-  marginBottom: '16px',
-};
-
-const shippingIcon = {
-  fontSize: '64px',
   margin: '0',
 };
 
-const h2 = {
-  color: '#020b1d', // Dark blue/black
-  fontSize: '28px',
-  fontWeight: '700',
-  lineHeight: '36px',
+const headerText = {
+  color: '#333333',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0',
+  lineHeight: '32px',
+  letterSpacing: '0.5px',
+};
+
+const content = {
+  padding: '24px',
+};
+
+const titleSection = {
+  textAlign: 'center' as const,
   marginBottom: '24px',
+};
+
+const packageIconStyle = {
+  color: '#666666',
+  fontSize: '20px',
+  marginRight: '8px',
+};
+
+const confirmationTitle = {
+  color: '#000000',
+  fontSize: '18px',
+  fontWeight: '700',
+  letterSpacing: '0.5px',
+  margin: '0',
   textAlign: 'center' as const,
 };
 
-const h3 = {
-  color: '#073635', // Dark green
-  fontSize: '20px',
-  fontWeight: '600',
-  lineHeight: '28px',
+const greeting = {
+  color: '#333333',
+  fontSize: '16px',
   marginBottom: '16px',
 };
 
 const paragraph = {
-  color: '#475569',
-  fontSize: '16px',
-  lineHeight: '24px',
-  marginBottom: '16px',
+  color: '#666666',
+  fontSize: '14px',
+  lineHeight: '20px',
+  marginBottom: '20px',
 };
 
-const primaryText = {
-  color: '#6da306',
+const orderNumber = {
+  color: '#333333',
 };
 
-const trackingBox = {
-  backgroundColor: '#f0fdf4', // Light green tint
-  borderRadius: '8px',
-  padding: '24px',
+const trackingSection = {
+  backgroundColor: '#f0f9ff',
+  border: '1px solid #bae6fd',
+  borderRadius: '4px',
+  padding: '20px',
   marginBottom: '24px',
-  border: '2px solid #6da306',
 };
 
-const trackingRow = {
+const sectionTitle = {
+  color: '#000000',
+  fontSize: '12px',
+  fontWeight: '600',
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase' as const,
   marginBottom: '12px',
 };
 
-const trackingLabel = {
-  color: '#64748b',
+const infoTable = {
+  width: '100%',
+  marginBottom: '16px',
+};
+
+const infoLabel = {
+  color: '#666666',
+  fontSize: '13px',
+  padding: '6px 0',
+  width: '140px',
+};
+
+const infoValue = {
+  color: '#000000',
   fontSize: '14px',
-  fontWeight: '500',
-  margin: '0',
+  padding: '6px 0',
 };
 
-const trackingValue = {
-  color: '#020b1d',
-  fontSize: '18px',
-  fontWeight: '700',
-  margin: '0',
-};
-
-const buttonContainer = {
+const buttonSection = {
   textAlign: 'center' as const,
-  marginBottom: '32px',
+  marginTop: '20px',
 };
 
-const button = {
-  backgroundColor: '#6da306',
-  borderRadius: '8px',
+const trackButton = {
+  backgroundColor: '#2563eb',
+  borderRadius: '3px',
   color: '#ffffff',
   display: 'inline-block',
-  fontSize: '16px',
+  fontSize: '13px',
   fontWeight: '600',
-  lineHeight: '48px',
-  padding: '0 32px',
+  letterSpacing: '0.5px',
+  lineHeight: '40px',
+  padding: '0 24px',
   textDecoration: 'none',
   textAlign: 'center' as const,
-  boxShadow: '0 2px 4px rgba(109, 163, 6, 0.2)',
-};
-
-const orderContents = {
-  backgroundColor: '#f8f9fa',
-  borderRadius: '8px',
-  padding: '24px',
-  marginBottom: '24px',
-};
-
-const itemText = {
-  color: '#475569',
-  fontSize: '14px',
-  lineHeight: '20px',
-  marginBottom: '8px',
 };
 
 const addressSection = {
@@ -338,93 +352,94 @@ const addressSection = {
 };
 
 const addressBox = {
-  backgroundColor: '#f8f9fa',
-  borderRadius: '6px',
-  padding: '16px',
-  borderLeft: '4px solid #6da306',
+  backgroundColor: '#fafafa',
+  borderLeft: '3px solid #2563eb',
+  padding: '12px 16px',
+  borderRadius: '0 3px 3px 0',
 };
 
 const addressText = {
-  color: '#020b1d',
-  fontSize: '14px',
-  lineHeight: '20px',
+  color: '#000000',
+  fontSize: '13px',
+  lineHeight: '18px',
   margin: '0',
   fontWeight: '500' as const,
 };
 
-const tipsSection = {
-  backgroundColor: '#fef9e7', // Light yellow for attention
-  borderRadius: '8px',
-  padding: '24px',
+const itemsSection = {
   marginBottom: '24px',
+};
+
+const itemsTable = {
+  width: '100%',
+  borderTop: '1px solid #e0e0e0',
+};
+
+const itemName = {
+  color: '#333333',
+  fontSize: '13px',
+  padding: '8px 0',
+  borderBottom: '1px solid #f0f0f0',
+};
+
+const itemQuantity = {
+  color: '#666666',
+  fontSize: '13px',
+  padding: '8px 0',
+  textAlign: 'right' as const,
+  borderBottom: '1px solid #f0f0f0',
+  width: '60px',
+};
+
+const instructionsSection = {
+  backgroundColor: '#fffbeb',
   border: '1px solid #fde68a',
-};
-
-const tipText = {
-  color: '#713f12',
-  fontSize: '14px',
-  lineHeight: '20px',
-  marginBottom: '12px',
-};
-
-const helpSection = {
-  backgroundColor: '#f8f9fa',
-  borderRadius: '8px',
-  padding: '20px',
+  borderRadius: '4px',
+  padding: '16px',
   marginBottom: '24px',
-  textAlign: 'center' as const,
+};
+
+const instructionItem = {
+  color: '#92400e',
+  fontSize: '12px',
+  lineHeight: '18px',
+  marginBottom: '6px',
 };
 
 const helpText = {
-  color: '#073635',
-  fontSize: '16px',
-  fontWeight: '600',
-  marginBottom: '12px',
-};
-
-const helpContact = {
-  color: '#475569',
-  fontSize: '14px',
-  lineHeight: '22px',
-  margin: '0',
-};
-
-const divider = {
-  borderColor: '#e2e8f0',
+  color: '#666666',
+  fontSize: '13px',
+  lineHeight: '18px',
+  textAlign: 'center' as const,
   marginTop: '32px',
   marginBottom: '24px',
 };
 
-const footer = {
-  color: '#64748b',
-  fontSize: '14px',
-  lineHeight: '20px',
-  marginBottom: '8px',
-  textAlign: 'center' as const,
-};
-
-const link = {
-  color: '#6da306',
+const contactLink = {
+  color: '#333333',
   textDecoration: 'underline',
 };
 
-const companyInfo = {
+const footerDivider = {
+  borderColor: '#e0e0e0',
   marginTop: '32px',
-  paddingTop: '24px',
-  borderTop: '1px solid #e2e8f0',
+  marginBottom: '16px',
 };
 
-const companyText = {
-  color: '#94a3b8',
-  fontSize: '12px',
-  lineHeight: '18px',
+const footerText = {
+  color: '#999999',
+  fontSize: '11px',
+  lineHeight: '16px',
   textAlign: 'center' as const,
+  marginBottom: '8px',
 };
 
-const companyLink = {
-  color: '#073635',
-  textDecoration: 'none',
-  fontWeight: '500' as const,
+const legalText = {
+  color: '#aaaaaa',
+  fontSize: '10px',
+  lineHeight: '14px',
+  textAlign: 'center' as const,
+  padding: '0 40px',
 };
 
 export default ShippingNotificationEmail;

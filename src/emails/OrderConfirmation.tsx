@@ -56,14 +56,42 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-const formatDate = (date: Date | string) => {
+const formatDate = (date: Date | string | undefined | null) => {
+  // Handle undefined or null dates
+  if (!date) {
+    return new Intl.DateTimeFormat('pl-PL', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Warsaw'
+    }).format(new Date());
+  }
+  
+  // Convert to Date object if string
   const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // Check if date is valid
+  if (isNaN(dateObj.getTime())) {
+    return new Intl.DateTimeFormat('pl-PL', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Warsaw'
+    }).format(new Date());
+  }
+  
+  // Format with Polish timezone
   return new Intl.DateTimeFormat('pl-PL', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: 'Europe/Warsaw'
   }).format(dateObj);
 };
 
@@ -163,7 +191,7 @@ export const OrderConfirmationEmail = ({
                 <Column style={infoColumn}>
                   <Text style={infoLabel}>DATA ZAMÓWIENIA</Text>
                   <Text style={infoText}>
-                    {formatDate(orderDate || new Date())}
+                    {formatDate(orderDate)}
                   </Text>
                   <Text style={{ ...infoLabel, marginTop: '12px' }}>STATUS</Text>
                   <Text style={infoText}>
