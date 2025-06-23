@@ -8,7 +8,7 @@ import React from 'react';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email configuration - Using support@galaxysklep.pl
-const FROM_EMAIL = process.env.EMAIL_FROM || 'Galaxysklep.pl <support@galaxysklep.pl>';
+const FROM_EMAIL = 'Galaxysklep.pl <support@galaxysklep.pl>';
 const REPLY_TO = process.env.EMAIL_REPLY_TO || 'support@galaxysklep.pl';
 
 interface OrderItem {

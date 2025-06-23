@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Package, FileText, Download, Loader2, CheckCircle, Trash2, CreditCard, Mail } from 'lucide-react';
+import { Package, FileText, Download, Loader2, CheckCircle, Trash2, CreditCard, Mail, RefreshCw } from 'lucide-react';
 
 interface OrderActionsProps {
   orderId: string;
@@ -33,6 +33,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isCheckingInvoice, setIsCheckingInvoice] = useState(true);
   const [isDeletingInvoice, setIsDeletingInvoice] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
 
   const statusOptions = [
     { value: 'pending', label: 'Čeká na vyřízení' },
@@ -253,6 +254,32 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
     }
   };
 
+  const handleResendConfirmationEmail = async () => {
+    setIsResendingEmail(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${orderNumber}/resend-confirmation`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) throw new Error('Failed to resend confirmation email');
+      
+      const data = await response.json();
+      toast.success(
+        <div className="flex items-center gap-2">
+          <Mail size={16} />
+          <span>Potvrzení objednávky bylo znovu odesláno zákazníkovi</span>
+        </div>,
+        { duration: 4000 }
+      );
+      
+      router.refresh();
+    } catch (error) {
+      toast.error('Chyba při odesílání emailu');
+    } finally {
+      setIsResendingEmail(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-semibold mb-4 text-black">Akce</h2>
@@ -431,6 +458,29 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
             )}
           </button>
         )}
+      </div>
+
+      {/* Email Actions - NEW SECTION */}
+      <div className="space-y-2 pt-4 border-t">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Email komunikace</h3>
+        
+        <button 
+          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
+          onClick={handleResendConfirmationEmail}
+          disabled={isResendingEmail}
+        >
+          {isResendingEmail ? (
+            <>
+              <Loader2 className="animate-spin" size={18} />
+              Odesílám email...
+            </>
+          ) : (
+            <>
+              <RefreshCw size={18} />
+              Znovu odeslat potvrzení objednávky
+            </>
+          )}
+        </button>
       </div>
 
       {/* Shipping Email Info */}
