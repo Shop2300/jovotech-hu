@@ -1,103 +1,240 @@
 // src/app/admin/orders/page.tsx
 import { prisma } from '@/lib/prisma';
 import { OrdersTable } from '@/components/admin/OrdersTable';
+import { put } from '@vercel/blob';
+import { generateInvoicePDF } from '@/lib/invoice-pdf-generator';
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+async function generateInvoiceForOrder(order: any) {
+  try {
+    // Check if invoice already exists
+    if (order.invoice) {
+      console.log(`Invoice already exists for order ${order.orderNumber}`);
+      return;
+    }
+
+    // Generate invoice number
+    const year = new Date().getFullYear();
+    const invoiceNumber = `FAK${year}${order.orderNumber}`;
+
+    // Create invoice record
+    const invoice = await prisma.invoice.create({
+      data: {
+        invoiceNumber,
+        orderId: order.id,
+        totalAmount: order.total,
+        vatAmount: 0, // No VAT - not a VAT payer
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+      }
+    });
+
+    // Generate PDF
+    try {
+      // Parse order items
+      const items = order.items as any[];
+      
+      // Ensure delivery and payment methods have values
+      const deliveryMethod = order.deliveryMethod || 'zasilkovna';
+      const paymentMethod = order.paymentMethod || 'bank';
+      
+      // Prepare invoice data
+      const invoiceData = {
+        invoiceNumber: invoice.invoiceNumber,
+        orderNumber: order.orderNumber,
+        createdAt: order.createdAt.toISOString(),
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone || '',
+        billingFirstName: order.billingFirstName || order.firstName || '',
+        billingLastName: order.billingLastName || order.lastName || '',
+        billingAddress: order.billingAddress || order.address || '',
+        billingCity: order.billingCity || order.city || '',
+        billingPostalCode: order.billingPostalCode || order.postalCode || '',
+        billingCountry: 'Polska',
+        billingCompany: order.companyName || '',
+        billingNip: order.companyNip || '',
+        shippingFirstName: order.useDifferentDelivery ? (order.deliveryFirstName || '') : (order.billingFirstName || ''),
+        shippingLastName: order.useDifferentDelivery ? (order.deliveryLastName || '') : (order.billingLastName || ''),
+        shippingAddress: order.useDifferentDelivery ? (order.deliveryAddress || '') : (order.billingAddress || ''),
+        shippingCity: order.useDifferentDelivery ? (order.deliveryCity || '') : (order.billingCity || ''),
+        shippingPostalCode: order.useDifferentDelivery ? (order.deliveryPostalCode || '') : (order.billingPostalCode || ''),
+        items: items.map(item => ({
+          name: item.name || 'Product',
+          quantity: item.quantity,
+          price: item.price
+        })),
+        total: Number(order.total),
+        paymentMethod: paymentMethod,
+        deliveryMethod: deliveryMethod,
+        notes: order.note || ''
+      };
+      
+      // Generate PDF
+      const pdfDoc = generateInvoicePDF(invoiceData);
+      
+      // Convert to Buffer
+      const pdfBuffer = Buffer.from(pdfDoc.output('arraybuffer'));
+      
+      // Upload to Vercel Blob Storage
+      const timestamp = Date.now();
+      const { url } = await put(
+        `invoices/${invoiceNumber}_${timestamp}.pdf`,
+        pdfBuffer,
+        {
+          access: 'public',
+          contentType: 'application/pdf',
+          addRandomSuffix: false,
+          cacheControlMaxAge: 0,
+        }
+      );
+
+      // Update invoice with PDF URL
+      await prisma.invoice.update({
+        where: { id: invoice.id },
+        data: { pdfUrl: url }
+      });
+
+      // Add to order history
+      await prisma.orderHistory.create({
+        data: {
+          orderId: order.id,
+          action: 'invoice_generated',
+          description: `Faktura ${invoiceNumber} została wygenerowana automatycznie`,
+          newValue: invoiceNumber,
+          metadata: {
+            invoiceId: invoice.id,
+            generatedBy: 'System',
+            automaticGeneration: true
+          }
+        }
+      });
+
+      console.log(`Invoice ${invoiceNumber} generated automatically for order ${order.orderNumber}`);
+    } catch (pdfError) {
+      // If PDF generation fails, delete the invoice record
+      await prisma.invoice.delete({
+        where: { id: invoice.id }
+      });
+      throw pdfError;
+    }
+  } catch (error) {
+    console.error(`Failed to generate invoice for order ${order.orderNumber}:`, error);
+  }
+}
+
 async function updateOldPendingOrders() {
-// Find orders that are:
-// 1. In "pending" status
-// 2. Created more than 30 minutes ago
-const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
-const oldPendingOrders = await prisma.order.findMany({
-where: {
-status: 'pending',
-createdAt: {
-lt: thirtyMinutesAgo
- }
- }
- });
-// Update each old pending order to "processing"
-for (const order of oldPendingOrders) {
-try {
-// Update the order status
-await prisma.order.update({
-where: { id: order.id },
-data: {
-status: 'processing',
-updatedAt: new Date()
- }
- });
-// Create order history entry
-await prisma.orderHistory.create({
-data: {
-orderId: order.id,
-action: 'status_change',
-description: 'Stav objednávky automaticky změněn na "Zpracovává se" po 30 minutách',
-oldValue: 'pending',
-newValue: 'processing',
-performedBy: 'System',
-metadata: {
-automaticUpdate: true,
-minutesElapsed: 30
- }
- }
- });
-console.log(`Automatically updated order ${order.orderNumber} from pending to processing`);
- } catch (error) {
-console.error(`Failed to update order ${order.orderNumber}:`, error);
- }
- }
+  // Find orders that are:
+  // 1. In "pending" status
+  // 2. Created more than 30 minutes ago
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+  
+  const oldPendingOrders = await prisma.order.findMany({
+    where: {
+      status: 'pending',
+      createdAt: {
+        lt: thirtyMinutesAgo
+      }
+    },
+    include: {
+      invoice: true
+    }
+  });
+
+  // Update each old pending order to "processing"
+  for (const order of oldPendingOrders) {
+    try {
+      // Update the order status
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          status: 'processing',
+          updatedAt: new Date()
+        }
+      });
+
+      // Create order history entry
+      await prisma.orderHistory.create({
+        data: {
+          orderId: order.id,
+          action: 'status_change',
+          description: 'Stav objednávky automaticky změněn na "Zpracovává se" po 30 minutách',
+          oldValue: 'pending',
+          newValue: 'processing',
+          performedBy: 'System',
+          metadata: {
+            automaticUpdate: true,
+            minutesElapsed: 30
+          }
+        }
+      });
+
+      console.log(`Automatically updated order ${order.orderNumber} from pending to processing`);
+
+      // Generate invoice for the order
+      await generateInvoiceForOrder(order);
+      
+    } catch (error) {
+      console.error(`Failed to update order ${order.orderNumber}:`, error);
+    }
+  }
 }
+
 async function getOrders() {
-// First, update any old pending orders
-await updateOldPendingOrders();
-// Then fetch all orders with invoice relation
-const orders = await prisma.order.findMany({
-orderBy: {
-createdAt: 'desc',
- },
-include: {
-invoice: true
- }
- });
-// Transform the orders to match the OrdersTable interface
-return orders.map(order => ({
-id: order.id,
-orderNumber: order.orderNumber,
-customerName: order.customerName ||
- (order.billingFirstName && order.billingLastName
-? `${order.billingFirstName} ${order.billingLastName}`
-: order.firstName && order.lastName
-? `${order.firstName} ${order.lastName}`
-: order.customerEmail || 'Unknown Customer'),
-customerEmail: order.customerEmail,
-total: Number(order.total),
-status: order.status,
-paymentStatus: order.paymentStatus || 'unpaid',
-paymentMethod: order.paymentMethod || undefined,
-deliveryMethod: order.deliveryMethod || undefined,
-createdAt: order.createdAt.toISOString(),
-items: order.items,
-invoice: order.invoice ? {
-id: order.invoice.id,
-invoiceNumber: order.invoice.invoiceNumber
- } : null
- }));
+  // First, update any old pending orders
+  await updateOldPendingOrders();
+  
+  // Then fetch all orders with invoice relation
+  const orders = await prisma.order.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+    include: {
+      invoice: true
+    }
+  });
+
+  // Transform the orders to match the OrdersTable interface
+  return orders.map(order => ({
+    id: order.id,
+    orderNumber: order.orderNumber,
+    customerName: order.customerName || 
+      (order.billingFirstName && order.billingLastName 
+        ? `${order.billingFirstName} ${order.billingLastName}`
+        : order.firstName && order.lastName
+        ? `${order.firstName} ${order.lastName}`
+        : order.customerEmail || 'Unknown Customer'),
+    customerEmail: order.customerEmail,
+    total: Number(order.total),
+    status: order.status,
+    paymentStatus: order.paymentStatus || 'unpaid',
+    paymentMethod: order.paymentMethod || undefined,
+    deliveryMethod: order.deliveryMethod || undefined,
+    createdAt: order.createdAt.toISOString(),
+    items: order.items,
+    invoice: order.invoice ? {
+      id: order.invoice.id,
+      invoiceNumber: order.invoice.invoiceNumber
+    } : null
+  }));
 }
+
 export default async function AdminOrdersPage() {
-const orders = await getOrders();
-return (
-<div className="p-6">
-<h1 className="text-3xl font-bold mb-8 text-black">Správa objednávek</h1>
-<div className="bg-white rounded-lg shadow-md p-6">
-{orders.length === 0 ? (
-<p className="text-center text-gray-500 py-8">
- Zatím nemáte žádné objednávky.
-</p>
- ) : (
-<OrdersTable orders={orders} />
- )}
-</div>
-</div>
- );
+  const orders = await getOrders();
+
+  return (
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-8 text-black">Správa objednávek</h1>
+      
+      <div className="bg-white rounded-lg shadow-md p-6">
+        {orders.length === 0 ? (
+          <p className="text-center text-gray-500 py-8">
+            Zatím nemáte žádné objednávky.
+          </p>
+        ) : (
+          <OrdersTable orders={orders} />
+        )}
+      </div>
+    </div>
+  );
 }
