@@ -9,35 +9,35 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
           {/* Column 1 - Informacje */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Informacje</h3>
+            <h3 className="text-white font-semibold mb-4" style={{ fontSize: '16px' }}>Informacje</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/regulamin" className="hover:text-white transition">
+                <Link href="/regulamin" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Regulamin
                 </Link>
               </li>
               <li>
-                <Link href="/polityka-prywatnosci" className="hover:text-white transition">
+                <Link href="/polityka-prywatnosci" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Polityka prywatności
                 </Link>
               </li>
               <li>
-                <Link href="/ocena-sklepu" className="hover:text-white transition">
+                <Link href="/ocena-sklepu" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Ocena sklepu
                 </Link>
               </li>
               <li>
-                <Link href="/regulamin" className="hover:text-white transition">
+                <Link href="/regulamin" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Formularze do pobrania
                 </Link>
               </li>
               <li>
-                <Link href="/szkoly-i-instytucje-publiczne" className="hover:text-white transition">
+                <Link href="/szkoly-i-instytucje-publiczne" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Szkoły i instytucje publiczne
                 </Link>
               </li>
               <li>
-                <Link href="/gwarancja-najnizszej-ceny" className="hover:text-white transition">
+                <Link href="/gwarancja-najnizszej-ceny" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Gwarancja najniższej ceny
                 </Link>
               </li>
@@ -46,30 +46,30 @@ export function Footer() {
 
           {/* Column 2 - Obsługa klienta */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Obsługa klienta</h3>
+            <h3 className="text-white font-semibold mb-4" style={{ fontSize: '16px' }}>Obsługa klienta</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/dostawa-i-platnosc" className="hover:text-white transition">
+                <Link href="/dostawa-i-platnosc" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Dostawa i płatność
                 </Link>
               </li>
               <li>
-                <Link href="/zwroty-i-reklamacje" className="hover:text-white transition">
+                <Link href="/zwroty-i-reklamacje" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Zwroty i reklamacje
                 </Link>
               </li>
               <li>
-                <Link href="/informacje-o-dostawie" className="hover:text-white transition">
+                <Link href="/informacje-o-dostawie" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Informacje o dostawie
                 </Link>
               </li>
               <li>
-                <Link href="/order-status" className="hover:text-white transition">
+                <Link href="/order-status" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Śledzenie zamówienia
                 </Link>
               </li>
               <li>
-                <Link href="/kontakt" className="hover:text-white transition">
+                <Link href="/kontakt" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Napisz do nas
                 </Link>
               </li>
@@ -78,30 +78,30 @@ export function Footer() {
 
           {/* Column 3 - O nas */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">O nas</h3>
+            <h3 className="text-white font-semibold mb-4" style={{ fontSize: '16px' }}>O nas</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/gwarancja-najnizszej-ceny" className="hover:text-white transition">
+                <Link href="/gwarancja-najnizszej-ceny" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Gwarancja najniższej ceny
                 </Link>
               </li>
               <li>
-                <Link href="/dla-firm" className="hover:text-white transition">
+                <Link href="/dla-firm" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Dla firm +
                 </Link>
               </li>
               <li>
-                <Link href="/o-nas" className="hover:text-white transition">
+                <Link href="/o-nas" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   O firmie
                 </Link>
               </li>
               <li>
-                <Link href="/kontakt" className="hover:text-white transition">
+                <Link href="/kontakt" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Kontakt
                 </Link>
               </li>
               <li>
-                <Link href="/ocena-sklepu" className="hover:text-white transition">
+                <Link href="/ocena-sklepu" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Opinie klientów
                 </Link>
               </li>
@@ -110,40 +110,40 @@ export function Footer() {
 
           {/* Column 4 - Odwiedź także */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Odwiedź także</h3>
+            <h3 className="text-white font-semibold mb-4" style={{ fontSize: '16px' }}>Odwiedź także</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/category/artyku-y-biurowe" className="hover:text-white transition">
+                <Link href="/category/artyku-y-biurowe" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Artykuły biurowe
                 </Link>
               </li>
               <li>
-                <Link href="/category/zwierzeta-domowe" className="hover:text-white transition">
+                <Link href="/category/zwierzeta-domowe" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Zwierzęta domowe
                 </Link>
               </li>
               <li>
-                <Link href="/category/inzynieria-elektryczna" className="hover:text-white transition">
+                <Link href="/category/inzynieria-elektryczna" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Inżynieria elektryczna
                 </Link>
               </li>
               <li>
-                <Link href="/category/ogrod-i-trawnik" className="hover:text-white transition">
+                <Link href="/category/ogrod-i-trawnik" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Ogród i trawnik
                 </Link>
               </li>
               <li>
-                <Link href="/category/sklep-z-narzedziami" className="hover:text-white transition">
+                <Link href="/category/sklep-z-narzedziami" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Sklep z narzędziami
                 </Link>
               </li>
               <li>
-                <Link href="/category/spawalniczy" className="hover:text-white transition">
+                <Link href="/category/spawalniczy" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Spawalniczy
                 </Link>
               </li>
               <li>
-                <Link href="/category/bezpieczenstwo" className="hover:text-white transition">
+                <Link href="/category/bezpieczenstwo" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Bezpieczeństwo
                 </Link>
               </li>
@@ -152,29 +152,29 @@ export function Footer() {
 
           {/* Column 5 - Dane kontaktowe */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Dane kontaktowe</h3>
+            <h3 className="text-white font-semibold mb-4" style={{ fontSize: '16px' }}>Dane kontaktowe</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
-                <MapPin size={18} className="text-blue-400 mt-0.5" />
-                <span className="text-sm">
+                <MapPin size={16} className="text-blue-400 mt-0.5" />
+                <span style={{ fontSize: '14px' }}>
                   Galaxysklep.pl<br />
                   1. máje 535/50<br />
                   46007 Liberec
                 </span>
               </li>
               <li className="flex items-center gap-2">
-                <Check size={18} className="text-green-400" />
-                <span className="text-sm font-medium">Gwarancja najniższej ceny</span>
+                <Check size={16} className="text-green-400" />
+                <span className="font-medium" style={{ fontSize: '14px' }}>Gwarancja najniższej ceny</span>
               </li>
               <li className="flex items-center gap-2">
-                <Mail size={18} className="text-blue-400" />
-                <a href="mailto:support@galaxysklep.pl" className="hover:text-white transition text-sm">
+                <Mail size={16} className="text-blue-400" />
+                <a href="mailto:support@galaxysklep.pl" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   support@galaxysklep.pl
                 </a>
               </li>
               <li className="flex items-start gap-2">
-                <Clock size={18} className="text-blue-400 mt-0.5" />
-                <span className="text-sm">
+                <Clock size={16} className="text-blue-400 mt-0.5" />
+                <span style={{ fontSize: '14px' }}>
                   Pn-Pt: 8:00 - 18:00<br />
                   Sob-Nd: 9:00 - 15:00
                 </span>

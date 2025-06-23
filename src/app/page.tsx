@@ -4,6 +4,9 @@ import { ProductCard } from '@/components/ProductCard';
 import { BannerSlider } from '@/components/BannerSlider';
 import { ProductsSlider } from '@/components/ProductsSlider';
 import { CategoryProductBoxes } from '@/components/CategoryProductBoxes';
+import { FavoriteCategories } from '@/components/FavoriteCategories';
+import { RecentReviews } from '@/components/RecentReviews';
+import { ProductVideos } from '@/components/ProductVideos';
 
 // Force dynamic rendering to ensure real-time updates
 export const dynamic = 'force-dynamic';
@@ -262,45 +265,17 @@ export default async function HomePage() {
         </div>
       </section>
       
+      {/* Favorite Categories Section - NEW */}
+      <FavoriteCategories />
+      
       {/* New Products (Nowości) - Horizontal Slider */}
       <ProductsSlider products={serializedNewProducts} title="Nowości" />
       
-      {/* Features Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-screen-2xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-black">Wysokiej jakości produkty</h3>
-              <p className="text-gray-600">Starannie wybrane produkty najwyższej jakości</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-black">Szybka dostawa</h3>
-              <p className="text-gray-600">Dostawa w ciągu 2-3 dni roboczych</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-black">Bezpieczna płatność</h3>
-              <p className="text-gray-600">Płatność kartą lub za pobraniem</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Product Videos Section - NEW */}
+      <ProductVideos />
+      
+      {/* Recent Reviews Section - NEW */}
+      <RecentReviews />
     </main>
   );
 }

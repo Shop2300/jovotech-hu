@@ -21,9 +21,9 @@ interface DropdownPortalProps {
   targetRef: React.RefObject<HTMLElement>;
 }
 
-function DropdownPortal({ children, isOpen, targetRef }: DropdownPortalProps) {
+function DropdownPortal({ children, isOpen, targetRef, fullWidth = false }: DropdownPortalProps & { fullWidth?: boolean }) {
   const [mounted, setMounted] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
   const [isPositioned, setIsPositioned] = useState(false);
 
   useEffect(() => {
@@ -32,10 +32,25 @@ function DropdownPortal({ children, isOpen, targetRef }: DropdownPortalProps) {
     const updatePosition = () => {
       if (targetRef.current) {
         const rect = targetRef.current.getBoundingClientRect();
-        setPosition({
-          top: rect.bottom + window.scrollY,
-          left: rect.left + window.scrollX
-        });
+        
+        if (fullWidth) {
+          // Get the website container width for full-width dropdowns
+          const websiteContainer = document.querySelector('.max-w-screen-2xl');
+          const containerRect = websiteContainer?.getBoundingClientRect();
+          
+          setPosition({
+            top: rect.bottom + window.scrollY,
+            left: containerRect ? containerRect.left + window.scrollX : 0,
+            width: containerRect ? containerRect.width : window.innerWidth
+          });
+        } else {
+          // Regular dropdown positioning
+          setPosition({
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX,
+            width: 0
+          });
+        }
         setIsPositioned(true);
       }
     };
@@ -52,7 +67,7 @@ function DropdownPortal({ children, isOpen, targetRef }: DropdownPortalProps) {
       window.removeEventListener('scroll', updatePosition);
       window.removeEventListener('resize', updatePosition);
     };
-  }, [targetRef, isOpen]);
+  }, [targetRef, isOpen, fullWidth]);
 
   if (!mounted || !isOpen || !isPositioned) return null;
 
@@ -62,6 +77,7 @@ function DropdownPortal({ children, isOpen, targetRef }: DropdownPortalProps) {
         position: 'absolute',
         top: `${position.top}px`,
         left: `${position.left}px`,
+        ...(fullWidth && { width: `${position.width}px` }),
         zIndex: 9999,
         opacity: isPositioned ? 1 : 0,
         transition: 'opacity 150ms ease-in-out'
@@ -234,14 +250,10 @@ export function CategoryBar() {
           <DropdownPortal
             isOpen={openDropdown === category.id}
             targetRef={{ current: buttonRefs.current[category.id] } as React.RefObject<HTMLElement>}
+            fullWidth={true}
           >
             <div 
-              className="dropdown-content mt-2 bg-white rounded-lg shadow-2xl border border-gray-100"
-              style={{ 
-                width: 'max-content',
-                minWidth: '700px',
-                maxWidth: '1000px'
-              }}
+              className="dropdown-content mt-2 bg-white rounded-lg shadow-2xl border border-gray-100 w-full"
               onMouseEnter={() => {
                 if (timeoutRef.current) {
                   clearTimeout(timeoutRef.current);
@@ -249,7 +261,7 @@ export function CategoryBar() {
               }}
               onMouseLeave={handleMouseLeave}
             >
-              <div className="p-8">
+              <div className="px-6 py-8">
                 <Link
                   href={`/category/${category.slug}`}
                   className="inline-block mb-6 px-4 py-2 text-sm font-medium text-[#131921] hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors duration-150"
@@ -258,12 +270,12 @@ export function CategoryBar() {
                   <span>Pokaż wszystko w kategorii {category.name} →</span>
                 </Link>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6">
                   {category.children?.map((subcat) => (
                     <Link
                       key={subcat.id}
                       href={`/category/${subcat.slug}`}
-                      className="group flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-all duration-200 min-w-[120px]"
+                      className="group flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-all duration-200"
                       onClick={() => setOpenDropdown(null)}
                     >
                       <div className="relative w-12 h-12 mb-3 overflow-hidden rounded-lg bg-gray-100 group-hover:shadow-md transition-shadow">
