@@ -15,15 +15,16 @@ interface OrderItem {
   name?: string;
   quantity: number;
   price: number;
-  image?: string | null; // Added image field
+  image?: string | null;
 }
 
 interface OrderEmailData {
   orderNumber: string;
   customerEmail: string;
   customerName: string;
-  companyName?: string | null;  // Added for business orders
-  companyNip?: string | null;   // Added for business orders
+  customerPhone?: string; // Added
+  companyName?: string | null;
+  companyNip?: string | null;
   items: OrderItem[];
   total: number;
   deliveryMethod: string;
@@ -33,6 +34,12 @@ interface OrderEmailData {
     city: string;
     postalCode: string;
   };
+  billingAddress?: { // Added
+    street: string;
+    city: string;
+    postalCode: string;
+  };
+  orderDate?: Date; // Added
 }
 
 interface ShippingEmailData {
@@ -59,7 +66,7 @@ export class EmailService {
         name: item.name || 'Produkt',
         quantity: item.quantity,
         price: item.price,
-        image: item.image || null, // Include image
+        image: item.image || null,
       }));
 
       // Send the email using React component
@@ -71,25 +78,26 @@ export class EmailService {
         react: OrderConfirmationEmail({
           orderNumber: data.orderNumber,
           customerName: data.customerName,
-          companyName: data.companyName,  // Pass company details to email template
-          companyNip: data.companyNip,    // Pass company details to email template
+          customerEmail: data.customerEmail, // Pass email
+          customerPhone: data.customerPhone, // Pass phone
+          companyName: data.companyName,
+          companyNip: data.companyNip,
           items: emailItems,
           total: data.total,
           deliveryMethod: data.deliveryMethod,
           paymentMethod: data.paymentMethod,
           deliveryAddress: data.deliveryAddress,
+          billingAddress: data.billingAddress, // Pass billing address
+          orderDate: data.orderDate || new Date(), // Pass order date
         }),
       });
 
       console.log('Order confirmation email sent:', result);
     } catch (error) {
       console.error('Failed to send order confirmation email:', error);
-      // Log more details in development
       if (process.env.NODE_ENV === 'development') {
         console.error('Email error details:', error);
       }
-      // Don't throw error to prevent order creation failure
-      // In production, you might want to queue this for retry
     }
   }
 
@@ -148,8 +156,6 @@ export class EmailService {
       if (process.env.NODE_ENV === 'development') {
         console.error('Email error details:', error);
       }
-      // Don't throw error to prevent operation failure
-      // In production, you might want to queue this for retry
     }
   }
 
@@ -212,13 +218,17 @@ export class EmailService {
     return React.createElement(OrderConfirmationEmail, {
       orderNumber: data.orderNumber,
       customerName: data.customerName,
-      companyName: data.companyName,  // Include company details in preview
-      companyNip: data.companyNip,    // Include company details in preview
+      customerEmail: 'preview@example.com', // Default for preview
+      customerPhone: data.customerPhone,
+      companyName: data.companyName,
+      companyNip: data.companyNip,
       items: emailItems,
       total: data.total,
       deliveryMethod: data.deliveryMethod,
       paymentMethod: data.paymentMethod,
       deliveryAddress: data.deliveryAddress,
+      billingAddress: data.billingAddress,
+      orderDate: data.orderDate || new Date(),
     });
   }
 

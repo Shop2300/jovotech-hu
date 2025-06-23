@@ -173,13 +173,14 @@ export async function POST(request: Request) {
       }
     }
     
-    // Send confirmation email with company details if applicable
+    // Send confirmation email with all customer details
     try {
       console.log('Attempting to send confirmation email');
       await EmailService.sendOrderConfirmation({
         orderNumber: order.orderNumber,
         customerEmail: order.customerEmail,
         customerName: order.customerName,
+        customerPhone: order.customerPhone, // Added phone
         companyName: order.companyName,
         companyNip: order.companyNip,
         items: order.items as any[],
@@ -191,6 +192,12 @@ export async function POST(request: Request) {
           city: order.useDifferentDelivery ? order.deliveryCity! : order.billingCity,
           postalCode: order.useDifferentDelivery ? order.deliveryPostalCode! : order.billingPostalCode,
         },
+        billingAddress: { // Added billing address
+          street: order.billingAddress,
+          city: order.billingCity,
+          postalCode: order.billingPostalCode,
+        },
+        orderDate: order.createdAt, // Added order date
       });
       console.log('Confirmation email sent successfully');
     } catch (emailError) {
