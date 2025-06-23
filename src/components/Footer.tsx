@@ -4,7 +4,7 @@ import { MapPin, Check, Mail, Clock, Truck, CreditCard } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="text-gray-300" style={{ backgroundColor: '#222f3e' }}>
       <div className="max-w-screen-2xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
           {/* Column 1 - Informacje */}
@@ -26,6 +26,21 @@ export function Footer() {
                   Ocena sklepu
                 </Link>
               </li>
+              <li>
+                <Link href="/regulamin" className="hover:text-white transition">
+                  Formularze do pobrania
+                </Link>
+              </li>
+              <li>
+                <Link href="/szkoly-i-instytucje-publiczne" className="hover:text-white transition">
+                  Szkoły i instytucje publiczne
+                </Link>
+              </li>
+              <li>
+                <Link href="/gwarancja-najnizszej-ceny" className="hover:text-white transition">
+                  Gwarancja najniższej ceny
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -41,6 +56,21 @@ export function Footer() {
               <li>
                 <Link href="/zwroty-i-reklamacje" className="hover:text-white transition">
                   Zwroty i reklamacje
+                </Link>
+              </li>
+              <li>
+                <Link href="/informacje-o-dostawie" className="hover:text-white transition">
+                  Informacje o dostawie
+                </Link>
+              </li>
+              <li>
+                <Link href="/order-status" className="hover:text-white transition">
+                  Śledzenie zamówienia
+                </Link>
+              </li>
+              <li>
+                <Link href="/kontakt" className="hover:text-white transition">
+                  Napisz do nas
                 </Link>
               </li>
             </ul>
@@ -68,6 +98,11 @@ export function Footer() {
               <li>
                 <Link href="/kontakt" className="hover:text-white transition">
                   Kontakt
+                </Link>
+              </li>
+              <li>
+                <Link href="/ocena-sklepu" className="hover:text-white transition">
+                  Opinie klientów
                 </Link>
               </li>
             </ul>
@@ -100,6 +135,16 @@ export function Footer() {
               <li>
                 <Link href="/category/sklep-z-narzedziami" className="hover:text-white transition">
                   Sklep z narzędziami
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/spawalniczy" className="hover:text-white transition">
+                  Spawalniczy
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/bezpieczenstwo" className="hover:text-white transition">
+                  Bezpieczeństwo
                 </Link>
               </li>
             </ul>
@@ -139,7 +184,7 @@ export function Footer() {
         </div>
 
         {/* Newsletter Section */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
+        <div className="border-t border-gray-700 mt-8 pt-8">
           <div className="max-w-md mx-auto text-center">
             <h3 className="text-white font-semibold text-lg mb-2">Zapisz się do newslettera</h3>
             <p className="text-sm mb-4">Bądź pierwszy i dowiedz się o nowościach i promocjach</p>
@@ -147,7 +192,8 @@ export function Footer() {
               <input
                 type="email"
                 placeholder="Twój e-mail"
-                className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                className="flex-1 px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                style={{ backgroundColor: '#131a22' }}
               />
               <button
                 type="submit"
@@ -160,7 +206,7 @@ export function Footer() {
         </div>
 
         {/* Social Media & Delivery Options */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
+        <div className="border-t border-gray-700 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Social Media Links */}
             <div className="flex gap-4">
@@ -185,11 +231,11 @@ export function Footer() {
                   Dostawa:
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">InPost</div>
-                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">DPD</div>
-                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">DHL</div>
-                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">Poczta Polska</div>
-                  <div className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-xs font-medium">UPS</div>
+                  <div className="border border-gray-700 rounded px-3 py-1 text-xs font-medium" style={{ backgroundColor: '#131a22' }}>InPost</div>
+                  <div className="border border-gray-700 rounded px-3 py-1 text-xs font-medium" style={{ backgroundColor: '#131a22' }}>DPD</div>
+                  <div className="border border-gray-700 rounded px-3 py-1 text-xs font-medium" style={{ backgroundColor: '#131a22' }}>DHL</div>
+                  <div className="border border-gray-700 rounded px-3 py-1 text-xs font-medium" style={{ backgroundColor: '#131a22' }}>Poczta Polska</div>
+                  <div className="border border-gray-700 rounded px-3 py-1 text-xs font-medium" style={{ backgroundColor: '#131a22' }}>UPS</div>
                 </div>
               </div>
               
@@ -216,7 +262,7 @@ export function Footer() {
       </div>
 
       {/* Copyright Bar */}
-      <div className="bg-gray-950 py-4">
+      <div className="py-4 relative" style={{ backgroundColor: '#131a22' }}>
         <div className="max-w-screen-2xl mx-auto px-6 text-center text-sm">
           <p>&copy; 2012 Galaxy Sklep. Wszelkie prawa zastrzeżone. | 
             <Link href="/regulamin" className="hover:text-white ml-1">
@@ -228,6 +274,13 @@ export function Footer() {
             <span className="ml-1">Świętujemy 20 lat 🎉</span>
           </p>
         </div>
+        {/* Rainbow Line */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 h-[8px]"
+          style={{
+            background: 'linear-gradient(to right, #420C09, #6B1818, #8B2635, #A0522D, #BF6B04, #B8860B, #7B7922, #556B2F, #2F5233, #1B5E3F, #006B6B, #1B4F72, #2E3B85, #3B2F7D, #4B0082, #5B2C6F, #702963, #85144B, #922B3E, #420C09)'
+          }}
+        />
       </div>
     </footer>
   );
