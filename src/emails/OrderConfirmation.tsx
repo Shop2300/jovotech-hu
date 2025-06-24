@@ -164,6 +164,16 @@ export const OrderConfirmationEmail = ({
               </Text>
             </Section>
 
+            {/* Track Order Button under Status */}
+            <Section style={buttonSection}>
+              <Button
+                style={trackButton}
+                href={`https://www.galaxysklep.pl/order-status/${orderNumber}`}
+              >
+                ŚLEDŹ ZAMÓWIENIE
+              </Button>
+            </Section>
+
             {/* Customer Information */}
             <Section style={infoBlock}>
               <Row>
@@ -192,6 +202,16 @@ export const OrderConfirmationEmail = ({
                   </Text>
                 </Column>
               </Row>
+            </Section>
+
+            {/* Track Order Button under Status */}
+            <Section style={{ textAlign: 'center' as const, marginBottom: '24px' }}>
+              <Button
+                style={trackButton}
+                href={`https://www.galaxysklep.pl/order-status/${orderNumber}`}
+              >
+                ŚLEDŹ ZAMÓWIENIE
+              </Button>
             </Section>
 
             {/* Addresses */}
@@ -332,15 +352,6 @@ export const OrderConfirmationEmail = ({
               </table>
             </Section>
 
-            {/* Delivery Method Description */}
-            {deliveryMethodInfo?.descriptionPl && (
-              <Section style={infoSection}>
-                <Text style={methodDescription}>
-                  <strong>ℹ️ {deliveryMethodInfo.labelPl}:</strong> {deliveryMethodInfo.descriptionPl}
-                </Text>
-              </Section>
-            )}
-
             {/* Bank Payment Instructions and Details - Combined */}
             {paymentMethod === 'bank' && (
               <Section style={bankSection}>
@@ -438,15 +449,14 @@ export const OrderConfirmationEmail = ({
 
             {/* Footer */}
             <Hr style={footerDivider} />
-            <Text style={footer}>
-              Dziękujemy za zaufanie i zakupy w Galaxysklep.pl!<br />
-              Z pozdrowieniami,<br />
-              <strong>Zespół Galaxysklep.pl</strong>
-            </Text>
-
-            {/* Company Info */}
+            
+            {/* Combined Company Info and Footer */}
             <Section style={companyInfo}>
               <Text style={companyText}>
+                Dziękujemy za zaufanie i zakupy w Galaxysklep.pl!<br />
+                Z pozdrowieniami,<br />
+                <strong>Zespół Galaxysklep.pl</strong>
+                <br /><br />
                 <strong>Galaxysklep.pl</strong><br />
                 <Link href="https://galaxysklep.pl" style={companyLink}>
                   www.galaxysklep.pl
@@ -727,20 +737,6 @@ const totalAmountCell = {
   textAlign: 'right' as const,
 };
 
-const infoSection = {
-  marginBottom: '20px',
-};
-
-const methodDescription = {
-  color: '#666666',
-  fontSize: '12px',
-  lineHeight: '18px',
-  fontStyle: 'italic' as const,
-  backgroundColor: '#f0f0f0',
-  padding: '12px',
-  borderRadius: '4px',
-};
-
 const bankSection = {
   backgroundColor: '#fff9e6',
   border: '1px solid #ffd666',
@@ -876,18 +872,9 @@ const footerDivider = {
   marginBottom: '16px',
 };
 
-const footer = {
-  color: '#64748b',
-  fontSize: '14px',
-  lineHeight: '20px',
-  marginBottom: '8px',
-  textAlign: 'center' as const,
-};
-
 const companyInfo = {
-  marginTop: '32px',
-  paddingTop: '24px',
-  borderTop: '1px solid #e2e8f0',
+  paddingTop: '16px',
+  marginBottom: '24px',
 };
 
 const companyText = {
