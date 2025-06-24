@@ -6,8 +6,9 @@ import { AUTH_CONFIG } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { orderNumber: string } }
+  { params }: { params: Promise<{ orderNumber: string }> }
 ) {
+  const { orderNumber } = await params;
   // Check authentication
   const authHeader = request.headers.get('authorization');
   const token = authHeader?.split(' ')[1];
@@ -20,8 +21,6 @@ export async function POST(
   }
 
   try {
-    const { orderNumber } = params;
-
     // Fetch the order with product details
     const order = await prisma.order.findUnique({
       where: { orderNumber },
