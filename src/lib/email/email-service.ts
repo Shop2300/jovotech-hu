@@ -114,6 +114,8 @@ export class EmailService {
       const emailItems = data.items.map(item => ({
         name: item.name || 'Produkt',
         quantity: item.quantity,
+        productSlug: item.productSlug || null,
+        categorySlug: item.categorySlug || null,
       }));
 
       // Determine carrier from tracking number format
@@ -245,6 +247,8 @@ export class EmailService {
     const emailItems = data.items.map(item => ({
       name: item.name || 'Produkt',
       quantity: item.quantity,
+      productSlug: item.productSlug || null,
+      categorySlug: item.categorySlug || null,
     }));
 
     return React.createElement(ShippingNotificationEmail, {

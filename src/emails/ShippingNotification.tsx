@@ -4,7 +4,6 @@ import {
   Container,
   Column,
   Head,
-  Heading,
   Html,
   Img,
   Link,
@@ -26,6 +25,8 @@ interface ShippingNotificationEmailProps {
   items: Array<{
     name: string;
     quantity: number;
+    productSlug?: string | null;
+    categorySlug?: string | null;
   }>;
   deliveryAddress: {
     street: string;
@@ -43,7 +44,7 @@ export const ShippingNotificationEmail = ({
   items,
   deliveryAddress,
 }: ShippingNotificationEmailProps) => {
-  const previewText = `Twoje zamówienie #${orderNumber} zostało wysłane`;
+  const previewText = `Zamówienie #${orderNumber} zostało wysłane - Galaxysklep.pl`;
 
   // Get tracking URL based on carrier
   const getTrackingUrl = (trackingNumber: string, carrier: string) => {
@@ -73,7 +74,7 @@ export const ShippingNotificationEmail = ({
       <Preview>{previewText}</Preview>
       <Body style={main}>
         <Container style={container}>
-          {/* Minimal Header */}
+          {/* Header - Same as OrderConfirmation */}
           <Section style={header}>
             <Row>
               <Column style={headerLeft}>
@@ -86,123 +87,118 @@ export const ShippingNotificationEmail = ({
               </Column>
               <Column style={headerRight}>
                 <Text style={headerText}>
-                  POTWIERDZENIE WYSYŁKI
+                  ZAMÓWIENIE #{orderNumber}
                 </Text>
               </Column>
             </Row>
           </Section>
 
-          {/* Main Content */}
           <Section style={content}>
-            {/* Shipping Icon and Title */}
+            {/* Title with icon */}
             <Section style={titleSection}>
               <Text style={confirmationTitle}>
-                <span style={packageIconStyle}>📦</span>
-                TWOJE ZAMÓWIENIE ZOSTAŁO WYSŁANE
+                <span style={checkmarkStyle}>📦</span>
+                TWOJA PRZESYŁKA JEST W DRODZE
               </Text>
             </Section>
 
-            <Text style={greeting}>
-              Dzień dobry {customerName},
-            </Text>
-            
-            <Text style={paragraph}>
-              Informujemy, że Twoje zamówienie <strong>#{orderNumber}</strong> zostało przekazane do przewoźnika i jest w drodze.
-            </Text>
+            {/* Tracking Information Box */}
+            <Section style={infoBlock}>
+              <Row>
+                <Column style={infoColumn}>
+                  <Text style={infoLabel}>NUMER ŚLEDZENIA</Text>
+                  <Text style={trackingNumberText}>
+                    {trackingNumber}
+                  </Text>
+                  <Text style={carrierText}>
+                    {carrier}
+                  </Text>
+                </Column>
+                <Column style={infoColumn}>
+                  <Text style={infoLabel}>PRZEWIDYWANA DOSTAWA</Text>
+                  <Text style={infoText}>
+                    {estimatedDelivery}
+                  </Text>
+                </Column>
+              </Row>
+            </Section>
 
-            {/* Tracking Information */}
-            <Section style={trackingSection}>
-              <Text style={sectionTitle}>INFORMACJE O PRZESYŁCE</Text>
-              
-              <table style={infoTable}>
-                <tbody>
-                  <tr>
-                    <td style={infoLabel}>Numer śledzenia:</td>
-                    <td style={infoValue}>
-                      <strong>{trackingNumber}</strong>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={infoLabel}>Przewoźnik:</td>
-                    <td style={infoValue}>{carrier}</td>
-                  </tr>
-                  <tr>
-                    <td style={infoLabel}>Przewidywana dostawa:</td>
-                    <td style={infoValue}>{estimatedDelivery}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <Section style={buttonSection}>
-                <Button
-                  style={trackButton}
-                  href={trackingUrl}
-                >
-                  ŚLEDŹ PRZESYŁKĘ
-                </Button>
-              </Section>
+            {/* Track Button */}
+            <Section style={buttonSection}>
+              <Button
+                style={trackButton}
+                href={trackingUrl}
+              >
+                ŚLEDŹ PRZESYŁKĘ
+              </Button>
             </Section>
 
             {/* Delivery Address */}
             <Section style={addressSection}>
-              <Text style={sectionTitle}>ADRES DOSTAWY</Text>
-              <Section style={addressBox}>
-                <Text style={addressText}>
-                  {deliveryAddress.street}<br />
-                  {deliveryAddress.postalCode} {deliveryAddress.city}
-                </Text>
-              </Section>
+              <Text style={addressLabel}>ADRES DOSTAWY</Text>
+              <Text style={addressText}>
+                {customerName}<br />
+                {deliveryAddress.street}<br />
+                {deliveryAddress.postalCode} {deliveryAddress.city}
+              </Text>
             </Section>
 
             {/* Order Items */}
             <Section style={itemsSection}>
-              <Text style={sectionTitle}>ZAWARTOŚĆ PRZESYŁKI</Text>
+              <Text style={itemsSectionTitle}>ZAWARTOŚĆ PRZESYŁKI</Text>
               <table style={itemsTable}>
                 <tbody>
                   {items.map((item, index) => (
                     <tr key={index}>
-                      <td style={itemName}>{item.name}</td>
-                      <td style={itemQuantity}>x{item.quantity}</td>
+                      <td style={tableCell}>
+                        {item.productSlug && item.categorySlug ? (
+                          <Link 
+                            href={`https://www.galaxysklep.pl/${item.categorySlug}/${item.productSlug}`}
+                            style={productNameLink}
+                          >
+                            {item.name}
+                          </Link>
+                        ) : (
+                          <Text style={productName}>{item.name}</Text>
+                        )}
+                      </td>
+                      <td style={tableCellCenter}>x{item.quantity}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </Section>
 
-            {/* Delivery Instructions */}
-            <Section style={instructionsSection}>
-              <Text style={sectionTitle}>WAŻNE INFORMACJE</Text>
-              <Text style={instructionItem}>
-                • Podczas odbioru przesyłki sprawdź stan opakowania
-              </Text>
-              <Text style={instructionItem}>
-                • W przypadku uszkodzeń spisz protokół z kurierem
-              </Text>
-              <Text style={instructionItem}>
-                • Zachowaj dokument dostawy na wypadek reklamacji
-              </Text>
-              <Text style={instructionItem}>
-                • Jeśli nie możesz odebrać przesyłki, skontaktuj się z kurierem
+            {/* Important Notice */}
+            <Section style={noticeSection}>
+              <Text style={noticeTitle}>⚠️ WAŻNE PRZY ODBIORZE</Text>
+              <Text style={noticeText}>
+                Podczas odbioru przesyłki sprawdź stan opakowania. W przypadku uszkodzeń spisz protokół z kurierem.
               </Text>
             </Section>
 
-            {/* Help Section */}
-            <Text style={helpText}>
-              Masz pytania dotyczące dostawy?<br />
-              Skontaktuj się z nami: <Link href="mailto:support@galaxysklep.pl" style={contactLink}>support@galaxysklep.pl</Link>
+            {/* Contact */}
+            <Text style={contactText}>
+              Pytania? Skontaktuj się z nami:<br />
+              <Link href="mailto:support@galaxysklep.pl" style={contactLink}>support@galaxysklep.pl</Link>
             </Text>
 
-            {/* Footer */}
+            {/* Footer - Same as OrderConfirmation */}
             <Hr style={footerDivider} />
-            <Text style={footerText}>
-              Galaxysklep.pl • 1. máje 535/50, 46007 Liberec, Czechy • NIP: 04688465
-            </Text>
-
-            {/* Legal */}
-            <Text style={legalText}>
-              Ta wiadomość została wygenerowana automatycznie. Prosimy na nią nie odpowiadać. 
-              Jeśli masz pytania, skontaktuj się z nami pod adresem support@galaxysklep.pl.
-            </Text>
+            
+            {/* Combined Company Info and Footer */}
+            <Section style={companyInfo}>
+              <Text style={companyText}>
+                Dziękujemy za zakupy w Galaxysklep.pl!<br />
+                Z pozdrowieniami,<br />
+                <strong>Zespół Galaxysklep.pl</strong>
+                <br /><br />
+                <strong>Galaxysklep.pl</strong><br />
+                <Link href="https://galaxysklep.pl" style={companyLink}>
+                  www.galaxysklep.pl
+                </Link>
+              </Text>
+            </Section>
           </Section>
         </Container>
       </Body>
@@ -210,7 +206,7 @@ export const ShippingNotificationEmail = ({
   );
 };
 
-// Industrial/Minimal Styles
+// Styles - Matching OrderConfirmation design
 const main = {
   backgroundColor: '#f5f5f5',
   fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
@@ -261,8 +257,8 @@ const titleSection = {
   marginBottom: '24px',
 };
 
-const packageIconStyle = {
-  color: '#666666',
+const checkmarkStyle = {
+  color: '#2563eb',
   fontSize: '20px',
   marginRight: '8px',
 };
@@ -276,61 +272,54 @@ const confirmationTitle = {
   textAlign: 'center' as const,
 };
 
-const greeting = {
-  color: '#333333',
-  fontSize: '16px',
-  marginBottom: '16px',
-};
-
-const paragraph = {
-  color: '#666666',
-  fontSize: '14px',
-  lineHeight: '20px',
+const infoBlock = {
+  backgroundColor: '#fafafa',
+  border: '1px solid #e0e0e0',
+  borderRadius: '4px',
+  padding: '16px',
   marginBottom: '20px',
 };
 
-const orderNumber = {
-  color: '#333333',
-};
-
-const trackingSection = {
-  backgroundColor: '#f0f9ff',
-  border: '1px solid #bae6fd',
-  borderRadius: '4px',
-  padding: '20px',
-  marginBottom: '24px',
-};
-
-const sectionTitle = {
-  color: '#000000',
-  fontSize: '12px',
-  fontWeight: '600',
-  letterSpacing: '0.5px',
-  textTransform: 'uppercase' as const,
-  marginBottom: '12px',
-};
-
-const infoTable = {
-  width: '100%',
-  marginBottom: '16px',
+const infoColumn = {
+  width: '50%',
+  verticalAlign: 'top' as const,
 };
 
 const infoLabel = {
   color: '#666666',
-  fontSize: '13px',
-  padding: '6px 0',
-  width: '140px',
+  fontSize: '11px',
+  fontWeight: '600',
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase' as const,
+  marginBottom: '4px',
 };
 
-const infoValue = {
+const infoText = {
   color: '#000000',
-  fontSize: '14px',
-  padding: '6px 0',
+  fontSize: '13px',
+  lineHeight: '18px',
+  margin: '0 0 8px 0',
+};
+
+const trackingNumberText = {
+  color: '#000000',
+  fontSize: '16px',
+  fontWeight: '700',
+  lineHeight: '20px',
+  margin: '0 0 4px 0',
+  fontFamily: 'monospace',
+};
+
+const carrierText = {
+  color: '#666666',
+  fontSize: '13px',
+  lineHeight: '18px',
+  margin: '0',
 };
 
 const buttonSection = {
   textAlign: 'center' as const,
-  marginTop: '20px',
+  margin: '24px 0',
 };
 
 const trackButton = {
@@ -348,14 +337,20 @@ const trackButton = {
 };
 
 const addressSection = {
-  marginBottom: '24px',
-};
-
-const addressBox = {
   backgroundColor: '#fafafa',
   borderLeft: '3px solid #2563eb',
-  padding: '12px 16px',
-  borderRadius: '0 3px 3px 0',
+  borderRadius: '0 4px 4px 0',
+  padding: '16px',
+  marginBottom: '20px',
+};
+
+const addressLabel = {
+  color: '#666666',
+  fontSize: '11px',
+  fontWeight: '600',
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase' as const,
+  marginBottom: '8px',
 };
 
 const addressText = {
@@ -363,55 +358,83 @@ const addressText = {
   fontSize: '13px',
   lineHeight: '18px',
   margin: '0',
-  fontWeight: '500' as const,
 };
 
 const itemsSection = {
   marginBottom: '24px',
 };
 
+const itemsSectionTitle = {
+  color: '#000000',
+  fontSize: '11px',
+  fontWeight: '600',
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase' as const,
+  marginBottom: '12px',
+};
+
 const itemsTable = {
   width: '100%',
-  borderTop: '1px solid #e0e0e0',
+  borderCollapse: 'collapse' as const,
 };
 
-const itemName = {
+const tableCell = {
+  borderBottom: '1px solid #f0f0f0',
   color: '#333333',
   fontSize: '13px',
-  padding: '8px 0',
-  borderBottom: '1px solid #f0f0f0',
+  padding: '12px 0',
 };
 
-const itemQuantity = {
+const tableCellCenter = {
+  borderBottom: '1px solid #f0f0f0',
   color: '#666666',
   fontSize: '13px',
-  padding: '8px 0',
+  padding: '12px 0',
   textAlign: 'right' as const,
-  borderBottom: '1px solid #f0f0f0',
   width: '60px',
 };
 
-const instructionsSection = {
-  backgroundColor: '#fffbeb',
-  border: '1px solid #fde68a',
+const productName = {
+  margin: '0',
+  fontSize: '13px',
+  color: '#000000',
+};
+
+const productNameLink = {
+  margin: '0',
+  fontSize: '13px',
+  color: '#073635',
+  textDecoration: 'none',
+  fontWeight: '500' as const,
+};
+
+const noticeSection = {
+  backgroundColor: '#fff9e6',
+  border: '1px solid #ffd666',
   borderRadius: '4px',
   padding: '16px',
   marginBottom: '24px',
 };
 
-const instructionItem = {
-  color: '#92400e',
-  fontSize: '12px',
-  lineHeight: '18px',
-  marginBottom: '6px',
+const noticeTitle = {
+  color: '#000000',
+  fontSize: '13px',
+  fontWeight: '600',
+  marginBottom: '8px',
 };
 
-const helpText = {
+const noticeText = {
   color: '#666666',
-  fontSize: '13px',
+  fontSize: '12px',
+  lineHeight: '18px',
+  margin: '0',
+};
+
+const contactText = {
+  color: '#666666',
+  fontSize: '12px',
   lineHeight: '18px',
   textAlign: 'center' as const,
-  marginTop: '32px',
   marginBottom: '24px',
 };
 
@@ -422,24 +445,26 @@ const contactLink = {
 
 const footerDivider = {
   borderColor: '#e0e0e0',
-  marginTop: '32px',
+  marginTop: '24px',
   marginBottom: '16px',
 };
 
-const footerText = {
-  color: '#999999',
-  fontSize: '11px',
-  lineHeight: '16px',
-  textAlign: 'center' as const,
-  marginBottom: '8px',
+const companyInfo = {
+  paddingTop: '16px',
+  marginBottom: '24px',
 };
 
-const legalText = {
-  color: '#aaaaaa',
-  fontSize: '10px',
-  lineHeight: '14px',
+const companyText = {
+  color: '#94a3b8',
+  fontSize: '12px',
+  lineHeight: '18px',
   textAlign: 'center' as const,
-  padding: '0 40px',
+};
+
+const companyLink = {
+  color: '#073635',
+  textDecoration: 'none',
+  fontWeight: '500' as const,
 };
 
 export default ShippingNotificationEmail;
