@@ -245,13 +245,28 @@ export const OrderConfirmationEmail = ({
                         <Row>
                           {item.image && (
                             <Column style={{ width: '40px', paddingRight: '10px' }}>
-                              <Img 
-                                src={item.image} 
-                                alt={item.name}
-                                width="40"
-                                height="40"
-                                style={productImage}
-                              />
+                              {item.productSlug && item.categorySlug ? (
+                                <Link 
+                                  href={`https://www.galaxysklep.pl/${item.categorySlug}/${item.productSlug}`}
+                                  style={{ textDecoration: 'none' }}
+                                >
+                                  <Img 
+                                    src={item.image} 
+                                    alt={item.name}
+                                    width="40"
+                                    height="40"
+                                    style={productImage}
+                                  />
+                                </Link>
+                              ) : (
+                                <Img 
+                                  src={item.image} 
+                                  alt={item.name}
+                                  width="40"
+                                  height="40"
+                                  style={productImage}
+                                />
+                              )}
                             </Column>
                           )}
                           <Column>
@@ -326,10 +341,10 @@ export const OrderConfirmationEmail = ({
               </Section>
             )}
 
-            {/* Bank Payment Instructions */}
+            {/* Bank Payment Instructions and Details - Combined */}
             {paymentMethod === 'bank' && (
               <Section style={bankSection}>
-                <Text style={bankTitle}>INSTRUKCJE PŁATNOŚCI</Text>
+                <Text style={bankTitle}>INSTRUKCJE PŁATNOŚCI I DANE DO PRZELEWU</Text>
                 <Text style={bankText}>
                   Aby sfinalizować zamówienie, prosimy o wpłatę kwoty <strong>{formatPrice(total)}</strong> na nasze konto bankowe.
                 </Text>
@@ -341,6 +356,33 @@ export const OrderConfirmationEmail = ({
                     <strong>Tytuł przelewu:</strong> <span style={highlightText}>{orderNumber.replace('-', '')}</span>
                   </Text>
                 </Section>
+                
+                {/* Bank Details Table */}
+                <table style={bankDetailsTable}>
+                  <tbody>
+                    <tr>
+                      <td style={bankLabel}>Nazwa odbiorcy:</td>
+                      <td style={bankValue}>Galaxysklep.pl</td>
+                    </tr>
+                    <tr>
+                      <td style={bankLabel}>Numer konta:</td>
+                      <td style={bankValue}>{BANK_DETAILS.accountNumber}</td>
+                    </tr>
+                    <tr>
+                      <td style={bankLabel}>IBAN:</td>
+                      <td style={bankValue}>{BANK_DETAILS.iban}</td>
+                    </tr>
+                    <tr>
+                      <td style={bankLabel}>SWIFT/BIC:</td>
+                      <td style={bankValue}>{BANK_DETAILS.swift}</td>
+                    </tr>
+                    <tr>
+                      <td style={bankLabel}>Bank:</td>
+                      <td style={bankValue}>{BANK_DETAILS.bankName}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                
                 <Text style={bankNote}>
                   ⏱️ Twoje zamówienie zostanie wysłane natychmiast po zaksięgowaniu wpłaty na naszym koncie.
                 </Text>
@@ -357,34 +399,36 @@ export const OrderConfirmationEmail = ({
               </Button>
             </Section>
 
-            {/* Bank Details - Always visible */}
-            <Section style={bankDetailsAlways}>
-              <Text style={bankDetailsTitle}>DANE DO PRZELEWU</Text>
-              <table style={bankTable}>
-                <tbody>
-                  <tr>
-                    <td style={bankLabel}>Nazwa odbiorcy:</td>
-                    <td style={bankValue}>Galaxysklep.pl</td>
-                  </tr>
-                  <tr>
-                    <td style={bankLabel}>Numer konta:</td>
-                    <td style={bankValue}>{BANK_DETAILS.accountNumber}</td>
-                  </tr>
-                  <tr>
-                    <td style={bankLabel}>IBAN:</td>
-                    <td style={bankValue}>{BANK_DETAILS.iban}</td>
-                  </tr>
-                  <tr>
-                    <td style={bankLabel}>SWIFT/BIC:</td>
-                    <td style={bankValue}>{BANK_DETAILS.swift}</td>
-                  </tr>
-                  <tr>
-                    <td style={bankLabel}>Bank:</td>
-                    <td style={bankValue}>{BANK_DETAILS.bankName}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </Section>
+            {/* Bank Details - Only for non-bank payment methods */}
+            {paymentMethod !== 'bank' && (
+              <Section style={bankDetailsAlways}>
+                <Text style={bankDetailsTitle}>DANE DO PRZELEWU</Text>
+                <table style={bankTable}>
+                  <tbody>
+                    <tr>
+                      <td style={bankLabel}>Nazwa odbiorcy:</td>
+                      <td style={bankValue}>Galaxysklep.pl</td>
+                    </tr>
+                    <tr>
+                      <td style={bankLabel}>Numer konta:</td>
+                      <td style={bankValue}>{BANK_DETAILS.accountNumber}</td>
+                    </tr>
+                    <tr>
+                      <td style={bankLabel}>IBAN:</td>
+                      <td style={bankValue}>{BANK_DETAILS.iban}</td>
+                    </tr>
+                    <tr>
+                      <td style={bankLabel}>SWIFT/BIC:</td>
+                      <td style={bankValue}>{BANK_DETAILS.swift}</td>
+                    </tr>
+                    <tr>
+                      <td style={bankLabel}>Bank:</td>
+                      <td style={bankValue}>{BANK_DETAILS.bankName}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Section>
+            )}
 
             {/* Contact */}
             <Text style={contactText}>
@@ -788,6 +832,15 @@ const bankDetailsTitle = {
 
 const bankTable = {
   width: '100%',
+};
+
+const bankDetailsTable = {
+  width: '100%',
+  marginTop: '16px',
+  backgroundColor: '#ffffff',
+  borderRadius: '4px',
+  padding: '12px',
+  border: '1px solid #e5e7eb',
 };
 
 const bankLabel = {
