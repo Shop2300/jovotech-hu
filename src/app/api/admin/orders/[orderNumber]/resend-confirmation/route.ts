@@ -2,23 +2,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { EmailService } from '@/lib/email/email-service';
-import { AUTH_CONFIG } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ orderNumber: string }> }
 ) {
   const { orderNumber } = await params;
-  // Check authentication
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.split(' ')[1];
-  
-  if (!token || token !== AUTH_CONFIG.ADMIN_TOKEN) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
 
   try {
     // Fetch the order with product details
@@ -85,7 +74,7 @@ export async function POST(
       data: {
         orderId: order.id,
         action: 'email_resent',
-        description: 'Potwierdzenie zamówienia zostało ponownie wysłane',
+        description: 'Potvrzení objednávky bylo znovu odesláno',
         metadata: {
           emailType: 'order_confirmation',
           sentTo: order.customerEmail,
