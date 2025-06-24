@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { checkAuth } from '@/lib/auth-middleware';
 import { EmailService } from '@/lib/email/email-service';
+import { getDeliveryMethodLabel } from '@/lib/order-options';
 
 // GET /api/admin/orders/[orderNumber]
 export async function GET(
@@ -109,6 +110,28 @@ export async function PATCH(
           // Parse items from JSON
           const items = existingOrder.items as any[];
           
+          // Get product details for slugs
+          const productIds = items.map(item => item.productId || item.id);
+          const products = await prisma.product.findMany({
+            where: { id: { in: productIds } },
+            include: { category: true }
+          });
+          
+          // Create a map of product details
+          const productMap = new Map(products.map(p => [p.id, p]));
+          
+          // Enhance items with slug information
+          const itemsWithSlugs = items.map(item => {
+            const product = productMap.get(item.productId || item.id);
+            return {
+              name: item.name || 'Produkt',
+              quantity: item.quantity,
+              price: item.price,
+              productSlug: product?.slug || null,
+              categorySlug: product?.category?.slug || null
+            };
+          });
+          
           // Prepare delivery address
           const deliveryAddress = existingOrder.useDifferentDelivery
             ? {
@@ -122,17 +145,18 @@ export async function PATCH(
                 postalCode: existingOrder.billingPostalCode || ''
               };
 
+          // Get delivery method label
+          const deliveryMethodLabel = getDeliveryMethodLabel(existingOrder.deliveryMethod, 'pl');
+
           await EmailService.sendShippingNotification({
             orderNumber: orderNumber,
             customerEmail: existingOrder.customerEmail,
             customerName: existingOrder.customerName,
             trackingNumber: trackingNumber,
-            items: items.map(item => ({
-              name: item.name || 'Produkt',
-              quantity: item.quantity,
-              price: item.price
-            })),
-            deliveryAddress: deliveryAddress
+            items: itemsWithSlugs,
+            deliveryAddress: deliveryAddress,
+            deliveryMethod: existingOrder.deliveryMethod,
+            carrier: deliveryMethodLabel
           });
 
           console.log('Shipping notification email sent successfully');

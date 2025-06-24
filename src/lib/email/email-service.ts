@@ -55,6 +55,8 @@ interface ShippingEmailData {
     city: string;
     postalCode: string;
   };
+  deliveryMethod?: string;
+  carrier?: string;
 }
 
 export class EmailService {
@@ -118,16 +120,20 @@ export class EmailService {
         categorySlug: item.categorySlug || null,
       }));
 
-      // Determine carrier from tracking number format
-      let carrier = 'Paczkomat InPost';
-      if (data.trackingNumber.startsWith('PL')) {
-        carrier = 'Poczta Polska';
-      } else if (data.trackingNumber.startsWith('DPD')) {
-        carrier = 'DPD';
-      } else if (data.trackingNumber.startsWith('UPS')) {
-        carrier = 'UPS';
-      } else if (data.trackingNumber.startsWith('6')) {
-        carrier = 'InPost';
+      // Determine carrier from delivery method or tracking number format
+      let carrier = data.carrier || 'Najwygodniejsza dostawa';
+      
+      // If no carrier provided, try to determine from tracking number
+      if (!data.carrier && data.trackingNumber) {
+        if (data.trackingNumber.startsWith('PL')) {
+          carrier = 'Poczta Polska';
+        } else if (data.trackingNumber.startsWith('DPD')) {
+          carrier = 'DPD';
+        } else if (data.trackingNumber.startsWith('UPS')) {
+          carrier = 'UPS';
+        } else if (data.trackingNumber.startsWith('6')) {
+          carrier = 'InPost';
+        }
       }
 
       // Estimate delivery (3-5 business days)
@@ -255,7 +261,7 @@ export class EmailService {
       orderNumber: data.orderNumber,
       customerName: data.customerName,
       trackingNumber: data.trackingNumber,
-      carrier: 'Paczkomat InPost',
+      carrier: data.carrier || 'Najwygodniejsza dostawa',
       estimatedDelivery: '3-5 dni roboczych',
       items: emailItems,
       deliveryAddress: data.deliveryAddress,
