@@ -204,16 +204,6 @@ export const OrderConfirmationEmail = ({
               </Row>
             </Section>
 
-            {/* Track Order Button under Status */}
-            <Section style={{ textAlign: 'center' as const, marginBottom: '24px' }}>
-              <Button
-                style={trackButton}
-                href={`https://www.galaxysklep.pl/order-status/${orderNumber}`}
-              >
-                ŚLEDŹ ZAMÓWIENIE
-              </Button>
-            </Section>
-
             {/* Addresses */}
             <Section style={addressSection}>
               <Row>
