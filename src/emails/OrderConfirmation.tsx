@@ -29,6 +29,8 @@ interface OrderConfirmationEmailProps {
     quantity: number;
     price: number;
     image?: string | null;
+    productSlug?: string | null;
+    categorySlug?: string | null;
   }>;
   total: number;
   deliveryMethod: string;
@@ -253,7 +255,16 @@ export const OrderConfirmationEmail = ({
                             </Column>
                           )}
                           <Column>
-                            <Text style={productName}>{item.name}</Text>
+                            {item.productSlug && item.categorySlug ? (
+                              <Link 
+                                href={`https://www.galaxysklep.pl/${item.categorySlug}/${item.productSlug}`}
+                                style={productNameLink}
+                              >
+                                {item.name}
+                              </Link>
+                            ) : (
+                              <Text style={productName}>{item.name}</Text>
+                            )}
                           </Column>
                         </Row>
                       </td>
@@ -335,28 +346,6 @@ export const OrderConfirmationEmail = ({
                 </Text>
               </Section>
             )}
-
-            {/* Next Steps */}
-            <Section style={nextSteps}>
-              <Text style={nextStepsTitle}>📋 CO DALEJ?</Text>
-              <div style={stepsList}>
-                {paymentMethod === 'bank' ? (
-                  <>
-                    <Text style={stepItem}>✅ Proszę opłacić zamówienie przelewem bankowym</Text>
-                    <Text style={stepItem}>✅ Po zaksięgowaniu wpłaty wyślemy potwierdzenie</Text>
-                    <Text style={stepItem}>✅ Twoje zamówienie zostanie spakowane i wysłane</Text>
-                    <Text style={stepItem}>✅ Otrzymasz e-mail z informacjami o śledzeniu przesyłki</Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={stepItem}>✅ Twoje zamówienie jest obecnie przetwarzane</Text>
-                    <Text style={stepItem}>✅ Gdy zamówienie zostanie wysłane, otrzymasz e-mail z informacjami o śledzeniu</Text>
-                    <Text style={stepItem}>✅ Będziesz mógł śledzić przesyłkę za pomocą numeru śledzenia</Text>
-                    <Text style={stepItem}>✅ Ciesz się nowymi produktami!</Text>
-                  </>
-                )}
-              </div>
-            </Section>
 
             {/* Track Order Button */}
             <Section style={buttonSection}>
@@ -655,6 +644,14 @@ const productName = {
   color: '#000000',
 };
 
+const productNameLink = {
+  margin: '0',
+  fontSize: '13px',
+  color: '#073635',
+  textDecoration: 'none',
+  fontWeight: '500' as const,
+};
+
 const separatorCell = {
   padding: '0',
 };
@@ -751,34 +748,6 @@ const bankNote = {
   fontSize: '11px',
   marginTop: '12px',
   fontStyle: 'italic' as const,
-};
-
-const nextSteps = {
-  backgroundColor: '#f0fdf4',
-  borderRadius: '8px',
-  padding: '24px',
-  marginBottom: '24px',
-  border: '1px solid #bbf7d0',
-};
-
-const nextStepsTitle = {
-  color: '#000000',
-  fontSize: '14px',
-  fontWeight: '600',
-  letterSpacing: '0.5px',
-  marginBottom: '12px',
-};
-
-const stepsList = {
-  marginTop: '12px',
-};
-
-const stepItem = {
-  color: '#073635',
-  fontSize: '14px',
-  lineHeight: '20px',
-  marginBottom: '10px',
-  paddingLeft: '8px',
 };
 
 const buttonSection = {

@@ -51,7 +51,17 @@ export async function POST(request: Request) {
       }
     }
     
-    // Create the order with variant information preserved
+    // Fetch product details to get slugs for email links
+    const productIds = formData.items.map((item: any) => item.id);
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      include: { category: true }
+    });
+    
+    // Create a map of product details
+    const productMap = new Map(products.map(p => [p.id, p]));
+    
+    // Create the order with variant information and slugs preserved
     const orderData = {
       orderNumber,
       customerEmail: formData.email,
@@ -85,18 +95,24 @@ export async function POST(request: Request) {
       city: formData.billingCity,
       postalCode: formData.billingPostalCode,
       
-      // Store items with variant information
-      items: formData.items.map((item: any) => ({
-        id: item.id,
-        productId: item.id, // Ensure productId is included
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image,
-        variantId: item.variantId || null,
-        variantName: item.variantName || null,
-        variantColor: item.variantColor || null
-      })),
+      // Store items with variant information and slugs
+      items: formData.items.map((item: any) => {
+        const product = productMap.get(item.id);
+        return {
+          id: item.id,
+          productId: item.id, // Ensure productId is included
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+          variantId: item.variantId || null,
+          variantName: item.variantName || null,
+          variantColor: item.variantColor || null,
+          // Add slugs for email links
+          productSlug: product?.slug || null,
+          categorySlug: product?.category?.slug || null
+        };
+      }),
       
       total: formData.total,
       deliveryMethod: formData.deliveryMethod,

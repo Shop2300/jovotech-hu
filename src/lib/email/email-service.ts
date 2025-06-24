@@ -16,6 +16,8 @@ interface OrderItem {
   quantity: number;
   price: number;
   image?: string | null;
+  productSlug?: string | null;
+  categorySlug?: string | null;
 }
 
 interface OrderEmailData {
@@ -67,6 +69,8 @@ export class EmailService {
         quantity: item.quantity,
         price: item.price,
         image: item.image || null,
+        productSlug: item.productSlug || null,
+        categorySlug: item.categorySlug || null,
       }));
 
       // Send the email using React component
@@ -213,6 +217,8 @@ export class EmailService {
       quantity: item.quantity,
       price: item.price,
       image: item.image || null,
+      productSlug: item.productSlug || null,
+      categorySlug: item.categorySlug || null,
     }));
 
     return React.createElement(OrderConfirmationEmail, {

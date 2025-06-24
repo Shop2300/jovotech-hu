@@ -1,23 +1,30 @@
 // src/app/api/admin/orders/[orderNumber]/resend-confirmation/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { checkAuth } from '@/lib/auth-middleware';
 import { EmailService } from '@/lib/email/email-service';
-import { getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
+import { AUTH_CONFIG } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ orderNumber: string }> }
+  { params }: { params: { orderNumber: string } }
 ) {
-  const authResponse = await checkAuth(request);
-  if (authResponse) return authResponse;
-
-  const { orderNumber } = await params;
+  // Check authentication
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.split(' ')[1];
+  
+  if (!token || token !== AUTH_CONFIG.ADMIN_TOKEN) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
 
   try {
-    // Fetch order with all details
+    const { orderNumber } = params;
+
+    // Fetch the order with product details
     const order = await prisma.order.findUnique({
-      where: { orderNumber }
+      where: { orderNumber },
     });
 
     if (!order) {
@@ -27,69 +34,72 @@ export async function POST(
       );
     }
 
-    // Prepare order data for email
-    const items = order.items as any[];
+    // Get product details for slugs
+    const orderItems = order.items as any[];
+    const productIds = orderItems.map(item => item.productId || item.id);
     
-    // Get delivery and payment method labels
-    const deliveryMethod = getDeliveryMethod(order.deliveryMethod || 'zasilkovna');
-    const paymentMethod = getPaymentMethod(order.paymentMethod || 'bank');
-    
-    // Prepare delivery address
-    const deliveryAddress = order.useDifferentDelivery
-      ? {
-          street: order.deliveryAddress || '',
-          city: order.deliveryCity || '',
-          postalCode: order.deliveryPostalCode || ''
-        }
-      : {
-          street: order.billingAddress || order.address || '',
-          city: order.billingCity || order.city || '',
-          postalCode: order.billingPostalCode || order.postalCode || ''
-        };
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      include: { category: true }
+    });
 
-    // Send confirmation email
+    // Create a map of product details
+    const productMap = new Map(products.map(p => [p.id, p]));
+
+    // Enhance items with slug information
+    const itemsWithSlugs = orderItems.map(item => {
+      const product = productMap.get(item.productId || item.id);
+      return {
+        ...item,
+        productSlug: product?.slug || null,
+        categorySlug: product?.category?.slug || null
+      };
+    });
+
+    // Send the confirmation email
     await EmailService.sendOrderConfirmation({
       orderNumber: order.orderNumber,
       customerEmail: order.customerEmail,
       customerName: order.customerName,
+      customerPhone: order.customerPhone || undefined,
       companyName: order.companyName,
       companyNip: order.companyNip,
-      items: items.map(item => ({
-        name: item.name || 'Produkt',
-        quantity: item.quantity,
-        price: item.price,
-        image: item.image || null
-      })),
-      total: Number(order.total),
-      deliveryMethod: deliveryMethod?.labelPl || 'Dostawa',
-      paymentMethod: paymentMethod?.labelPl || 'Płatność',
-      deliveryAddress: deliveryAddress
+      items: itemsWithSlugs,
+      total: order.total,
+      deliveryMethod: order.deliveryMethod,
+      paymentMethod: order.paymentMethod,
+      deliveryAddress: {
+        street: order.useDifferentDelivery ? order.deliveryAddress! : order.billingAddress,
+        city: order.useDifferentDelivery ? order.deliveryCity! : order.billingCity,
+        postalCode: order.useDifferentDelivery ? order.deliveryPostalCode! : order.billingPostalCode,
+      },
+      billingAddress: {
+        street: order.billingAddress,
+        city: order.billingCity,
+        postalCode: order.billingPostalCode,
+      },
+      orderDate: order.createdAt,
     });
 
-    // Add to order history
+    // Log the action in order history
     await prisma.orderHistory.create({
       data: {
         orderId: order.id,
-        action: 'email_sent',
-        description: 'Potwierdzenie zamówienia zostało ponownie wysłane do klienta',
-        newValue: 'order_confirmation_resent',
-        metadata: { 
-          changedBy: 'Admin',
+        action: 'email_resent',
+        description: 'Potwierdzenie zamówienia zostało ponownie wysłane',
+        metadata: {
           emailType: 'order_confirmation',
-          sentTo: order.customerEmail
+          sentTo: order.customerEmail,
+          sentAt: new Date().toISOString()
         }
       }
     });
 
-    return NextResponse.json({ 
-      success: true,
-      message: 'Email potwierdzenia został wysłany ponownie'
-    });
-
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error resending order confirmation:', error);
+    console.error('Failed to resend confirmation email:', error);
     return NextResponse.json(
-      { error: 'Failed to resend order confirmation' },
+      { error: 'Failed to resend confirmation email' },
       { status: 500 }
     );
   }
