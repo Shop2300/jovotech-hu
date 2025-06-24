@@ -1,264 +1,338 @@
-// src/app/api/orders/route.ts
+// src/app/api/admin/orders/[orderNumber]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { checkAuth } from '@/lib/auth-middleware';
 import { EmailService } from '@/lib/email/email-service';
+import { getDeliveryMethodLabel } from '@/lib/order-options';
 
-function generateOrderNumber(): string {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  return `${year}${month}${day}-${random}`;
-}
+// GET /api/admin/orders/[orderNumber]
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ orderNumber: string }> }
+) {
+  const authResponse = await checkAuth(request);
+  if (authResponse) return authResponse;
 
-export async function POST(request: Request) {
+  const { orderNumber } = await params;
+
   try {
-    const formData = await request.json();
-    console.log('Received order data:', JSON.stringify(formData, null, 2));
-    
-    const orderNumber = generateOrderNumber();
-    console.log('Generated order number:', orderNumber);
-    
-    // Check if order number already exists
-    const existingOrder = await prisma.order.findUnique({
-      where: { orderNumber }
+    const order = await prisma.order.findUnique({
+      where: { orderNumber },
+      include: { 
+        invoice: true,
+        history: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
     });
-    
-    if (existingOrder) {
-      console.log('Order number already exists, generating new one');
-      // If it exists, generate a new one
-      return POST(request);
-    }
-    
-    // Validate required fields
-    if (!formData.email || !formData.billingFirstName || !formData.billingLastName) {
-      console.error('Missing required fields');
+
+    if (!order) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        { error: 'Order not found' },
+        { status: 404 }
       );
     }
-    
-    // If it's a company order, validate company fields
-    if (formData.isCompany) {
-      if (!formData.companyName || !formData.companyNip) {
-        console.error('Missing required company fields');
-        return NextResponse.json(
-          { error: 'Missing required company fields' },
-          { status: 400 }
-        );
-      }
-    }
-    
-    // Fetch product details to get slugs for email links
-    const productIds = formData.items.map((item: any) => item.id);
-    const products = await prisma.product.findMany({
-      where: { id: { in: productIds } },
-      include: { category: true }
-    });
-    
-    // Create a map of product details
-    const productMap = new Map(products.map(p => [p.id, p]));
-    
-    // Create the order with variant information and slugs preserved
-    const orderData = {
-      orderNumber,
-      customerEmail: formData.email,
-      customerName: `${formData.billingFirstName} ${formData.billingLastName}`,
-      customerPhone: formData.phone || '',
-      
-      // Company details
-      isCompany: formData.isCompany || false,
-      companyName: formData.isCompany ? formData.companyName : null,
-      companyNip: formData.isCompany ? formData.companyNip : null,
-      
-      // Billing address
-      billingFirstName: formData.billingFirstName,
-      billingLastName: formData.billingLastName,
-      billingAddress: formData.billingAddress,
-      billingCity: formData.billingCity,
-      billingPostalCode: formData.billingPostalCode,
-      
-      // Delivery address
-      useDifferentDelivery: formData.useDifferentDelivery || false,
-      deliveryFirstName: formData.deliveryFirstName || formData.billingFirstName,
-      deliveryLastName: formData.deliveryLastName || formData.billingLastName,
-      deliveryAddress: formData.deliveryAddress || formData.billingAddress,
-      deliveryCity: formData.deliveryCity || formData.billingCity,
-      deliveryPostalCode: formData.deliveryPostalCode || formData.billingPostalCode,
-      
-      // Old fields for backward compatibility
-      firstName: formData.billingFirstName,
-      lastName: formData.billingLastName,
-      address: formData.billingAddress,
-      city: formData.billingCity,
-      postalCode: formData.billingPostalCode,
-      
-      // Store items with variant information and slugs
-      items: formData.items.map((item: any) => {
-        const product = productMap.get(item.id);
-        return {
-          id: item.id,
-          productId: item.id, // Ensure productId is included
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image,
-          variantId: item.variantId || null,
-          variantName: item.variantName || null,
-          variantColor: item.variantColor || null,
-          // Add slugs for email links
-          productSlug: product?.slug || null,
-          categorySlug: product?.category?.slug || null
-        };
-      }),
-      
-      total: formData.total,
-      deliveryMethod: formData.deliveryMethod,
-      paymentMethod: formData.paymentMethod,
-      paymentStatus: 'unpaid', // All orders start as unpaid
-      note: formData.note || null,
-    };
-    
-    console.log('Creating order with data:', JSON.stringify(orderData, null, 2));
-    
-    const order = await prisma.order.create({
-      data: orderData,
-    });
-    
-    console.log('Order created successfully:', order.id);
-    
-    // Create initial order history entry
-    try {
-      await prisma.orderHistory.create({
-        data: {
-          orderId: order.id,
-          action: 'order_created',
-          description: formData.isCompany 
-            ? `Zamówienie zostało utworzone przez firmę ${formData.companyName}` 
-            : 'Zamówienie zostało utworzone',
-          newValue: 'pending',
-          metadata: {
-            customerEmail: formData.email,
-            total: formData.total,
-            itemCount: formData.items.length,
-            paymentMethod: formData.paymentMethod,
-            paymentStatus: 'unpaid',
-            isCompany: formData.isCompany || false,
-            companyName: formData.companyName || null,
-            companyNip: formData.companyNip || null
-          }
-        }
-      });
-      console.log('Order history entry created');
-    } catch (historyError) {
-      console.error('Failed to create order history:', historyError);
-      // Don't fail the order if history fails
-    }
-    
-    // Update product stock for each item
-    for (const item of formData.items) {
-      try {
-        if (item.variantId) {
-          // Update variant stock
-          await prisma.productVariant.update({
-            where: { id: item.variantId },
-            data: { 
-              stock: { 
-                decrement: item.quantity 
-              } 
-            }
-          });
-          console.log(`Updated stock for variant ${item.variantId}`);
-        } else {
-          // Update product stock (no variant)
-          await prisma.product.update({
-            where: { id: item.id },
-            data: { 
-              stock: { 
-                decrement: item.quantity 
-              } 
-            }
-          });
-          console.log(`Updated stock for product ${item.id}`);
-        }
-      } catch (stockError) {
-        console.error(`Failed to update stock for item ${item.id}:`, stockError);
-        // Don't fail the order if stock update fails
-      }
-    }
-    
-    // Send confirmation email with all customer details
-    try {
-      console.log('Attempting to send confirmation email');
-      await EmailService.sendOrderConfirmation({
-        orderNumber: order.orderNumber,
-        customerEmail: order.customerEmail,
-        customerName: order.customerName,
-        customerPhone: order.customerPhone, // Added phone
-        companyName: order.companyName,
-        companyNip: order.companyNip,
-        items: order.items as any[],
-        total: order.total,
-        deliveryMethod: order.deliveryMethod,
-        paymentMethod: order.paymentMethod,
-        deliveryAddress: {
-          street: order.useDifferentDelivery ? order.deliveryAddress! : order.billingAddress,
-          city: order.useDifferentDelivery ? order.deliveryCity! : order.billingCity,
-          postalCode: order.useDifferentDelivery ? order.deliveryPostalCode! : order.billingPostalCode,
-        },
-        billingAddress: { // Added billing address
-          street: order.billingAddress,
-          city: order.billingCity,
-          postalCode: order.billingPostalCode,
-        },
-        orderDate: order.createdAt, // Added order date
-      });
-      console.log('Confirmation email sent successfully');
-    } catch (emailError) {
-      console.error('Failed to send confirmation email:', emailError);
-      // Don't fail the order if email fails
-    }
-    
-    return NextResponse.json({ 
-      success: true, 
-      orderNumber: order.orderNumber,
-      orderId: order.id,
-      isCompany: order.isCompany
-    });
+
+    return NextResponse.json(order);
   } catch (error) {
-    console.error('Error creating order:', error);
-    
-    // Return more specific error message
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: `Failed to create order: ${error.message}` },
-        { status: 500 }
-      );
-    }
-    
+    console.error('Error fetching order:', error);
     return NextResponse.json(
-      { error: 'Failed to create order: Unknown error' },
+      { error: 'Failed to fetch order' },
       { status: 500 }
     );
   }
 }
 
-export async function GET() {
+// PATCH /api/admin/orders/[orderNumber]
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ orderNumber: string }> }
+) {
+  const authResponse = await checkAuth(request);
+  if (authResponse) return authResponse;
+
+  const { orderNumber } = await params;
+
   try {
-    const orders = await prisma.order.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        invoice: true
-      }
+    // First, find the order by orderNumber to get its ID and current data
+    const existingOrder = await prisma.order.findUnique({
+      where: { orderNumber }
     });
+
+    if (!existingOrder) {
+      return NextResponse.json(
+        { error: 'Order not found' },
+        { status: 404 }
+      );
+    }
+
+    const data = await request.json();
+    const updateData: any = {};
+    const historyEntries: any[] = [];
+
+    // Track status changes
+    if (data.status && data.status !== existingOrder.status) {
+      updateData.status = data.status;
+      
+      const statusLabels: Record<string, string> = {
+        pending: 'Oczekuje na realizację',
+        processing: 'W trakcie realizacji',
+        shipped: 'Wysłane',
+        delivered: 'Dostarczone',
+        cancelled: 'Anulowane'
+      };
+
+      historyEntries.push({
+        orderId: existingOrder.id,
+        action: 'status_change',
+        description: `Status zamówienia zmieniony na: ${statusLabels[data.status] || data.status}`,
+        oldValue: existingOrder.status,
+        newValue: data.status,
+        metadata: { changedBy: 'Admin' }
+      });
+
+      // Check if status is being changed to "shipped"
+      if (data.status === 'shipped' && existingOrder.status !== 'shipped') {
+        // Check if we have a tracking number
+        const trackingNumber = data.trackingNumber || existingOrder.trackingNumber;
+        
+        if (!trackingNumber) {
+          return NextResponse.json(
+            { error: 'Numer śledzenia jest wymagany do wysyłki' },
+            { status: 400 }
+          );
+        }
+
+        // Send shipping notification email
+        try {
+          console.log('Sending shipping notification email for order:', orderNumber);
+          
+          // Parse items from JSON
+          const items = existingOrder.items as any[];
+          
+          // Get product details for slugs
+          const productIds = items.map(item => item.productId || item.id);
+          const products = await prisma.product.findMany({
+            where: { id: { in: productIds } },
+            include: { category: true }
+          });
+          
+          // Create a map of product details
+          const productMap = new Map(products.map(p => [p.id, p]));
+          
+          // Enhance items with slug information
+          const itemsWithSlugs = items.map(item => {
+            const product = productMap.get(item.productId || item.id);
+            return {
+              name: item.name || 'Produkt',
+              quantity: item.quantity,
+              price: item.price,
+              productSlug: product?.slug || null,
+              categorySlug: product?.category?.slug || null
+            };
+          });
+          
+          // Prepare delivery address
+          const deliveryAddress = existingOrder.useDifferentDelivery
+            ? {
+                street: existingOrder.deliveryAddress || '',
+                city: existingOrder.deliveryCity || '',
+                postalCode: existingOrder.deliveryPostalCode || ''
+              }
+            : {
+                street: existingOrder.billingAddress || '',
+                city: existingOrder.billingCity || '',
+                postalCode: existingOrder.billingPostalCode || ''
+              };
+
+          // Get delivery method label
+          const deliveryMethodLabel = getDeliveryMethodLabel(existingOrder.deliveryMethod, 'pl');
+
+          await EmailService.sendShippingNotification({
+            orderNumber: orderNumber,
+            customerEmail: existingOrder.customerEmail,
+            customerName: existingOrder.customerName,
+            trackingNumber: trackingNumber,
+            items: itemsWithSlugs,
+            deliveryAddress: deliveryAddress,
+            deliveryMethod: existingOrder.deliveryMethod,
+            carrier: deliveryMethodLabel,
+            orderDate: existingOrder.createdAt
+          });
+
+          console.log('Shipping notification email sent successfully');
+          
+          historyEntries.push({
+            orderId: existingOrder.id,
+            action: 'email_sent',
+            description: 'E-mail z informacją o wysyłce został wysłany do klienta',
+            newValue: 'shipping_notification',
+            metadata: { 
+              changedBy: 'Admin',
+              trackingNumber: trackingNumber,
+              emailSent: true
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send shipping notification email:', emailError);
+          // Don't fail the status update if email fails
+          // But add a note to history
+          historyEntries.push({
+            orderId: existingOrder.id,
+            action: 'email_failed',
+            description: 'Nie udało się wysłać e-maila z informacją o wysyłce',
+            newValue: 'shipping_notification_failed',
+            metadata: { 
+              changedBy: 'Admin',
+              error: emailError instanceof Error ? emailError.message : 'Unknown error'
+            }
+          });
+        }
+      }
+    }
+
+    // Track payment status changes
+    if (data.paymentStatus && data.paymentStatus !== existingOrder.paymentStatus) {
+      updateData.paymentStatus = data.paymentStatus;
+      
+      historyEntries.push({
+        orderId: existingOrder.id,
+        action: 'payment_status_change',
+        description: `Status płatności zmieniony na: ${data.paymentStatus === 'paid' ? 'Opłacone' : 'Nieopłacone'}`,
+        oldValue: existingOrder.paymentStatus,
+        newValue: data.paymentStatus,
+        metadata: { changedBy: 'Admin' }
+      });
+    }
+
+    // Track tracking number changes
+    if (data.trackingNumber !== undefined) {
+      updateData.trackingNumber = data.trackingNumber || null;
+      
+      if (data.trackingNumber) {
+        historyEntries.push({
+          orderId: existingOrder.id,
+          action: 'tracking_added',
+          description: `Dodano numer śledzenia: ${data.trackingNumber}`,
+          newValue: data.trackingNumber,
+          metadata: { changedBy: 'Admin' }
+        });
+      }
+    }
+
+    // Handle customer information updates
+    if (data.billingFirstName !== undefined) updateData.billingFirstName = data.billingFirstName;
+    if (data.billingLastName !== undefined) updateData.billingLastName = data.billingLastName;
+    if (data.customerEmail !== undefined) {
+      updateData.customerEmail = data.customerEmail;
+      // Update customerName based on first and last name
+      if (data.billingFirstName || data.billingLastName) {
+        updateData.customerName = `${data.billingFirstName || existingOrder.billingFirstName || ''} ${data.billingLastName || existingOrder.billingLastName || ''}`.trim();
+      }
+    }
+    if (data.customerPhone !== undefined) updateData.customerPhone = data.customerPhone;
+    if (data.isCompany !== undefined) updateData.isCompany = data.isCompany;
+    if (data.companyName !== undefined) updateData.companyName = data.companyName;
+    if (data.companyNip !== undefined) updateData.companyNip = data.companyNip;
+
+    // Handle address updates
+    if (data.billingAddress !== undefined) updateData.billingAddress = data.billingAddress;
+    if (data.billingCity !== undefined) updateData.billingCity = data.billingCity;
+    if (data.billingPostalCode !== undefined) updateData.billingPostalCode = data.billingPostalCode;
     
-    return NextResponse.json(orders);
+    if (data.useDifferentDelivery !== undefined) updateData.useDifferentDelivery = data.useDifferentDelivery;
+    if (data.deliveryFirstName !== undefined) updateData.deliveryFirstName = data.deliveryFirstName;
+    if (data.deliveryLastName !== undefined) updateData.deliveryLastName = data.deliveryLastName;
+    if (data.deliveryAddress !== undefined) updateData.deliveryAddress = data.deliveryAddress;
+    if (data.deliveryCity !== undefined) updateData.deliveryCity = data.deliveryCity;
+    if (data.deliveryPostalCode !== undefined) updateData.deliveryPostalCode = data.deliveryPostalCode;
+    
+    // Add history entry for address changes
+    if (data.billingAddress || data.billingCity || data.billingPostalCode || 
+        data.deliveryAddress || data.deliveryCity || data.deliveryPostalCode ||
+        data.useDifferentDelivery !== undefined) {
+      historyEntries.push({
+        orderId: existingOrder.id,
+        action: 'address_updated',
+        description: 'Adresy byly aktualizovány',
+        metadata: { changedBy: 'Admin' }
+      });
+    }
+
+    // Handle admin notes update
+    if (data.adminNotes !== undefined) {
+      updateData.adminNotes = data.adminNotes;
+      
+      if (data.adminNotes !== existingOrder.adminNotes) {
+        historyEntries.push({
+          orderId: existingOrder.id,
+          action: 'admin_note_updated',
+          description: data.adminNotes ? 'Dodano/zaktualizowano interní poznámky' : 'Usunięto interní poznámky',
+          oldValue: existingOrder.adminNotes,
+          newValue: data.adminNotes,
+          metadata: { changedBy: 'Admin' }
+        });
+      }
+    }
+
+    // Update order
+    const updatedOrder = await prisma.order.update({
+      where: { id: existingOrder.id },
+      data: updateData,
+      include: { invoice: true }
+    });
+
+    // Create history entries
+    if (historyEntries.length > 0) {
+      await prisma.orderHistory.createMany({
+        data: historyEntries
+      });
+    }
+
+    return NextResponse.json(updatedOrder);
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    console.error('Error updating order:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch orders' },
+      { error: 'Failed to update order' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/admin/orders/[orderNumber]
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ orderNumber: string }> }
+) {
+  const authResponse = await checkAuth(request);
+  if (authResponse) return authResponse;
+
+  const { orderNumber } = await params;
+
+  try {
+    // First check if order exists
+    const order = await prisma.order.findUnique({
+      where: { orderNumber },
+      select: { id: true }
+    });
+
+    if (!order) {
+      return NextResponse.json(
+        { error: 'Order not found' },
+        { status: 404 }
+      );
+    }
+
+    // Delete using the ID (since cascade deletes work with ID relationships)
+    await prisma.order.delete({
+      where: { id: order.id }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete order' },
       { status: 500 }
     );
   }

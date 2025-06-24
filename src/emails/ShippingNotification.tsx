@@ -33,6 +33,7 @@ interface ShippingNotificationEmailProps {
     city: string;
     postalCode: string;
   };
+  orderDate?: Date | string;
 }
 
 export const ShippingNotificationEmail = ({
@@ -43,10 +44,18 @@ export const ShippingNotificationEmail = ({
   estimatedDelivery,
   items,
   deliveryAddress,
+  orderDate,
 }: ShippingNotificationEmailProps) => {
   const previewText = `Zamówienie #${orderNumber} zostało wysłane - Galaxysklep.pl`;
 
   const trackingUrl = `https://www.galaxysklep.pl/order-status/${orderNumber}`;
+
+  // Format order date
+  const formatOrderDate = (date: Date | string | undefined) => {
+    if (!date) return new Date().toLocaleDateString('pl-PL');
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('pl-PL');
+  };
 
   return (
     <Html>
@@ -82,6 +91,13 @@ export const ShippingNotificationEmail = ({
               </Text>
             </Section>
 
+            {/* Order Description */}
+            <Text style={orderDescription}>
+              Twoje zamówienie nr {orderNumber} z dnia {formatOrderDate(orderDate)} zostało pomyślnie wysłane! 
+              Przesyłka {trackingNumber} jest już w drodze do Ciebie. Twoje zamówienie może być dostarczone 
+              w kilku przesyłkach, aby zapewnić jak najszybszą dostawę poszczególnych produktów.
+            </Text>
+
             {/* Tracking Information Box */}
             <Section style={infoBlock}>
               <Row>
@@ -97,7 +113,7 @@ export const ShippingNotificationEmail = ({
                 <Column style={infoColumn}>
                   <Text style={infoLabel}>PRZEWIDYWANA DOSTAWA</Text>
                   <Text style={infoText}>
-                    {estimatedDelivery}
+                    1 do 3 dni roboczych
                   </Text>
                 </Column>
               </Row>
@@ -125,7 +141,7 @@ export const ShippingNotificationEmail = ({
 
             {/* Order Items */}
             <Section style={itemsSection}>
-              <Text style={itemsSectionTitle}>ZAWARTOŚĆ PRZESYŁKI</Text>
+              <Text style={itemsSectionTitle}>TWOJE ZAMÓWIENIE</Text>
               <table style={itemsTable}>
                 <tbody>
                   {items.map((item, index) => (
@@ -258,6 +274,15 @@ const confirmationTitle = {
   letterSpacing: '0.5px',
   margin: '0',
   textAlign: 'center' as const,
+};
+
+const orderDescription = {
+  color: '#666666',
+  fontSize: '13px',
+  lineHeight: '20px',
+  textAlign: 'center' as const,
+  marginBottom: '24px',
+  padding: '0 20px',
 };
 
 const infoBlock = {
@@ -437,8 +462,6 @@ const legalSection = {
   marginTop: '24px',
   paddingTop: '24px',
   borderTop: '1px solid #f1f5f9',
-  paddingLeft: '24px',
-  paddingRight: '24px',
   paddingBottom: '24px',
 };
 
@@ -446,8 +469,7 @@ const legalText = {
   color: '#aaaaaa',
   fontSize: '10px',
   lineHeight: '14px',
-  textAlign: 'justify' as const,
-  padding: '0 20px',
+  textAlign: 'center' as const,
 };
 
 export default ShippingNotificationEmail;

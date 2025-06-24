@@ -57,6 +57,7 @@ interface ShippingEmailData {
   };
   deliveryMethod?: string;
   carrier?: string;
+  orderDate?: Date | string;
 }
 
 export class EmailService {
@@ -159,6 +160,7 @@ export class EmailService {
           estimatedDelivery: estimatedDeliveryStr,
           items: emailItems,
           deliveryAddress: data.deliveryAddress,
+          orderDate: data.orderDate,
         }),
       });
 
@@ -265,6 +267,7 @@ export class EmailService {
       estimatedDelivery: '3-5 dni roboczych',
       items: emailItems,
       deliveryAddress: data.deliveryAddress,
+      orderDate: data.orderDate || new Date(),
     });
   }
 }
