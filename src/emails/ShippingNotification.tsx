@@ -46,27 +46,7 @@ export const ShippingNotificationEmail = ({
 }: ShippingNotificationEmailProps) => {
   const previewText = `Zamówienie #${orderNumber} zostało wysłane - Galaxysklep.pl`;
 
-  // Get tracking URL based on carrier
-  const getTrackingUrl = (trackingNumber: string, carrier: string) => {
-    const carrierLower = carrier.toLowerCase();
-    
-    if (carrierLower.includes('inpost') || carrierLower.includes('paczkomat')) {
-      return `https://inpost.pl/sledzenie-przesylek?number=${trackingNumber}`;
-    } else if (carrierLower.includes('dpd')) {
-      return `https://www.dpd.com.pl/tracking?parcels=${trackingNumber}`;
-    } else if (carrierLower.includes('dhl')) {
-      return `https://www.dhl.com/pl-pl/home/tracking.html?tracking-id=${trackingNumber}`;
-    } else if (carrierLower.includes('poczta') || carrierLower.includes('polska')) {
-      return `https://emonitoring.poczta-polska.pl/?numer=${trackingNumber}`;
-    } else if (carrierLower.includes('ups')) {
-      return `https://www.ups.com/track?tracknum=${trackingNumber}`;
-    } else {
-      // Default to order status page if carrier not recognized
-      return `https://www.galaxysklep.pl/order-status/${orderNumber}`;
-    }
-  };
-
-  const trackingUrl = getTrackingUrl(trackingNumber, carrier);
+  const trackingUrl = `https://www.galaxysklep.pl/order-status/${orderNumber}`;
 
   return (
     <Html>
@@ -169,14 +149,6 @@ export const ShippingNotificationEmail = ({
               </table>
             </Section>
 
-            {/* Important Notice */}
-            <Section style={noticeSection}>
-              <Text style={noticeTitle}>⚠️ WAŻNE PRZY ODBIORZE</Text>
-              <Text style={noticeText}>
-                Podczas odbioru przesyłki sprawdź stan opakowania. W przypadku uszkodzeń spisz protokół z kurierem.
-              </Text>
-            </Section>
-
             {/* Contact */}
             <Text style={contactText}>
               Pytania? Skontaktuj się z nami:<br />
@@ -197,6 +169,22 @@ export const ShippingNotificationEmail = ({
                 <Link href="https://galaxysklep.pl" style={companyLink}>
                   www.galaxysklep.pl
                 </Link>
+              </Text>
+            </Section>
+
+            {/* Legal Text */}
+            <Section style={legalSection}>
+              <Text style={legalText}>
+                W przypadku uszkodzenia przesyłki podczas transportu, należy niezwłocznie poinformować dostawcę i upewnić się, 
+                że fakt ten zostanie odpowiednio odnotowany w protokole przewozowym. Zalecamy zachowanie wszystkich materiałów 
+                opakowaniowych i niezwłoczny kontakt z nami pod adresem e-mail support@galaxysklep.pl. Faktury za zamówienie 
+                są wysyłane wyłącznie elektronicznie na adres e-mail podany przy składaniu zamówienia. Prosimy o sprawdzenie 
+                poprawności podanego adresu e-mail i zachowanie kopii faktur dla własnych potrzeb. Przetwarzamy Państwa dane 
+                osobowe zgodnie z obowiązującymi przepisami o ochronie danych osobowych oraz naszą Polityką Prywatności. 
+                Dane osobowe nie są przekazywane osobom trzecim bez Państwa wyraźnej zgody, z wyjątkiem podmiotów przetwarzających 
+                niezbędnych do realizacji dostawy przesyłki. Szczegółowe informacje znajdują się na naszej stronie internetowej 
+                w sekcji Polityka Prywatności. W przypadku jakichkolwiek pytań lub opinii prosimy o kontakt pod adresem 
+                support@galaxysklep.pl. Szczegóły dotyczące warunków zakupu znajdują się w sekcji Regulamin.
               </Text>
             </Section>
           </Section>
@@ -258,7 +246,7 @@ const titleSection = {
 };
 
 const checkmarkStyle = {
-  color: '#2563eb',
+  color: '#0a5f0a',
   fontSize: '20px',
   marginRight: '8px',
 };
@@ -323,7 +311,7 @@ const buttonSection = {
 };
 
 const trackButton = {
-  backgroundColor: '#2563eb',
+  backgroundColor: '#0a5f0a',
   borderRadius: '3px',
   color: '#ffffff',
   display: 'inline-block',
@@ -338,7 +326,7 @@ const trackButton = {
 
 const addressSection = {
   backgroundColor: '#fafafa',
-  borderLeft: '3px solid #2563eb',
+  borderLeft: '3px solid #0a5f0a',
   borderRadius: '0 4px 4px 0',
   padding: '16px',
   marginBottom: '20px',
@@ -408,28 +396,6 @@ const productNameLink = {
   fontWeight: '500' as const,
 };
 
-const noticeSection = {
-  backgroundColor: '#fff9e6',
-  border: '1px solid #ffd666',
-  borderRadius: '4px',
-  padding: '16px',
-  marginBottom: '24px',
-};
-
-const noticeTitle = {
-  color: '#000000',
-  fontSize: '13px',
-  fontWeight: '600',
-  marginBottom: '8px',
-};
-
-const noticeText = {
-  color: '#666666',
-  fontSize: '12px',
-  lineHeight: '18px',
-  margin: '0',
-};
-
 const contactText = {
   color: '#666666',
   fontSize: '12px',
@@ -465,6 +431,23 @@ const companyLink = {
   color: '#073635',
   textDecoration: 'none',
   fontWeight: '500' as const,
+};
+
+const legalSection = {
+  marginTop: '24px',
+  paddingTop: '24px',
+  borderTop: '1px solid #f1f5f9',
+  paddingLeft: '24px',
+  paddingRight: '24px',
+  paddingBottom: '24px',
+};
+
+const legalText = {
+  color: '#aaaaaa',
+  fontSize: '10px',
+  lineHeight: '14px',
+  textAlign: 'justify' as const,
+  padding: '0 20px',
 };
 
 export default ShippingNotificationEmail;
