@@ -41,8 +41,8 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
         <div>
           <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
             <Shield className="h-6 w-6 text-blue-600" />
@@ -50,6 +50,9 @@ export default function AdminLoginPage() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Admin přihlášení
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Galaxysklep.pl Admin Panel
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
