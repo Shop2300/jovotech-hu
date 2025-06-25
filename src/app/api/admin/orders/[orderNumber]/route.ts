@@ -202,6 +202,98 @@ export async function PATCH(
         newValue: data.paymentStatus,
         metadata: { changedBy: 'Admin' }
       });
+
+      // Check if payment status is being changed to "paid"
+      if (data.paymentStatus === 'paid' && existingOrder.paymentStatus !== 'paid') {
+        // Send payment confirmation email
+        try {
+          console.log('Sending payment confirmation email for order:', orderNumber);
+          
+          // Parse items from JSON
+          const items = existingOrder.items as any[];
+          
+          // Get product details for slugs and images
+          const productIds = items.map(item => item.productId || item.id).filter(Boolean);
+          const products = productIds.length > 0 ? await prisma.product.findMany({
+            where: { id: { in: productIds } },
+            include: { 
+              category: true,
+              images: {
+                orderBy: { order: 'asc' },
+                take: 1
+              }
+            }
+          }) : [];
+          
+          // Create a map of product details
+          const productMap = new Map(products.map(p => [p.id, p]));
+          
+          // Enhance items with slug and image information
+          const itemsWithDetails = items.map(item => {
+            const product = productMap.get(item.productId || item.id);
+            return {
+              name: item.name || product?.name || 'Produkt',
+              quantity: item.quantity,
+              price: item.price,
+              image: item.image || (product?.images?.[0]?.url ? product.images[0].url : null),
+              productSlug: product?.slug || null,
+              categorySlug: product?.category?.slug || null
+            };
+          });
+          
+          // Prepare delivery address
+          const deliveryAddress = existingOrder.useDifferentDelivery
+            ? {
+                street: existingOrder.deliveryAddress || '',
+                city: existingOrder.deliveryCity || '',
+                postalCode: existingOrder.deliveryPostalCode || ''
+              }
+            : {
+                street: existingOrder.billingAddress || '',
+                city: existingOrder.billingCity || '',
+                postalCode: existingOrder.billingPostalCode || ''
+              };
+
+          await EmailService.sendPaymentConfirmation({
+            orderNumber: orderNumber,
+            customerEmail: existingOrder.customerEmail,
+            customerName: existingOrder.customerName,
+            items: itemsWithDetails,
+            total: Number(existingOrder.total),
+            deliveryMethod: existingOrder.deliveryMethod,
+            paymentMethod: existingOrder.paymentMethod,
+            deliveryAddress: deliveryAddress,
+            paymentDate: new Date()
+          });
+
+          console.log('Payment confirmation email sent successfully');
+          
+          historyEntries.push({
+            orderId: existingOrder.id,
+            action: 'email_sent',
+            description: 'E-mail z potwierdzeniem płatności został wysłany do klienta',
+            newValue: 'payment_confirmation',
+            metadata: { 
+              changedBy: 'Admin',
+              emailSent: true
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send payment confirmation email:', emailError);
+          // Don't fail the payment status update if email fails
+          // But add a note to history
+          historyEntries.push({
+            orderId: existingOrder.id,
+            action: 'email_failed',
+            description: 'Nie udało się wysłać e-maila z potwierdzeniem płatności',
+            newValue: 'payment_confirmation_failed',
+            metadata: { 
+              changedBy: 'Admin',
+              error: emailError instanceof Error ? emailError.message : 'Unknown error'
+            }
+          });
+        }
+      }
     }
 
     // Track tracking number changes

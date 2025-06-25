@@ -2,6 +2,7 @@
 import { Resend } from 'resend';
 import { OrderConfirmationEmail } from '@/emails/OrderConfirmation';
 import { ShippingNotificationEmail } from '@/emails/ShippingNotification';
+import { PaymentConfirmationEmail } from '@/emails/PaymentConfirmation';
 import React from 'react';
 
 // Initialize Resend with your API key
@@ -58,6 +59,22 @@ interface ShippingEmailData {
   deliveryMethod?: string;
   carrier?: string;
   orderDate?: Date | string;
+}
+
+interface PaymentEmailData {
+  orderNumber: string;
+  customerEmail: string;
+  customerName: string;
+  items: OrderItem[];
+  total: number;
+  deliveryMethod: string;
+  paymentMethod: string;
+  deliveryAddress: {
+    street: string;
+    city: string;
+    postalCode: string;
+  };
+  paymentDate?: Date;
 }
 
 export class EmailService {
@@ -174,6 +191,49 @@ export class EmailService {
   }
 
   /**
+   * Send payment confirmation email
+   */
+  static async sendPaymentConfirmation(data: PaymentEmailData): Promise<void> {
+    try {
+      // Transform items for email template
+      const emailItems = data.items.map(item => ({
+        name: item.name || 'Produkt',
+        quantity: item.quantity,
+        price: item.price,
+        image: item.image || null,
+        productSlug: item.productSlug || null,
+        categorySlug: item.categorySlug || null,
+      }));
+
+      // Send the email using React component
+      const result = await resend.emails.send({
+        from: FROM_EMAIL,
+        to: data.customerEmail,
+        replyTo: REPLY_TO,
+        subject: `Płatność otrzymana - Zamówienie #${data.orderNumber} - Galaxysklep.pl`,
+        react: PaymentConfirmationEmail({
+          orderNumber: data.orderNumber,
+          customerName: data.customerName,
+          customerEmail: data.customerEmail,
+          items: emailItems,
+          total: data.total,
+          deliveryMethod: data.deliveryMethod,
+          paymentMethod: data.paymentMethod,
+          deliveryAddress: data.deliveryAddress,
+          paymentDate: data.paymentDate || new Date(),
+        }),
+      });
+
+      console.log('Payment confirmation email sent:', result);
+    } catch (error) {
+      console.error('Failed to send payment confirmation email:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Email error details:', error);
+      }
+    }
+  }
+
+  /**
    * Send test email (for verification)
    */
   static async sendTestEmail(toEmail: string): Promise<{ success: boolean; error?: string }> {
@@ -268,6 +328,32 @@ export class EmailService {
       items: emailItems,
       deliveryAddress: data.deliveryAddress,
       orderDate: data.orderDate || new Date(),
+    });
+  }
+
+  /**
+   * Preview payment confirmation HTML (for testing)
+   */
+  static previewPaymentConfirmation(data: Omit<PaymentEmailData, 'customerEmail'>): React.ReactElement {
+    const emailItems = data.items.map(item => ({
+      name: item.name || 'Produkt',
+      quantity: item.quantity,
+      price: item.price,
+      image: item.image || null,
+      productSlug: item.productSlug || null,
+      categorySlug: item.categorySlug || null,
+    }));
+
+    return React.createElement(PaymentConfirmationEmail, {
+      orderNumber: data.orderNumber,
+      customerName: data.customerName,
+      customerEmail: 'preview@example.com',
+      items: emailItems,
+      total: data.total,
+      deliveryMethod: data.deliveryMethod,
+      paymentMethod: data.paymentMethod,
+      deliveryAddress: data.deliveryAddress,
+      paymentDate: data.paymentDate || new Date(),
     });
   }
 }
