@@ -457,16 +457,16 @@ export const OrderConfirmationEmail = ({
             {/* Legal */}
             <Section style={legalSection}>
               <Text style={legalText}>
-                Zgodnie z przepisami Ustawy z dnia 30 maja 2014 r. o prawach konsumenta (Dz.U. 2014 poz. 827 z późn. zm.), 
-                przysługuje Państwu prawo odstąpienia od niniejszej umowy sprzedaży w terminie 14 dni kalendarzowych od dnia 
-                otrzymania towaru bez podania jakiejkolwiek przyczyny. Termin do odstąpienia od umowy wygasa po upływie 14 dni 
-                od dnia, w którym weszli Państwo w posiadanie rzeczy lub w którym osoba trzecia inna niż przewoźnik i wskazana 
-                przez Państwa weszła w posiadanie rzeczy. Aby skorzystać z prawa odstąpienia od umowy, muszą Państwo poinformować 
-                nas o swojej decyzji o odstąpieniu od niniejszej umowy w drodze jednoznacznego oświadczenia (na przykład pismo 
-                wysłane pocztą lub pocztą elektroniczną). Szczegółowe warunki odstąpienia od umowy, w tym wzór formularza odstąpienia, 
-                znajdują się w regulaminie sklepu dostępnym pod adresem www.galaxysklep.pl/regulamin. Niniejsze postanowienia 
-                nie wyłączają, nie ograniczają ani nie zawieszają uprawnień kupującego wynikających z przepisów o rękojmi za wady 
-                rzeczy sprzedanej zgodnie z Kodeksem cywilnym.
+                W przypadku uszkodzenia przesyłki podczas transportu, należy niezwłocznie poinformować dostawcę i upewnić się, 
+                że fakt ten zostanie odpowiednio odnotowany w protokole przewozowym. Zalecamy zachowanie wszystkich materiałów 
+                opakowaniowych i niezwłoczny kontakt z nami pod adresem e-mail support@galaxysklep.pl. Faktury za zamówienie 
+                są wysyłane wyłącznie elektronicznie na adres e-mail podany przy składaniu zamówienia. Prosimy o sprawdzenie 
+                poprawności podanego adresu e-mail i zachowanie kopii faktur dla własnych potrzeb. Przetwarzamy Państwa dane 
+                osobowe zgodnie z obowiązującymi przepisami o ochronie danych osobowych oraz naszą Polityką Prywatności. 
+                Dane osobowe nie są przekazywane osobom trzecim bez Państwa wyraźnej zgody, z wyjątkiem podmiotów przetwarzających 
+                niezbędnych do realizacji dostawy przesyłki. Szczegółowe informacje znajdują się na naszej stronie internetowej 
+                w sekcji Polityka Prywatności. W przypadku jakichkolwiek pytań lub opinii prosimy o kontakt pod adresem 
+                support@galaxysklep.pl. Szczegóły dotyczące warunków zakupu znajdują się w sekcji Regulamin.
               </Text>
             </Section>
           </Section>
@@ -884,8 +884,6 @@ const legalSection = {
   marginTop: '24px',
   paddingTop: '24px',
   borderTop: '1px solid #f1f5f9',
-  paddingLeft: '24px',
-  paddingRight: '24px',
   paddingBottom: '24px',
 };
 
@@ -893,8 +891,7 @@ const legalText = {
   color: '#aaaaaa',
   fontSize: '10px',
   lineHeight: '14px',
-  textAlign: 'justify' as const,
-  padding: '0 20px',
+  textAlign: 'center' as const,
 };
 
 export default OrderConfirmationEmail;

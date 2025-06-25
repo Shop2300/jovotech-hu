@@ -310,7 +310,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   </div>
                   {order.trackingNumber && (
                     <Link
-                      href="/dostawa-i-platnosc"
+                      href="/informacje-o-dostawie"
                       className="flex items-center gap-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                     >
                       Śledź online
