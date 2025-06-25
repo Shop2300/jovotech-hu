@@ -118,6 +118,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [showCartPopup, setShowCartPopup] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [addedQuantity, setAddedQuantity] = useState(1);
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
 
   // Get unique colors and sizes
   const colors = Array.from(new Set(product.variants?.filter(v => v.colorName).map(v => v.colorName))) as string[];
@@ -360,6 +361,45 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     // Show popup instead of toast
     setShowCartPopup(true);
     setQuantity(1);
+  };
+
+  // Handle contact form submission
+  const handleContactFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmittingContact(true);
+
+    const formData = new FormData(e.currentTarget);
+    const productUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+    try {
+      const response = await fetch('/api/contact/product-inquiry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.get('name'),
+          email: formData.get('email'),
+          phone: formData.get('phone') || '',
+          subject: formData.get('subject'),
+          message: formData.get('message'),
+          productName: product.name,
+          productUrl: productUrl
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('Twoja wiadomość została wysłana! Odpowiemy najszybciej jak to możliwe.');
+        setShowContactForm(false);
+      } else {
+        throw new Error('Failed to send email');
+      }
+    } catch (error) {
+      console.error('Error sending contact form:', error);
+      toast.error('Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.');
+    } finally {
+      setIsSubmittingContact(false);
+    }
   };
 
   // Prepare images for gallery
@@ -767,6 +807,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     type="button"
                     onClick={() => setShowContactForm(false)}
                     className="text-gray-500 hover:text-gray-700"
+                    disabled={isSubmittingContact}
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -774,19 +815,17 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   </button>
                 </div>
                 
-                <form className="space-y-4" onSubmit={(e) => {
-                  e.preventDefault();
-                  toast.success('Twoja wiadomość została wysłana!');
-                  setShowContactForm(false);
-                }}>
+                <form className="space-y-4" onSubmit={handleContactFormSubmit}>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Imię i nazwisko
                     </label>
                     <input
                       type="text"
+                      name="name"
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isSubmittingContact}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                     />
                   </div>
                   <div>
@@ -795,8 +834,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     </label>
                     <input
                       type="email"
+                      name="email"
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isSubmittingContact}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                     />
                   </div>
                   <div>
@@ -805,7 +846,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     </label>
                     <input
                       type="tel"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      name="phone"
+                      disabled={isSubmittingContact}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                     />
                   </div>
                   <div>
@@ -814,9 +857,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     </label>
                     <input
                       type="text"
+                      name="subject"
                       required
                       defaultValue={`Pytanie o produkt: ${product.name}`}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isSubmittingContact}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                     />
                   </div>
                   <div>
@@ -824,23 +869,27 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       Twoja wiadomość
                     </label>
                     <textarea
+                      name="message"
                       required
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isSubmittingContact}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                       placeholder="Napisz do nas swoje pytanie dotyczące tego produktu..."
                     />
                   </div>
                   <div className="flex gap-3 pt-4">
                     <button
                       type="submit"
-                      className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition font-medium"
+                      disabled={isSubmittingContact}
+                      className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition font-medium disabled:bg-blue-400 disabled:cursor-not-allowed"
                     >
-                      Wyślij wiadomość
+                      {isSubmittingContact ? 'Wysyłanie...' : 'Wyślij wiadomość'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowContactForm(false)}
-                      className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition font-medium"
+                      disabled={isSubmittingContact}
+                      className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition font-medium disabled:bg-gray-100 disabled:cursor-not-allowed"
                     >
                       Zamknij
                     </button>
