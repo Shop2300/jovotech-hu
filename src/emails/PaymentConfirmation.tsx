@@ -32,11 +32,6 @@ import {
     total: number;
     deliveryMethod: string;
     paymentMethod: string;
-    deliveryAddress: {
-      street: string;
-      city: string;
-      postalCode: string;
-    };
     paymentDate?: Date;
   }
   
@@ -92,7 +87,6 @@ import {
     total,
     deliveryMethod,
     paymentMethod,
-    deliveryAddress,
     paymentDate,
   }: PaymentConfirmationEmailProps) => {
     const previewText = `Płatność otrzymana - Zamówienie #${orderNumber} - Galaxysklep.pl`;
@@ -278,16 +272,6 @@ import {
                 </table>
               </Section>
   
-              {/* Delivery Address */}
-              <Section style={addressSection}>
-                <Text style={addressLabel}>ADRES DOSTAWY</Text>
-                <Text style={addressText}>
-                  {customerName}<br />
-                  {deliveryAddress.street}<br />
-                  {deliveryAddress.postalCode} {deliveryAddress.city}
-                </Text>
-              </Section>
-  
               {/* Contact */}
               <Text style={contactText}>
                 Pytania? Skontaktuj się z nami:<br />
@@ -311,16 +295,7 @@ import {
                 </Text>
               </Section>
   
-              {/* Legal */}
-              <Section style={legalSection}>
-                <Text style={legalText}>
-                  Ten e-mail został wygenerowany automatycznie. Prosimy nie odpowiadać na tę wiadomość. 
-                  W przypadku jakichkolwiek pytań lub problemów prosimy o kontakt pod adresem support@galaxysklep.pl. 
-                  Przetwarzamy Państwa dane osobowe zgodnie z obowiązującymi przepisami o ochronie danych osobowych 
-                  oraz naszą Polityką Prywatności. Szczegółowe informacje znajdują się na naszej stronie internetowej 
-                  w sekcji Polityka Prywatności.
-                </Text>
-              </Section>
+  
             </Section>
           </Container>
         </Body>
@@ -578,30 +553,6 @@ import {
     textAlign: 'right' as const,
   };
   
-  const addressSection = {
-    backgroundColor: '#fafafa',
-    borderLeft: '3px solid #0a5f0a',
-    borderRadius: '0 4px 4px 0',
-    padding: '16px',
-    marginBottom: '20px',
-  };
-  
-  const addressLabel = {
-    color: '#666666',
-    fontSize: '11px',
-    fontWeight: '600',
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase' as const,
-    marginBottom: '8px',
-  };
-  
-  const addressText = {
-    color: '#000000',
-    fontSize: '13px',
-    lineHeight: '18px',
-    margin: '0',
-  };
-  
   const contactText = {
     color: '#666666',
     fontSize: '12px',
@@ -637,20 +588,6 @@ import {
     color: '#073635',
     textDecoration: 'none',
     fontWeight: '500' as const,
-  };
-  
-  const legalSection = {
-    marginTop: '24px',
-    paddingTop: '24px',
-    borderTop: '1px solid #f1f5f9',
-    paddingBottom: '24px',
-  };
-  
-  const legalText = {
-    color: '#aaaaaa',
-    fontSize: '10px',
-    lineHeight: '14px',
-    textAlign: 'center' as const,
   };
   
   export default PaymentConfirmationEmail;

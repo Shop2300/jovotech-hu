@@ -71,7 +71,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
 
   // Increased magnifier size and zoom level
   const magnifierSize = 300; // Increased from 250px
-  const zoomLevel = 2.1; // Reduced zoom for better balance
+  const zoomLevel = 1.9; // Reduced zoom for better balance
 
   return (
     <div className="space-y-4">

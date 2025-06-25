@@ -241,19 +241,6 @@ export async function PATCH(
             };
           });
           
-          // Prepare delivery address
-          const deliveryAddress = existingOrder.useDifferentDelivery
-            ? {
-                street: existingOrder.deliveryAddress || '',
-                city: existingOrder.deliveryCity || '',
-                postalCode: existingOrder.deliveryPostalCode || ''
-              }
-            : {
-                street: existingOrder.billingAddress || '',
-                city: existingOrder.billingCity || '',
-                postalCode: existingOrder.billingPostalCode || ''
-              };
-
           await EmailService.sendPaymentConfirmation({
             orderNumber: orderNumber,
             customerEmail: existingOrder.customerEmail,
@@ -262,7 +249,6 @@ export async function PATCH(
             total: Number(existingOrder.total),
             deliveryMethod: existingOrder.deliveryMethod,
             paymentMethod: existingOrder.paymentMethod,
-            deliveryAddress: deliveryAddress,
             paymentDate: new Date()
           });
 

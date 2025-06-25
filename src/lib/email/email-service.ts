@@ -69,11 +69,6 @@ interface PaymentEmailData {
   total: number;
   deliveryMethod: string;
   paymentMethod: string;
-  deliveryAddress: {
-    street: string;
-    city: string;
-    postalCode: string;
-  };
   paymentDate?: Date;
 }
 
@@ -219,7 +214,6 @@ export class EmailService {
           total: data.total,
           deliveryMethod: data.deliveryMethod,
           paymentMethod: data.paymentMethod,
-          deliveryAddress: data.deliveryAddress,
           paymentDate: data.paymentDate || new Date(),
         }),
       });
@@ -352,7 +346,6 @@ export class EmailService {
       total: data.total,
       deliveryMethod: data.deliveryMethod,
       paymentMethod: data.paymentMethod,
-      deliveryAddress: data.deliveryAddress,
       paymentDate: data.paymentDate || new Date(),
     });
   }
