@@ -24,6 +24,20 @@ import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SatisfactionRating } from '@/components/SatisfactionRating';
 import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
+// Helper function to format dates in the correct format with timezone adjustment
+const formatDateWithTimezone = (dateString: string, includeTime: boolean = true) => {
+  const date = new Date(dateString);
+  // If the server returns UTC and you need to add 2 hours for CET/CEST
+  // Uncomment the next line:
+  // date.setHours(date.getHours() + 2);
+  
+  if (includeTime) {
+    return format(date, 'dd.MM.yyyy, HH:mm', { locale: pl });
+  } else {
+    return format(date, 'dd.MM.yyyy', { locale: pl });
+  }
+};
+
 interface OrderStatusData {
   orderNumber: string;
   status: string;
@@ -163,7 +177,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                 Zamówienie #{order.orderNumber}
               </h1>
               <p className="text-gray-600">
-                Utworzone: {format(new Date(order.createdAt), 'd MMMM yyyy HH:mm', { locale: pl })}
+                Utworzone: {formatDateWithTimezone(order.createdAt)}
               </p>
             </div>
             <div className="mt-4 sm:mt-0">
@@ -458,7 +472,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <p className="text-xs text-gray-500">Numer faktury:</p>
                     <p className="text-sm font-medium text-gray-900">{order.invoice.invoiceNumber}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Wystawiono: {format(new Date(order.invoice.issuedAt), 'd MMM yyyy', { locale: pl })}
+                      Wystawiono: {formatDateWithTimezone(order.invoice.issuedAt, false)}
                     </p>
                   </div>
                   {order.invoice.pdfUrl ? (

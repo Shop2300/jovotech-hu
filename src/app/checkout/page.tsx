@@ -979,11 +979,6 @@ export default function CheckoutPage() {
                 </Link>
                 .
               </p>
-              {isCompany && (
-                <p className="text-xs text-gray-400 text-center mt-2">
-                  Faktura VAT zostanie wystawiona automatycznie
-                </p>
-              )}
             </div>
           </div>
         </div>

@@ -14,6 +14,14 @@ import { AdminNotes } from './AdminNotes';
 import { OrderHistory } from '@/components/admin/OrderHistory';
 import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
+// Helper function to format dates with timezone adjustment
+const formatDateWithTimezone = (dateString: string | Date) => {
+  const date = new Date(dateString);
+  // Add 2 hours for Central European Time (GMT+2)
+  date.setHours(date.getHours() + 2);
+  return format(date, 'dd.MM.yyyy, HH:mm', { locale: cs });
+};
+
 interface OrderItem {
   productId: string;
   name?: string;
@@ -332,7 +340,7 @@ export default async function OrderDetailPage({
             <div className="space-y-2 text-sm">
               <p className="text-black">
                 <strong>Datum vytvoření:</strong><br />
-                {format(new Date(order.createdAt), 'd. MMMM yyyy HH:mm', { locale: cs })}
+                {formatDateWithTimezone(order.createdAt)}
               </p>
               
               <div className="pt-3 mt-3">
