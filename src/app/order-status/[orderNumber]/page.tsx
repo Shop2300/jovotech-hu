@@ -29,7 +29,7 @@ const formatDateWithTimezone = (dateString: string, includeTime: boolean = true)
   const date = new Date(dateString);
   // If the server returns UTC and you need to add 2 hours for CET/CEST
   // Uncomment the next line:
-  // date.setHours(date.getHours() + 2);
+   date.setHours(date.getHours() + 2);
   
   if (includeTime) {
     return format(date, 'dd.MM.yyyy, HH:mm', { locale: pl });
