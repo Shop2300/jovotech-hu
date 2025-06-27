@@ -168,8 +168,8 @@ export default function CheckoutPage() {
 
     try {
       const orderData = {
-        email: data.email,
-        phone: data.phone,
+        customerEmail: data.email,
+        customerPhone: data.phone,
         // Company details
         isCompany: data.isCompany,
         companyName: data.isCompany ? data.companyName : null,
