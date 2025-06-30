@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { EmailService } from '@/lib/email/email-service';
 import { getDeliveryMethodLabel, getPaymentMethodLabel } from '@/lib/order-options';
+import { put } from '@vercel/blob';
+import { generateInvoicePDF } from '@/lib/invoice-pdf-generator';
 
 // Generate order number
 function generateOrderNumber(): string {
@@ -12,6 +14,119 @@ function generateOrderNumber(): string {
   const day = String(now.getDate()).padStart(2, '0');
   const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
   return `${year}${month}${day}-${random}`;
+}
+
+// Generate invoice function (extracted from invoice generate route)
+async function generateInvoice(order: any) {
+  try {
+    // Generate invoice number
+    const year = new Date().getFullYear();
+    const invoiceNumber = `FAK${year}${order.orderNumber}`;
+
+    // Create invoice record - NO VAT since Galaxy Sklep is not a VAT payer
+    const invoice = await prisma.invoice.create({
+      data: {
+        invoiceNumber,
+        orderId: order.id,
+        totalAmount: order.total,
+        vatAmount: 0, // No VAT - not a VAT payer
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+      }
+    });
+
+    // Generate PDF
+    try {
+      // Parse order items
+      const items = order.items as any[];
+      
+      // Ensure delivery and payment methods have values
+      const deliveryMethod = order.deliveryMethod || 'zasilkovna';
+      const paymentMethod = order.paymentMethod || 'bank';
+      
+      // Prepare invoice data in the format expected by generateInvoicePDF
+      const invoiceData = {
+        invoiceNumber: invoice.invoiceNumber,
+        orderNumber: order.orderNumber,
+        createdAt: order.createdAt.toISOString(),
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone || '',
+        billingFirstName: order.billingFirstName || order.firstName || '',
+        billingLastName: order.billingLastName || order.lastName || '',
+        billingAddress: order.billingAddress || order.address || '',
+        billingCity: order.billingCity || order.city || '',
+        billingPostalCode: order.billingPostalCode || order.postalCode || '',
+        billingCountry: 'Polska', // Default to Poland
+        billingCompany: order.companyName || '', // Company name from order
+        billingNip: order.companyNip || '', // Company NIP from order
+        shippingFirstName: order.useDifferentDelivery ? (order.deliveryFirstName || '') : (order.billingFirstName || ''),
+        shippingLastName: order.useDifferentDelivery ? (order.deliveryLastName || '') : (order.billingLastName || ''),
+        shippingAddress: order.useDifferentDelivery ? (order.deliveryAddress || '') : (order.billingAddress || ''),
+        shippingCity: order.useDifferentDelivery ? (order.deliveryCity || '') : (order.billingCity || ''),
+        shippingPostalCode: order.useDifferentDelivery ? (order.deliveryPostalCode || '') : (order.billingPostalCode || ''),
+        items: items.map(item => ({
+          name: item.name || 'Product',
+          quantity: item.quantity,
+          price: item.price
+        })),
+        total: Number(order.total),
+        paymentMethod: paymentMethod,
+        deliveryMethod: deliveryMethod,
+        notes: order.note || ''
+      };
+      
+      // Generate PDF (returns jsPDF instance)
+      const pdfDoc = generateInvoicePDF(invoiceData);
+      
+      // Convert jsPDF to Buffer
+      const pdfBuffer = Buffer.from(pdfDoc.output('arraybuffer'));
+      
+      // Upload to Vercel Blob Storage with a unique timestamp to avoid caching issues
+      const timestamp = Date.now();
+      const { url } = await put(
+        `invoices/${invoiceNumber}_${timestamp}.pdf`,
+        pdfBuffer,
+        {
+          access: 'public',
+          contentType: 'application/pdf',
+          addRandomSuffix: false,
+          cacheControlMaxAge: 0, // Disable caching
+        }
+      );
+
+      // Update invoice with PDF URL
+      const updatedInvoice = await prisma.invoice.update({
+        where: { id: invoice.id },
+        data: { pdfUrl: url }
+      });
+
+      // Add to order history
+      await prisma.orderHistory.create({
+        data: {
+          orderId: order.id,
+          action: 'invoice_generated',
+          description: `Faktura ${invoiceNumber} została wygenerowana`,
+          newValue: invoiceNumber,
+          metadata: {
+            invoiceId: invoice.id,
+            generatedBy: 'System'
+          }
+        }
+      });
+
+      return updatedInvoice;
+
+    } catch (pdfError) {
+      // If PDF generation fails, delete the invoice record
+      await prisma.invoice.delete({
+        where: { id: invoice.id }
+      });
+      throw pdfError;
+    }
+
+  } catch (error) {
+    console.error('Error generating invoice:', error);
+    throw error;
+  }
 }
 
 // POST /api/orders - Create new order
@@ -68,7 +183,7 @@ export async function POST(request: NextRequest) {
     const deliveryCity = data.useDifferentDelivery ? data.deliveryCity : data.billingCity;
     const deliveryPostalCode = data.useDifferentDelivery ? data.deliveryPostalCode : data.billingPostalCode;
     
-    // Create order
+    // Create order with 'processing' status instead of 'pending'
     const order = await prisma.order.create({
       data: {
         orderNumber,
@@ -97,7 +212,7 @@ export async function POST(request: NextRequest) {
         postalCode: data.billingPostalCode,
         items: data.items, // Store as JSON
         total: total,
-        status: 'pending',
+        status: 'processing', // Changed from 'pending' to 'processing'
         paymentStatus: 'unpaid',
         deliveryMethod: data.deliveryMethod,
         paymentMethod: data.paymentMethod,
@@ -106,7 +221,7 @@ export async function POST(request: NextRequest) {
       }
     });
     
-    console.log('Order created successfully:', order.orderNumber);
+    console.log('Order created successfully with processing status:', order.orderNumber);
     
     // Create order history entry
     await prisma.orderHistory.create({
@@ -114,7 +229,7 @@ export async function POST(request: NextRequest) {
         orderId: order.id,
         action: 'order_created',
         description: 'Zamówienie zostało złożone',
-        newValue: 'pending',
+        newValue: 'processing',
         performedBy: 'Customer',
         metadata: {
           customerEmail: data.customerEmail,
@@ -123,6 +238,32 @@ export async function POST(request: NextRequest) {
         }
       }
     });
+
+    // Add status change history entry
+    await prisma.orderHistory.create({
+      data: {
+        orderId: order.id,
+        action: 'status_change',
+        description: 'Status zamówienia zmieniony na: W trakcie realizacji',
+        oldValue: 'pending',
+        newValue: 'processing',
+        performedBy: 'System',
+        metadata: {
+          autoProcessed: true
+        }
+      }
+    });
+    
+    // Generate invoice immediately
+    try {
+      console.log('Generating invoice for order:', order.orderNumber);
+      const invoice = await generateInvoice(order);
+      console.log('Invoice generated successfully:', invoice.invoiceNumber);
+    } catch (invoiceError) {
+      console.error('Failed to generate invoice:', invoiceError);
+      // Don't fail the order creation if invoice generation fails
+      // Admin can manually generate it later
+    }
     
     // Update product stock and sold count
     for (const item of data.items) {
