@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/utils';
 import { format } from 'date-fns';
-import { cs } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { Eye, FileText, Trash2, CheckCircle, XCircle, Package, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -133,17 +133,17 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         throw new Error('Failed to update status');
       }
 
-      toast.success('Stav objednávky byl aktualizován');
+      toast.success('Order status has been updated');
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při aktualizaci stavu objednávky');
+      toast.error('Error updating order status');
     } finally {
       setUpdatingStatus(null);
     }
   };
 
   const handleBulkStatusChange = async (newStatus: string) => {
-    if (!confirm(`Opravdu chcete změnit stav u ${selectedOrders.length} objednávek?`)) {
+    if (!confirm(`Are you sure you want to change the status of ${selectedOrders.length} orders?`)) {
       return;
     }
 
@@ -165,11 +165,11 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         }
       }
 
-      toast.success(`Stav byl změněn u ${selectedOrders.length} objednávek`);
+      toast.success(`Status changed for ${selectedOrders.length} orders`);
       setSelectedOrders([]);
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při hromadné změně stavu');
+      toast.error('Error changing status in bulk');
     } finally {
       setBulkUpdating(false);
     }
@@ -177,11 +177,11 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { label: 'Čeká na vyřízení', className: 'bg-yellow-100 text-yellow-800' },
-      processing: { label: 'Zpracovává se', className: 'bg-blue-100 text-blue-800' },
-      shipped: { label: 'Odesláno', className: 'bg-purple-100 text-purple-800' },
-      delivered: { label: 'Doručeno', className: 'bg-green-100 text-green-800' },
-      cancelled: { label: 'Zrušeno', className: 'bg-red-100 text-red-800' },
+      pending: { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' },
+      processing: { label: 'Processing', className: 'bg-blue-100 text-blue-800' },
+      shipped: { label: 'Shipped', className: 'bg-purple-100 text-purple-800' },
+      delivered: { label: 'Delivered', className: 'bg-green-100 text-green-800' },
+      cancelled: { label: 'Cancelled', className: 'bg-red-100 text-red-800' },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -204,12 +204,12 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         {isPaid ? (
           <>
             <CheckCircle size={12} />
-            Zaplaceno
+            Paid
           </>
         ) : (
           <>
             <XCircle size={12} />
-            Nezaplaceno
+            Unpaid
           </>
         )}
       </span>
@@ -217,7 +217,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
   };
 
   const handleDelete = async (orderId: string, orderNumber: string) => {
-    if (!confirm('Opravdu chcete smazat tuto objednávku?')) {
+    if (!confirm('Are you sure you want to delete this order?')) {
       return;
     }
 
@@ -231,12 +231,12 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         throw new Error('Failed to delete order');
       }
 
-      toast.success('Objednávka byla smazána');
+      toast.success('Order has been deleted');
       if (onDelete) {
         onDelete(orderId);
       }
     } catch (error) {
-      toast.error('Chyba při mazání objednávky');
+      toast.error('Error deleting order');
     } finally {
       setDeletingId(null);
     }
@@ -262,7 +262,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
   };
 
   const handleBulkDelete = async () => {
-    if (!confirm(`Opravdu chcete smazat ${selectedOrders.length} objednávek?`)) {
+    if (!confirm(`Are you sure you want to delete ${selectedOrders.length} orders?`)) {
       return;
     }
 
@@ -281,7 +281,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         }
       }
 
-      toast.success(`${selectedOrders.length} objednávek bylo smazáno`);
+      toast.success(`${selectedOrders.length} orders have been deleted`);
       setSelectedOrders([]);
       
       // Reset to first page if current page becomes empty
@@ -293,14 +293,14 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
       
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při mazání objednávek');
+      toast.error('Error deleting orders');
     }
   };
 
   if (!orders || orders.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-center text-gray-500">Zatím žádné objednávky</p>
+        <p className="text-center text-gray-500">No orders yet</p>
       </div>
     );
   }
@@ -334,7 +334,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Hledat podle čísla objednávky, jména nebo emailu..."
+            placeholder="Search by order number, name or email..."
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
           {searchQuery && (
@@ -348,9 +348,9 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         </div>
         {searchQuery && (
           <div className="mt-2 text-sm text-gray-600">
-            Nalezeno {searchFilteredOrders.length} objednávek
+            Found {searchFilteredOrders.length} orders
             {searchFilteredOrders.length !== orders.length && (
-              <span> z celkových {orders.length}</span>
+              <span> out of {orders.length} total</span>
             )}
           </div>
         )}
@@ -367,7 +367,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Všechny platby ({paymentCounts.all})
+            All payments ({paymentCounts.all})
           </button>
           <button
             onClick={() => handlePaymentFilterChange('paid')}
@@ -379,7 +379,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
           >
             <span className="flex items-center gap-1">
               <CheckCircle size={14} />
-              Zaplaceno ({paymentCounts.paid})
+              Paid ({paymentCounts.paid})
             </span>
           </button>
           <button
@@ -392,7 +392,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
           >
             <span className="flex items-center gap-1">
               <XCircle size={14} />
-              Nezaplaceno ({paymentCounts.unpaid})
+              Unpaid ({paymentCounts.unpaid})
             </span>
           </button>
         </div>
@@ -409,7 +409,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Všechny ({statusCounts.all})
+            All ({statusCounts.all})
           </button>
           <button
             onClick={() => handleStatusFilterChange('pending')}
@@ -419,7 +419,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                 : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
             }`}
           >
-            Čeká na vyřízení ({statusCounts.pending})
+            Pending ({statusCounts.pending})
           </button>
           <button
             onClick={() => handleStatusFilterChange('processing')}
@@ -429,7 +429,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                 : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
             }`}
           >
-            Zpracovává se ({statusCounts.processing})
+            Processing ({statusCounts.processing})
           </button>
           <button
             onClick={() => handleStatusFilterChange('shipped')}
@@ -439,7 +439,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                 : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
             }`}
           >
-            Odesláno ({statusCounts.shipped})
+            Shipped ({statusCounts.shipped})
           </button>
           <button
             onClick={() => handleStatusFilterChange('delivered')}
@@ -449,7 +449,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                 : 'bg-green-100 text-green-800 hover:bg-green-200'
             }`}
           >
-            Doručeno ({statusCounts.delivered})
+            Delivered ({statusCounts.delivered})
           </button>
           <button
             onClick={() => handleStatusFilterChange('cancelled')}
@@ -459,7 +459,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                 : 'bg-red-100 text-red-800 hover:bg-red-200'
             }`}
           >
-            Zrušeno ({statusCounts.cancelled})
+            Cancelled ({statusCounts.cancelled})
           </button>
         </div>
       </div>
@@ -467,7 +467,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
       {selectedOrders.length > 0 && (
         <div className="mb-4 p-4 bg-blue-50 rounded-lg flex items-center justify-between">
           <p className="text-sm text-blue-800">
-            Vybráno {selectedOrders.length} objednávek
+            Selected {selectedOrders.length} orders
           </p>
           <div className="flex items-center gap-2">
             <select
@@ -480,18 +480,18 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
               disabled={bulkUpdating}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Změnit stav...</option>
-              <option value="pending">Čeká na vyřízení</option>
-              <option value="processing">Zpracovává se</option>
-              <option value="shipped">Odesláno</option>
-              <option value="delivered">Doručeno</option>
-              <option value="cancelled">Zrušeno</option>
+              <option value="">Change status...</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
             </select>
             <button
               onClick={handleBulkDelete}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm"
             >
-              Smazat vybrané
+              Delete selected
             </button>
           </div>
         </div>
@@ -501,12 +501,12 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-center text-gray-500">
             {searchQuery 
-              ? 'Žádné objednávky neodpovídají vašemu vyhledávání' 
+              ? 'No orders match your search' 
               : paymentFilter !== 'all'
-                ? 'Žádné objednávky s tímto stavem platby'
+                ? 'No orders with this payment status'
                 : statusFilter === 'all' 
-                  ? 'Zatím žádné objednávky' 
-                  : 'Žádné objednávky s tímto stavem'}
+                  ? 'No orders yet' 
+                  : 'No orders with this status'}
           </p>
         </div>
       ) : (
@@ -524,25 +524,25 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                     />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Číslo objednávky
+                    Order Number
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Zákazník
+                    Customer
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Celkem
+                    Total
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stav objednávky
+                    Order Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Platba
+                    Payment
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Způsob dopravy
+                    Delivery Method
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Akce
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -578,9 +578,9 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                           #{order.orderNumber}
                         </Link>
                         <div className="text-xs text-gray-500">
-                          {format(new Date(order.createdAt), 'd. MMM yyyy', { locale: cs })}
+                          {format(new Date(order.createdAt), 'MMM d, yyyy', { locale: enUS })}
                           {' • '}
-                          {format(new Date(order.createdAt), 'HH:mm', { locale: cs })}
+                          {format(new Date(order.createdAt), 'HH:mm', { locale: enUS })}
                         </div>
                       </div>
                       
@@ -588,12 +588,12 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                       {hoveredOrderId === order.id && (
                         <div className="absolute z-[100] left-full ml-2 top-0 bg-white rounded-lg shadow-2xl border border-gray-200 p-4 w-96 max-h-[80vh] overflow-y-auto">
                           <div className="mb-3">
-                            <h4 className="font-semibold text-gray-900">Objednávka #{order.orderNumber}</h4>
+                            <h4 className="font-semibold text-gray-900">Order #{order.orderNumber}</h4>
                             <p className="text-sm text-gray-600">{order.customerName}</p>
                           </div>
                           
                           <div className="border-t pt-3">
-                            <h5 className="text-sm font-medium text-gray-700 mb-3">Položky:</h5>
+                            <h5 className="text-sm font-medium text-gray-700 mb-3">Items:</h5>
                             {/* Parse items from order */}
                             {(() => {
                               try {
@@ -603,7 +603,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                                   : (order as any).items || [];
                                 
                                 if (!Array.isArray(items) || items.length === 0) {
-                                  return <p className="text-sm text-gray-500">Žádné položky</p>;
+                                  return <p className="text-sm text-gray-500">No items</p>;
                                 }
                                 
                                 return items.map((item: any, index: number) => (
@@ -613,7 +613,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                                       {item.image ? (
                                         <img 
                                           src={item.image} 
-                                          alt={item.name || 'Produkt'}
+                                          alt={item.name || 'Product'}
                                           className="w-12 h-12 object-cover rounded"
                                         />
                                       ) : (
@@ -625,8 +625,8 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                                     
                                     {/* Product Details */}
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium text-gray-900 truncate pr-2" title={item.name || 'Produkt'}>
-                                        {item.name || 'Produkt'}
+                                      <p className="text-sm font-medium text-gray-900 truncate pr-2" title={item.name || 'Product'}>
+                                        {item.name || 'Product'}
                                       </p>
                                       <p className="text-xs text-gray-600">
                                         {item.quantity}x {formatPrice(item.price)}
@@ -645,24 +645,24 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                                 ));
                               } catch (e) {
                                 console.error('Error parsing items:', e);
-                                return <p className="text-sm text-gray-500">Nelze načíst položky</p>;
+                                return <p className="text-sm text-gray-500">Unable to load items</p>;
                               }
                             })()}
                           </div>
                           
                           <div className="border-t mt-3 pt-3">
                             <div className="flex justify-between text-sm mb-2">
-                              <span className="font-medium">Celkem:</span>
+                              <span className="font-medium">Total:</span>
                               <span className="font-bold text-lg">{formatPrice(order.total)}</span>
                             </div>
                             {order.deliveryMethod && (
                               <div className="text-xs text-gray-600 mb-1">
-                                <span className="font-medium">Doprava:</span> {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+                                <span className="font-medium">Delivery:</span> {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
                               </div>
                             )}
                             {order.paymentMethod && (
                               <div className="text-xs text-gray-600">
-                                <span className="font-medium">Platba:</span> {getPaymentMethodLabel(order.paymentMethod, 'pl')}
+                                <span className="font-medium">Payment:</span> {getPaymentMethodLabel(order.paymentMethod, 'pl')}
                               </div>
                             )}
                           </div>
@@ -694,11 +694,11 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                           'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        <option value="pending">Čeká na vyřízení</option>
-                        <option value="processing">Zpracovává se</option>
-                        <option value="shipped">Odesláno</option>
-                        <option value="delivered">Doručeno</option>
-                        <option value="cancelled">Zrušeno</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
                       </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -727,7 +727,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                           className={`hover:opacity-80 ${
                             order.status === 'cancelled' ? 'text-gray-500' : 'text-blue-600'
                           }`}
-                          title="Zobrazit detail"
+                          title="View details"
                         >
                           <Eye size={18} />
                         </Link>
@@ -737,7 +737,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                           className={`hover:opacity-80 disabled:opacity-50 ${
                             order.status === 'cancelled' ? 'text-gray-500' : 'text-red-600'
                           }`}
-                          title="Smazat objednávku"
+                          title="Delete order"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -760,31 +760,31 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
               disabled={currentPage === 1}
               className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Předchozí
+              Previous
             </button>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Další
+              Next
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Zobrazeno <span className="font-medium">{startIndex + 1}</span> až{' '}
-                <span className="font-medium">{Math.min(endIndex, filteredOrders.length)}</span> z{' '}
-                <span className="font-medium">{filteredOrders.length}</span> výsledků
+                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(endIndex, filteredOrders.length)}</span> of{' '}
+                <span className="font-medium">{filteredOrders.length}</span> results
                 {(statusFilter !== 'all' || searchQuery || paymentFilter !== 'all') && (
-                  <span className="text-gray-500"> (filtrováno z {orders.length} celkem)</span>
+                  <span className="text-gray-500"> (filtered from {orders.length} total)</span>
                 )}
               </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <label htmlFor="items-per-page" className="text-sm text-gray-700">
-                  Zobrazit:
+                  Show:
                 </label>
                 <select
                   id="items-per-page"
@@ -804,7 +804,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                   disabled={currentPage === 1}
                   className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span className="sr-only">Předchozí</span>
+                  <span className="sr-only">Previous</span>
                   <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
@@ -853,7 +853,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                   disabled={currentPage === totalPages}
                   className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span className="sr-only">Další</span>
+                  <span className="sr-only">Next</span>
                   <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                   </svg>

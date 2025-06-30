@@ -4,10 +4,10 @@ import { ProductDetailClient } from './ProductDetailClient';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
-export default async function ProductDetailPage({ 
-  params 
-}: { 
-  params: Promise<{ categorySlug: string; productSlug: string }> 
+export default async function ProductDetailPage({
+  params
+}: {
+  params: Promise<{ categorySlug: string; productSlug: string }>
 }) {
   const { categorySlug, productSlug } = await params;
   
@@ -15,14 +15,14 @@ export default async function ProductDetailPage({
   const category = await prisma.category.findUnique({
     where: { slug: categorySlug }
   });
-
+  
   if (!category) {
     notFound();
   }
-
+  
   // Then find the product
   const product = await prisma.product.findFirst({
-    where: { 
+    where: {
       slug: productSlug,
       categoryId: category.id
     },
@@ -40,11 +40,11 @@ export default async function ProductDetailPage({
       }
     }
   });
-
+  
   if (!product) {
     notFound();
   }
-
+  
   // Convert Decimal to number for client component
   const serializedProduct = {
     ...product,
@@ -55,6 +55,7 @@ export default async function ProductDetailPage({
     variants: product.variants.map(v => ({
       ...v,
       price: v.price?.toNumber() || null,
+      regularPrice: v.regularPrice?.toNumber() || null, // ADDED THIS LINE
       createdAt: v.createdAt,
       updatedAt: v.updatedAt
     })),
@@ -66,33 +67,33 @@ export default async function ProductDetailPage({
     createdAt: product.createdAt,
     updatedAt: product.updatedAt
   };
-
+  
   return <ProductDetailClient product={serializedProduct} />;
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ 
-  params 
-}: { 
-  params: Promise<{ categorySlug: string; productSlug: string }> 
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ categorySlug: string; productSlug: string }>
 }): Promise<Metadata> {
   const { categorySlug, productSlug } = await params;
   
   const category = await prisma.category.findUnique({
     where: { slug: categorySlug }
   });
-
+  
   if (!category) return {};
-
+  
   const product = await prisma.product.findFirst({
-    where: { 
+    where: {
       slug: productSlug,
       categoryId: category.id
     }
   });
-
+  
   if (!product) return {};
-
+  
   return {
     title: `${product.name} - ${category.name}`,
     description: product.description || `${product.name} z kategorii ${category.name}`,

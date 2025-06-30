@@ -347,6 +347,7 @@ interface ProductVariant {
   sizeOrder?: number;
   stock: number;
   price?: number;
+  regularPrice?: number; // NEW FIELD ADDED
   imageUrl?: string;
   order: number;
 }
@@ -534,6 +535,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       sizeOrder: variants.length,
       stock: 0,
       price: undefined,
+      regularPrice: undefined, // NEW FIELD
       imageUrl: '',
       order: variants.length
     };
@@ -546,6 +548,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       sizeOrder: variants.length + index,
       stock: 0,
       price: undefined,
+      regularPrice: undefined, // NEW FIELD
       imageUrl: '',
       order: variants.length + index
     }));
@@ -843,35 +846,35 @@ export function ProductForm({ initialData }: ProductFormProps) {
           <div className="space-y-4">
             {variants.map((variant, index) => (
               <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-12 gap-3">
                   {variantType !== 'size' && (
                     <>
-                      <div>
+                      <div className="col-span-3">
                         <label className="block text-sm font-medium mb-1 text-black">Barva</label>
                         <input
                           type="text"
                           value={variant.colorName || ''}
                           onChange={(e) => updateVariant(index, 'colorName', e.target.value)}
                           placeholder="např. Červená"
-                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         />
                       </div>
                       
-                      <div>
+                      <div className="col-span-2">
                         <label className="block text-sm font-medium mb-1 text-black">Kód barvy</label>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <input
                             type="text"
                             value={variant.colorCode || ''}
                             onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
                             placeholder="#FF0000"
-                            className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                           />
                           <input
                             type="color"
                             value={variant.colorCode || '#000000'}
                             onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
-                            className="w-12 h-10 border rounded cursor-pointer"
+                            className="w-10 h-10 border rounded cursor-pointer"
                           />
                         </div>
                       </div>
@@ -879,47 +882,61 @@ export function ProductForm({ initialData }: ProductFormProps) {
                   )}
                   
                   {variantType !== 'color' && (
-                    <div>
+                    <div className={variantType === 'size' ? 'col-span-2' : 'col-span-1'}>
                       <label className="block text-sm font-medium mb-1 text-black">Velikost</label>
                       <input
                         type="text"
                         value={variant.sizeName || ''}
                         onChange={(e) => updateVariant(index, 'sizeName', e.target.value)}
-                        placeholder="např. M, 42"
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="M"
+                        className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       />
                     </div>
                   )}
                   
-                  <div>
+                  <div className={variantType === 'both' ? 'col-span-1' : variantType === 'size' ? 'col-span-2' : 'col-span-2'}>
                     <label className="block text-sm font-medium mb-1 text-black">Skladem</label>
                     <input
                       type="number"
                       value={variant.stock}
                       onChange={(e) => updateVariant(index, 'stock', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     />
                   </div>
                   
-                  <div>
+                  <div className={variantType === 'both' ? 'col-span-2' : 'col-span-3'}>
                     <label className="block text-sm font-medium mb-1 text-black">Cena (prázdné = základní)</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={variant.price || ''}
-                        onChange={(e) => updateVariant(index, 'price', e.target.value ? parseFloat(e.target.value) : undefined)}
-                        placeholder="Základní cena"
-                        className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeVariant(index)}
-                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={variant.price || ''}
+                      onChange={(e) => updateVariant(index, 'price', e.target.value ? parseFloat(e.target.value) : undefined)}
+                      placeholder="Základní cena"
+                      className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    />
+                  </div>
+                  
+                  <div className={variantType === 'both' ? 'col-span-2' : 'col-span-3'}>
+                    <label className="block text-sm font-medium mb-1 text-black">Běžná cena (Kč)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={variant.regularPrice || ''}
+                      onChange={(e) => updateVariant(index, 'regularPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                      placeholder="Nepovinné"
+                      className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    />
+                  </div>
+                  
+                  <div className="col-span-1 flex items-end">
+                    <button
+                      type="button"
+                      onClick={() => removeVariant(index)}
+                      className="w-full px-2 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                      title="Odstranit variantu"
+                    >
+                      <Trash2 size={18} className="mx-auto" />
+                    </button>
                   </div>
                 </div>
               </div>

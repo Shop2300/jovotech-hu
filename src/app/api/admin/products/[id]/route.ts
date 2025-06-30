@@ -96,6 +96,7 @@ export async function PUT(
           sizeOrder: variant.sizeOrder || 0,
           stock: parseInt(variant.stock) || 0,
           price: variant.price ? parseFloat(variant.price) : null,
+          regularPrice: variant.regularPrice ? parseFloat(variant.regularPrice) : null, // NEW FIELD
           imageUrl: variant.imageUrl || null,
           order: variant.order || 0
         }))
@@ -151,7 +152,19 @@ export async function GET(
       );
     }
     
-    return NextResponse.json(product);
+    // Convert Decimal fields to numbers before sending to client
+    const serializedProduct = {
+      ...product,
+      price: product.price ? Number(product.price) : 0,
+      regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
+      variants: product.variants.map((variant: any) => ({
+        ...variant,
+        price: variant.price ? Number(variant.price) : null,
+        regularPrice: variant.regularPrice ? Number(variant.regularPrice) : null,
+      }))
+    };
+    
+    return NextResponse.json(serializedProduct);
   } catch (error) {
     console.error('Error fetching product:', error);
     return NextResponse.json(

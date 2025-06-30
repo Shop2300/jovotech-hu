@@ -55,11 +55,11 @@ export function CustomerInfoEdit({
 
       if (!response.ok) throw new Error('Failed to update customer information');
       
-      toast.success('Informace o zákazníkovi byly aktualizovány');
+      toast.success('Customer information has been updated');
       setIsEditing(false);
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při aktualizaci informací');
+      toast.error('Error updating information');
     } finally {
       setIsSaving(false);
     }
@@ -86,19 +86,19 @@ export function CustomerInfoEdit({
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <User className="w-5 h-5 text-gray-600" />
-              {isCompany ? 'Dane osoby kontaktowej' : 'Dane klienta'}
+              {isCompany ? 'Contact Person Details' : 'Customer Details'}
             </h3>
             <button
               onClick={() => setIsEditing(true)}
               className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
             >
               <Edit2 size={16} />
-              Upravit
+              Edit
             </button>
           </div>
           <div className="space-y-2">
             <div className="flex items-start">
-              <span className="text-gray-600 font-medium w-32">Jméno:</span>
+              <span className="text-gray-600 font-medium w-32">Name:</span>
               <span className="text-gray-900">{billingFirstName} {billingLastName}</span>
             </div>
             <div className="flex items-start">
@@ -106,7 +106,7 @@ export function CustomerInfoEdit({
               <span className="text-gray-900">{customerEmail}</span>
             </div>
             <div className="flex items-start">
-              <span className="text-gray-600 font-medium w-32">Telefon:</span>
+              <span className="text-gray-600 font-medium w-32">Phone:</span>
               <span className="text-gray-900">{customerPhone || '-'}</span>
             </div>
           </div>
@@ -117,12 +117,12 @@ export function CustomerInfoEdit({
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Building2 className="w-5 h-5 text-gray-600" />
-              Dane firmy
+              Company Details
             </h3>
             <div className="space-y-2">
               {companyName && (
                 <div className="flex items-start">
-                  <span className="text-gray-600 font-medium w-32">Nazwa firmy:</span>
+                  <span className="text-gray-600 font-medium w-32">Company Name:</span>
                   <span className="text-gray-900">{companyName}</span>
                 </div>
               )}
@@ -144,7 +144,7 @@ export function CustomerInfoEdit({
     <div className="bg-white rounded-lg shadow-md p-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
         <User className="w-5 h-5 text-gray-600" />
-        Upravit informace o zákazníkovi
+        Edit Customer Information
       </h3>
       
       <div className="space-y-4">
@@ -158,7 +158,7 @@ export function CustomerInfoEdit({
             className="rounded border-gray-300"
           />
           <label htmlFor="isCompany" className="text-sm font-medium text-gray-700">
-            Firemní objednávka
+            Company Order
           </label>
         </div>
 
@@ -166,7 +166,7 @@ export function CustomerInfoEdit({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Jméno
+              First Name
             </label>
             <input
               type="text"
@@ -177,7 +177,7 @@ export function CustomerInfoEdit({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Příjmení
+              Last Name
             </label>
             <input
               type="text"
@@ -202,7 +202,7 @@ export function CustomerInfoEdit({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Telefon
+            Phone
           </label>
           <input
             type="tel"
@@ -218,12 +218,12 @@ export function CustomerInfoEdit({
             <div className="pt-4 border-t">
               <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
                 <Building2 size={16} />
-                Firemní údaje
+                Company Details
               </h4>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Název firmy
+                    Company Name
                   </label>
                   <input
                     type="text"
@@ -256,11 +256,11 @@ export function CustomerInfoEdit({
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:opacity-50 flex items-center gap-2"
           >
             {isSaving ? (
-              <span>Ukládám...</span>
+              <span>Saving...</span>
             ) : (
               <>
                 <Save size={16} />
-                Uložit
+                Save
               </>
             )}
           </button>
@@ -270,7 +270,7 @@ export function CustomerInfoEdit({
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition disabled:opacity-50 flex items-center gap-2"
           >
             <X size={16} />
-            Zrušit
+            Cancel
           </button>
         </div>
       </div>

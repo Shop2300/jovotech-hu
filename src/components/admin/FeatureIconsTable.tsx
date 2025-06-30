@@ -25,7 +25,7 @@ export function FeatureIconsTable({ icons: initialIcons }: { icons: FeatureIcon[
   const router = useRouter();
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Opravdu chcete smazat ikonu "${title}"?`)) return;
+    if (!confirm(`Are you sure you want to delete icon "${title}"?`)) return;
 
     try {
       const response = await fetch(`/api/admin/feature-icons/${id}`, {
@@ -35,9 +35,9 @@ export function FeatureIconsTable({ icons: initialIcons }: { icons: FeatureIcon[
       if (!response.ok) throw new Error('Failed to delete');
 
       setIcons(icons.filter(i => i.id !== id));
-      toast.success('Ikona byla smazána');
+      toast.success('Icon has been deleted');
     } catch (error) {
-      toast.error('Chyba při mazání ikony');
+      toast.error('Error deleting icon');
     }
   };
 
@@ -57,9 +57,9 @@ export function FeatureIconsTable({ icons: initialIcons }: { icons: FeatureIcon[
       setIcons(icons.map(i => 
         i.id === icon.id ? { ...i, isActive: !i.isActive } : i
       ));
-      toast.success('Stav ikony byl změněn');
+      toast.success('Icon status has been changed');
     } catch (error) {
-      toast.error('Chyba při změně stavu');
+      toast.error('Error changing status');
     }
   };
 
@@ -92,9 +92,9 @@ export function FeatureIconsTable({ icons: initialIcons }: { icons: FeatureIcon[
       newIcons[newIndex] = { ...otherIcon, order: icon.order };
       setIcons(newIcons.sort((a, b) => a.order - b.order));
       
-      toast.success('Pořadí bylo změněno');
+      toast.success('Order has been changed');
     } catch (error) {
-      toast.error('Chyba při změně pořadí');
+      toast.error('Error changing order');
     }
   };
 
@@ -104,12 +104,12 @@ export function FeatureIconsTable({ icons: initialIcons }: { icons: FeatureIcon[
         <table className="w-full">
           <thead>
             <tr className="border-b bg-gray-50">
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Ikona</th>
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Klíč</th>
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Název</th>
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Stav</th>
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Pořadí</th>
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Akce</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Icon</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Key</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Name</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Status</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Order</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -117,8 +117,8 @@ export function FeatureIconsTable({ icons: initialIcons }: { icons: FeatureIcon[
               <tr>
                 <td colSpan={6} className="text-center py-8 text-gray-500">
                   <div className="space-y-2">
-                    <p>Žádné ikony nenalezeny</p>
-                    <p className="text-sm">Přidejte první ikonu nebo spusťte seed script pro přidání výchozích ikon:</p>
+                    <p>No icons found</p>
+                    <p className="text-sm">Add your first icon or run the seed script to add default icons:</p>
                     <code className="text-xs bg-gray-100 px-2 py-1 rounded">node seed-feature-icons.js</code>
                   </div>
                 </td>
@@ -163,7 +163,7 @@ export function FeatureIconsTable({ icons: initialIcons }: { icons: FeatureIcon[
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {icon.isActive ? 'Aktivní' : 'Neaktivní'}
+                      {icon.isActive ? 'Active' : 'Inactive'}
                     </button>
                   </td>
                   <td className="py-4 px-6">

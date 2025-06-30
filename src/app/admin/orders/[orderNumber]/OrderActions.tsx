@@ -36,16 +36,16 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
   const [isResendingEmail, setIsResendingEmail] = useState(false);
 
   const statusOptions = [
-    { value: 'pending', label: 'Čeká na vyřízení' },
-    { value: 'processing', label: 'Zpracovává se' },
-    { value: 'shipped', label: 'Odesláno' },
-    { value: 'delivered', label: 'Doručeno' },
-    { value: 'cancelled', label: 'Zrušeno' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'processing', label: 'Processing' },
+    { value: 'shipped', label: 'Shipped' },
+    { value: 'delivered', label: 'Delivered' },
+    { value: 'cancelled', label: 'Cancelled' },
   ];
 
   const paymentStatusOptions = [
-    { value: 'unpaid', label: 'Nezaplaceno' },
-    { value: 'paid', label: 'Zaplaceno' },
+    { value: 'unpaid', label: 'Unpaid' },
+    { value: 'paid', label: 'Paid' },
   ];
 
   // Check if invoice exists
@@ -91,7 +91,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
   const handleStatusChange = async (newStatus: string) => {
     // Check if changing to shipped without tracking number
     if (newStatus === 'shipped' && !trackingNumber && !currentTrackingNumber) {
-      toast.error('Prosím zadejte sledovací číslo před označením jako odesláno');
+      toast.error('Please enter tracking number before marking as shipped');
       return;
     }
 
@@ -99,12 +99,12 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
     
     // Auto-generate invoice when changing to processing
     if (newStatus === 'processing' && !invoice) {
-      toast.loading('Generuji fakturu...', { id: 'invoice-gen' });
+      toast.loading('Generating invoice...', { id: 'invoice-gen' });
       const invoiceGenerated = await handleGenerateInvoice();
       if (invoiceGenerated) {
-        toast.success('Faktura byla automaticky vygenerována', { id: 'invoice-gen' });
+        toast.success('Invoice was automatically generated', { id: 'invoice-gen' });
       } else {
-        toast.error('Nepodařilo se vygenerovat fakturu', { id: 'invoice-gen' });
+        toast.error('Failed to generate invoice', { id: 'invoice-gen' });
       }
     }
 
@@ -132,19 +132,19 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
         toast.success(
           <div className="flex items-center gap-2">
             <Mail size={16} />
-            <span>Objednávka označena jako odeslaná a email byl zaslán zákazníkovi</span>
+            <span>Order marked as shipped and email was sent to customer</span>
           </div>,
           { duration: 5000 }
         );
       } else if (newStatus === 'processing') {
-        toast.success('Stav změněn na "Zpracovává se"');
+        toast.success('Status changed to "Processing"');
       } else {
-        toast.success('Stav objednávky byl aktualizován');
+        toast.success('Order status has been updated');
       }
       
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Chyba při aktualizaci stavu');
+      toast.error(error instanceof Error ? error.message : 'Error updating status');
     } finally {
       setIsUpdating(false);
     }
@@ -164,10 +164,10 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
       if (!response.ok) throw new Error('Failed to update payment status');
       
       setPaymentStatus(newPaymentStatus);
-      toast.success('Stav platby byl aktualizován');
+      toast.success('Payment status has been updated');
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při aktualizaci stavu platby');
+      toast.error('Error updating payment status');
     } finally {
       setIsUpdating(false);
     }
@@ -175,7 +175,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
 
   const handleTrackingNumberUpdate = async () => {
     if (!trackingNumber.trim()) {
-      toast.error('Prosím zadejte sledovací číslo');
+      toast.error('Please enter tracking number');
       return;
     }
 
@@ -191,11 +191,11 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
 
       if (!response.ok) throw new Error('Failed to update tracking number');
       
-      toast.success('Sledovací číslo bylo aktualizováno');
+      toast.success('Tracking number has been updated');
       setIsEditingTracking(false);
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při aktualizaci sledovacího čísla');
+      toast.error('Error updating tracking number');
     } finally {
       setIsUpdating(false);
     }
@@ -207,7 +207,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
     // Direct download from Blob URL (if it exists)
     if (invoice.pdfUrl && invoice.pdfUrl.startsWith('http')) {
       window.open(invoice.pdfUrl, '_blank');
-      toast.success('Faktura byla stažena');
+      toast.success('Invoice has been downloaded');
       return;
     }
 
@@ -227,9 +227,9 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
-      toast.success('Faktura byla stažena');
+      toast.success('Invoice has been downloaded');
     } catch (error) {
-      toast.error('Chyba při stahování faktury');
+      toast.error('Error downloading invoice');
     }
   };
 
@@ -245,10 +245,10 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
       if (!response.ok) throw new Error('Failed to delete invoice');
       
       setInvoice(null);
-      toast.success('Faktura byla smazána');
+      toast.success('Invoice has been deleted');
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při mazání faktury');
+      toast.error('Error deleting invoice');
     } finally {
       setIsDeletingInvoice(false);
     }
@@ -267,14 +267,14 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
       toast.success(
         <div className="flex items-center gap-2">
           <Mail size={16} />
-          <span>Potvrzení objednávky bylo znovu odesláno zákazníkovi</span>
+          <span>Order confirmation has been resent to customer</span>
         </div>,
         { duration: 4000 }
       );
       
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při odesílání emailu');
+      toast.error('Error sending email');
     } finally {
       setIsResendingEmail(false);
     }
@@ -282,12 +282,12 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-4 text-black">Akce</h2>
+      <h2 className="text-xl font-semibold mb-4 text-black">Actions</h2>
       
       {/* Status Update */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Stav objednávky
+          Order Status
         </label>
         <select
           value={status}
@@ -304,13 +304,13 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
         {status === 'shipped' && (
           <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
             <CheckCircle size={14} />
-            Email s informacemi o odeslání byl zaslán
+            Shipping notification email was sent
           </p>
         )}
         {status === 'processing' && invoice && (
           <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
             <FileText size={14} />
-            Faktura byla automaticky vygenerována
+            Invoice was automatically generated
           </p>
         )}
       </div>
@@ -318,7 +318,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
       {/* Payment Status */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Stav platby
+          Payment Status
         </label>
         <div className="relative">
           <select
@@ -350,10 +350,10 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
       {/* Tracking Number */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Sledovací číslo zásilky
+          Tracking Number
           {status !== 'shipped' && !trackingNumber && (
             <span className="text-xs text-gray-500 ml-2">
-              (vyžadováno pro odeslání)
+              (required for shipping)
             </span>
           )}
         </label>
@@ -362,14 +362,14 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
             <div className="flex-1 px-3 py-2 bg-gray-50 rounded-md flex items-center gap-2">
               <Package size={16} className="text-gray-500" />
               <span className="text-sm text-gray-700">
-                {trackingNumber || 'Není zadáno'}
+                {trackingNumber || 'Not entered'}
               </span>
             </div>
             <button
               onClick={() => setIsEditingTracking(true)}
               className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
             >
-              {trackingNumber ? 'Upravit' : 'Přidat'}
+              {trackingNumber ? 'Edit' : 'Add'}
             </button>
           </div>
         ) : (
@@ -378,7 +378,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
               type="text"
               value={trackingNumber}
               onChange={(e) => setTrackingNumber(e.target.value)}
-              placeholder="Zadejte sledovací číslo"
+              placeholder="Enter tracking number"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div className="flex gap-2">
@@ -387,7 +387,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
                 disabled={isUpdating || !trackingNumber.trim()}
                 className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:opacity-50"
               >
-                Uložit
+                Save
               </button>
               <button
                 onClick={() => {
@@ -397,7 +397,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
                 disabled={isUpdating}
                 className="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition disabled:opacity-50"
               >
-                Zrušit
+                Cancel
               </button>
             </div>
           </div>
@@ -406,7 +406,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
 
       {/* Invoice Actions */}
       <div className="space-y-2 pt-4 border-t">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Faktura</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Invoice</h3>
         
         {isCheckingInvoice ? (
           <div className="flex items-center justify-center py-4">
@@ -418,13 +418,13 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-green-700 text-sm">
                   <CheckCircle size={16} />
-                  <span>Faktura {invoice.invoiceNumber} byla vygenerována</span>
+                  <span>Invoice {invoice.invoiceNumber} was generated</span>
                 </div>
                 <button
                   onClick={handleDeleteInvoice}
                   disabled={isDeletingInvoice}
                   className="text-red-600 hover:text-red-700 p-1 disabled:opacity-50"
-                  title="Smazat fakturu"
+                  title="Delete invoice"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -436,7 +436,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
               onClick={handleDownloadInvoice}
             >
               <Download size={18} />
-              Stáhnout PDF
+              Download PDF
             </button>
           </>
         ) : (
@@ -448,12 +448,12 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
             {isGeneratingPdf ? (
               <>
                 <Loader2 className="animate-spin" size={18} />
-                Generuji fakturu...
+                Generating invoice...
               </>
             ) : (
               <>
                 <FileText size={18} />
-                Vygenerovat fakturu
+                Generate Invoice
               </>
             )}
           </button>
@@ -462,7 +462,7 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
 
       {/* Email Actions - NEW SECTION */}
       <div className="space-y-2 pt-4 border-t">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Email komunikace</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Email Communication</h3>
         
         <button 
           className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
@@ -472,12 +472,12 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
           {isResendingEmail ? (
             <>
               <Loader2 className="animate-spin" size={18} />
-              Odesílám email...
+              Sending email...
             </>
           ) : (
             <>
               <RefreshCw size={18} />
-              Znovu odeslat potvrzení objednávky
+              Resend Order Confirmation
             </>
           )}
         </button>
@@ -489,9 +489,9 @@ export function OrderActions({ orderId, orderNumber, currentStatus, currentTrack
           <div className="flex items-start gap-2 text-blue-700 text-sm">
             <Mail size={16} className="mt-0.5" />
             <div>
-              <p className="font-medium">Email s informacemi o odeslání</p>
+              <p className="font-medium">Shipping notification email</p>
               <p className="text-xs mt-1">
-                Zákazník obdržel email s sledovacím číslem: {trackingNumber}
+                Customer received email with tracking number: {trackingNumber}
               </p>
             </div>
           </div>

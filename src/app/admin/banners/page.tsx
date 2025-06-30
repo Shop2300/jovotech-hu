@@ -20,13 +20,13 @@ export default async function AdminBannersPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Bannery</h1>
+        <h1 className="text-3xl font-bold">Banners</h1>
         <Link
           href="/admin/banners/new"
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
         >
           <Plus size={20} />
-          Přidat banner
+          Add Banner
         </Link>
       </div>
 

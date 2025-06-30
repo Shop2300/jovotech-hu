@@ -14,6 +14,8 @@ interface ProductVariant {
   colorName: string;
   colorCode?: string | null;
   stock: number;
+  price?: number | null;
+  regularPrice?: number | null; // NEW FIELD
 }
 
 interface Product {
@@ -42,10 +44,47 @@ export function ProductCard({ product }: { product: Product }) {
   const hasVariants = product.variants && product.variants.length > 0;
   const inStock = hasVariants ? product.variants?.some(v => v.stock > 0) || false
     : product.stock > 0;
-    
-  const discount = product.regularPrice 
+  
+  // Calculate the best discount among variants and base product
+  let displayPrice = product.price;
+  let displayRegularPrice = product.regularPrice;
+  let bestDiscount = product.regularPrice 
     ? calculateDiscount(product.price, product.regularPrice) 
     : 0;
+  
+  // Check if any variant has a better discount
+  if (hasVariants && product.variants) {
+    product.variants.forEach(variant => {
+      if (variant.price && variant.regularPrice && variant.stock > 0) {
+        const variantDiscount = calculateDiscount(Number(variant.price), Number(variant.regularPrice));
+        if (variantDiscount > bestDiscount) {
+          bestDiscount = variantDiscount;
+          displayPrice = Number(variant.price);
+          displayRegularPrice = Number(variant.regularPrice);
+        }
+      }
+    });
+    
+    // If no variant has a regular price, check if any variant has a lower price than base
+    if (bestDiscount === 0) {
+      const lowestPrice = Math.min(
+        product.price,
+        ...product.variants
+          .filter(v => v.price && v.stock > 0)
+          .map(v => Number(v.price))
+      );
+      
+      if (lowestPrice < product.price) {
+        displayPrice = lowestPrice;
+        // Check if that variant has a regular price
+        const lowestVariant = product.variants.find(v => v.price && Number(v.price) === lowestPrice);
+        if (lowestVariant?.regularPrice) {
+          displayRegularPrice = Number(lowestVariant.regularPrice);
+          bestDiscount = calculateDiscount(lowestPrice, Number(lowestVariant.regularPrice));
+        }
+      }
+    }
+  }
 
   // Determine the product URL
   const productUrl = product.category?.slug && product.slug
@@ -100,9 +139,9 @@ export function ProductCard({ product }: { product: Product }) {
                 <span className="text-white font-bold text-lg" style={{ fontFamily: sfFontFamily }}>Wyprodáno</span>
               </div>
             )}
-            {discount > 0 && inStock && (
+            {bestDiscount > 0 && inStock && (
               <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg text-sm font-bold" style={{ fontFamily: sfFontFamily }}>
-                -{discount}%
+                -{bestDiscount}%
               </div>
             )}
           </div>
@@ -124,19 +163,31 @@ export function ProductCard({ product }: { product: Product }) {
 
           {/* Price - Centered with SMALLER FONT SIZE */}
           <div className="text-center mb-4">
-            {product.regularPrice && product.regularPrice > product.price ? (
+            {displayRegularPrice && displayRegularPrice > displayPrice ? (
               <div>
                 <span className="text-xs text-gray-500 line-through block" style={{ fontFamily: sfFontFamily }}>
-                  {formatPrice(product.regularPrice)}
+                  {formatPrice(displayRegularPrice)}
                 </span>
                 <span className="text-lg font-bold text-red-600" style={{ fontFamily: sfFontFamily }}>
-                  {formatPrice(product.price)}
+                  {formatPrice(displayPrice)}
                 </span>
+                {hasVariants && displayPrice !== product.price && (
+                  <span className="text-xs text-gray-600 block mt-1" style={{ fontFamily: sfFontFamily }}>
+                    od
+                  </span>
+                )}
               </div>
             ) : (
-              <span className="text-lg font-bold text-black" style={{ fontFamily: sfFontFamily }}>
-                {formatPrice(product.price)}
-              </span>
+              <div>
+                <span className="text-lg font-bold text-black" style={{ fontFamily: sfFontFamily }}>
+                  {formatPrice(displayPrice)}
+                </span>
+                {hasVariants && product.variants?.some(v => v.price && v.price !== product.price && v.stock > 0) && (
+                  <span className="text-xs text-gray-600 block mt-1" style={{ fontFamily: sfFontFamily }}>
+                    od
+                  </span>
+                )}
+              </div>
             )}
           </div>
 

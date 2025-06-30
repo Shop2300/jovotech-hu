@@ -4,10 +4,10 @@ import { ProductForm } from '@/components/admin/ProductForm';
 import { notFound } from 'next/navigation';
 import { createSlug } from '@/lib/slug';
 
-export default async function EditProductPage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
+export default async function EditProductPage({
+  params
+}: {
+  params: Promise<{ id: string }>
 }) {
   const { id } = await params;
   
@@ -50,6 +50,7 @@ export default async function EditProductPage({
     variants: product.variants.map(v => ({
       ...v,
       price: v.price?.toNumber() || undefined,
+      regularPrice: v.regularPrice?.toNumber() || undefined, // THIS WAS MISSING!
       colorName: v.colorName || undefined,
       colorCode: v.colorCode || undefined,
       sizeName: v.sizeName || undefined,

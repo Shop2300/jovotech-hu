@@ -56,8 +56,15 @@ export async function GET(request: Request) {
       take: limit
     });
     
+    // Convert Decimal fields to numbers
+    const serializedProducts = products.map((product: any) => ({
+      ...product,
+      price: Number(product.price),
+      regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
+    }));
+    
     return NextResponse.json({
-      products,
+      products: serializedProducts,
       totalCount,
       page,
       limit,
@@ -137,6 +144,7 @@ export async function POST(request: Request) {
           sizeOrder: variant.sizeOrder || 0,
           stock: parseInt(variant.stock) || 0,
           price: variant.price ? parseFloat(variant.price) : null,
+          regularPrice: variant.regularPrice ? parseFloat(variant.regularPrice) : null, // NEW FIELD
           imageUrl: variant.imageUrl || null,
           order: variant.order || 0
         }))

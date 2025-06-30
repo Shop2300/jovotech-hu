@@ -29,11 +29,11 @@ export function AdminNotes({ orderNumber, initialNotes = '' }: AdminNotesProps) 
 
       if (!response.ok) throw new Error('Failed to update admin notes');
       
-      toast.success('Poznámky byly uloženy');
+      toast.success('Notes have been saved');
       setIsEditing(false);
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při ukládání poznámek');
+      toast.error('Error saving notes');
     } finally {
       setIsSaving(false);
     }
@@ -49,7 +49,7 @@ export function AdminNotes({ orderNumber, initialNotes = '' }: AdminNotesProps) 
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-black flex items-center gap-2">
           <StickyNote className="w-5 h-5 text-yellow-600" />
-          Interní poznámky
+          Internal Notes
         </h2>
         {!isEditing && (
           <button
@@ -57,7 +57,7 @@ export function AdminNotes({ orderNumber, initialNotes = '' }: AdminNotesProps) 
             className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
           >
             <Edit2 size={16} />
-            {notes ? 'Upravit' : 'Přidat'}
+            {notes ? 'Edit' : 'Add'}
           </button>
         )}
       </div>
@@ -67,7 +67,7 @@ export function AdminNotes({ orderNumber, initialNotes = '' }: AdminNotesProps) 
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Přidejte interní poznámky k objednávce..."
+            placeholder="Add internal notes for this order..."
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 min-h-[120px]"
           />
           <div className="flex gap-2">
@@ -77,11 +77,11 @@ export function AdminNotes({ orderNumber, initialNotes = '' }: AdminNotesProps) 
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:opacity-50 flex items-center gap-2"
             >
               {isSaving ? (
-                <span>Ukládám...</span>
+                <span>Saving...</span>
               ) : (
                 <>
                   <Save size={16} />
-                  Uložit
+                  Save
                 </>
               )}
             </button>
@@ -91,7 +91,7 @@ export function AdminNotes({ orderNumber, initialNotes = '' }: AdminNotesProps) 
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition disabled:opacity-50 flex items-center gap-2"
             >
               <X size={16} />
-              Zrušit
+              Cancel
             </button>
           </div>
         </div>
@@ -100,13 +100,13 @@ export function AdminNotes({ orderNumber, initialNotes = '' }: AdminNotesProps) 
           {notes ? (
             <p className="whitespace-pre-wrap">{notes}</p>
           ) : (
-            <p className="text-gray-500 italic">Žádné poznámky</p>
+            <p className="text-gray-500 italic">No notes</p>
           )}
         </div>
       )}
 
       <div className="mt-4 text-xs text-gray-500">
-        <p>Tyto poznámky jsou viditelné pouze pro administrátory a nejsou zobrazeny zákazníkům.</p>
+        <p>These notes are visible only to administrators and are not shown to customers.</p>
       </div>
     </div>
   );

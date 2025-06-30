@@ -100,7 +100,7 @@ async function generateInvoiceForOrder(order: any) {
         data: {
           orderId: order.id,
           action: 'invoice_generated',
-          description: `Faktura ${invoiceNumber} została wygenerowana automatycznie`,
+          description: `Invoice ${invoiceNumber} was generated automatically`,
           newValue: invoiceNumber,
           metadata: {
             invoiceId: invoice.id,
@@ -158,7 +158,7 @@ async function updateOldPendingOrders() {
         data: {
           orderId: order.id,
           action: 'status_change',
-          description: 'Stav objednávky automaticky změněn na "Zpracovává se" po 30 minutách',
+          description: 'Order status automatically changed to "Processing" after 30 minutes',
           oldValue: 'pending',
           newValue: 'processing',
           performedBy: 'System',
@@ -224,12 +224,12 @@ export default async function AdminOrdersPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-8 text-black">Správa objednávek</h1>
+      <h1 className="text-3xl font-bold mb-8 text-black">Order Management</h1>
       
       <div className="bg-white rounded-lg shadow-md p-6">
         {orders.length === 0 ? (
           <p className="text-center text-gray-500 py-8">
-            Zatím nemáte žádné objednávky.
+            You don't have any orders yet.
           </p>
         ) : (
           <OrdersTable orders={orders} />

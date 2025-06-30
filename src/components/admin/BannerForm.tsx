@@ -44,7 +44,7 @@ export function BannerForm({ initialData }: BannerFormProps) {
 
   const onSubmit = async (data: BannerFormData) => {
     if (!imageUrl) {
-      toast.error('Prosím nahrajte obrázek');
+      toast.error('Please upload an image');
       return;
     }
 
@@ -70,11 +70,11 @@ export function BannerForm({ initialData }: BannerFormProps) {
 
       if (!response.ok) throw new Error('Failed to save banner');
 
-      toast.success(initialData ? 'Banner byl aktualizován' : 'Banner byl přidán');
+      toast.success(initialData ? 'Banner has been updated' : 'Banner has been added');
       router.push('/admin/banners');
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při ukládání banneru');
+      toast.error('Error saving banner');
     } finally {
       setIsSubmitting(false);
     }
@@ -84,9 +84,9 @@ export function BannerForm({ initialData }: BannerFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow-md p-6">
       <div className="grid grid-cols-1 gap-6">
         <div>
-          <label className="block text-sm font-medium mb-2">Název *</label>
+          <label className="block text-sm font-medium mb-2">Title *</label>
           <input
-            {...register('title', { required: 'Název je povinný' })}
+            {...register('title', { required: 'Title is required' })}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {errors.title && (
@@ -95,7 +95,7 @@ export function BannerForm({ initialData }: BannerFormProps) {
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-2">Podtitulek</label>
+          <label className="block text-sm font-medium mb-2">Subtitle</label>
           <input
             {...register('subtitle')}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -109,13 +109,13 @@ export function BannerForm({ initialData }: BannerFormProps) {
           onChange={setImageUrl}
           onRemove={() => setImageUrl('')}
           type="banners"
-          label="Obrázek banneru (doporučeno 1920x600px pro hero)"
+          label="Banner image (recommended 1920x600px for hero)"
         />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         <div>
-          <label className="block text-sm font-medium mb-2">Odkaz (URL)</label>
+          <label className="block text-sm font-medium mb-2">Link (URL)</label>
           <input
             {...register('link')}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -124,19 +124,19 @@ export function BannerForm({ initialData }: BannerFormProps) {
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-2">Typ banneru</label>
+          <label className="block text-sm font-medium mb-2">Banner Type</label>
           <select
             {...register('type')}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="hero">Hero (hlavní)</option>
-            <option value="category">Kategorie</option>
+            <option value="hero">Hero (main)</option>
+            <option value="category">Category</option>
             <option value="promo">Promo</option>
           </select>
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-2">Pořadí</label>
+          <label className="block text-sm font-medium mb-2">Order</label>
           <input
             type="number"
             {...register('order', { valueAsNumber: true })}
@@ -152,7 +152,7 @@ export function BannerForm({ initialData }: BannerFormProps) {
             {...register('isActive')}
             className="w-4 h-4"
           />
-          <span className="text-sm font-medium">Banner je aktivní</span>
+          <span className="text-sm font-medium">Banner is active</span>
         </label>
       </div>
       
@@ -166,7 +166,7 @@ export function BannerForm({ initialData }: BannerFormProps) {
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
         >
-          {isSubmitting ? 'Ukládám...' : (initialData ? 'Aktualizovat' : 'Přidat banner')}
+          {isSubmitting ? 'Saving...' : (initialData ? 'Update' : 'Add Banner')}
         </button>
         
         <button
@@ -174,7 +174,7 @@ export function BannerForm({ initialData }: BannerFormProps) {
           onClick={() => router.push('/admin/banners')}
           className="px-6 py-2 border rounded-lg hover:bg-white transition"
         >
-          Zrušit
+          Cancel
         </button>
       </div>
     </form>

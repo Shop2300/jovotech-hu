@@ -63,6 +63,7 @@ interface ProductVariant {
   sizeName?: string | null;
   stock: number;
   price?: number | null;
+  regularPrice?: number | null;
   imageUrl?: string | null;
 }
 
@@ -78,7 +79,7 @@ interface ProductDetailClientProps {
     id: string;
     code?: string | null;
     name: string;
-    slug?: string | null; // Change from slug?: string to slug?: string | null
+    slug?: string | null;
     description: string | null;
     detailDescription: string | null;
     price: number;
@@ -120,7 +121,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [addedQuantity, setAddedQuantity] = useState(1);
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
 
-  // Get unique colors and sizes
+  // Get unique colors and sizes - ALL of them, not filtered
   const colors = Array.from(new Set(product.variants?.filter(v => v.colorName).map(v => v.colorName))) as string[];
   const sizes = Array.from(new Set(product.variants?.filter(v => v.sizeName).map(v => v.sizeName))) as string[];
   
@@ -267,49 +268,50 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   useEffect(() => {
     if (!hasVariants) return;
 
-    if (hasColors && !hasSizes) {
-      // Only colors
-      const variant = product.variants?.find(v => v.colorName === selectedColor);
-      setSelectedVariant(variant || null);
-    } else if (hasSizes && !hasColors) {
-      // Only sizes
-      const variant = product.variants?.find(v => v.sizeName === selectedSize);
-      setSelectedVariant(variant || null);
-    } else if (hasColors && hasSizes) {
-      // Both colors and sizes
-      const variant = product.variants?.find(v => 
+    let variant = null;
+
+    // Try to find exact match first
+    if (hasColors && hasSizes && selectedColor && selectedSize) {
+      variant = product.variants?.find(v => 
         v.colorName === selectedColor && v.sizeName === selectedSize
       );
-      setSelectedVariant(variant || null);
+    } else if (hasColors && selectedColor && !hasSizes) {
+      variant = product.variants?.find(v => v.colorName === selectedColor);
+    } else if (hasSizes && selectedSize && !hasColors) {
+      variant = product.variants?.find(v => v.sizeName === selectedSize);
     }
+
+    setSelectedVariant(variant || null);
   }, [selectedColor, selectedSize, product.variants, hasColors, hasSizes, hasVariants]);
 
   // Auto-select first available option
   useEffect(() => {
-    if (hasColors && !selectedColor) {
+    if (hasColors && !selectedColor && colors.length > 0) {
       setSelectedColor(colors[0]);
     }
-    if (hasSizes && !selectedSize) {
+    if (hasSizes && !selectedSize && sizes.length > 0) {
       setSelectedSize(sizes[0]);
     }
   }, [colors, sizes, hasColors, hasSizes, selectedColor, selectedSize]);
 
-  // Calculate effective price and stock
+  // Calculate effective price, regular price and stock
   const effectivePrice = selectedVariant?.price || product.price;
+  const effectiveRegularPrice = selectedVariant?.regularPrice || product.regularPrice;
   const effectiveStock = selectedVariant ? selectedVariant.stock : product.stock;
 
-  // Get available sizes for selected color
-  const getAvailableSizes = (color: string) => {
-    return product.variants
-      ?.filter(v => v.colorName === color && v.sizeName)
-      .map(v => v.sizeName) || [];
-  };
-
-  // Get available colors for selected size
-  const getAvailableColors = (size: string) => {
-    return product.variants
-      ?.filter(v => v.sizeName === size && v.colorName)
-      .map(v => v.colorName) || [];
+  // Check if a specific variant combination exists
+  const variantExists = (color: string | null, size: string | null): boolean => {
+    if (!hasVariants) return true;
+    
+    if (hasColors && hasSizes) {
+      return product.variants?.some(v => v.colorName === color && v.sizeName === size) || false;
+    } else if (hasColors) {
+      return product.variants?.some(v => v.colorName === color) || false;
+    } else if (hasSizes) {
+      return product.variants?.some(v => v.sizeName === size) || false;
+    }
+    
+    return true;
   };
 
   const handleAddToCart = () => {
@@ -325,6 +327,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   
     if (hasSizes && !selectedSize) {
       toast.error('Proszę wybrać rozmiar');
+      return;
+    }
+
+    // Check if the selected combination exists
+    if (hasColors && hasSizes && selectedColor && selectedSize && !selectedVariant) {
+      toast.error('Wybrana kombinacja nie jest dostępna');
       return;
     }
   
@@ -347,14 +355,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         id: product.id,
         name: product.name,
         price: Number(effectivePrice),
-        regularPrice: product.regularPrice || undefined, // Add regular price
+        regularPrice: effectiveRegularPrice || undefined,
         image: selectedVariant?.imageUrl || product.image,
         variantId: selectedVariant?.id,
         variantName: variantDisplayName,
         variantColor: selectedVariant?.colorCode || undefined,
         variantSize: selectedSize || undefined,
-        categorySlug: product.category?.slug, // Add category slug
-        productSlug: product.slug || undefined // Convert null to undefined
+        categorySlug: product.category?.slug,
+        productSlug: product.slug || undefined
       });
     }
   
@@ -425,17 +433,19 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           ]} 
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Product Images */}
+        {/* Updated grid to give more space to images (55% images, 45% details) */}
+        <div className="grid grid-cols-1 md:grid-cols-[1.22fr_1fr] gap-8">
+          {/* Product Images - Now 10% larger due to grid adjustment */}
           <div>
             <ProductImageGallery images={galleryImages} productName={product.name} />
             
             {/* Detailed Description */}
             {product.detailDescription && (
               <div className="mt-8 border-t border-gray-200 pt-6">
-                <h2 className="text-xl font-bold mb-4 text-[#131921]">Szczegółowy opis</h2>
+                <h2 className="text-lg font-bold mb-4 text-[#131921]">Szczegółowy opis</h2>
                 <div 
-                  className="prose prose-lg max-w-none text-gray-700"
+                  className="prose max-w-none text-gray-700 [&>*]:!text-[15px]"
+                  style={{ fontSize: '15px' }}
                   dangerouslySetInnerHTML={{ __html: product.detailDescription }}
                 />
               </div>
@@ -446,7 +456,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           <div className="space-y-6">
             {/* Title and Basic Info Section */}
             <div>
-              <h1 className="text-3xl font-bold text-[#131921] mb-2">{product.name}</h1>
+              <h1 className="text-2xl font-bold text-[#131921] mb-2">{product.name}</h1>
               {/* Brand and Product Code */}
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                 {product.brand && (
@@ -508,7 +518,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Product Description - Moved closer to title */}
               {product.description && (
                 <div 
-                  className="text-gray-600 text-base prose prose-lg max-w-none"
+                  className="text-gray-600 prose max-w-none [&>*]:!text-[15px]"
+                  style={{ fontSize: '15px' }}
                   dangerouslySetInnerHTML={{ __html: product.description }}
                 />
               )}
@@ -516,23 +527,23 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             
             {/* Add spacing between description and the rest of content */}
             <div className="mt-6 space-y-6">
-              {/* Price Section */}
+              {/* Price Section - Updated to use effectiveRegularPrice */}
               <div className="space-y-2">
-                {product.regularPrice && product.regularPrice > product.price ? (
+                {effectiveRegularPrice && effectiveRegularPrice > effectivePrice ? (
                   <>
                     <div className="flex items-center gap-3">
                       <span className="text-2xl font-bold text-red-600">
                         {formatPrice(Number(effectivePrice))}
                       </span>
                       <span className="text-lg text-gray-500 line-through">
-                        {formatPrice(product.regularPrice)}
+                        {formatPrice(Number(effectiveRegularPrice))}
                       </span>
                       <span className="bg-red-600 text-white px-2 py-1 rounded-lg text-sm font-bold">
-                        -{calculateDiscount(Number(effectivePrice), product.regularPrice)}%
+                        -{calculateDiscount(Number(effectivePrice), Number(effectiveRegularPrice))}%
                       </span>
                     </div>
                     <p className="text-[#6da306] font-medium text-sm">
-                      Oszczędzasz {formatPrice(product.regularPrice - Number(effectivePrice))}
+                      Oszczędzasz {formatPrice(Number(effectiveRegularPrice) - Number(effectivePrice))}
                     </p>
                   </>
                 ) : (
@@ -542,28 +553,28 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 )}
               </div>
               
-              {/* Color Selection */}
+              {/* Color Selection - Updated with improved logic */}
               {hasColors && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 text-black">Kolor</h3>
                   <div className="flex flex-wrap gap-2">
                     {colors.map((color) => {
                       const colorVariant = product.variants?.find(v => v.colorName === color);
-                      const isAvailable = hasSizes 
-                        ? getAvailableSizes(color).includes(selectedSize!)
-                        : (colorVariant?.stock || 0) > 0;
+                      // Check if this color has any in-stock variants
+                      const hasStock = selectedSize 
+                        ? product.variants?.some(v => v.colorName === color && v.sizeName === selectedSize && v.stock > 0)
+                        : product.variants?.some(v => v.colorName === color && v.stock > 0);
+                      
+                      const isAvailable = !hasSizes || !selectedSize || variantExists(color, selectedSize);
                       
                       return (
                         <button
                           key={color}
                           onClick={() => setSelectedColor(color)}
-                          disabled={!isAvailable}
                           className={`px-4 py-2 rounded-lg border-2 transition flex items-center gap-2 ${
                             selectedColor === color
                               ? 'border-blue-600 bg-blue-50'
-                              : isAvailable
-                              ? 'border-gray-300 hover:border-gray-400'
-                              : 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                              : 'border-gray-300 hover:border-gray-400'
                           }`}
                         >
                           {colorVariant?.colorCode && (
@@ -573,6 +584,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                             />
                           )}
                           <span className="text-black">{color}</span>
+                          {!isAvailable && (
+                            <span className="text-xs text-red-500">(niedostępne)</span>
+                          )}
                         </button>
                       );
                     })}
@@ -580,34 +594,47 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 </div>
               )}
               
-              {/* Size Selection */}
+              {/* Size Selection - Updated with improved logic */}
               {hasSizes && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 text-black">Rozmiar</h3>
                   <div className="flex flex-wrap gap-2">
                     {sizes.map((size) => {
-                      const isAvailable = hasColors 
-                        ? getAvailableColors(size).includes(selectedColor!)
+                      // Check if this size has any in-stock variants
+                      const hasStock = selectedColor
+                        ? product.variants?.some(v => v.sizeName === size && v.colorName === selectedColor && v.stock > 0)
                         : product.variants?.some(v => v.sizeName === size && v.stock > 0);
+                      
+                      const isAvailable = !hasColors || !selectedColor || variantExists(selectedColor, size);
                       
                       return (
                         <button
                           key={size}
                           onClick={() => setSelectedSize(size)}
-                          disabled={!isAvailable}
                           className={`px-4 py-2 min-w-[60px] rounded-lg border-2 transition ${
                             selectedSize === size
                               ? 'border-blue-600 bg-blue-50'
-                              : isAvailable
-                              ? 'border-gray-300 hover:border-gray-400'
-                              : 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                              : 'border-gray-300 hover:border-gray-400'
                           }`}
                         >
                           <span className="text-black font-medium">{size}</span>
+                          {!isAvailable && (
+                            <span className="text-xs text-red-500 block">(niedostępne)</span>
+                          )}
                         </button>
                       );
                     })}
                   </div>
+                </div>
+              )}
+
+              {/* Warning message when selected combination doesn't exist */}
+              {hasColors && hasSizes && selectedColor && selectedSize && !selectedVariant && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm">
+                  <p className="text-yellow-800">
+                    Kombinacja <strong>{selectedColor} / {selectedSize}</strong> nie jest dostępna.
+                    Wybierz inną kombinację.
+                  </p>
                 </div>
               )}
               
@@ -658,20 +685,20 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Add to Cart Button - Updated with more rounded corners */}
               <button
                 onClick={handleAddToCart}
-                disabled={effectiveStock === 0}
+                disabled={!!(effectiveStock === 0 || (hasColors && hasSizes && selectedColor && selectedSize && !selectedVariant))}
                 className={`w-full py-4 rounded-full font-semibold text-lg transition flex items-center justify-center gap-3 ${
-                  effectiveStock === 0
+                  effectiveStock === 0 || (hasColors && hasSizes && selectedColor && selectedSize && !selectedVariant)
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'text-white'
                 }`}
-                style={effectiveStock > 0 ? { backgroundColor: '#8fb300' } : undefined}
+                style={effectiveStock > 0 && (!hasColors || !hasSizes || selectedVariant) ? { backgroundColor: '#8fb300' } : undefined}
                 onMouseEnter={(e) => {
-                  if (effectiveStock > 0) {
+                  if (effectiveStock > 0 && (!hasColors || !hasSizes || selectedVariant)) {
                     e.currentTarget.style.backgroundColor = '#7a9900';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (effectiveStock > 0) {
+                  if (effectiveStock > 0 && (!hasColors || !hasSizes || selectedVariant)) {
                     e.currentTarget.style.backgroundColor = '#8fb300';
                   }
                 }}
@@ -901,7 +928,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         </>
       )}
 
-      {/* Cart Popup Modal */}
+      {/* Cart Popup Modal - Updated to show variant regular price */}
       {showCartPopup && (
         <>
           {/* Backdrop - Transparent with blur */}
@@ -979,16 +1006,16 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       </p>
                     )}
                     <div className="mt-1">
-                      {product.regularPrice && product.regularPrice > effectivePrice ? (
+                      {effectiveRegularPrice && effectiveRegularPrice > effectivePrice ? (
                         <div className="flex items-center gap-2">
                           <span className="text-[#6da306] font-bold text-lg">
                             {formatPrice(Number(effectivePrice))}
                           </span>
                           <span className="text-sm text-gray-500 line-through">
-                            {formatPrice(product.regularPrice)}
+                            {formatPrice(Number(effectiveRegularPrice))}
                           </span>
                           <span className="bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-bold">
-                            -{calculateDiscount(Number(effectivePrice), product.regularPrice)}%
+                            -{calculateDiscount(Number(effectivePrice), Number(effectiveRegularPrice))}%
                           </span>
                         </div>
                       ) : (

@@ -70,11 +70,11 @@ export function FeatureIconForm({ initialData }: FeatureIconFormProps) {
 
       if (!response.ok) throw new Error('Failed to save feature icon');
 
-      toast.success(initialData ? 'Ikona byla aktualizována' : 'Ikona byla přidána');
+      toast.success(initialData ? 'Icon has been updated' : 'Icon has been added');
       router.push('/admin/feature-icons');
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při ukládání ikony');
+      toast.error('Error saving icon');
     } finally {
       setIsSubmitting(false);
     }
@@ -84,13 +84,13 @@ export function FeatureIconForm({ initialData }: FeatureIconFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow-md p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium mb-2 text-black">Klíč (unikátní identifikátor) *</label>
+          <label className="block text-sm font-medium mb-2 text-black">Key (unique identifier) *</label>
           <input
             {...register('key', { 
-              required: 'Klíč je povinný',
+              required: 'Key is required',
               pattern: {
                 value: /^[a-z0-9_]+$/,
-                message: 'Pouze malá písmena, čísla a podtržítka'
+                message: 'Only lowercase letters, numbers and underscores'
               }
             })}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -102,7 +102,7 @@ export function FeatureIconForm({ initialData }: FeatureIconFormProps) {
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-2 text-black">Emoji (záložní ikona)</label>
+          <label className="block text-sm font-medium mb-2 text-black">Emoji (fallback icon)</label>
           <input
             {...register('emoji')}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -113,11 +113,11 @@ export function FeatureIconForm({ initialData }: FeatureIconFormProps) {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <div>
-          <label className="block text-sm font-medium mb-2 text-black">Název *</label>
+          <label className="block text-sm font-medium mb-2 text-black">Title *</label>
           <input
-            {...register('title', { required: 'Název je povinný' })}
+            {...register('title', { required: 'Title is required' })}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="např. Doprava zdarma"
+            placeholder="e.g. Free shipping"
           />
           {errors.title && (
             <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
@@ -125,11 +125,11 @@ export function FeatureIconForm({ initialData }: FeatureIconFormProps) {
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-2 text-black">Popis</label>
+          <label className="block text-sm font-medium mb-2 text-black">Description</label>
           <input
             {...register('description')}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="např. Při objednávce nad 1000 Kč"
+            placeholder="e.g. On orders over $50"
           />
         </div>
       </div>
@@ -140,13 +140,13 @@ export function FeatureIconForm({ initialData }: FeatureIconFormProps) {
           onChange={setImageUrl}
           onRemove={() => setImageUrl('')}
           type="products"
-          label="Ikona (doporučeno 64x64px nebo SVG)"
+          label="Icon (recommended 64x64px or SVG)"
         />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <div>
-          <label className="block text-sm font-medium mb-2 text-black">Pořadí</label>
+          <label className="block text-sm font-medium mb-2 text-black">Order</label>
           <input
             type="number"
             {...register('order', { valueAsNumber: true })}
@@ -161,7 +161,7 @@ export function FeatureIconForm({ initialData }: FeatureIconFormProps) {
               {...register('isActive')}
               className="w-4 h-4"
             />
-            <span className="text-sm font-medium">Ikona je aktivní</span>
+            <span className="text-sm font-medium">Icon is active</span>
           </label>
         </div>
       </div>
@@ -176,7 +176,7 @@ export function FeatureIconForm({ initialData }: FeatureIconFormProps) {
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
         >
-          {isSubmitting ? 'Ukládám...' : (initialData ? 'Aktualizovat' : 'Přidat ikonu')}
+          {isSubmitting ? 'Saving...' : (initialData ? 'Update' : 'Add Icon')}
         </button>
         
         <button
@@ -184,7 +184,7 @@ export function FeatureIconForm({ initialData }: FeatureIconFormProps) {
           onClick={() => router.push('/admin/feature-icons')}
           className="px-6 py-2 border rounded-lg hover:bg-white transition"
         >
-          Zrušit
+          Cancel
         </button>
       </div>
     </form>

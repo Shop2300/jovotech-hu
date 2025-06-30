@@ -1,3 +1,4 @@
+// src/app/admin/orders/[orderNumber]/AddressEdit.tsx
 'use client';
 
 import { useState } from 'react';
@@ -66,11 +67,11 @@ export function AddressEdit({
 
       if (!response.ok) throw new Error('Failed to update addresses');
       
-      toast.success('Adresy byly aktualizovány');
+      toast.success('Addresses have been updated');
       setIsEditing(false);
       router.refresh();
     } catch (error) {
-      toast.error('Chyba při aktualizaci adres');
+      toast.error('Error updating addresses');
     } finally {
       setIsSaving(false);
     }
@@ -100,7 +101,7 @@ export function AddressEdit({
             <div className="flex items-center gap-2">
               <FileText size={20} className="text-gray-600" />
               <h2 className="text-xl font-semibold text-black">
-                {isCompany ? 'Adres firmy' : 'Fakturační adresa'}
+                {isCompany ? 'Company Address' : 'Billing Address'}
               </h2>
             </div>
             <button
@@ -108,7 +109,7 @@ export function AddressEdit({
               className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"
             >
               <Edit2 size={16} />
-              Upravit
+              Edit
             </button>
           </div>
           <div className="space-y-2">
@@ -124,7 +125,7 @@ export function AddressEdit({
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center gap-2 mb-4">
             <Truck size={20} className="text-gray-600" />
-            <h2 className="text-xl font-semibold text-black">Doručovací adresa</h2>
+            <h2 className="text-xl font-semibold text-black">Delivery Address</h2>
           </div>
           <div className="space-y-2">
             {useDifferentDelivery ? (
@@ -137,7 +138,7 @@ export function AddressEdit({
               </>
             ) : (
               <>
-                <p className="text-gray-600 text-sm italic">Stejná jako fakturační</p>
+                <p className="text-gray-600 text-sm italic">Same as billing</p>
                 <p className="text-black">
                   <strong>{billingFirstName} {billingLastName}</strong>
                 </p>
@@ -154,19 +155,19 @@ export function AddressEdit({
   // Edit mode
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold mb-4">Upravit adresy</h3>
+      <h3 className="text-lg font-semibold mb-4">Edit Addresses</h3>
       
       <div className="space-y-6">
         {/* Billing Address Section */}
         <div>
           <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
             <FileText size={16} />
-            {isCompany ? 'Adres firmy' : 'Fakturační adresa'}
+            {isCompany ? 'Company Address' : 'Billing Address'}
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ulice a číslo popisné
+                Street and House Number
               </label>
               <input
                 type="text"
@@ -177,7 +178,7 @@ export function AddressEdit({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Město
+                City
               </label>
               <input
                 type="text"
@@ -188,7 +189,7 @@ export function AddressEdit({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                PSČ
+                Postal Code
               </label>
               <input
                 type="text"
@@ -210,7 +211,7 @@ export function AddressEdit({
             className="rounded border-gray-300"
           />
           <label htmlFor="useDifferentDelivery" className="text-sm font-medium text-gray-700">
-            Použít jinou doručovací adresu
+            Use different delivery address
           </label>
         </div>
 
@@ -219,12 +220,12 @@ export function AddressEdit({
           <div>
             <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
               <Truck size={16} />
-              Doručovací adresa
+              Delivery Address
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Jméno
+                  First Name
                 </label>
                 <input
                   type="text"
@@ -235,7 +236,7 @@ export function AddressEdit({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Příjmení
+                  Last Name
                 </label>
                 <input
                   type="text"
@@ -246,7 +247,7 @@ export function AddressEdit({
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ulice a číslo popisné
+                  Street and House Number
                 </label>
                 <input
                   type="text"
@@ -257,7 +258,7 @@ export function AddressEdit({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Město
+                  City
                 </label>
                 <input
                   type="text"
@@ -268,7 +269,7 @@ export function AddressEdit({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PSČ
+                  Postal Code
                 </label>
                 <input
                   type="text"
@@ -289,11 +290,11 @@ export function AddressEdit({
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:opacity-50 flex items-center gap-2"
           >
             {isSaving ? (
-              <span>Ukládám...</span>
+              <span>Saving...</span>
             ) : (
               <>
                 <Save size={16} />
-                Uložit
+                Save
               </>
             )}
           </button>
@@ -303,7 +304,7 @@ export function AddressEdit({
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition disabled:opacity-50 flex items-center gap-2"
           >
             <X size={16} />
-            Zrušit
+            Cancel
           </button>
         </div>
       </div>

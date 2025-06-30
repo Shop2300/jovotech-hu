@@ -23,7 +23,7 @@ export function BannersTable({ banners: initialBanners }: { banners: Banner[] })
   const router = useRouter();
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Opravdu chcete smazat banner "${title}"?`)) return;
+    if (!confirm(`Are you sure you want to delete banner "${title}"?`)) return;
 
     try {
       const response = await fetch(`/api/admin/banners/${id}`, {
@@ -33,9 +33,9 @@ export function BannersTable({ banners: initialBanners }: { banners: Banner[] })
       if (!response.ok) throw new Error('Failed to delete');
 
       setBanners(banners.filter(b => b.id !== id));
-      toast.success('Banner byl smazán');
+      toast.success('Banner has been deleted');
     } catch (error) {
-      toast.error('Chyba při mazání banneru');
+      toast.error('Error deleting banner');
     }
   };
 
@@ -55,15 +55,15 @@ export function BannersTable({ banners: initialBanners }: { banners: Banner[] })
       setBanners(banners.map(b => 
         b.id === banner.id ? { ...b, isActive: !b.isActive } : b
       ));
-      toast.success('Stav banneru byl změněn');
+      toast.success('Banner status has been changed');
     } catch (error) {
-      toast.error('Chyba při změně stavu');
+      toast.error('Error changing status');
     }
   };
 
   const typeLabels = {
     hero: 'Hero',
-    category: 'Kategorie',
+    category: 'Category',
     promo: 'Promo',
   };
 
@@ -74,17 +74,17 @@ export function BannersTable({ banners: initialBanners }: { banners: Banner[] })
           <thead>
             <tr className="border-b bg-white">
               <th className="text-left py-3 px-6 text-gray-700 font-semibold">Banner</th>
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Typ</th>
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Stav</th>
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Pořadí</th>
-              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Akce</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Type</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Status</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Order</th>
+              <th className="text-left py-3 px-6 text-gray-700 font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
             {banners.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-center py-8 text-gray-700">
-                  Žádné bannery nenalezeny
+                  No banners found
                 </td>
               </tr>
             ) : (
@@ -119,7 +119,7 @@ export function BannersTable({ banners: initialBanners }: { banners: Banner[] })
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {banner.isActive ? 'Aktivní' : 'Neaktivní'}
+                      {banner.isActive ? 'Active' : 'Inactive'}
                     </button>
                   </td>
                   <td className="py-4 px-6">{banner.order}</td>

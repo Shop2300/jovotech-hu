@@ -69,7 +69,8 @@ export async function POST(request: Request) {
       regularPrice: createdProduct.regularPrice ? Number(createdProduct.regularPrice) : null,
       variants: createdProduct.variants.map(variant => ({
         ...variant,
-        price: variant.price ? Number(variant.price) : null
+        price: variant.price ? Number(variant.price) : null,
+        regularPrice: variant.regularPrice ? Number(variant.regularPrice) : null // ADDED THIS LINE
       }))
     } : null;
     
@@ -100,18 +101,43 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' }
     });
     
-    // Convert Decimal fields to numbers for all products
-    const serializedProducts = products.map(product => ({
-      ...product,
-      price: Number(product.price),
-      regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
-      averageRating: product.averageRating ? Number(product.averageRating) : undefined,
-      totalRatings: product.totalRatings || 0,
-      variants: product.variants.map(variant => ({
-        ...variant,
-        price: variant.price ? Number(variant.price) : null
-      }))
-    }));
+    // Convert Decimal fields to numbers and calculate display price
+    const serializedProducts = products.map(product => {
+      // Calculate the display price
+      let displayPrice = Number(product.price);
+      let displayRegularPrice = product.regularPrice ? Number(product.regularPrice) : null;
+      
+      // If product has active variants with prices, use the lowest variant price
+      if (product.variants && product.variants.length > 0) {
+        const variantPrices = product.variants
+          .filter(v => v.price !== null && v.stock > 0)
+          .map(v => Number(v.price));
+        
+        if (variantPrices.length > 0) {
+          displayPrice = Math.min(...variantPrices);
+          
+          // Also check if there's a regular price on variants
+          const variantRegularPrices = product.variants
+            .filter(v => v.price !== null && v.stock > 0)
+            .map(v => Number(v.price)); // Note: If variants have regularPrice field, use that instead
+          
+          // For now, we'll keep the product's regular price, but you might want to calculate this from variants too
+        }
+      }
+      
+      return {
+        ...product,
+        price: displayPrice,
+        regularPrice: displayRegularPrice,
+        averageRating: product.averageRating ? Number(product.averageRating) : undefined,
+        totalRatings: product.totalRatings || 0,
+        variants: product.variants.map(variant => ({
+          ...variant,
+          price: variant.price ? Number(variant.price) : null,
+          regularPrice: variant.regularPrice ? Number(variant.regularPrice) : null // ADDED THIS LINE
+        }))
+      };
+    });
     
     return NextResponse.json(serializedProducts);
   } catch (error) {
