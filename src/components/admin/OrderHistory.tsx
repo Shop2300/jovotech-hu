@@ -11,9 +11,12 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Loader2,
   History,
-  Mail
+  Mail,
+  CreditCard,
+  User,
+  MapPin,
+  StickyNote
 } from 'lucide-react';
 
 interface OrderHistoryEntry {
@@ -33,51 +36,74 @@ interface OrderHistoryProps {
 
 export function OrderHistory({ history }: OrderHistoryProps) {
   const getActionIcon = (action: string) => {
-    switch (action) {
-      case 'order_created':
-        return <Clock className="w-5 h-5 text-blue-600" />;
-      case 'status_change':
-        return <AlertCircle className="w-5 h-5 text-yellow-600" />;
-      case 'tracking_added':
-      case 'tracking_updated':
-        return <Truck className="w-5 h-5 text-purple-600" />;
-      case 'tracking_removed':
-        return <Truck className="w-5 h-5 text-red-600" />;
-      case 'invoice_generated':
-        return <FileText className="w-5 h-5 text-green-600" />;
-      case 'invoice_deleted':
-        return <FileText className="w-5 h-5 text-red-600" />;
-      case 'payment_received':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'cancelled':
-        return <XCircle className="w-5 h-5 text-red-600" />;
-      case 'email_sent':
-        return <Mail className="w-5 h-5 text-blue-600" />;
-      default:
-        return <History className="w-5 h-5 text-gray-600" />;
+    const actionLower = action.toLowerCase();
+    
+    if (actionLower.includes('created')) {
+      return <Clock className="w-5 h-5 text-blue-600" />;
     }
+    if (actionLower.includes('status') && actionLower.includes('changed')) {
+      return <AlertCircle className="w-5 h-5 text-yellow-600" />;
+    }
+    if (actionLower.includes('payment')) {
+      return <CreditCard className="w-5 h-5 text-green-600" />;
+    }
+    if (actionLower.includes('tracking')) {
+      return <Truck className="w-5 h-5 text-purple-600" />;
+    }
+    if (actionLower.includes('invoice')) {
+      return <FileText className="w-5 h-5 text-green-600" />;
+    }
+    if (actionLower.includes('email')) {
+      return <Mail className="w-5 h-5 text-blue-600" />;
+    }
+    if (actionLower.includes('cancelled')) {
+      return <XCircle className="w-5 h-5 text-red-600" />;
+    }
+    if (actionLower.includes('customer')) {
+      return <User className="w-5 h-5 text-indigo-600" />;
+    }
+    if (actionLower.includes('address')) {
+      return <MapPin className="w-5 h-5 text-indigo-600" />;
+    }
+    if (actionLower.includes('note')) {
+      return <StickyNote className="w-5 h-5 text-amber-600" />;
+    }
+    
+    return <History className="w-5 h-5 text-gray-600" />;
   };
 
   const getActionColor = (action: string) => {
-    switch (action) {
-      case 'order_created':
-        return 'border-blue-200 bg-blue-50';
-      case 'status_change':
-        return 'border-yellow-200 bg-yellow-50';
-      case 'tracking_added':
-      case 'tracking_updated':
-        return 'border-purple-200 bg-purple-50';
-      case 'tracking_removed':
-        return 'border-red-200 bg-red-50';
-      case 'invoice_generated':
-        return 'border-green-200 bg-green-50';
-      case 'invoice_deleted':
-        return 'border-red-200 bg-red-50';
-      case 'email_sent':
-        return 'border-blue-200 bg-blue-50';
-      default:
-        return 'border-gray-200 bg-gray-50';
+    const actionLower = action.toLowerCase();
+    
+    if (actionLower.includes('created')) {
+      return 'border-blue-200 bg-blue-50';
     }
+    if (actionLower.includes('status') && actionLower.includes('changed')) {
+      return 'border-yellow-200 bg-yellow-50';
+    }
+    if (actionLower.includes('payment')) {
+      return 'border-green-200 bg-green-50';
+    }
+    if (actionLower.includes('tracking')) {
+      return 'border-purple-200 bg-purple-50';
+    }
+    if (actionLower.includes('invoice')) {
+      return 'border-green-200 bg-green-50';
+    }
+    if (actionLower.includes('email')) {
+      return 'border-blue-200 bg-blue-50';
+    }
+    if (actionLower.includes('cancelled')) {
+      return 'border-red-200 bg-red-50';
+    }
+    if (actionLower.includes('customer') || actionLower.includes('address')) {
+      return 'border-indigo-200 bg-indigo-50';
+    }
+    if (actionLower.includes('note')) {
+      return 'border-amber-200 bg-amber-50';
+    }
+    
+    return 'border-gray-200 bg-gray-50';
   };
 
   if (!history || history.length === 0) {

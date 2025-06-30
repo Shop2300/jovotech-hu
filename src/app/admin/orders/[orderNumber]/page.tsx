@@ -2,34 +2,49 @@
 import { prisma } from '@/lib/prisma';
 import { formatPrice } from '@/lib/utils';
 import { format } from 'date-fns';
-import { cs } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle, Package, Banknote, Building2, User } from 'lucide-react';
+import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle, Package, Banknote } from 'lucide-react';
 import { OrderActions } from './OrderActions';
 import { CustomerInfoEdit } from './CustomerInfoEdit';
 import { AddressEdit } from './AddressEdit';
 import { AdminNotes } from './AdminNotes';
 import { OrderHistory } from '@/components/admin/OrderHistory';
-import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
+import { getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
-// Helper function to format dates with timezone adjustment
+// Force dynamic rendering for admin pages
+export const dynamic = 'force-dynamic';
+
+// Helper function to format dates
 const formatDateWithTimezone = (dateString: string | Date) => {
   const date = new Date(dateString);
   // Add 2 hours for Central European Time (GMT+2)
   date.setHours(date.getHours() + 2);
-  return format(date, 'dd.MM.yyyy, HH:mm', { locale: cs });
+  return format(date, 'MMMM d, yyyy HH:mm', { locale: enUS });
 };
 
 interface OrderItem {
-  productId: string;
+  id?: string;
+  productId?: string;
   name?: string;
   quantity: number;
   price: number;
   size?: string;
   color?: string;
   image?: string;
+  variantName?: string;
+  variantColor?: string;
+}
+
+interface ProductInfo {
+  id: string;
+  name: string;
+}
+
+interface OrderItemWithProduct extends OrderItem {
+  product: ProductInfo;
 }
 
 async function getOrder(orderNumber: string) {
@@ -46,14 +61,19 @@ async function getOrder(orderNumber: string) {
     return null;
   }
 
-  // Parse the JSON items - use unknown first then cast
+  // Parse the JSON items
   const items = order.items as unknown as OrderItem[];
 
-  // Filter out items without productId and get valid product IDs
-  const validItems = items.filter(item => item.productId);
-  const productIds = validItems.map(item => item.productId);
+  // Get all product IDs (check both 'id' and 'productId' fields)
+  const productIds: string[] = [];
+  items.forEach(item => {
+    const productId = item.id || item.productId;
+    if (productId) {
+      productIds.push(productId);
+    }
+  });
 
-  // Only fetch products if we have valid IDs
+  // Fetch products from database
   let products: any[] = [];
   if (productIds.length > 0) {
     products = await prisma.product.findMany({
@@ -61,32 +81,37 @@ async function getOrder(orderNumber: string) {
         id: {
           in: productIds
         }
+      },
+      select: {
+        id: true,
+        name: true
       }
     });
   }
 
-  // Map products to items, handling items without valid productId
-  const itemsWithProducts = items.map(item => {
-    if (!item.productId) {
-      // Handle items without productId
+  // Map items with their products
+  const itemsWithProducts: OrderItemWithProduct[] = items.map(item => {
+    const itemProductId = item.id || item.productId;
+    
+    if (!itemProductId) {
       return {
         ...item,
         product: {
           id: 'unknown',
-          name: item.name || 'Neznámý produkt',
+          name: item.name || 'Unknown product',
         }
       };
     }
 
-    const product = products.find(p => p.id === item.productId);
+    const product = products.find(p => p.id === itemProductId);
     return {
       ...item,
       product: product ? {
         id: product.id,
         name: product.name,
       } : {
-        id: item.productId,
-        name: item.name || 'Neznámý produkt',
+        id: itemProductId,
+        name: item.name || 'Unknown product',
       }
     };
   });
@@ -100,6 +125,24 @@ async function getOrder(orderNumber: string) {
   };
 }
 
+const getStatusBadge = (status: string) => {
+  const statusConfig = {
+    pending: { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' },
+    processing: { label: 'Processing', className: 'bg-blue-100 text-blue-800' },
+    shipped: { label: 'Shipped', className: 'bg-purple-100 text-purple-800' },
+    delivered: { label: 'Delivered', className: 'bg-green-100 text-green-800' },
+    cancelled: { label: 'Cancelled', className: 'bg-red-100 text-red-800' },
+  };
+
+  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+
+  return (
+    <span className={`px-3 py-1 rounded-full text-sm font-medium ${config.className}`}>
+      {config.label}
+    </span>
+  );
+};
+
 export default async function OrderDetailPage({ 
   params 
 }: { 
@@ -112,32 +155,11 @@ export default async function OrderDetailPage({
     notFound();
   }
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: { label: 'Čeká na vyřízení', className: 'bg-yellow-100 text-yellow-800' },
-      processing: { label: 'Zpracovává se', className: 'bg-blue-100 text-blue-800' },
-      shipped: { label: 'Odesláno', className: 'bg-purple-100 text-purple-800' },
-      delivered: { label: 'Doručeno', className: 'bg-green-100 text-green-800' },
-      cancelled: { label: 'Zrušeno', className: 'bg-red-100 text-red-800' },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-
-    return (
-      <span className={`px-3 py-1 rounded-full text-sm font-medium ${config.className}`}>
-        {config.label}
-      </span>
-    );
-  };
-
-  // Check if we have new address fields
-  const hasNewAddressFormat = order.billingFirstName && order.billingLastName;
-
   // Get delivery and payment methods
   const deliveryMethod = getDeliveryMethod(order.deliveryMethod);
   const paymentMethod = getPaymentMethod(order.paymentMethod);
 
-  // Calculate subtotal (sum of all product items)
+  // Calculate subtotal
   const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
@@ -152,75 +174,143 @@ export default async function OrderDetailPage({
             <ArrowLeft size={24} />
           </Link>
           <h1 className="text-3xl font-bold text-black">
-            Objednávka #{order.orderNumber}
+            Order #{order.orderNumber}
           </h1>
           {getStatusBadge(order.status)}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Order Details */}
+        {/* Left Column - Order Details */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Items */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 text-black">Položky objednávky</h2>
-            <div className="space-y-4">
+          {/* Order Items */}
+          <div className="bg-white rounded-lg shadow-md p-6 overflow-visible">
+            <h2 className="text-xl font-semibold mb-4 text-black">Order Items</h2>
+            <div className="space-y-4 overflow-visible">
               {/* Product Items */}
-              {order.items.map((item, index) => (
-                <div key={index} className="flex justify-between items-center pb-4 border-b">
-                  <div className="flex items-start gap-3">
-                    {/* Product Image */}
-                    {item.image ? (
-                      <Link 
-                        href={item.product.id !== 'unknown' ? `/admin/products/${item.product.id}/edit` : '#'}
-                        className="flex-shrink-0 hover:opacity-80 transition-opacity"
-                      >
-                        <div className="relative w-16 h-16">
-                          <Image 
-                            src={item.image} 
-                            alt={item.product.name}
-                            fill
-                            className="object-cover rounded-lg"
-                            sizes="64px"
-                          />
-                        </div>
-                      </Link>
-                    ) : (
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Package size={24} className="text-gray-400" />
-                      </div>
-                    )}
-                    
-                    <div>
-                      {item.product.id !== 'unknown' ? (
-                        <Link 
-                          href={`/admin/products/${item.product.id}/edit`}
-                          className="font-medium text-black hover:text-blue-600 transition-colors"
-                        >
-                          {item.product.name}
-                        </Link>
-                      ) : (
-                        <h3 className="font-medium text-black">{item.product.name}</h3>
-                      )}
-                      <p className="text-sm text-gray-600">
-                        {item.quantity}x {formatPrice(item.price)}
-                      </p>
-                      {(item.size || item.color) && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          {item.size && `Velikost: ${item.size}`}
-                          {item.size && item.color && ' • '}
-                          {item.color && `Barva: ${item.color}`}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <p className="font-medium text-black">
-                    {formatPrice(item.price * item.quantity)}
-                  </p>
-                </div>
-              ))}
+              {order.items.map((item, index) => {
+                const canLinkToProduct = item.product.id !== 'unknown';
+                const productEditUrl = canLinkToProduct ? `/admin/products/${item.product.id}/edit` : '#';
 
-              {/* Delivery Method as Item */}
+                return (
+                  <div key={index} className="flex justify-between items-center pb-4 border-b relative">
+                    <div className="flex items-start gap-3">
+                      {/* Product Image */}
+                      {item.image ? (
+                        canLinkToProduct ? (
+                          <div className="flex-shrink-0 relative">
+                            <Link 
+                              href={productEditUrl}
+                              className="relative group block"
+                            >
+                              <div className="relative w-16 h-16 overflow-hidden rounded-lg">
+                                <Image 
+                                  src={item.image} 
+                                  alt={item.product.name}
+                                  fill
+                                  className="object-cover"
+                                  sizes="64px"
+                                  priority={index < 3}
+                                />
+                              </div>
+                              {/* Large preview on hover - 6x size */}
+                              <div className="absolute top-0 left-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100]">
+                                <div className="relative w-96 h-96 bg-white rounded-lg shadow-2xl border-2 border-gray-300 overflow-hidden">
+                                  <Image 
+                                    src={item.image} 
+                                    alt={item.product.name}
+                                    fill
+                                    className="object-contain"
+                                    sizes="384px"
+                                    quality={100}
+                                    unoptimized
+                                  />
+                                  <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                                    Original size
+                                  </div>
+                                </div>
+                              </div>
+                            </Link>
+                          </div>
+                        ) : (
+                          <div className="relative group flex-shrink-0">
+                            <div className="relative w-16 h-16 overflow-hidden rounded-lg">
+                              <Image 
+                                src={item.image} 
+                                alt={item.product.name}
+                                fill
+                                className="object-cover"
+                                sizes="64px"
+                                priority={index < 3}
+                              />
+                              {/* Large preview on hover - 6x size */}
+                              <div className="absolute top-0 left-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100]">
+                                <div className="relative w-96 h-96 bg-white rounded-lg shadow-2xl border-2 border-gray-300 overflow-hidden">
+                                  <Image 
+                                    src={item.image} 
+                                    alt={item.product.name}
+                                    fill
+                                    className="object-contain"
+                                    sizes="384px"
+                                    quality={100}
+                                    unoptimized
+                                  />
+                                  <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                                    Original size
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Package size={24} className="text-gray-400" />
+                        </div>
+                      )}
+                      
+                      {/* Product Details */}
+                      <div>
+                        {canLinkToProduct ? (
+                          <>
+                            <Link 
+                              href={productEditUrl}
+                              className="font-medium text-black hover:text-blue-600 transition-colors"
+                            >
+                              {item.product.name}
+                            </Link>
+                            <span className="text-xs text-gray-400 ml-2">
+                              (ID: {item.product.id})
+                            </span>
+                          </>
+                        ) : (
+                          <h3 className="font-medium text-black">{item.product.name}</h3>
+                        )}
+                        <p className="text-sm text-gray-600">
+                          {item.quantity}x {formatPrice(item.price)}
+                        </p>
+                        {/* Variant Information */}
+                        {(item.variantName || item.variantColor || item.size || item.color) && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {item.variantName && item.variantName}
+                            {item.variantName && item.variantColor && ' - '}
+                            {item.variantColor && !item.variantName && item.variantColor}
+                            {(item.variantName || item.variantColor) && (item.size || item.color) && ' • '}
+                            {item.size && `Size: ${item.size}`}
+                            {item.size && item.color && ' • '}
+                            {item.color && `Color: ${item.color}`}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <p className="font-medium text-black">
+                      {formatPrice(item.price * item.quantity)}
+                    </p>
+                  </div>
+                );
+              })}
+
+              {/* Delivery Method */}
               {deliveryMethod && (
                 <div className="flex justify-between items-center pb-4 border-b">
                   <div className="flex items-start gap-3">
@@ -235,12 +325,12 @@ export default async function OrderDetailPage({
                     </div>
                   </div>
                   <p className="font-medium text-black">
-                    {deliveryMethod.price > 0 ? formatPrice(deliveryMethod.price) : 'Zdarma'}
+                    {deliveryMethod.price > 0 ? formatPrice(deliveryMethod.price) : 'Free'}
                   </p>
                 </div>
               )}
 
-              {/* Payment Method as Item */}
+              {/* Payment Method */}
               {paymentMethod && (
                 <div className="flex justify-between items-center pb-4 border-b last:border-0">
                   <div className="flex items-start gap-3">
@@ -259,38 +349,38 @@ export default async function OrderDetailPage({
                     </div>
                   </div>
                   <p className="font-medium text-black">
-                    {paymentMethod.price > 0 ? formatPrice(paymentMethod.price) : 'Zdarma'}
+                    {paymentMethod.price > 0 ? formatPrice(paymentMethod.price) : 'Free'}
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Summary */}
+            {/* Order Summary */}
             <div className="mt-6 pt-4 border-t space-y-2">
               <div className="flex justify-between text-gray-600">
-                <span>Mezisoučet (produkty)</span>
+                <span>Subtotal (products)</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
               {deliveryMethod && deliveryMethod.price > 0 && (
                 <div className="flex justify-between text-gray-600">
-                  <span>Doprava</span>
+                  <span>Shipping</span>
                   <span>{formatPrice(deliveryMethod.price)}</span>
                 </div>
               )}
               {paymentMethod && paymentMethod.price > 0 && (
                 <div className="flex justify-between text-gray-600">
-                  <span>Poplatek za platbu</span>
+                  <span>Payment fee</span>
                   <span>{formatPrice(paymentMethod.price)}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                <span>Celkem</span>
+                <span>Total</span>
                 <span>{formatPrice(order.total)}</span>
               </div>
             </div>
           </div>
 
-          {/* Customer Details - Now Editable */}
+          {/* Customer Information */}
           <CustomerInfoEdit
             orderNumber={order.orderNumber}
             billingFirstName={order.billingFirstName || order.firstName || ''}
@@ -302,7 +392,7 @@ export default async function OrderDetailPage({
             companyNip={order.companyNip}
           />
 
-          {/* Addresses - Now Editable */}
+          {/* Addresses */}
           <AddressEdit
             orderNumber={order.orderNumber}
             billingFirstName={order.billingFirstName || order.firstName || ''}
@@ -319,7 +409,7 @@ export default async function OrderDetailPage({
             isCompany={order.isCompany}
           />
 
-          {/* Admin Notes - NEW */}
+          {/* Admin Notes */}
           <AdminNotes 
             orderNumber={order.orderNumber}
             initialNotes={order.adminNotes}
@@ -332,20 +422,20 @@ export default async function OrderDetailPage({
           }))} />
         </div>
 
-        {/* Sidebar */}
+        {/* Right Column - Sidebar */}
         <div className="space-y-6">
-          {/* Order Info */}
+          {/* Order Information */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 text-black">Informace o objednávce</h2>
+            <h2 className="text-xl font-semibold mb-4 text-black">Order Information</h2>
             <div className="space-y-2 text-sm">
               <p className="text-black">
-                <strong>Datum vytvoření:</strong><br />
+                <strong>Created:</strong><br />
                 {formatDateWithTimezone(order.createdAt)}
               </p>
               
               <div className="pt-3 mt-3">
                 <p className="text-black mb-1">
-                  <strong>Stav platby:</strong>
+                  <strong>Payment status:</strong>
                 </p>
                 <span className={`inline-flex items-center gap-1 font-semibold ${
                   order.paymentStatus === 'paid' ? 'text-green-600' : 'text-red-600'
@@ -353,12 +443,12 @@ export default async function OrderDetailPage({
                   {order.paymentStatus === 'paid' ? (
                     <>
                       <CheckCircle size={16} />
-                      Zaplaceno
+                      Paid
                     </>
                   ) : (
                     <>
                       <CreditCard size={16} />
-                      Nezaplaceno
+                      Unpaid
                     </>
                   )}
                 </span>
@@ -367,7 +457,7 @@ export default async function OrderDetailPage({
               {order.trackingNumber && (
                 <div className="pt-3">
                   <p className="text-black">
-                    <strong>Sledovací číslo:</strong><br />
+                    <strong>Tracking number:</strong><br />
                     <span className="text-blue-600">{order.trackingNumber}</span>
                   </p>
                 </div>
@@ -376,7 +466,7 @@ export default async function OrderDetailPage({
               {order.note && (
                 <div className="pt-3">
                   <p className="text-black">
-                    <strong>Poznámka od zákazníka:</strong><br />
+                    <strong>Customer note:</strong><br />
                     {order.note}
                   </p>
                 </div>
@@ -384,7 +474,7 @@ export default async function OrderDetailPage({
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Order Actions */}
           <OrderActions 
             orderId={order.id}
             orderNumber={order.orderNumber}
