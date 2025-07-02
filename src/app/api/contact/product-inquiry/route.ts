@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
               <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0 16px 0;">
               
               <p style="color: #94a3b8; font-size: 11px; line-height: 16px; text-align: center; margin: 0;">
-                Ta wiadomość została wygenerowana automatycznie z formularza kontaktowego na stronie produktu.<br>
+                This message was automatically generated from the contact form on the product page.<br>
                 Galaxysklep.pl - System powiadomień
               </p>
             </div>

@@ -130,7 +130,7 @@ export async function POST(
         data: {
           orderId: order.id,
           action: 'invoice_generated',
-          description: `Faktura ${invoiceNumber} została wygenerowana`,
+          description: `Invoice ${invoiceNumber} was generated`,
           newValue: invoiceNumber,
           metadata: {
             invoiceId: invoice.id,

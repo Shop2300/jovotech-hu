@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { User, Building2, Save, X, Edit2 } from 'lucide-react';
+import { CopyButton } from '@/components/admin/CopyButton';
 
 interface CustomerInfoEditProps {
   orderNumber: string;
@@ -78,6 +79,8 @@ export function CustomerInfoEdit({
     setIsEditing(false);
   };
 
+  const fullName = `${billingFirstName} ${billingLastName}`;
+
   if (!isEditing) {
     return (
       <>
@@ -99,15 +102,24 @@ export function CustomerInfoEdit({
           <div className="space-y-2">
             <div className="flex items-start">
               <span className="text-gray-600 font-medium w-32">Name:</span>
-              <span className="text-gray-900">{billingFirstName} {billingLastName}</span>
+              <span className="text-gray-900 flex items-center gap-1">
+                {fullName}
+                <CopyButton text={fullName} />
+              </span>
             </div>
             <div className="flex items-start">
               <span className="text-gray-600 font-medium w-32">Email:</span>
-              <span className="text-gray-900">{customerEmail}</span>
+              <span className="text-gray-900 flex items-center gap-1">
+                {customerEmail}
+                <CopyButton text={customerEmail} />
+              </span>
             </div>
             <div className="flex items-start">
               <span className="text-gray-600 font-medium w-32">Phone:</span>
-              <span className="text-gray-900">{customerPhone || '-'}</span>
+              <span className="text-gray-900 flex items-center gap-1">
+                {customerPhone || '-'}
+                {customerPhone && <CopyButton text={customerPhone} />}
+              </span>
             </div>
           </div>
         </div>

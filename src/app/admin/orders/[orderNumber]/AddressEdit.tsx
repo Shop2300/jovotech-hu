@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { FileText, Truck, Save, X, Edit2 } from 'lucide-react';
+import { CopyButton } from '@/components/admin/CopyButton';
 
 interface AddressEditProps {
   orderNumber: string;
@@ -92,6 +93,8 @@ export function AddressEdit({
     setIsEditing(false);
   };
 
+  const billingCityPostal = `${billingCity}, ${billingPostalCode}`;
+
   if (!isEditing) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -116,8 +119,14 @@ export function AddressEdit({
             <p className="text-black">
               <strong>{billingFirstName} {billingLastName}</strong>
             </p>
-            <p className="text-black">{billingAddress}</p>
-            <p className="text-black">{billingCity}, {billingPostalCode}</p>
+            <p className="text-black flex items-center gap-1">
+              {billingAddress}
+              <CopyButton text={billingAddress} />
+            </p>
+            <p className="text-black flex items-center gap-1">
+              {billingCityPostal}
+              <CopyButton text={billingCityPostal} />
+            </p>
           </div>
         </div>
 
@@ -133,18 +142,17 @@ export function AddressEdit({
                 <p className="text-black">
                   <strong>{deliveryFirstName} {deliveryLastName}</strong>
                 </p>
-                <p className="text-black">{deliveryAddress}</p>
-                <p className="text-black">{deliveryCity}, {deliveryPostalCode}</p>
+                <p className="text-black flex items-center gap-1">
+                  {deliveryAddress}
+                  <CopyButton text={deliveryAddress || ''} />
+                </p>
+                <p className="text-black flex items-center gap-1">
+                  {deliveryCity}, {deliveryPostalCode}
+                  <CopyButton text={`${deliveryCity}, ${deliveryPostalCode}`} />
+                </p>
               </>
             ) : (
-              <>
-                <p className="text-gray-600 text-sm italic">Same as billing</p>
-                <p className="text-black">
-                  <strong>{billingFirstName} {billingLastName}</strong>
-                </p>
-                <p className="text-black">{billingAddress}</p>
-                <p className="text-black">{billingCity}, {billingPostalCode}</p>
-              </>
+              <p className="text-gray-600 text-sm italic">Same as billing</p>
             )}
           </div>
         </div>

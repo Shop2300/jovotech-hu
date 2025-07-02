@@ -104,7 +104,7 @@ async function generateInvoice(order: any) {
         data: {
           orderId: order.id,
           action: 'invoice_generated',
-          description: `Faktura ${invoiceNumber} została wygenerowana`,
+          description: `Invoice ${invoiceNumber} was generated`,
           newValue: invoiceNumber,
           metadata: {
             invoiceId: invoice.id,
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
       data: {
         orderId: order.id,
         action: 'order_created',
-        description: 'Zamówienie zostało złożone',
+        description: 'Order has been placed',
         newValue: 'processing',
         performedBy: 'Customer',
         metadata: {
@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
       data: {
         orderId: order.id,
         action: 'status_change',
-        description: 'Status zamówienia zmieniony na: W trakcie realizacji',
+        description: 'Order status changed to: Processing',
         oldValue: 'pending',
         newValue: 'processing',
         performedBy: 'System',

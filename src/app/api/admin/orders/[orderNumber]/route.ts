@@ -75,17 +75,17 @@ export async function PATCH(
       updateData.status = data.status;
       
       const statusLabels: Record<string, string> = {
-        pending: 'Oczekuje na realizację',
-        processing: 'W trakcie realizacji',
-        shipped: 'Wysłane',
-        delivered: 'Dostarczone',
-        cancelled: 'Anulowane'
+        pending: 'Pending',
+        processing: 'Processing',
+        shipped: 'Shipped',
+        delivered: 'Delivered',
+        cancelled: 'Cancelled'
       };
 
       historyEntries.push({
         orderId: existingOrder.id,
         action: 'status_change',
-        description: `Status zamówienia zmieniony na: ${statusLabels[data.status] || data.status}`,
+        description: `Order status changed to: ${statusLabels[data.status] || data.status}`,
         oldValue: existingOrder.status,
         newValue: data.status,
         metadata: { changedBy: 'Admin' }
@@ -98,7 +98,7 @@ export async function PATCH(
         
         if (!trackingNumber) {
           return NextResponse.json(
-            { error: 'Numer śledzenia jest wymagany do wysyłki' },
+            { error: 'Tracking number is required for shipping' },
             { status: 400 }
           );
         }
@@ -124,7 +124,7 @@ export async function PATCH(
           const itemsWithSlugs = items.map(item => {
             const product = productMap.get(item.productId || item.id);
             return {
-              name: item.name || 'Produkt',
+              name: item.name || 'Product',
               quantity: item.quantity,
               price: item.price,
               productSlug: product?.slug || null,
@@ -164,7 +164,7 @@ export async function PATCH(
           historyEntries.push({
             orderId: existingOrder.id,
             action: 'email_sent',
-            description: 'E-mail z informacją o wysyłce został wysłany do klienta',
+            description: 'Shipping notification email was sent to customer',
             newValue: 'shipping_notification',
             metadata: { 
               changedBy: 'Admin',
@@ -179,7 +179,7 @@ export async function PATCH(
           historyEntries.push({
             orderId: existingOrder.id,
             action: 'email_failed',
-            description: 'Nie udało się wysłać e-maila z informacją o wysyłce',
+            description: 'Failed to send shipping notification email',
             newValue: 'shipping_notification_failed',
             metadata: { 
               changedBy: 'Admin',
@@ -197,7 +197,7 @@ export async function PATCH(
       historyEntries.push({
         orderId: existingOrder.id,
         action: 'payment_status_change',
-        description: `Status płatności zmieniony na: ${data.paymentStatus === 'paid' ? 'Opłacone' : 'Nieopłacone'}`,
+        description: `Payment status changed to: ${data.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}`,
         oldValue: existingOrder.paymentStatus,
         newValue: data.paymentStatus,
         metadata: { changedBy: 'Admin' }
@@ -232,7 +232,7 @@ export async function PATCH(
           const itemsWithDetails = items.map(item => {
             const product = productMap.get(item.productId || item.id);
             return {
-              name: item.name || product?.name || 'Produkt',
+              name: item.name || product?.name || 'Product',
               quantity: item.quantity,
               price: item.price,
               image: item.image || (product?.images?.[0]?.url ? product.images[0].url : null),
@@ -257,7 +257,7 @@ export async function PATCH(
           historyEntries.push({
             orderId: existingOrder.id,
             action: 'email_sent',
-            description: 'E-mail z potwierdzeniem płatności został wysłany do klienta',
+            description: 'Payment confirmation email was sent to customer',
             newValue: 'payment_confirmation',
             metadata: { 
               changedBy: 'Admin',
@@ -271,7 +271,7 @@ export async function PATCH(
           historyEntries.push({
             orderId: existingOrder.id,
             action: 'email_failed',
-            description: 'Nie udało się wysłać e-maila z potwierdzeniem płatności',
+            description: 'Failed to send payment confirmation email',
             newValue: 'payment_confirmation_failed',
             metadata: { 
               changedBy: 'Admin',
@@ -290,7 +290,7 @@ export async function PATCH(
         historyEntries.push({
           orderId: existingOrder.id,
           action: 'tracking_added',
-          description: `Dodano numer śledzenia: ${data.trackingNumber}`,
+          description: `Tracking number added: ${data.trackingNumber}`,
           newValue: data.trackingNumber,
           metadata: { changedBy: 'Admin' }
         });
@@ -331,7 +331,7 @@ export async function PATCH(
       historyEntries.push({
         orderId: existingOrder.id,
         action: 'address_updated',
-        description: 'Adresy byly aktualizovány',
+        description: 'Addresses were updated',
         metadata: { changedBy: 'Admin' }
       });
     }
@@ -344,7 +344,7 @@ export async function PATCH(
         historyEntries.push({
           orderId: existingOrder.id,
           action: 'admin_note_updated',
-          description: data.adminNotes ? 'Dodano/zaktualizowano interní poznámky' : 'Usunięto interní poznámky',
+          description: data.adminNotes ? 'Added/updated internal notes' : 'Removed internal notes',
           oldValue: existingOrder.adminNotes,
           newValue: data.adminNotes,
           metadata: { changedBy: 'Admin' }

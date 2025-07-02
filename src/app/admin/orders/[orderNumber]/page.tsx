@@ -13,6 +13,7 @@ import { AddressEdit } from './AddressEdit';
 import { AdminNotes } from './AdminNotes';
 import { OrderHistory } from '@/components/admin/OrderHistory';
 import { getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
+import { CopyButton } from '@/components/admin/CopyButton';
 
 // Force dynamic rendering for admin pages
 export const dynamic = 'force-dynamic';
@@ -225,9 +226,6 @@ export default async function OrderDetailPage({
                                     quality={100}
                                     unoptimized
                                   />
-                                  <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                                    Original size
-                                  </div>
                                 </div>
                               </div>
                             </Link>
@@ -255,9 +253,6 @@ export default async function OrderDetailPage({
                                     quality={100}
                                     unoptimized
                                   />
-                                  <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                                    Original size
-                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -271,21 +266,24 @@ export default async function OrderDetailPage({
                       
                       {/* Product Details */}
                       <div>
-                        {canLinkToProduct ? (
-                          <>
-                            <Link 
-                              href={productEditUrl}
-                              className="font-medium text-black hover:text-blue-600 transition-colors"
-                            >
-                              {item.product.name}
-                            </Link>
-                            <span className="text-xs text-gray-400 ml-2">
-                              (ID: {item.product.id})
-                            </span>
-                          </>
-                        ) : (
-                          <h3 className="font-medium text-black">{item.product.name}</h3>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {canLinkToProduct ? (
+                            <>
+                              <Link 
+                                href={productEditUrl}
+                                className="font-medium text-black hover:text-blue-600 transition-colors"
+                              >
+                                {item.product.name}
+                              </Link>
+                              <span className="text-xs text-gray-400">
+                                (ID: {item.product.id})
+                              </span>
+                            </>
+                          ) : (
+                            <h3 className="font-medium text-black">{item.product.name}</h3>
+                          )}
+                          <CopyButton text={item.product.name} />
+                        </div>
                         <p className="text-sm text-gray-600">
                           {item.quantity}x {formatPrice(item.price)}
                         </p>

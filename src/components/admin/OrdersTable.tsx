@@ -1,7 +1,7 @@
 // src/components/admin/OrdersTable.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -23,6 +23,7 @@ interface Order {
   deliveryMethod?: string;
   createdAt: string;
   items?: any; // JSON string of order items
+  hasAdminNotes?: boolean; // Add this line
   invoice: {
     id: string;
     invoiceNumber: string;
@@ -46,6 +47,20 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
   const [hoveredOrderId, setHoveredOrderId] = useState<string | null>(null);
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [previewPosition, setPreviewPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // Hide preview on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (hoveredOrderId) {
+        setHoveredOrderId(null);
+        setPreviewPosition(null);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [hoveredOrderId]);
 
   // Filter orders by search query
   const searchFilteredOrders = orders.filter(order => {
@@ -510,7 +525,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden relative">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -562,112 +577,46 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                         className="rounded border-gray-300"
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap relative">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div
-                        onMouseEnter={() => setHoveredOrderId(order.id)}
-                        onMouseLeave={() => setHoveredOrderId(null)}
+                        onMouseEnter={(e) => {
+                          setHoveredOrderId(order.id);
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setPreviewPosition({ 
+                            x: rect.right + 10, 
+                            y: rect.top 
+                          });
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredOrderId(null);
+                          setPreviewPosition(null);
+                        }}
+                        className="inline-block"
                       >
-                        <Link 
-                          href={`/admin/orders/${order.orderNumber}`}
-                          className={`text-sm font-medium hover:underline ${
-                            order.status === 'cancelled' 
-                              ? 'text-gray-500 hover:text-gray-700' 
-                              : 'text-blue-600 hover:text-blue-800'
-                          }`}
-                        >
-                          #{order.orderNumber}
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link 
+                            href={`/admin/orders/${order.orderNumber}`}
+                            className={`text-sm font-medium hover:underline ${
+                              order.status === 'cancelled' 
+                                ? 'text-gray-500 hover:text-gray-700' 
+                                : 'text-blue-600 hover:text-blue-800'
+                            }`}
+                          >
+                            #{order.orderNumber}
+                          </Link>
+                          {order.hasAdminNotes && (
+                            <span 
+                              className="inline-block w-2 h-2 bg-blue-500 rounded-full" 
+                              title="Has internal notes"
+                            />
+                          )}
+                        </div>
                         <div className="text-xs text-gray-500">
                           {format(new Date(order.createdAt), 'MMM d, yyyy', { locale: enUS })}
                           {' • '}
-                          {format(new Date(order.createdAt), 'HH:mm', { locale: enUS })}
+                          {format(new Date(order.createdAt), 'HH:mm', { locale: enUS }                          )}
                         </div>
                       </div>
-                      
-                      {/* Order Preview */}
-                      {hoveredOrderId === order.id && (
-                        <div className="absolute z-[100] left-full ml-2 top-0 bg-white rounded-lg shadow-2xl border border-gray-200 p-4 w-96 max-h-[80vh] overflow-y-auto">
-                          <div className="mb-3">
-                            <h4 className="font-semibold text-gray-900">Order #{order.orderNumber}</h4>
-                            <p className="text-sm text-gray-600">{order.customerName}</p>
-                          </div>
-                          
-                          <div className="border-t pt-3">
-                            <h5 className="text-sm font-medium text-gray-700 mb-3">Items:</h5>
-                            {/* Parse items from order */}
-                            {(() => {
-                              try {
-                                // Items might already be parsed or might be a JSON string
-                                const items = typeof (order as any).items === 'string' 
-                                  ? JSON.parse((order as any).items || '[]')
-                                  : (order as any).items || [];
-                                
-                                if (!Array.isArray(items) || items.length === 0) {
-                                  return <p className="text-sm text-gray-500">No items</p>;
-                                }
-                                
-                                return items.map((item: any, index: number) => (
-                                  <div key={index} className="flex gap-3 mb-3 pb-3 border-b last:border-0">
-                                    {/* Product Image */}
-                                    <div className="flex-shrink-0">
-                                      {item.image ? (
-                                        <img 
-                                          src={item.image} 
-                                          alt={item.name || 'Product'}
-                                          className="w-12 h-12 object-cover rounded"
-                                        />
-                                      ) : (
-                                        <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
-                                          <Package size={20} className="text-gray-400" />
-                                        </div>
-                                      )}
-                                    </div>
-                                    
-                                    {/* Product Details */}
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium text-gray-900 truncate pr-2" title={item.name || 'Product'}>
-                                        {item.name || 'Product'}
-                                      </p>
-                                      <p className="text-xs text-gray-600">
-                                        {item.quantity}x {formatPrice(item.price)}
-                                        {item.size && <span className="text-gray-500"> • {item.size}</span>}
-                                        {item.color && <span className="text-gray-500"> • {item.color}</span>}
-                                      </p>
-                                    </div>
-                                    
-                                    {/* Item Total */}
-                                    <div className="flex-shrink-0">
-                                      <p className="text-sm font-medium text-gray-900">
-                                        {formatPrice(item.price * item.quantity)}
-                                      </p>
-                                    </div>
-                                  </div>
-                                ));
-                              } catch (e) {
-                                console.error('Error parsing items:', e);
-                                return <p className="text-sm text-gray-500">Unable to load items</p>;
-                              }
-                            })()}
-                          </div>
-                          
-                          <div className="border-t mt-3 pt-3">
-                            <div className="flex justify-between text-sm mb-2">
-                              <span className="font-medium">Total:</span>
-                              <span className="font-bold text-lg">{formatPrice(order.total)}</span>
-                            </div>
-                            {order.deliveryMethod && (
-                              <div className="text-xs text-gray-600 mb-1">
-                                <span className="font-medium">Delivery:</span> {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
-                              </div>
-                            )}
-                            {order.paymentMethod && (
-                              <div className="text-xs text-gray-600">
-                                <span className="font-medium">Payment:</span> {getPaymentMethodLabel(order.paymentMethod, 'pl')}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className={`text-sm ${order.status === 'cancelled' ? 'text-gray-600' : 'text-gray-900'}`}>
@@ -863,6 +812,161 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
           </div>
         </div>
       )}
+
+      {/* Order Preview - Rendered as fixed position outside all containers */}
+      {hoveredOrderId && previewPosition && (() => {
+        const hoveredOrder = orders.find(o => o.id === hoveredOrderId);
+        if (!hoveredOrder) return null;
+        
+        // Calculate position to ensure preview stays within viewport
+        const previewWidth = 384; // w-96 = 24rem = 384px
+        const previewMaxHeight = window.innerHeight * 0.8; // 80vh
+        const padding = 20;
+        
+        let left = previewPosition.x;
+        let top = previewPosition.y;
+        
+        // Adjust if preview would go off the right edge
+        if (left + previewWidth + padding > window.innerWidth) {
+          left = window.innerWidth - previewWidth - padding;
+        }
+        
+        // Adjust if preview would go off the bottom edge
+        if (top + 200 > window.innerHeight) { // Assuming minimum height of 200px
+          top = Math.max(padding, window.innerHeight - previewMaxHeight - padding);
+        }
+        
+        // Ensure preview doesn't go off the top edge
+        if (top < padding) {
+          top = padding;
+        }
+        
+        // Calculate arrow position (should always point to the order number)
+        const arrowTop = previewPosition.y + 12; // Align arrow with order number text
+        
+        return (
+          <>
+            {/* Arrow pointer - only show if preview hasn't been repositioned too much */}
+            {Math.abs(left - previewPosition.x) < 50 && (
+              <>
+                <div
+                  className="fixed w-0 h-0"
+                  style={{
+                    zIndex: 9999,
+                    left: `${left - 8}px`,
+                    top: `${arrowTop}px`,
+                    borderTop: '8px solid transparent',
+                    borderBottom: '8px solid transparent',
+                    borderRight: '8px solid #e5e7eb',
+                  }}
+                />
+                <div
+                  className="fixed w-0 h-0"
+                  style={{
+                    zIndex: 9999,
+                    left: `${left - 7}px`,
+                    top: `${arrowTop}px`,
+                    borderTop: '8px solid transparent',
+                    borderBottom: '8px solid transparent',
+                    borderRight: '8px solid white',
+                  }}
+                />
+              </>
+            )}
+            
+            {/* Preview box */}
+            <div 
+              className="fixed bg-white rounded-lg border border-gray-200 p-4 w-96 max-h-[80vh] overflow-y-auto" 
+              style={{ 
+                zIndex: 9999,
+                left: `${left}px`,
+                top: `${top}px`,
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)' 
+              }}
+            >
+            <div className="mb-3">
+              <h4 className="font-semibold text-gray-900">Order #{hoveredOrder.orderNumber}</h4>
+              <p className="text-sm text-gray-600">{hoveredOrder.customerName}</p>
+            </div>
+            
+            <div className="border-t pt-3">
+              <h5 className="text-sm font-medium text-gray-700 mb-3">Items:</h5>
+              {/* Parse items from order */}
+              {(() => {
+                try {
+                  // Items might already be parsed or might be a JSON string
+                  const items = typeof (hoveredOrder as any).items === 'string' 
+                    ? JSON.parse((hoveredOrder as any).items || '[]')
+                    : (hoveredOrder as any).items || [];
+                  
+                  if (!Array.isArray(items) || items.length === 0) {
+                    return <p className="text-sm text-gray-500">No items</p>;
+                  }
+                  
+                  return items.map((item: any, index: number) => (
+                    <div key={index} className="flex gap-3 mb-3 pb-3 border-b last:border-0">
+                      {/* Product Image */}
+                      <div className="flex-shrink-0">
+                        {item.image ? (
+                          <img 
+                            src={item.image} 
+                            alt={item.name || 'Product'}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                            <Package size={20} className="text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Product Details */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate pr-2" title={item.name || 'Product'}>
+                          {item.name || 'Product'}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {item.quantity}x {formatPrice(item.price)}
+                          {item.size && <span className="text-gray-500"> • {item.size}</span>}
+                          {item.color && <span className="text-gray-500"> • {item.color}</span>}
+                        </p>
+                      </div>
+                      
+                      {/* Item Total */}
+                      <div className="flex-shrink-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          {formatPrice(item.price * item.quantity)}
+                        </p>
+                      </div>
+                    </div>
+                  ));
+                } catch (e) {
+                  console.error('Error parsing items:', e);
+                  return <p className="text-sm text-gray-500">Unable to load items</p>;
+                }
+              })()}
+            </div>
+            
+            <div className="border-t mt-3 pt-3">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="font-medium">Total:</span>
+                <span className="font-bold text-lg">{formatPrice(hoveredOrder.total)}</span>
+              </div>
+              {hoveredOrder.deliveryMethod && (
+                <div className="text-xs text-gray-600 mb-1">
+                  <span className="font-medium">Delivery:</span> {getDeliveryMethodLabel(hoveredOrder.deliveryMethod, 'pl')}
+                </div>
+              )}
+              {hoveredOrder.paymentMethod && (
+                <div className="text-xs text-gray-600">
+                  <span className="font-medium">Payment:</span> {getPaymentMethodLabel(hoveredOrder.paymentMethod, 'pl')}
+                </div>
+              )}
+            </div>
+          </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

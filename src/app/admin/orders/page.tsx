@@ -212,6 +212,7 @@ async function getOrders() {
     deliveryMethod: order.deliveryMethod || undefined,
     createdAt: order.createdAt.toISOString(),
     items: order.items,
+    hasAdminNotes: !!order.adminNotes, // Add this line to indicate if order has admin notes
     invoice: order.invoice ? {
       id: order.invoice.id,
       invoiceNumber: order.invoice.invoiceNumber
