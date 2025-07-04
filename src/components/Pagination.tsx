@@ -64,10 +64,10 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
             : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
           }
         `}
-        aria-label="Předchozí strana"
+        aria-label="Poprzednia strona"
       >
         <ChevronLeft size={16} />
-        <span className="hidden sm:inline">Předchozí</span>
+        <span className="hidden sm:inline">Poprzedni</span>
       </button>
 
       {/* Page numbers */}
@@ -118,9 +118,9 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
             : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
           }
         `}
-        aria-label="Další strana"
+        aria-label="Następna strona"
       >
-        <span className="hidden sm:inline">Další</span>
+        <span className="hidden sm:inline">Dalej</span>
         <ChevronRight size={16} />
       </button>
     </div>
