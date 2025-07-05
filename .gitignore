@@ -75,3 +75,6 @@ run-*.js
 
 # Vercel
 .vercel
+*.tar.gz
+galaxysklep-backup-*
+dannyfashion-backup-*
