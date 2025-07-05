@@ -135,7 +135,7 @@ export function ProductFilter({
           <>
             <span className="text-gray-500 mx-1">-</span>
             <span className="text-sm text-gray-700">
-              Zobrazeno <span className="font-bold">{startProduct}–{endProduct}</span>
+              Pokazano <span className="font-bold">{startProduct}–{endProduct}</span>
             </span>
           </>
         )}
