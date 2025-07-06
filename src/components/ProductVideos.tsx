@@ -2,6 +2,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
 
 interface VideoData {
@@ -49,6 +50,7 @@ interface VideoThumbnailProps {
 
 function VideoThumbnail({ video }: VideoThumbnailProps) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   if (isLoaded) {
     return (
@@ -80,15 +82,18 @@ function VideoThumbnail({ video }: VideoThumbnailProps) {
         }}
       />
       
-      {/* Alternative img tag approach */}
-      <img
-        src={actualThumbnail}
-        alt={video.title}
-        className="absolute inset-0 w-full h-full object-cover opacity-50"
-        onError={(e) => {
-          e.currentTarget.style.display = 'none';
-        }}
-      />
+      {/* Alternative img tag approach - Now using Next.js Image */}
+      {!imageError && (
+        <Image
+          src={actualThumbnail}
+          alt={video.title}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover opacity-50"
+          quality={75}
+          onError={() => setImageError(true)}
+        />
+      )}
       
       {/* Play button */}
       <div className="absolute inset-0 flex items-center justify-center">

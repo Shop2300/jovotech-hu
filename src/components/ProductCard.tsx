@@ -2,12 +2,14 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
 import { StarRating } from './StarRating';
 import { useRouter } from 'next/navigation';
-import { useCart } from '@/lib/cart'; // Changed from '@/contexts/CartContext'
+import { useCart } from '@/lib/cart';
 import toast from 'react-hot-toast';
 import { ShoppingCart } from 'lucide-react';
+import { useState } from 'react';
 
 interface ProductVariant {
   id: string;
@@ -15,7 +17,7 @@ interface ProductVariant {
   colorCode?: string | null;
   stock: number;
   price?: number | null;
-  regularPrice?: number | null; // NEW FIELD
+  regularPrice?: number | null;
 }
 
 interface Product {
@@ -39,7 +41,8 @@ interface Product {
 
 export function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
-  const { addItem } = useCart(); // Using addItem from Zustand store
+  const { addItem } = useCart();
+  const [imageError, setImageError] = useState(false);
   
   const hasVariants = product.variants && product.variants.length > 0;
   const inStock = hasVariants ? product.variants?.some(v => v.stock > 0) || false
@@ -103,10 +106,10 @@ export function ProductCard({ product }: { product: Product }) {
         id: product.id,
         name: product.name,
         price: product.price,
-        regularPrice: product.regularPrice || undefined, // Add regular price
+        regularPrice: product.regularPrice || undefined,
         image: product.image,
-        categorySlug: product.category?.slug, // Add category slug
-        productSlug: product.slug || undefined // Add product slug
+        categorySlug: product.category?.slug,
+        productSlug: product.slug || undefined
       });
       
       // Show success notification with toast
@@ -123,11 +126,17 @@ export function ProductCard({ product }: { product: Product }) {
         {/* 1:1 Aspect Ratio Image Container */}
         <div className="relative w-full pb-[100%]">
           <div className="absolute inset-0">
-            {product.image ? (
-              <img 
+            {product.image && !imageError ? (
+              <Image 
                 src={product.image} 
-                alt={product.name} 
-                className="absolute inset-0 w-full h-full object-contain bg-gray-50" 
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                className="object-contain"
+                quality={85}
+                onError={() => setImageError(true)}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
               />
             ) : (
               <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
@@ -140,7 +149,7 @@ export function ProductCard({ product }: { product: Product }) {
               </div>
             )}
             {bestDiscount > 0 && inStock && (
-              <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg text-sm font-bold" style={{ fontFamily: sfFontFamily }}>
+              <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg text-sm font-bold z-10" style={{ fontFamily: sfFontFamily }}>
                 -{bestDiscount}%
               </div>
             )}

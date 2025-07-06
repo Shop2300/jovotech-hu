@@ -4,6 +4,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
 import { useCart } from '@/lib/cart';
 import toast from 'react-hot-toast';
@@ -48,6 +49,7 @@ interface CategoryBoxProps {
 function MiniProductCard({ product }: { product: Product }) {
   const router = useRouter();
   const { addItem } = useCart();
+  const [imageError, setImageError] = useState(false);
   
   const hasVariants = product.variants && product.variants.length > 0;
   const inStock = hasVariants ? product.variants?.some(v => v.stock > 0) || false
@@ -71,10 +73,10 @@ function MiniProductCard({ product }: { product: Product }) {
         id: product.id,
         name: product.name,
         price: product.price,
-        regularPrice: product.regularPrice || undefined, // Add regular price
+        regularPrice: product.regularPrice || undefined,
         image: product.image,
-        categorySlug: product.category?.slug, // Add category slug
-        productSlug: product.slug || undefined // Add product slug
+        categorySlug: product.category?.slug,
+        productSlug: product.slug || undefined
       });
       
       toast.success(`${product.name} został dodany do koszyka`);
@@ -89,11 +91,17 @@ function MiniProductCard({ product }: { product: Product }) {
         {/* Square Image Container */}
         <div className="relative w-full pb-[100%]">
           <div className="absolute inset-0">
-            {product.image ? (
-              <img 
+            {product.image && !imageError ? (
+              <Image 
                 src={product.image} 
-                alt={product.name} 
-                className="absolute inset-0 w-full h-full object-contain bg-gray-50" 
+                alt={product.name}
+                fill
+                sizes="191px"
+                className="object-contain"
+                quality={80}
+                onError={() => setImageError(true)}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
               />
             ) : (
               <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
@@ -101,12 +109,12 @@ function MiniProductCard({ product }: { product: Product }) {
               </div>
             )}
             {!inStock && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
                 <span className="text-white font-bold text-sm" style={{ fontFamily: sfFontFamily }}>Wyprzedane</span>
               </div>
             )}
             {discount > 0 && inStock && (
-              <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold" style={{ fontFamily: sfFontFamily }}>
+              <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold z-10" style={{ fontFamily: sfFontFamily }}>
                 -{discount}%
               </div>
             )}
