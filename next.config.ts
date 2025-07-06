@@ -57,6 +57,22 @@ const nextConfig: NextConfig = {
         hostname: 'www.galaxysklep.pl',
         pathname: '/uploads/**',
       },
+      // YouTube thumbnails
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/vi/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+        pathname: '/vi/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i3.ytimg.com',
+        pathname: '/vi/**',
+      },
     ],
   },
 }
