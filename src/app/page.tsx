@@ -1,12 +1,13 @@
 // src/app/page.tsx
 import { prisma } from '@/lib/prisma';
 import dynamic from 'next/dynamic';
+import { unstable_cache } from 'next/cache';
 
 // Critical above-the-fold components - loaded immediately
 import { ProductCard } from '@/components/ProductCard';
 import { BannerSlider } from '@/components/BannerSlider';
 
-// Below-the-fold components - loaded dynamically to reduce initial bundle
+// Below-the-fold components - loaded dynamically
 const ProductsSlider = dynamic(
   () => import('@/components/ProductsSlider').then(mod => ({ default: mod.ProductsSlider })),
   { 
@@ -47,8 +48,8 @@ const ProductVideos = dynamic(
   }
 );
 
-// Enable ISR instead of force-dynamic for caching
-export const revalidate = 300; // Revalidate every 5 minutes
+// Static generation with ISR for better performance
+export const revalidate = 3600; // Revalidate every hour instead of 5 minutes
 
 // Helper function to shuffle array
 function shuffleArray<T>(array: T[]): T[] {
@@ -60,119 +61,95 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-export default async function HomePage() {
-  // Optimized product selection to reduce payload
-  const productSelect = {
-    id: true,
-    name: true,
-    slug: true,
-    price: true,
-    regularPrice: true,
-    stock: true,
-    averageRating: true,
-    totalRatings: true,
-    image: true, // Keep this if it exists in your schema
-    category: {
+// Cached product fetch function
+const getCachedProducts = unstable_cache(
+  async (categorySlug?: string, take: number = 20) => {
+    const where = categorySlug ? {
+      category: { slug: categorySlug }
+    } : {};
+
+    const products = await prisma.product.findMany({
+      where,
       select: {
         id: true,
         name: true,
-        slug: true
-      }
-    },
-    images: {
-      orderBy: { order: 'asc' as const },
-      take: 1,
-      select: {
-        url: true
-      }
-    },
-    variants: {
-      where: { isActive: true },
-      take: 5,
-      select: {
-        id: true,
-        colorName: true,
-        colorCode: true,
-        stock: true
-      }
-    }
-  };
+        slug: true,
+        price: true,
+        regularPrice: true,
+        stock: true,
+        averageRating: true,
+        totalRatings: true,
+        image: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true
+          }
+        },
+        images: {
+          orderBy: { order: 'asc' as const },
+          take: 1,
+          select: {
+            url: true
+          }
+        },
+        variants: {
+          where: { isActive: true },
+          take: 3, // Reduced from 5
+          select: {
+            id: true,
+            colorName: true,
+            colorCode: true,
+            stock: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' as const },
+      take
+    });
 
-  // Run ALL queries in parallel - reduces time from 9.7s to ~1s
-  const [
-    banners,
-    randomProducts,
-    cleaningProducts,
-    paintingProducts,
-    autoMotoProducts
-  ] = await Promise.all([
-    // 1. Fetch active banners
-    prisma.banner.findMany({
+    return products;
+  },
+  ['home-products'],
+  { revalidate: 3600, tags: ['products'] }
+);
+
+// Cached banners fetch
+const getCachedBanners = unstable_cache(
+  async () => {
+    return prisma.banner.findMany({
       where: { isActive: true },
       orderBy: { order: 'asc' }
-    }),
+    });
+  },
+  ['home-banners'],
+  { revalidate: 3600, tags: ['banners'] }
+);
 
-    // 2. Fetch 50 random products (not ALL) and shuffle in memory
-    prisma.product.findMany({
-      select: productSelect,
-      take: 50, // Only fetch 50, not ALL products
-      orderBy: {
-        updatedAt: 'desc' // Order by recent updates for variety
-      }
-    }),
-
-    // 3. Fetch cleaning products
-    prisma.product.findMany({
-      where: {
-        category: {
-          slug: 'sprzet-czyszczacy'
-        }
-      },
-      select: productSelect,
-      take: 20, // Fetch more than needed for shuffling
-      orderBy: {
-        createdAt: 'desc'
-      }
-    }),
-
-    // 4. Fetch painting products
-    prisma.product.findMany({
-      where: {
-        category: {
-          slug: 'malarstwo'
-        }
-      },
-      select: productSelect,
-      take: 20,
-      orderBy: {
-        createdAt: 'desc'
-      }
-    }),
-
-    // 5. Fetch auto-moto products
-    prisma.product.findMany({
-      where: {
-        category: {
-          slug: 'auto-moto'
-        }
-      },
-      select: productSelect,
-      take: 20,
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+export default async function HomePage() {
+  // Fetch only banners and general products first (critical data)
+  const [banners, allProducts] = await Promise.all([
+    getCachedBanners(),
+    getCachedProducts(undefined, 50) // Get 50 products total
   ]);
 
-  // Shuffle products for randomness
-  const shuffledProducts = shuffleArray(randomProducts);
+  // Process products in memory instead of making multiple DB queries
+  const productsByCategory = {
+    cleaning: allProducts.filter(p => p.category?.slug === 'sprzet-czyszczacy'),
+    painting: allProducts.filter(p => p.category?.slug === 'malarstwo'),
+    autoMoto: allProducts.filter(p => p.category?.slug === 'auto-moto')
+  };
+
+  // Shuffle and slice products
+  const shuffledProducts = shuffleArray(allProducts);
   const featuredProducts = shuffledProducts.slice(0, 8);
   const newProducts = shuffledProducts.slice(8, 16);
 
-  // Shuffle category products and take only 6
-  const shuffledCleaningProducts = shuffleArray(cleaningProducts).slice(0, 6);
-  const shuffledPaintingProducts = shuffleArray(paintingProducts).slice(0, 6);
-  const shuffledAutoMotoProducts = shuffleArray(autoMotoProducts).slice(0, 6);
+  // Get category products
+  const cleaningProducts = shuffleArray(productsByCategory.cleaning).slice(0, 6);
+  const paintingProducts = shuffleArray(productsByCategory.painting).slice(0, 6);
+  const autoMotoProducts = shuffleArray(productsByCategory.autoMoto).slice(0, 6);
 
   // Serialize products for client components
   const serializeProduct = (product: any) => ({
@@ -196,9 +173,9 @@ export default async function HomePage() {
       
       {/* Category Product Boxes */}
       <CategoryProductBoxes 
-        cleaningProducts={shuffledCleaningProducts.map(serializeProduct)}
-        paintingProducts={shuffledPaintingProducts.map(serializeProduct)}
-        autoMotoProducts={shuffledAutoMotoProducts.map(serializeProduct)}
+        cleaningProducts={cleaningProducts.map(serializeProduct)}
+        paintingProducts={paintingProducts.map(serializeProduct)}
+        autoMotoProducts={autoMotoProducts.map(serializeProduct)}
       />
       
       {/* Featured Products */}

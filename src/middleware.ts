@@ -20,15 +20,6 @@ export function middleware(request: NextRequest) {
     // Check for admin session cookie
     const adminSession = request.cookies.get(COOKIE_NAME);
     
-    // Debug logging (remove in production)
-    console.log('Middleware check:', {
-      path: request.nextUrl.pathname,
-      hasCookie: !!adminSession,
-      cookieValue: adminSession?.value,
-      expectedToken: ADMIN_TOKEN,
-      matches: adminSession?.value === ADMIN_TOKEN
-    });
-    
     if (!adminSession || adminSession.value !== ADMIN_TOKEN) {
       // Redirect to login
       const loginUrl = new URL('/admin/login', request.url);
