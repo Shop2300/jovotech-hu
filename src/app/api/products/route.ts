@@ -1,6 +1,7 @@
 // src/app/api/products/route.ts
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function POST(request: Request) {
   try {
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
       variants: createdProduct.variants.map(variant => ({
         ...variant,
         price: variant.price ? Number(variant.price) : null,
-        regularPrice: variant.regularPrice ? Number(variant.regularPrice) : null // ADDED THIS LINE
+        regularPrice: variant.regularPrice ? Number(variant.regularPrice) : null
       }))
     } : null;
     
@@ -84,26 +85,63 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
+    // Parse query parameters
+    const searchParams = request.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = parseInt(searchParams.get('offset') || '0');
+    
+    // Validate and cap limit to prevent timeouts
+    const safeLimit = Math.min(Math.max(1, limit), 50); // Max 50 items
+    
+    // Optimized query with limited fields
     const products = await prisma.product.findMany({
-      include: {
-        category: true,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        price: true,
+        regularPrice: true,
+        stock: true,
+        image: true,
+        averageRating: true,
+        totalRatings: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true
+          }
+        },
         images: {
           orderBy: { order: 'asc' },
-          take: 1
+          take: 1,
+          select: {
+            url: true
+          }
         },
         variants: {
           where: { isActive: true },
-          orderBy: { order: 'asc' }
+          take: 5, // Limit variants per product
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            colorName: true,
+            colorCode: true,
+            stock: true,
+            price: true
+          }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      take: safeLimit,
+      skip: offset
     });
     
-    // Convert Decimal fields to numbers and calculate display price
+    // Convert Decimal fields to numbers
     const serializedProducts = products.map(product => {
-      // Calculate the display price
       let displayPrice = Number(product.price);
       let displayRegularPrice = product.regularPrice ? Number(product.regularPrice) : null;
       
@@ -115,13 +153,6 @@ export async function GET(request: Request) {
         
         if (variantPrices.length > 0) {
           displayPrice = Math.min(...variantPrices);
-          
-          // Also check if there's a regular price on variants
-          const variantRegularPrices = product.variants
-            .filter(v => v.price !== null && v.stock > 0)
-            .map(v => Number(v.price)); // Note: If variants have regularPrice field, use that instead
-          
-          // For now, we'll keep the product's regular price, but you might want to calculate this from variants too
         }
       }
       
@@ -129,17 +160,21 @@ export async function GET(request: Request) {
         ...product,
         price: displayPrice,
         regularPrice: displayRegularPrice,
-        averageRating: product.averageRating ? Number(product.averageRating) : undefined,
+        averageRating: product.averageRating ? Number(product.averageRating) : 0,
         totalRatings: product.totalRatings || 0,
+        image: product.images?.[0]?.url || product.image || null,
         variants: product.variants.map(variant => ({
           ...variant,
-          price: variant.price ? Number(variant.price) : null,
-          regularPrice: variant.regularPrice ? Number(variant.regularPrice) : null // ADDED THIS LINE
+          price: variant.price ? Number(variant.price) : null
         }))
       };
     });
     
-    return NextResponse.json(serializedProducts);
+    return NextResponse.json(serializedProducts, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      }
+    });
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(

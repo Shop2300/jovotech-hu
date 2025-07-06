@@ -2,7 +2,6 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
 
 interface VideoData {
@@ -66,34 +65,33 @@ function VideoThumbnail({ video }: VideoThumbnailProps) {
     );
   }
 
-  const actualThumbnail = `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`;
-
   return (
     <div 
       className="relative w-full h-full cursor-pointer group overflow-hidden bg-gray-900"
       onClick={() => setIsLoaded(true)}
     >
-      {/* Actual thumbnail with inline style */}
-      <div 
-        className="absolute inset-0 bg-center bg-cover"
-        style={{ 
-          backgroundImage: `url(${actualThumbnail})`,
-          backgroundColor: '#1a1a1a'
-        }}
-      />
-      
-      {/* Alternative img tag approach - Now using Next.js Image */}
-      {!imageError && (
-        <Image
-          src={actualThumbnail}
+      {/* Use regular img tag instead of Next.js Image to avoid server-side optimization */}
+      {!imageError ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`}
           alt={video.title}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover opacity-50"
-          quality={75}
+          className="absolute inset-0 w-full h-full object-cover"
           onError={() => setImageError(true)}
+          loading="lazy"
         />
+      ) : (
+        // Fallback when image fails to load
+        <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+          <div className="text-center">
+            <Play className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+            <p className="text-gray-400 text-sm">Video unavailable</p>
+          </div>
+        </div>
       )}
+      
+      {/* Dark overlay for better contrast */}
+      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-opacity" />
       
       {/* Play button */}
       <div className="absolute inset-0 flex items-center justify-center">
@@ -112,6 +110,16 @@ function VideoThumbnail({ video }: VideoThumbnailProps) {
 
 export function ProductVideos() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -124,8 +132,16 @@ export function ProductVideos() {
           : currentScroll + scrollAmount,
         behavior: 'smooth'
       });
+      
+      // Update button states after scrolling
+      setTimeout(checkScrollButtons, 300);
     }
   };
+
+  // Check scroll buttons on mount and when videos change
+  useState(() => {
+    setTimeout(checkScrollButtons, 100);
+  });
 
   return (
     <section className="py-12 bg-white">
@@ -141,7 +157,12 @@ export function ProductVideos() {
           {/* Left Arrow */}
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow duration-200 hidden md:block"
+            disabled={!canScrollLeft}
+            className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full p-2 shadow-lg transition-all duration-200 hidden md:block ${
+              canScrollLeft 
+                ? 'hover:shadow-xl cursor-pointer' 
+                : 'opacity-50 cursor-not-allowed'
+            }`}
             aria-label="Przewiń w lewo"
           >
             <ChevronLeft className="w-6 h-6 text-gray-600" />
@@ -150,7 +171,12 @@ export function ProductVideos() {
           {/* Right Arrow */}
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow duration-200 hidden md:block"
+            disabled={!canScrollRight}
+            className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full p-2 shadow-lg transition-all duration-200 hidden md:block ${
+              canScrollRight 
+                ? 'hover:shadow-xl cursor-pointer' 
+                : 'opacity-50 cursor-not-allowed'
+            }`}
             aria-label="Przewiń w prawo"
           >
             <ChevronRight className="w-6 h-6 text-gray-600" />
@@ -161,6 +187,7 @@ export function ProductVideos() {
             ref={scrollContainerRef}
             className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            onScroll={checkScrollButtons}
           >
             {productVideos.map((video) => (
               <div 
