@@ -5,13 +5,23 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  /* your existing config */
-  // Add this to handle larger file uploads
+  
+  // Configure for modern browsers to eliminate polyfills
+  compiler: {
+    // Remove console logs in production
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  
   experimental: {
+    // Handle larger file uploads
     serverActions: {
-      bodySizeLimit: '100mb', // or whatever limit you want
+      bodySizeLimit: '100mb',
     },
   },
+  
+  // Configure SWC minifier for better optimization
+  swcMinify: true,
+  
   // Add image configuration
   images: {
     remotePatterns: [

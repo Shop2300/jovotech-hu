@@ -58,5 +58,14 @@
     "prisma": "^6.10.1",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "browserslist": [
+    "Chrome >= 80",
+    "Edge >= 80",
+    "Firefox >= 75",
+    "Safari >= 13.1",
+    "iOS >= 13.4",
+    "not dead",
+    ">0.3%"
+  ]
 }
