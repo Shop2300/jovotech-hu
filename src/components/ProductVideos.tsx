@@ -3,15 +3,14 @@
 
 import { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
-import Image from 'next/image';
 
-interface Video {
+interface VideoData {
   id: string;
   title: string;
   youtubeId: string;
 }
 
-const productVideos: Video[] = [
+const productVideos: VideoData[] = [
   {
     id: '1',
     title: 'Router CNC - Prezentacja działania',
@@ -45,54 +44,60 @@ const productVideos: Video[] = [
 ];
 
 interface VideoThumbnailProps {
-  video: Video;
+  video: VideoData;
 }
 
 function VideoThumbnail({ video }: VideoThumbnailProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
-
-  // Try maxresdefault first, fallback to hqdefault if it doesn't exist
-  const thumbnailUrl = imageError 
-    ? `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`
-    : `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
 
   if (isLoaded) {
     return (
-      <iframe
-        src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
-        title={video.title}
-        className="w-full h-full"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        loading="lazy"
-      />
+      <div className="relative w-full h-full">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
+          title={video.title}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
     );
   }
 
+  const actualThumbnail = `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`;
+
   return (
     <div 
-      className="relative w-full h-full cursor-pointer bg-black"
+      className="relative w-full h-full cursor-pointer group overflow-hidden bg-gray-900"
       onClick={() => setIsLoaded(true)}
     >
-      <Image
-        src={thumbnailUrl}
-        alt={video.title}
-        fill
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        className="object-cover"
-        onError={() => setImageError(true)}
-        priority={false}
+      {/* Actual thumbnail with inline style */}
+      <div 
+        className="absolute inset-0 bg-center bg-cover"
+        style={{ 
+          backgroundImage: `url(${actualThumbnail})`,
+          backgroundColor: '#1a1a1a'
+        }}
       />
       
-      {/* Play button overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-40 transition-opacity">
-        <div className="bg-red-600 rounded-full p-4 shadow-lg hover:scale-110 transition-transform">
-          <Play className="w-8 h-8 text-white fill-white ml-1" />
+      {/* Alternative img tag approach */}
+      <img
+        src={actualThumbnail}
+        alt={video.title}
+        className="absolute inset-0 w-full h-full object-cover opacity-50"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+        }}
+      />
+      
+      {/* Play button */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="bg-red-600 bg-opacity-90 rounded-full p-4 shadow-2xl transform group-hover:scale-110 transition-transform">
+          <Play className="w-8 h-8 text-white fill-white ml-0.5" />
         </div>
       </div>
       
-      {/* Video title overlay */}
+      {/* Title overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
         <p className="text-white text-sm font-medium line-clamp-2">{video.title}</p>
       </div>
@@ -158,8 +163,7 @@ export function ProductVideos() {
                 className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
               >
                 <div className="rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-100">
-                  {/* Video Thumbnail with Play Button Overlay */}
-                  <div className="relative aspect-video group">
+                  <div className="relative aspect-video bg-black">
                     <VideoThumbnail video={video} />
                   </div>
                 </div>
