@@ -61,59 +61,42 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-// Cached product fetch function
-const getCachedProducts = unstable_cache(
-  async (categorySlug?: string, take: number = 20) => {
-    const where = categorySlug ? {
-      category: { slug: categorySlug }
-    } : {};
-
-    const products = await prisma.product.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        price: true,
-        regularPrice: true,
-        stock: true,
-        averageRating: true,
-        totalRatings: true,
-        image: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true
-          }
-        },
-        images: {
-          orderBy: { order: 'asc' as const },
-          take: 1,
-          select: {
-            url: true
-          }
-        },
-        variants: {
-          where: { isActive: true },
-          take: 3, // Reduced from 5
-          select: {
-            id: true,
-            colorName: true,
-            colorCode: true,
-            stock: true
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' as const },
-      take
-    });
-
-    return products;
+// Optimized product selection to reduce payload
+const productSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  price: true,
+  regularPrice: true,
+  stock: true,
+  averageRating: true,
+  totalRatings: true,
+  image: true,
+  category: {
+    select: {
+      id: true,
+      name: true,
+      slug: true
+    }
   },
-  ['home-products'],
-  { revalidate: 3600, tags: ['products'] }
-);
+  images: {
+    orderBy: { order: 'asc' as const },
+    take: 1,
+    select: {
+      url: true
+    }
+  },
+  variants: {
+    where: { isActive: true },
+    take: 5,
+    select: {
+      id: true,
+      colorName: true,
+      colorCode: true,
+      stock: true
+    }
+  }
+};
 
 // Cached banners fetch
 const getCachedBanners = unstable_cache(
@@ -127,29 +110,66 @@ const getCachedBanners = unstable_cache(
   { revalidate: 3600, tags: ['banners'] }
 );
 
+// Cached random products fetch
+const getCachedRandomProducts = unstable_cache(
+  async () => {
+    return prisma.product.findMany({
+      select: productSelect,
+      take: 50,
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+  },
+  ['home-random-products'],
+  { revalidate: 3600, tags: ['products'] }
+);
+
+// Cached category products fetch
+const getCachedCategoryProducts = unstable_cache(
+  async (categorySlug: string) => {
+    return prisma.product.findMany({
+      where: {
+        category: {
+          slug: categorySlug
+        }
+      },
+      select: productSelect,
+      take: 20,
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+  },
+  ['home-category-products'],
+  { revalidate: 3600, tags: ['products'] }
+);
+
 export default async function HomePage() {
-  // Fetch only banners and general products first (critical data)
-  const [banners, allProducts] = await Promise.all([
+  // Run ALL queries in parallel but with caching
+  const [
+    banners,
+    randomProducts,
+    cleaningProducts,
+    paintingProducts,
+    autoMotoProducts
+  ] = await Promise.all([
     getCachedBanners(),
-    getCachedProducts(undefined, 50) // Get 50 products total
+    getCachedRandomProducts(),
+    getCachedCategoryProducts('sprzet-czyszczacy'),
+    getCachedCategoryProducts('malarstwo'),
+    getCachedCategoryProducts('auto-moto')
   ]);
 
-  // Process products in memory instead of making multiple DB queries
-  const productsByCategory = {
-    cleaning: allProducts.filter(p => p.category?.slug === 'sprzet-czyszczacy'),
-    painting: allProducts.filter(p => p.category?.slug === 'malarstwo'),
-    autoMoto: allProducts.filter(p => p.category?.slug === 'auto-moto')
-  };
-
-  // Shuffle and slice products
-  const shuffledProducts = shuffleArray(allProducts);
+  // Shuffle products for randomness
+  const shuffledProducts = shuffleArray(randomProducts);
   const featuredProducts = shuffledProducts.slice(0, 8);
   const newProducts = shuffledProducts.slice(8, 16);
 
-  // Get category products
-  const cleaningProducts = shuffleArray(productsByCategory.cleaning).slice(0, 6);
-  const paintingProducts = shuffleArray(productsByCategory.painting).slice(0, 6);
-  const autoMotoProducts = shuffleArray(productsByCategory.autoMoto).slice(0, 6);
+  // Shuffle category products and take only 6
+  const shuffledCleaningProducts = shuffleArray(cleaningProducts).slice(0, 6);
+  const shuffledPaintingProducts = shuffleArray(paintingProducts).slice(0, 6);
+  const shuffledAutoMotoProducts = shuffleArray(autoMotoProducts).slice(0, 6);
 
   // Serialize products for client components
   const serializeProduct = (product: any) => ({
@@ -173,9 +193,9 @@ export default async function HomePage() {
       
       {/* Category Product Boxes */}
       <CategoryProductBoxes 
-        cleaningProducts={cleaningProducts.map(serializeProduct)}
-        paintingProducts={paintingProducts.map(serializeProduct)}
-        autoMotoProducts={autoMotoProducts.map(serializeProduct)}
+        cleaningProducts={shuffledCleaningProducts.map(serializeProduct)}
+        paintingProducts={shuffledPaintingProducts.map(serializeProduct)}
+        autoMotoProducts={shuffledAutoMotoProducts.map(serializeProduct)}
       />
       
       {/* Featured Products */}

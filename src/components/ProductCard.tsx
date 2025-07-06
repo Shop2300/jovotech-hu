@@ -124,7 +124,7 @@ export function ProductCard({ product }: { product: Product }) {
     <Link href={productUrl} className="block">
       <div className="bg-white rounded-lg overflow-hidden hover:shadow-sm transition cursor-pointer h-full flex flex-col border border-gray-100">
         {/* 1:1 Aspect Ratio Image Container */}
-        <div className="relative w-full pb-[100%]">
+        <div className="relative w-full pb-[100%] bg-gray-50">
           <div className="absolute inset-0">
             {product.image && !imageError ? (
               <Image 
@@ -135,11 +135,9 @@ export function ProductCard({ product }: { product: Product }) {
                 className="object-contain"
                 quality={85}
                 onError={() => setImageError(true)}
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
               />
             ) : (
-              <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
                 <span className="text-gray-600" style={{ fontFamily: sfFontFamily }}>Obrázek produktu</span>
               </div>
             )}
