@@ -19,9 +19,6 @@ const nextConfig: NextConfig = {
     },
   },
   
-  // Configure SWC minifier for better optimization
-  swcMinify: true,
-  
   // Add image configuration
   images: {
     remotePatterns: [

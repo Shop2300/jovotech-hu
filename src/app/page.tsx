@@ -1,14 +1,53 @@
 // src/app/page.tsx
 import { prisma } from '@/lib/prisma';
+import dynamic from 'next/dynamic';
+
+// Critical above-the-fold components - loaded immediately
 import { ProductCard } from '@/components/ProductCard';
 import { BannerSlider } from '@/components/BannerSlider';
-import { ProductsSlider } from '@/components/ProductsSlider';
-import { CategoryProductBoxes } from '@/components/CategoryProductBoxes';
-import { FavoriteCategories } from '@/components/FavoriteCategories';
-import { RecentReviews } from '@/components/RecentReviews';
-import { ProductVideos } from '@/components/ProductVideos';
 
-// CRITICAL: Enable ISR instead of force-dynamic for caching
+// Below-the-fold components - loaded dynamically to reduce initial bundle
+const ProductsSlider = dynamic(
+  () => import('@/components/ProductsSlider').then(mod => ({ default: mod.ProductsSlider })),
+  { 
+    ssr: true,
+    loading: () => <div className="h-96" /> 
+  }
+);
+
+const CategoryProductBoxes = dynamic(
+  () => import('@/components/CategoryProductBoxes').then(mod => ({ default: mod.CategoryProductBoxes })),
+  { 
+    ssr: true,
+    loading: () => <div className="h-96" />
+  }
+);
+
+const FavoriteCategories = dynamic(
+  () => import('@/components/FavoriteCategories').then(mod => ({ default: mod.FavoriteCategories })),
+  { 
+    ssr: true,
+    loading: () => <div className="h-64" />
+  }
+);
+
+const RecentReviews = dynamic(
+  () => import('@/components/RecentReviews').then(mod => ({ default: mod.RecentReviews })),
+  { 
+    ssr: true,
+    loading: () => <div className="h-64" />
+  }
+);
+
+const ProductVideos = dynamic(
+  () => import('@/components/ProductVideos').then(mod => ({ default: mod.ProductVideos })),
+  { 
+    ssr: true,
+    loading: () => <div className="h-96" />
+  }
+);
+
+// Enable ISR instead of force-dynamic for caching
 export const revalidate = 300; // Revalidate every 5 minutes
 
 // Helper function to shuffle array
@@ -59,7 +98,7 @@ export default async function HomePage() {
     }
   };
 
-  // CRITICAL: Run ALL queries in parallel - reduces time from 9.7s to ~1s
+  // Run ALL queries in parallel - reduces time from 9.7s to ~1s
   const [
     banners,
     randomProducts,

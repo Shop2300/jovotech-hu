@@ -1,12 +1,11 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import Script from 'next/script';
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { ConditionalFooter } from '@/components/ConditionalFooter';
 import { SideBadges } from '@/components/SideBadges';
-// Remove: import { CartProvider } from '@/contexts/CartContext';
+import { GoogleTagManager } from '@/components/GoogleTagManager';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -77,11 +76,7 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   verification: {
-    // IMPORTANT: Replace rM73bzskVZTTR0tmKXijqULs5zrCBTgi1EY-th_ce3k with your actual Google verification code
     google: "rM73bzskVZTTR0tmKXijqULs5zrCBTgi1EY-th_ce3k",
-    // Add these when you have them:
-    // yandex: "your-yandex-verification-code",
-    // bing: "your-bing-verification-code",
   },
 };
 
@@ -92,35 +87,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl">
-      <head>
-        {/* Alternative Google verification method - uncomment and use if the metadata verification doesn't work */}
-        {/* <meta name="google-site-verification" content="rM73bzskVZTTR0tmKXijqULs5zrCBTgi1EY-th_ce3k" /> */}
-      </head>
       <body>
-        {/* Google Analytics */}
-        <Script
-          id="google-analytics"
-          strategy="afterInteractive"
-          src="https://www.googletagmanager.com/gtag/js?id=AW-770697695"
-        />
-        <Script
-          id="google-analytics-config"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'AW-770697695');
-            `,
-          }}
-        />
-        
-        {/* Remove CartProvider wrapper */}
         <LayoutWrapper />
         {children}
         <ConditionalFooter />
         <SideBadges />
+        <GoogleTagManager />
         <Toaster
           position="bottom-right"
           toastOptions={{
