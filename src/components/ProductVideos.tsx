@@ -1,8 +1,9 @@
 // src/components/ProductVideos.tsx
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import Image from 'next/image';
 
 interface Video {
   id: string;
@@ -42,6 +43,62 @@ const productVideos: Video[] = [
     youtubeId: 'gaeh1sTsI70'
   }
 ];
+
+interface VideoThumbnailProps {
+  video: Video;
+}
+
+function VideoThumbnail({ video }: VideoThumbnailProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Try maxresdefault first, fallback to hqdefault if it doesn't exist
+  const thumbnailUrl = imageError 
+    ? `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`
+    : `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+
+  if (isLoaded) {
+    return (
+      <iframe
+        src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
+        title={video.title}
+        className="w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        loading="lazy"
+      />
+    );
+  }
+
+  return (
+    <div 
+      className="relative w-full h-full cursor-pointer bg-black"
+      onClick={() => setIsLoaded(true)}
+    >
+      <Image
+        src={thumbnailUrl}
+        alt={video.title}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        className="object-cover"
+        onError={() => setImageError(true)}
+        priority={false}
+      />
+      
+      {/* Play button overlay */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-40 transition-opacity">
+        <div className="bg-red-600 rounded-full p-4 shadow-lg hover:scale-110 transition-transform">
+          <Play className="w-8 h-8 text-white fill-white ml-1" />
+        </div>
+      </div>
+      
+      {/* Video title overlay */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+        <p className="text-white text-sm font-medium line-clamp-2">{video.title}</p>
+      </div>
+    </div>
+  );
+}
 
 export function ProductVideos() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -102,14 +159,8 @@ export function ProductVideos() {
               >
                 <div className="rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-100">
                   {/* Video Thumbnail with Play Button Overlay */}
-                  <div className="relative aspect-video group cursor-pointer">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${video.youtubeId}`}
-                      title={video.title}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+                  <div className="relative aspect-video group">
+                    <VideoThumbnail video={video} />
                   </div>
                 </div>
               </div>
