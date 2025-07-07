@@ -218,28 +218,28 @@ export function SearchBar() {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Czego szukasz? Np. router CNC, ultradźwięki, prasy termotransferowe..."
-          className="w-full px-4 py-2.5 pr-20 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#131921] focus:border-[#131921] text-black bg-white placeholder:text-sm placeholder:text-gray-400"
+          className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#131921] focus:border-[#131921] text-black bg-white placeholder:text-sm placeholder:text-gray-400"
           aria-label="Pole wyszukiwania produktów"
         />
         
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 h-full py-1">
           {query && (
             <button
               type="button"
               onClick={clearSearch}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 transition-colors p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Wyczyść wyszukiwanie"
             >
-              <X size={18} />
+              <X size={20} />
             </button>
           )}
           
           <button
             type="submit"
-            className="text-gray-600 hover:text-gray-900 transition-colors"
+            className="text-gray-600 hover:text-gray-900 transition-colors p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label={loading ? "Wyszukiwanie w toku" : "Szukaj"}
           >
-            {loading ? <Loader2 size={20} className="animate-spin" /> : <Search size={20} />}
+            {loading ? <Loader2 size={22} className="animate-spin" /> : <Search size={22} />}
           </button>
         </div>
       </form>
@@ -399,7 +399,7 @@ export function SearchBar() {
                             clearRecentSearches();
                             setRecentSearches([]);
                           }}
-                          className="text-xs text-gray-400 hover:text-gray-600"
+                          className="text-xs text-gray-400 hover:text-gray-600 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                           aria-label="Wyczyść historię wyszukiwania"
                         >
                           Wyczyść
@@ -409,7 +409,7 @@ export function SearchBar() {
                         <button
                           key={index}
                           onClick={() => handleSuggestionClick(search)}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 min-h-[44px]"
                         >
                           <Clock size={14} className="text-gray-400" />
                           <span className="text-sm text-gray-700">{search}</span>
@@ -428,7 +428,7 @@ export function SearchBar() {
                         <button
                           key={index}
                           onClick={() => handleSuggestionClick(search)}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 min-h-[44px]"
                         >
                           <TrendingUp size={14} className="text-gray-400" />
                           <span className="text-sm text-gray-700">{search}</span>
