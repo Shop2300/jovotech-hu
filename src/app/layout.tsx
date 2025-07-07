@@ -10,7 +10,7 @@ import { GoogleTagManager } from '@/components/GoogleTagManager';
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  // Removed maximumScale to allow users to zoom in for accessibility
 }
 
 export const metadata: Metadata = {
