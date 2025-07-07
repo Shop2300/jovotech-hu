@@ -17,8 +17,83 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '100mb',
     },
+    // Optimize package imports to reduce bundle size
+    optimizePackageImports: [
+      'lucide-react',
+      '@tiptap/react',
+      '@tiptap/starter-kit',
+      '@tiptap/extension-color',
+      '@tiptap/extension-image',
+      '@tiptap/extension-link',
+      '@tiptap/extension-text-align',
+      '@tiptap/extension-text-style',
+      '@tiptap/extension-underline',
+      'react-hook-form',
+      'react-hot-toast',
+      'date-fns',
+    ],
   },
-  
+
+  // Optimize webpack configuration
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Split chunks more aggressively
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Split vendor code
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /[\\/]node_modules[\\/]/,
+              priority: 20,
+            },
+            // Split common modules
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 10,
+              reuseExistingChunk: true,
+              enforce: true,
+            },
+            // Separate heavy libraries
+            tiptap: {
+              test: /[\\/]node_modules[\\/](@tiptap)[\\/]/,
+              name: 'tiptap',
+              chunks: 'all',
+              priority: 30,
+            },
+            pdf: {
+              test: /[\\/]node_modules[\\/](jspdf|html2canvas)[\\/]/,
+              name: 'pdf',
+              chunks: 'all',
+              priority: 30,
+            },
+            excel: {
+              test: /[\\/]node_modules[\\/](xlsx)[\\/]/,
+              name: 'excel',
+              chunks: 'all',
+              priority: 30,
+            },
+          },
+        },
+      };
+
+      // Replace axios with native fetch
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'axios': false,
+      };
+    }
+
+    return config;
+  },
+
   // Add image configuration
   images: {
     remotePatterns: [
