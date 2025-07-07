@@ -1,18 +1,11 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import dynamic from 'next/dynamic';
+import { Toaster } from 'react-hot-toast';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { ConditionalFooter } from '@/components/ConditionalFooter';
 import { SideBadges } from '@/components/SideBadges';
 import { GoogleTagManager } from '@/components/GoogleTagManager';
-
-const Toaster = dynamic(
-  () => import('react-hot-toast').then(mod => ({ default: mod.Toaster })),
-  { 
-    loading: () => null 
-  }
-);
 
 export const viewport: Viewport = {
   width: 'device-width',
