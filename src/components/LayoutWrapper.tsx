@@ -1,31 +1,56 @@
 // src/components/LayoutWrapper.tsx
-'use client';
-import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { CategoryBar } from '@/components/CategoryBar';
-import { PromotionalBar } from '@/components/PromotionalBar';
+import { PromotionalBarClient } from '@/components/PromotionalBarClient';
+import { prisma } from '@/lib/prisma';
 
-export function LayoutWrapper() {
-  const [showPromo, setShowPromo] = useState(false);
-  
-  useEffect(() => {
-    // Check if user has previously closed the promo
-    const promoClosed = localStorage.getItem('promoClosed');
-    if (promoClosed !== 'true') {
-      setShowPromo(true);
+async function getCategories() {
+  const categories = await prisma.category.findMany({
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      image: true,
+      parentId: true,
+    },
+    orderBy: {
+      order: 'asc'
     }
-  }, []);
-  
-  const handleClosePromo = () => {
-    setShowPromo(false);
-    localStorage.setItem('promoClosed', 'true');
-  };
-  
+  });
+
+  // Build hierarchy
+  const categoryMap: { [key: string]: any } = {};
+  const rootCategories: any[] = [];
+
+  categories.forEach(cat => {
+    categoryMap[cat.id] = {
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug,
+      image: cat.image,
+      children: []
+    };
+  });
+
+  categories.forEach(cat => {
+    if (cat.parentId && categoryMap[cat.parentId]) {
+      categoryMap[cat.parentId].children.push(categoryMap[cat.id]);
+    } else if (!cat.parentId) {
+      rootCategories.push(categoryMap[cat.id]);
+    }
+  });
+
+  return rootCategories;
+}
+
+export async function LayoutWrapper() {
+  const categories = await getCategories();
+
   return (
     <>
-      <PromotionalBar showPromo={showPromo} onClose={handleClosePromo} />
+      <PromotionalBarClient />
       <Header />
-      <CategoryBar />
+      <CategoryBar initialCategories={categories} />
     </>
   );
 }

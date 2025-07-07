@@ -15,6 +15,10 @@ interface Category {
   children?: Category[];
 }
 
+interface CategoryBarProps {
+  initialCategories?: Category[];
+}
+
 interface DropdownPortalProps {
   children: React.ReactNode;
   isOpen: boolean;
@@ -80,7 +84,7 @@ function DropdownPortal({ children, isOpen, targetRef, fullWidth = false }: Drop
         ...(fullWidth && { width: `${position.width}px` }),
         zIndex: 9999,
         opacity: isPositioned ? 1 : 0,
-        transition: 'opacity 150ms ease-in-out'
+        transition: 'opacity 100ms ease-in-out'
       }}
     >
       {children}
@@ -89,14 +93,13 @@ function DropdownPortal({ children, isOpen, targetRef, fullWidth = false }: Drop
   );
 }
 
-export function CategoryBar() {
-  const [categories, setCategories] = useState<Category[]>([]);
+export function CategoryBar({ initialCategories = [] }: CategoryBarProps) {
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [visibleCategories, setVisibleCategories] = useState<string[]>([]);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const buttonRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -139,7 +142,10 @@ export function CategoryBar() {
     }
   }, [categories]);
 
+  // Only fetch categories if not provided from server
   useEffect(() => {
+    if (initialCategories.length > 0) return;
+
     async function fetchCategories() {
       try {
         const response = await fetch('/api/categories');
@@ -155,14 +161,7 @@ export function CategoryBar() {
     }
 
     fetchCategories();
-
-    // Cleanup timeout on unmount
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
+  }, [initialCategories]);
 
   // Set up ResizeObserver to recalculate on resize
   useEffect(() => {
@@ -175,7 +174,9 @@ export function CategoryBar() {
     resizeObserver.observe(containerRef.current);
 
     // Initial calculation
-    setTimeout(calculateVisibleCategories, 100);
+    requestAnimationFrame(() => {
+      calculateVisibleCategories();
+    });
 
     return () => {
       resizeObserver.disconnect();
@@ -183,18 +184,11 @@ export function CategoryBar() {
   }, [calculateVisibleCategories]);
 
   const handleMouseEnter = (categoryId: string) => {
-    // Clear any pending timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
     setOpenDropdown(categoryId);
   };
 
   const handleMouseLeave = () => {
-    // Add a small delay to prevent flickering when moving between button and dropdown
-    timeoutRef.current = setTimeout(() => {
-      setOpenDropdown(null);
-    }, 50);
+    setOpenDropdown(null);
   };
 
   const buildHierarchy = (cats: any[]): Category[] => {
@@ -241,10 +235,10 @@ export function CategoryBar() {
           <Link
             ref={(el) => { buttonRefs.current[category.id] = el; }}
             href={`/category/${category.slug}`}
-            className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-200 group whitespace-nowrap"
+            className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-100 group whitespace-nowrap"
           >
             {category.name}
-            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${openDropdown === category.id ? 'rotate-180' : ''} group-hover:text-gray-900`} />
+            <ChevronDown className={`w-4 h-4 transition-transform duration-100 ${openDropdown === category.id ? 'rotate-180' : ''} group-hover:text-gray-900`} />
           </Link>
 
           <DropdownPortal
@@ -254,11 +248,7 @@ export function CategoryBar() {
           >
             <div 
               className="dropdown-content mt-2 bg-white rounded-lg shadow-2xl border border-gray-100 w-full"
-              onMouseEnter={() => {
-                if (timeoutRef.current) {
-                  clearTimeout(timeoutRef.current);
-                }
-              }}
+              onMouseEnter={() => handleMouseEnter(category.id)}
               onMouseLeave={handleMouseLeave}
             >
               <div className="px-6 py-8">
@@ -310,7 +300,7 @@ export function CategoryBar() {
         key={category.id}
         data-category-id={category.id}
         href={`/category/${category.slug}`}
-        className="inline-block px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-200 whitespace-nowrap"
+        className="inline-block px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-100 whitespace-nowrap"
         onClick={() => setOpenDropdown(null)}
       >
         {category.name}
@@ -321,7 +311,7 @@ export function CategoryBar() {
   return (
     <div className="bg-white border-b border-gray-100">
       <div className="max-w-screen-2xl mx-auto px-6" ref={containerRef}>
-        <nav className="flex items-center gap-4 py-2" ref={navRef}>
+        <nav className="flex items-center gap-4 py-2 min-h-[52px]" ref={navRef}>
           {/* Visible categories */}
           {categories.map((category) => {
             if (!showMoreMenu || visibleCategories.includes(category.id)) {
@@ -339,11 +329,11 @@ export function CategoryBar() {
             >
               <button
                 ref={moreButtonRef}
-                className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-200 group whitespace-nowrap"
+                className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-100 group whitespace-nowrap"
               >
                 <Menu className="w-4 h-4" />
                 Więcej
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${openDropdown === 'more-menu' ? 'rotate-180' : ''} group-hover:text-gray-900`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-100 ${openDropdown === 'more-menu' ? 'rotate-180' : ''} group-hover:text-gray-900`} />
               </button>
 
               <DropdownPortal
@@ -356,11 +346,7 @@ export function CategoryBar() {
                     width: 'max-content',
                     minWidth: '250px'
                   }}
-                  onMouseEnter={() => {
-                    if (timeoutRef.current) {
-                      clearTimeout(timeoutRef.current);
-                    }
-                  }}
+                  onMouseEnter={() => handleMouseEnter('more-menu')}
                   onMouseLeave={handleMouseLeave}
                 >
                   <div className="py-2">
