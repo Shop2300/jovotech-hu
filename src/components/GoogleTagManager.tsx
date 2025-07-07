@@ -3,6 +3,13 @@
 
 import Script from 'next/script';
 
+declare global {
+  interface Window {
+    dataLayer: any[];
+    gtag: (...args: any[]) => void;
+  }
+}
+
 export function GoogleTagManager() {
   return (
     <Script
