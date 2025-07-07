@@ -1,16 +1,17 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { ConditionalFooter } from '@/components/ConditionalFooter';
 import { SideBadges } from '@/components/SideBadges';
 import { GoogleTagManager } from '@/components/GoogleTagManager';
 
+// Import CSS normally - Next.js will handle optimization
+import "./globals.css";
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  // Removed maximumScale to allow users to zoom in for accessibility
 }
 
 export const metadata: Metadata = {
@@ -80,6 +81,40 @@ export const metadata: Metadata = {
   },
 };
 
+// Critical CSS Component
+function CriticalStyles() {
+  return (
+    <style
+      dangerouslySetInnerHTML={{
+        __html: `
+          /* Critical CSS for above-the-fold content */
+          *,::after,::before{box-sizing:border-box;border:0 solid #e5e7eb}
+          html{line-height:1.5;-webkit-text-size-adjust:100%;font-family:Arial,Helvetica,sans-serif}
+          body{margin:0;background:#fff;color:#171717}
+          .container{width:100%;margin:0 auto;padding:0 1rem}
+          @media(min-width:640px){.container{max-width:640px}}
+          @media(min-width:768px){.container{max-width:768px}}
+          @media(min-width:1024px){.container{max-width:1024px}}
+          @media(min-width:1280px){.container{max-width:1280px}}
+          img,video{max-width:100%;height:auto}
+          .flex{display:flex}
+          .hidden{display:none}
+          .relative{position:relative}
+          .sticky{position:sticky}
+          .top-0{top:0}
+          .z-50{z-index:50}
+          .min-h-screen{min-height:100vh}
+          .bg-white{background-color:#fff}
+          .w-full{width:100%}
+          /* Prevent layout shift */
+          header{min-height:60px}
+          main{min-height:calc(100vh - 300px)}
+        `,
+      }}
+    />
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -87,7 +122,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl">
-      <body>
+      <head>
+        {/* Critical CSS inline */}
+        <CriticalStyles />
+        
+        {/* Preconnect to external resources */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* DNS Prefetch for performance */}
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+      </head>
+      <body suppressHydrationWarning>
         <LayoutWrapper />
         {children}
         <ConditionalFooter />

@@ -1,0 +1,123 @@
+/* src/app/critical.css */
+/* This file contains only critical CSS for above-the-fold content */
+
+/* Critical Reset */
+*, ::before, ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+  }
+  
+  /* Base styles */
+  html {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    -moz-tab-size: 4;
+    tab-size: 4;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  
+  body {
+    margin: 0;
+    line-height: inherit;
+    background: #ffffff;
+    color: #171717;
+  }
+  
+  /* Critical layout containers */
+  .container {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .container {
+      max-width: 640px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .container {
+      max-width: 768px;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .container {
+      max-width: 1024px;
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .container {
+      max-width: 1280px;
+    }
+  }
+  
+  /* Prevent layout shift for images */
+  img, video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  /* Critical utility classes */
+  .flex { display: flex; }
+  .hidden { display: none; }
+  .block { display: block; }
+  .relative { position: relative; }
+  .absolute { position: absolute; }
+  .fixed { position: fixed; }
+  .sticky { position: sticky; }
+  .top-0 { top: 0; }
+  .z-10 { z-index: 10; }
+  .z-50 { z-index: 50; }
+  .w-full { width: 100%; }
+  .min-h-screen { min-height: 100vh; }
+  .bg-white { background-color: #ffffff; }
+  .text-gray-900 { color: #111827; }
+  
+  /* Header skeleton to prevent CLS */
+  header {
+    min-height: 60px;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  /* Main content area */
+  main {
+    min-height: calc(100vh - 300px);
+  }
+  
+  /* Critical typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+  
+  /* Critical form elements */
+  button, input, optgroup, select, textarea {
+    font-family: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Prevent FOUC for common elements */
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .px-4 { padding-left: 1rem; padding-right: 1rem; }
+  .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  .mt-4 { margin-top: 1rem; }
+  .mb-4 { margin-bottom: 1rem; }
