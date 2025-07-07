@@ -219,6 +219,7 @@ export function SearchBar() {
           onKeyDown={handleKeyDown}
           placeholder="Czego szukasz? Np. router CNC, ultradźwięki, prasy termotransferowe..."
           className="w-full px-4 py-2.5 pr-20 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#131921] focus:border-[#131921] text-black bg-white placeholder:text-sm placeholder:text-gray-400"
+          aria-label="Pole wyszukiwania produktów"
         />
         
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -227,6 +228,7 @@ export function SearchBar() {
               type="button"
               onClick={clearSearch}
               className="text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Wyczyść wyszukiwanie"
             >
               <X size={18} />
             </button>
@@ -235,6 +237,7 @@ export function SearchBar() {
           <button
             type="submit"
             className="text-gray-600 hover:text-gray-900 transition-colors"
+            aria-label={loading ? "Wyszukiwanie w toku" : "Szukaj"}
           >
             {loading ? <Loader2 size={20} className="animate-spin" /> : <Search size={20} />}
           </button>
@@ -397,6 +400,7 @@ export function SearchBar() {
                             setRecentSearches([]);
                           }}
                           className="text-xs text-gray-400 hover:text-gray-600"
+                          aria-label="Wyczyść historię wyszukiwania"
                         >
                           Wyczyść
                         </button>
