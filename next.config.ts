@@ -20,14 +20,6 @@ const nextConfig: NextConfig = {
     // Optimize package imports to reduce bundle size
     optimizePackageImports: [
       'lucide-react',
-      '@tiptap/react',
-      '@tiptap/starter-kit',
-      '@tiptap/extension-color',
-      '@tiptap/extension-image',
-      '@tiptap/extension-link',
-      '@tiptap/extension-text-align',
-      '@tiptap/extension-text-style',
-      '@tiptap/extension-underline',
       'react-hook-form',
       'react-hot-toast',
       'date-fns',
@@ -37,63 +29,72 @@ const nextConfig: NextConfig = {
   // Optimize webpack configuration
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Split chunks more aggressively
+      // More selective chunk splitting
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
           cacheGroups: {
-            default: false,
-            vendors: false,
-            // Split vendor code
-            vendor: {
-              name: 'vendor',
-              chunks: 'all',
-              test: /[\\/]node_modules[\\/]/,
-              priority: 20,
-            },
-            // Split common modules
-            common: {
-              name: 'common',
+            default: {
               minChunks: 2,
-              chunks: 'all',
-              priority: 10,
+              priority: 1,
               reuseExistingChunk: true,
-              enforce: true,
             },
-            // Separate heavy libraries
-            tiptap: {
-              test: /[\\/]node_modules[\\/](@tiptap)[\\/]/,
-              name: 'tiptap',
-              chunks: 'all',
+            // Only common React packages in vendor
+            reactVendor: {
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+              name: 'react-vendor',
               priority: 30,
+            },
+            // Framework essentials
+            framework: {
+              test: /[\\/]node_modules[\\/](next|@next)[\\/]/,
+              name: 'framework',
+              priority: 40,
+            },
+            // Separate large libraries that aren't used everywhere
+            tiptap: {
+              test: /[\\/]node_modules[\\/](@tiptap|prosemirror)[\\/]/,
+              name: 'editor',
+              chunks: 'async',
+              priority: 20,
+              enforce: true,
             },
             pdf: {
               test: /[\\/]node_modules[\\/](jspdf|html2canvas)[\\/]/,
-              name: 'pdf',
-              chunks: 'all',
-              priority: 30,
+              name: 'pdf-utils',
+              chunks: 'async',
+              priority: 20,
+              enforce: true,
             },
             excel: {
-              test: /[\\/]node_modules[\\/](xlsx)[\\/]/,
-              name: 'excel',
-              chunks: 'all',
-              priority: 30,
+              test: /[\\/]node_modules[\\/]xlsx[\\/]/,
+              name: 'excel-utils',
+              chunks: 'async',
+              priority: 20,
+              enforce: true,
+            },
+            forms: {
+              test: /[\\/]node_modules[\\/]react-hook-form[\\/]/,
+              name: 'forms',
+              chunks: 'async',
+              priority: 15,
+            },
+            // Everything else in commons
+            commons: {
+              name: 'commons',
+              minChunks: 2,
+              priority: 5,
+              reuseExistingChunk: true,
             },
           },
         },
-      };
-
-      // Replace axios with native fetch
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'axios': false,
       };
     }
 
     return config;
   },
-
+  
   // Add image configuration
   images: {
     remotePatterns: [

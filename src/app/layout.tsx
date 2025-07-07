@@ -1,21 +1,17 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import dynamic from 'next/dynamic';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { ConditionalFooter } from '@/components/ConditionalFooter';
-import dynamic from 'next/dynamic';
+import { SideBadges } from '@/components/SideBadges';
+import { GoogleTagManager } from '@/components/GoogleTagManager';
 
-// Lazy load non-critical components
-const SideBadges = dynamic(
-  () => import('@/components/SideBadges').then(mod => ({ default: mod.SideBadges }))
-);
-
-const GoogleTagManager = dynamic(
-  () => import('@/components/GoogleTagManager').then(mod => ({ default: mod.GoogleTagManager }))
-);
-
-const LazyToaster = dynamic(
-  () => import('@/components/LazyToaster').then(mod => ({ default: mod.LazyToaster }))
+const Toaster = dynamic(
+  () => import('react-hot-toast').then(mod => ({ default: mod.Toaster })),
+  { 
+    loading: () => null 
+  }
 );
 
 export const viewport: Viewport = {
@@ -104,7 +100,26 @@ export default function RootLayout({
         <ConditionalFooter />
         <SideBadges />
         <GoogleTagManager />
-        <LazyToaster />
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#333',
+              color: '#fff',
+            },
+            success: {
+              style: {
+                background: '#10b981',
+              },
+            },
+            error: {
+              style: {
+                background: '#ef4444',
+              },
+            },
+          }}
+        />
       </body>
     </html>
   );
