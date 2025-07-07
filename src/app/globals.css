@@ -1,11 +1,5 @@
-/* src/app/globals.css */
-/* Import critical CSS first */
-@import "./critical.css";
-
-/* Then import Tailwind - this will be loaded asynchronously */
 @import "tailwindcss";
 
-/* Non-critical custom styles below */
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -13,7 +7,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #ffffff;
+    --background: #ffffff; /* Force white background even in dark mode */
     --foreground: #171717;
   }
 }
@@ -41,7 +35,7 @@ body {
 
 /* Global form styles for better text visibility */
 label {
-  color: #374151;
+  color: #374151; /* text-gray-700 */
 }
 
 input[type="text"],
@@ -50,32 +44,32 @@ input[type="tel"],
 input[type="number"],
 textarea,
 select {
-  color: #111827;
+  color: #111827; /* text-gray-900 */
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #6b7280;
+  color: #6b7280; /* text-gray-500 */
 }
 
 /* Product cards and descriptions */
 .product-description {
-  color: #1f2937;
+  color: #1f2937; /* text-gray-800 */
 }
 
 /* Order summary text */
 .order-item {
-  color: #111827;
+  color: #111827; /* text-gray-900 */
 }
 
 /* Table text improvements */
 th {
-  color: #374151;
+  color: #374151; /* text-gray-700 */
   font-weight: 600;
 }
 
 td {
-  color: #1f2937;
+  color: #1f2937; /* text-gray-800 */
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -85,8 +79,12 @@ td {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Optional: Add smooth scrolling for thumbnail strip */
+.scrollbar-hide {
   scroll-behavior: smooth;
 }
 
@@ -114,14 +112,14 @@ td {
 /* Make the layout more fluid on very wide screens */
 @media (min-width: 1536px) {
   .max-w-screen-2xl {
-    max-width: 1440px;
+    max-width: 1440px; /* More conservative width for better readability */
   }
 }
 
 /* Ensure spacing from edges on ultra-wide displays */
 @media (min-width: 1920px) {
   .max-w-screen-2xl {
-    max-width: 1536px;
+    max-width: 1536px; /* Limited width even on very wide screens */
   }
 }
 
@@ -187,7 +185,7 @@ td {
   @apply text-blue-600 underline hover:text-blue-800;
 }
 
-/* Quill Editor Custom Styles */
+/* Quill Editor Custom Styles (if using React Quill) */
 .ql-container {
   font-family: inherit;
   font-size: 14px;
@@ -211,10 +209,9 @@ td {
   border-bottom-right-radius: 0.5rem;
 }
 
-/* Import search styles last */
 @import "./search.css";
 
-/* Icon Animations - Non-critical */
+/* Icon Animations for Category Boxes */
 @keyframes sweep {
   0%, 100% {
     transform: rotate(0deg) translateX(0);
@@ -254,7 +251,7 @@ td {
   }
 }
 
-/* Icon animation classes */
+/* Icon animation classes - Always running */
 .icon-sweep {
   display: inline-block;
   animation: sweep 2s ease-in-out infinite;
