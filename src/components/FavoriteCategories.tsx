@@ -52,7 +52,7 @@ export function FavoriteCategories() {
               <div className="aspect-square relative overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 mb-3">
                 <Image
                   src={category.image}
-                  alt={category.name}
+                  alt=""  // Empty alt since the category name is visible as text below
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-300"
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
