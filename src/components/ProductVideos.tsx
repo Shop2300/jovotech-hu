@@ -40,7 +40,7 @@ const productVideos: VideoData[] = [
   {
     id: '6',
     title: 'Laser CO2 - Grawerowanie drewna',
-    youtubeId: 'gaeh1sTsI70'
+    youtubeId: 'gaeh1sTsl70'  // Fixed typo: was 'gaeh1sTsI70' (capital I instead of lowercase l)
   }
 ];
 
@@ -66,33 +66,30 @@ function VideoThumbnail({ video }: VideoThumbnailProps) {
     );
   }
 
-  const actualThumbnail = `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`;
+  // Use the correct YouTube thumbnail URL pattern
+  // Using img.youtube.com instead of i.ytimg.com for better reliability
+  const thumbnailUrl = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
 
   return (
     <div 
       className="relative w-full h-full cursor-pointer group overflow-hidden bg-gray-900"
       onClick={() => setIsLoaded(true)}
     >
-      {/* Actual thumbnail with inline style */}
-      <div 
-        className="absolute inset-0 bg-center bg-cover"
-        style={{ 
-          backgroundImage: `url(${actualThumbnail})`,
-          backgroundColor: '#1a1a1a'
-        }}
-      />
-      
-      {/* Alternative img tag approach - Now using Next.js Image */}
-      {!imageError && (
+      {/* Only use Next.js Image if no error occurred */}
+      {!imageError ? (
         <Image
-          src={actualThumbnail}
+          src={thumbnailUrl}
           alt={video.title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover opacity-50"
+          className="object-cover"
           quality={75}
           onError={() => setImageError(true)}
+          unoptimized // YouTube images don't need Next.js optimization
         />
+      ) : (
+        // Fallback to div with background color if image fails
+        <div className="absolute inset-0 bg-gray-800" />
       )}
       
       {/* Play button */}
