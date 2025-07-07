@@ -43,10 +43,11 @@ interface CategoryBoxProps {
   bgColor: string;
   categorySlug: string;
   buttonColor: string;
+  isFirstRow?: boolean;
 }
 
 // Mini Product Card Component for the boxes
-function MiniProductCard({ product }: { product: Product }) {
+function MiniProductCard({ product, isPriority = false }: { product: Product; isPriority?: boolean }) {
   const router = useRouter();
   const { addItem } = useCart();
   const [imageError, setImageError] = useState(false);
@@ -100,6 +101,8 @@ function MiniProductCard({ product }: { product: Product }) {
                 className="object-contain"
                 quality={80}
                 onError={() => setImageError(true)}
+                priority={isPriority}
+                {...(isPriority ? { fetchPriority: 'high' as any } : {})}
               />
             ) : (
               <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
@@ -166,7 +169,7 @@ function MiniProductCard({ product }: { product: Product }) {
   );
 }
 
-function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug, buttonColor }: CategoryBoxProps) {
+function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug, buttonColor, isFirstRow = false }: CategoryBoxProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -274,9 +277,12 @@ function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug, b
             }}
           >
             {products.length > 0 ? (
-              products.map((product) => (
+              products.map((product, index) => (
                 <div key={product.id} className="flex-none" style={{ width: '191px' }}>
-                  <MiniProductCard product={product} />
+                  <MiniProductCard 
+                    product={product} 
+                    isPriority={isFirstRow && index === 0}
+                  />
                 </div>
               ))
             ) : (
@@ -342,6 +348,7 @@ export function CategoryProductBoxes({ cleaningProducts, paintingProducts, autoM
             bgColor="bg-gray-50/50"
             categorySlug="sprzet-czyszczacy"
             buttonColor="#feebeb"
+            isFirstRow={true}
           />
           
           <CategoryBox
@@ -352,6 +359,7 @@ export function CategoryProductBoxes({ cleaningProducts, paintingProducts, autoM
             bgColor="bg-gray-50/50"
             categorySlug="malarstwo"
             buttonColor="#fff6dd"
+            isFirstRow={true}
           />
           
           <CategoryBox
@@ -362,6 +370,7 @@ export function CategoryProductBoxes({ cleaningProducts, paintingProducts, autoM
             bgColor="bg-gray-50/50"
             categorySlug="auto-moto"
             buttonColor="#fff6dd"
+            isFirstRow={true}
           />
         </div>
       </div>
