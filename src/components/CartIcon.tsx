@@ -41,6 +41,7 @@ export function CartIcon() {
     <Link 
       href="/cart" 
       className="relative group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200"
+      aria-label={`Koszyk - ${totalItems === 0 ? 'pusty' : `${totalItems} ${totalItems === 1 ? 'produkt' : totalItems < 5 ? 'produkty' : 'produktów'}`}`}
     >
       {/* Icon with subtle animations */}
       <div className="relative">
