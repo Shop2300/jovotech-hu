@@ -226,65 +226,6 @@ function OrderSuccessContent() {
           )}
         </div>
 
-        {/* What's Next */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Co dalej?</h2>
-          <ol className="space-y-3">
-            <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                1
-              </span>
-              <div>
-                <p className="font-medium">Potwierdzenie emailem</p>
-                <p className="text-sm text-gray-600">
-                  Wysłaliśmy potwierdzenie zamówienia na Twój adres email
-                </p>
-              </div>
-            </li>
-            
-            {showBankDetails && (
-              <li className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                  2
-                </span>
-                <div>
-                  <p className="font-medium">Dokonaj płatności</p>
-                  <p className="text-sm text-gray-600">
-                    Przelej kwotę {formatPrice(orderDetails.total)} na podane konto bankowe
-                  </p>
-                </div>
-              </li>
-            )}
-            
-            <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                {showBankDetails ? '3' : '2'}
-              </span>
-              <div>
-                <p className="font-medium">Przygotowanie zamówienia</p>
-                <p className="text-sm text-gray-600">
-                  {showBankDetails 
-                    ? 'Po otrzymaniu płatności przygotujemy Twoje zamówienie do wysyłki'
-                    : 'Przygotujemy Twoje zamówienie do wysyłki'
-                  }
-                </p>
-              </div>
-            </li>
-            
-            <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                {showBankDetails ? '4' : '3'}
-              </span>
-              <div>
-                <p className="font-medium">Wysyłka</p>
-                <p className="text-sm text-gray-600">
-                  Otrzymasz email z numerem śledzenia przesyłki
-                </p>
-              </div>
-            </li>
-          </ol>
-        </div>
-
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-12">
           <Link
