@@ -17,7 +17,7 @@ export default async function ProductsPage({
   const categoryId = params.category as string | undefined;
   const searchTerm = params.search as string | undefined;
   const page = parseInt(params.page as string || '1');
-  const limit = parseInt(params.limit as string || '25');
+  const limit = parseInt(params.limit as string || '250'); // Changed default from 25 to 250
   
   // Build query conditions
   const whereConditions: any = {};

@@ -391,6 +391,7 @@ const COMMON_SIZES = {
 export function ProductForm({ initialData }: ProductFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -565,6 +566,32 @@ export function ProductForm({ initialData }: ProductFormProps) {
     setVariants(variants.filter((_, i) => i !== index));
   };
 
+  const handleDelete = async () => {
+    if (!initialData) return;
+    
+    const productName = initialData.name;
+    if (!confirm(`Opravdu chcete smazat produkt "${productName}"? Tato akce je nevratná.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/admin/products/${initialData.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete product');
+
+      toast.success('Produkt byl úspěšně smazán');
+      router.push('/admin/products');
+      router.refresh();
+    } catch (error) {
+      toast.error('Chyba při mazání produktu');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     if (productImages.length === 0) {
       toast.error('Přidejte alespoň jeden obrázek produktu');
@@ -645,7 +672,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
           URL adresa produktu
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">www.galaxysklep.pl/</span>
+          <span className="text-sm text-gray-500">www.dannyfashion.cz</span>
           <input
             {...register('slug')}
             value={generatedSlug}
@@ -971,6 +998,22 @@ export function ProductForm({ initialData }: ProductFormProps) {
         >
           Zrušit
         </button>
+
+        {/* Delete button - only show when editing existing product */}
+        {initialData && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className={`ml-auto px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition flex items-center gap-2 ${
+              isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            title="Smazat produkt"
+          >
+            <Trash2 size={16} />
+            {isDeleting ? 'Mazání...' : 'Smazat'}
+          </button>
+        )}
       </div>
     </form>
   );

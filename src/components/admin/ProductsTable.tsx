@@ -490,27 +490,37 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
                   </button>
                 </td>
                 <td className="px-6 py-4">
-                  {product.image ? (
-                    <div className="relative">
-                      <img 
-                        src={product.image} 
-                        alt={product.name}
-                        className="h-12 w-12 object-cover rounded"
-                      />
-                    </div>
-                  ) : (
-                    <div className="h-12 w-12 bg-gray-100 rounded flex items-center justify-center">
-                      <Image className="text-gray-400" size={20} />
-                    </div>
-                  )}
+                  <button
+                    onClick={() => router.push(`/admin/products/${product.id}/edit`)}
+                    className="block hover:opacity-80 transition-opacity"
+                  >
+                    {product.image ? (
+                      <div className="relative">
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="h-12 w-12 object-cover rounded cursor-pointer"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-12 w-12 bg-gray-100 rounded flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors">
+                        <Image className="text-gray-400" size={20} />
+                      </div>
+                    )}
+                  </button>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                  {product._count && product._count.variants > 0 && (
-                    <div className="text-xs text-gray-500">
-                      {product._count.variants} variant
-                    </div>
-                  )}
+                  <button
+                    onClick={() => router.push(`/admin/products/${product.id}/edit`)}
+                    className="text-left hover:text-blue-600 transition-colors"
+                  >
+                    <div className="text-sm font-medium text-gray-900 hover:text-blue-600">{product.name}</div>
+                    {product._count && product._count.variants > 0 && (
+                      <div className="text-xs text-gray-500">
+                        {product._count.variants} variant
+                      </div>
+                    )}
+                  </button>
                 </td>
                 <td className="px-6 py-4">
                   <span className="text-sm text-gray-600 font-mono">
