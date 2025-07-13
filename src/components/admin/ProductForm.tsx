@@ -1,7 +1,7 @@
 // src/components/admin/ProductForm.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
@@ -11,135 +11,28 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
-import { Extension } from '@tiptap/core';
 import { createPortal } from 'react-dom';
 import { createSlug } from '@/lib/slug';
+import DOMPurify from 'dompurify';
 
-// Custom extension to preserve HTML attributes
-const PreserveAttributes = Extension.create({
-  name: 'preserveAttributes',
-  
-  addGlobalAttributes() {
-    return [
-      {
-        types: ['bulletList', 'orderedList', 'listItem', 'paragraph'],
-        attributes: {
-          class: {
-            default: null,
-            parseHTML: element => element.getAttribute('class'),
-            renderHTML: attributes => {
-              if (!attributes.class) {
-                return {};
-              }
-              return { class: attributes.class };
-            },
-          },
-        },
-      },
-    ];
-  },
-});
-
-// HTML Editor Modal Component
-function HtmlEditorModal({ isOpen, onClose, content, onSave }: {
+// HTML Preview Modal Component
+function HtmlPreviewModal({ isOpen, onClose, content }: {
   isOpen: boolean;
   onClose: () => void;
   content: string;
-  onSave: (html: string) => void;
 }) {
-  const [htmlContent, setHtmlContent] = useState('');
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  if (!isOpen) return null;
 
-  // Create portal container
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      setPortalContainer(document.body);
-    }
-  }, []);
-
-  // Update HTML content when modal opens or content changes
-  useEffect(() => {
-    if (isOpen) {
-      // Decode HTML entities to show raw HTML
-      const textarea = document.createElement('textarea');
-      textarea.innerHTML = content;
-      setHtmlContent(textarea.value);
-    }
-  }, [isOpen, content]);
-
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      // Add pointer-events none to all tiptap editors
-      const editors = document.querySelectorAll('.ProseMirror');
-      editors.forEach(editor => {
-        (editor as HTMLElement).style.pointerEvents = 'none';
-      });
-    } else {
-      document.body.style.overflow = 'unset';
-      // Restore pointer events
-      const editors = document.querySelectorAll('.ProseMirror');
-      editors.forEach(editor => {
-        (editor as HTMLElement).style.pointerEvents = 'auto';
-      });
-    }
-    
-    return () => {
-      document.body.style.overflow = 'unset';
-      const editors = document.querySelectorAll('.ProseMirror');
-      editors.forEach(editor => {
-        (editor as HTMLElement).style.pointerEvents = 'auto';
-      });
-    };
-  }, [isOpen]);
-
-  if (!isOpen || !portalContainer) return null;
-
-  const handleSave = () => {
-    onSave(htmlContent);
-    onClose();
-  };
-
-  const modalContent = (
+  return createPortal(
     <>
-      {/* Full screen overlay that blocks everything */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-95" 
-        style={{ 
-          zIndex: 9999999,
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100vw',
-          height: '100vh'
-        }}
+        className="fixed inset-0 bg-black bg-opacity-50 z-[9999]" 
         onClick={onClose}
       />
-      
-      {/* Modal */}
-      <div 
-        className="fixed inset-0 flex items-center justify-center p-4" 
-        style={{ 
-          zIndex: 10000000,
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0
-        }}
-        onClick={(e) => {
-          // Prevent clicks from going through
-          if (e.target === e.currentTarget) {
-            onClose();
-          }
-        }}
-      >
-        <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative shadow-2xl" style={{ isolation: 'isolate' }}>
+      <div className="fixed inset-0 flex items-center justify-center p-4 z-[10000]">
+        <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">HTML Editor</h3>
+            <h3 className="text-lg font-semibold">Náhled HTML</h3>
             <button
               type="button"
               onClick={onClose}
@@ -149,67 +42,342 @@ function HtmlEditorModal({ isOpen, onClose, content, onSave }: {
             </button>
           </div>
           
-          <div className="flex-1 overflow-hidden flex flex-col">
-            <p className="text-sm text-gray-600 mb-3">
-              Upravte HTML kód přímo. Změny se projeví po uložení.
-            </p>
-            
-            <textarea
-              value={htmlContent}
-              onChange={(e) => setHtmlContent(e.target.value)}
-              className="flex-1 w-full p-4 border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 resize-none"
-              style={{ minHeight: '400px' }}
-              spellCheck={false}
+          <div className="flex-1 overflow-auto border rounded-lg p-4 bg-gray-50">
+            <div 
+              dangerouslySetInnerHTML={{ __html: content }}
             />
-            
-            <div className="flex gap-3 mt-4">
-              <button
-                type="button"
-                onClick={handleSave}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
-              >
-                Uložit změny
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
-              >
-                Zrušit
-              </button>
-            </div>
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
-
-  return createPortal(modalContent, portalContainer);
 }
 
-// Simplified Tiptap Editor Component
-function TiptapEditor({ value, onChange, placeholder, height = '200px' }: { 
+// Enhanced HTML Editor Modal Component
+function HtmlEditorModal({ isOpen, onClose, content, onSave }: {
+  isOpen: boolean;
+  onClose: () => void;
+  content: string;
+  onSave: (html: string) => void;
+}) {
+  const [htmlContent, setHtmlContent] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setHtmlContent(content);
+    }
+  }, [isOpen, content]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleSave = () => {
+    onSave(htmlContent);
+    onClose();
+  };
+
+  return createPortal(
+    <>
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-95 z-[9999]" 
+        onClick={onClose}
+      />
+      
+      <div 
+        className="fixed inset-0 flex items-center justify-center p-4 z-[10000]"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+      >
+        <div className="bg-white rounded-lg p-6 w-full max-w-6xl h-[95vh] flex flex-col">
+          <textarea
+            value={htmlContent}
+            onChange={(e) => setHtmlContent(e.target.value)}
+            className="flex-1 w-full p-4 border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 resize-none"
+            style={{ minHeight: '85vh' }}
+            spellCheck={false}
+            placeholder='Vložte nebo napište HTML kód zde...'
+            autoFocus
+          />
+          
+          <div className="flex gap-3 mt-4 justify-center">
+            <button
+              type="button"
+              onClick={handleSave}
+              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
+            >
+              Uložit změny
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-2.5 border rounded-lg hover:bg-gray-50 transition"
+            >
+              Zrušit
+            </button>
+          </div>
+        </div>
+      </div>
+    </>,
+    document.body
+  );
+}
+
+// Enhanced Raw HTML Editor Component with editable preview
+function RawHtmlEditor({ value, onChange, placeholder, height = '200px' }: { 
   value: string | null; 
   onChange: (value: string) => void; 
   placeholder?: string;
   height?: string;
 }) {
   const [showHtmlModal, setShowHtmlModal] = useState(false);
+  const [localValue, setLocalValue] = useState(value || '');
+  const contentEditableRef = useRef<HTMLDivElement>(null);
+  const [activeFormats, setActiveFormats] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+  });
+
+  // Update active formats when selection changes
+  const updateActiveFormats = () => {
+    setActiveFormats({
+      bold: document.queryCommandState('bold'),
+      italic: document.queryCommandState('italic'),
+      underline: document.queryCommandState('underline'),
+    });
+  };
+
+  useEffect(() => {
+    document.addEventListener('selectionchange', updateActiveFormats);
+    return () => {
+      document.removeEventListener('selectionchange', updateActiveFormats);
+    };
+  }, []);
+
+  useEffect(() => {
+    setLocalValue(value || '');
+  }, [value]);
+
+  const handleHtmlSave = (newHtml: string) => {
+    setLocalValue(newHtml);
+    onChange(newHtml);
+  };
+
+  const handleContentChange = () => {
+    if (contentEditableRef.current) {
+      const newContent = contentEditableRef.current.innerHTML;
+      setLocalValue(newContent);
+      onChange(newContent);
+      updateActiveFormats();
+    }
+  };
+
+  // Check if content is truly empty
+  const isContentEmpty = (content: string) => {
+    const emptyPatterns = ['', '<br>', '<p><br></p>', '<div><br></div>', '<p></p>', '<div></div>'];
+    return !content || emptyPatterns.includes(content.trim()) || content.trim().replace(/<[^>]*>/g, '') === '';
+  };
+
+  const hasContent = !isContentEmpty(localValue);
+
+  // Focus handler to clear placeholder
+  const handleFocus = () => {
+    if (!hasContent && contentEditableRef.current) {
+      contentEditableRef.current.innerHTML = '';
+    }
+  };
+
+  // Blur handler to show placeholder if empty
+  const handleBlur = () => {
+    if (contentEditableRef.current) {
+      const content = contentEditableRef.current.innerHTML;
+      if (isContentEmpty(content)) {
+        contentEditableRef.current.innerHTML = '';
+      }
+    }
+  };
+
+  // Handle paste event
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+    if (text) {
+      document.execCommand('insertHTML', false, text);
+      handleContentChange();
+    }
+  };
+
+  // Handle keyboard shortcuts
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key) {
+        case 'b':
+          e.preventDefault();
+          document.execCommand('bold', false);
+          break;
+        case 'i':
+          e.preventDefault();
+          document.execCommand('italic', false);
+          break;
+        case 'u':
+          e.preventDefault();
+          document.execCommand('underline', false);
+          break;
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (contentEditableRef.current && localValue !== contentEditableRef.current.innerHTML) {
+      // Only update if content is different to avoid cursor jump
+      const selection = window.getSelection();
+      const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+      const startOffset = range?.startOffset || 0;
+      
+      contentEditableRef.current.innerHTML = localValue;
+      
+      // Restore cursor position if possible
+      if (range && contentEditableRef.current.firstChild) {
+        try {
+          const newRange = document.createRange();
+          newRange.setStart(contentEditableRef.current.firstChild, Math.min(startOffset, contentEditableRef.current.textContent?.length || 0));
+          newRange.collapse(true);
+          selection?.removeAllRanges();
+          selection?.addRange(newRange);
+        } catch (e) {
+          // Ignore errors when restoring cursor
+        }
+      }
+    }
+  }, [localValue]);
+
+  // Format text with execCommand
+  const formatText = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    contentEditableRef.current?.focus();
+    handleContentChange();
+    setTimeout(updateActiveFormats, 10); // Small delay to ensure state is updated
+  };
+
+  return (
+    <>
+      <div className="border rounded-lg">
+        <div className="border-b p-2 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); formatText('bold'); }}
+                className={`px-3 py-1 text-sm border rounded hover:bg-gray-100 transition ${
+                  activeFormats.bold ? 'bg-blue-100 border-blue-300' : 'bg-white'
+                }`}
+                title="Tučné (Ctrl+B)"
+              >
+                <strong>B</strong>
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); formatText('italic'); }}
+                className={`px-3 py-1 text-sm border rounded hover:bg-gray-100 transition ${
+                  activeFormats.italic ? 'bg-blue-100 border-blue-300' : 'bg-white'
+                }`}
+                title="Kurzíva (Ctrl+I)"
+              >
+                <em>I</em>
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); formatText('underline'); }}
+                className={`px-3 py-1 text-sm border rounded hover:bg-gray-100 transition ${
+                  activeFormats.underline ? 'bg-blue-100 border-blue-300' : 'bg-white'
+                }`}
+                title="Podtržené (Ctrl+U)"
+              >
+                <u>U</u>
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowHtmlModal(true)}
+              className="px-4 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition"
+            >
+              <Code2 size={16} />
+              HTML Editor
+            </button>
+          </div>
+        </div>
+        
+        <div className="relative">
+          <div 
+            ref={contentEditableRef}
+            contentEditable
+            onInput={handleContentChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            onClick={updateActiveFormats}
+            onKeyUp={updateActiveFormats}
+            className="p-4 overflow-auto prose prose-sm max-w-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-b-lg min-h-[150px]"
+            style={{ minHeight: height }}
+            suppressContentEditableWarning={true}
+          />
+          {!hasContent && (
+            <div className="absolute top-4 left-4 text-gray-400 pointer-events-none">
+              {placeholder || 'Začněte psát nebo použijte tlačítka výše pro formátování textu. Pro pokročilé úpravy použijte HTML Editor.'}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <HtmlEditorModal
+        isOpen={showHtmlModal}
+        onClose={() => setShowHtmlModal(false)}
+        content={localValue}
+        onSave={handleHtmlSave}
+      />
+    </>
+  );
+}
+
+// Simplified Tiptap Editor Component
+function TiptapEditor({ value, onChange, placeholder, height = '200px', useRawHtml = false }: { 
+  value: string | null; 
+  onChange: (value: string) => void; 
+  placeholder?: string;
+  height?: string;
+  useRawHtml?: boolean;
+}) {
+  const [showHtmlModal, setShowHtmlModal] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  
+  // If using raw HTML mode, return the simple editor
+  if (useRawHtml) {
+    return <RawHtmlEditor value={value} onChange={onChange} placeholder={placeholder} height={height} />;
+  }
   
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: false,
-        blockquote: false,
-        codeBlock: false,
-        horizontalRule: false,
-        strike: false,
-        paragraph: {
-          HTMLAttributes: {},
+        heading: {
+          levels: [1, 2, 3, 4, 5, 6],
         },
-        listItem: { HTMLAttributes: {} },
       }),
-      PreserveAttributes,
       Underline,
       Link.configure({
         openOnClick: false,
@@ -223,13 +391,11 @@ function TiptapEditor({ value, onChange, placeholder, height = '200px' }: {
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
+    immediatelyRender: false, // Fix SSR warning
     editorProps: {
       attributes: {
         class: 'prose prose-sm max-w-none focus:outline-none min-h-[100px] px-3 py-2',
       },
-    },
-    parseOptions: {
-      preserveWhitespace: true,
     },
   });
 
@@ -258,7 +424,7 @@ function TiptapEditor({ value, onChange, placeholder, height = '200px' }: {
   return (
     <>
       <div className="border rounded-lg">
-        <div className="border-b p-2 flex items-center gap-1">
+        <div className="border-b p-2 flex items-center gap-1 flex-wrap">
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleBold().run()}
@@ -269,13 +435,38 @@ function TiptapEditor({ value, onChange, placeholder, height = '200px' }: {
           </button>
           <button
             type="button"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`px-3 py-1 rounded ${editor.isActive('italic') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+            title="Kurzíva"
+          >
+            <em>I</em>
+          </button>
+          <button
+            type="button"
             onClick={() => editor.chain().focus().toggleUnderline().run()}
             className={`px-3 py-1 rounded ${editor.isActive('underline') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
             title="Podtržené"
           >
             <u>U</u>
           </button>
-          <div className="w-px bg-gray-300 mx-1" />
+          <div className="w-px bg-gray-300 mx-1 h-6" />
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={`px-3 py-1 rounded ${editor.isActive('bulletList') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+            title="Odrážkový seznam"
+          >
+            • —
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className={`px-3 py-1 rounded ${editor.isActive('orderedList') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+            title="Číslovaný seznam"
+          >
+            1. —
+          </button>
+          <div className="w-px bg-gray-300 mx-1 h-6" />
           <button
             type="button"
             onClick={addLink}
@@ -295,6 +486,14 @@ function TiptapEditor({ value, onChange, placeholder, height = '200px' }: {
             </button>
           )}
           <div className="flex-1" />
+          <button
+            type="button"
+            onClick={() => setShowPreview(true)}
+            className="px-3 py-1 rounded hover:bg-gray-100 flex items-center gap-1"
+            title="Náhled"
+          >
+            Náhled
+          </button>
           <button
             type="button"
             onClick={() => setShowHtmlModal(true)}
@@ -327,6 +526,12 @@ function TiptapEditor({ value, onChange, placeholder, height = '200px' }: {
         content={editor.getHTML()}
         onSave={handleHtmlSave}
       />
+      
+      <HtmlPreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        content={editor.getHTML()}
+      />
     </>
   );
 }
@@ -347,7 +552,7 @@ interface ProductVariant {
   sizeOrder?: number;
   stock: number;
   price?: number;
-  regularPrice?: number; // NEW FIELD ADDED
+  regularPrice?: number;
   imageUrl?: string;
   order: number;
 }
@@ -381,7 +586,6 @@ interface ProductFormProps {
   };
 }
 
-// Common sizes for quick selection
 const COMMON_SIZES = {
   clothing: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
   shoes: ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45'],
@@ -429,9 +633,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
   // Generate slug from name
   useEffect(() => {
-    // Only auto-generate slug if:
-    // 1. Creating new product OR
-    // 2. Editing existing product and name changed AND slug wasn't manually edited
     if (!initialData || (initialData && watchedName !== originalName && !isSlugManuallyEdited)) {
       if (watchedName) {
         const newSlug = createSlug(watchedName);
@@ -465,7 +666,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
       
       if (initialData.variants) {
         setVariants(initialData.variants);
-        // Detect variant type from existing data
         const hasColors = initialData.variants.some(v => v.colorName);
         const hasSizes = initialData.variants.some(v => v.sizeName);
         if (hasColors && hasSizes) setVariantType('both');
@@ -473,12 +673,10 @@ export function ProductForm({ initialData }: ProductFormProps) {
         else setVariantType('color');
       }
 
-      // Set the slug if editing
       if (initialData.slug) {
         setGeneratedSlug(initialData.slug);
         setValue('slug', initialData.slug);
       } else {
-        // Generate slug if missing
         const newSlug = createSlug(initialData.name);
         setGeneratedSlug(newSlug);
         setValue('slug', newSlug);
@@ -494,14 +692,11 @@ export function ProductForm({ initialData }: ProductFormProps) {
         const response = await fetch('/api/admin/categories');
         if (response.ok) {
           const data = await response.json();
-          console.log('Fetched categories:', data);
           setCategories(data);
         } else {
-          console.error('Failed to fetch categories:', response.status);
           toast.error('Nepodařilo se načíst kategorie');
         }
       } catch (error) {
-        console.error('Error fetching categories:', error);
         toast.error('Chyba při načítání kategorií');
       } finally {
         setIsLoadingCategories(false);
@@ -536,7 +731,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       sizeOrder: variants.length,
       stock: 0,
       price: undefined,
-      regularPrice: undefined, // NEW FIELD
+      regularPrice: undefined,
       imageUrl: '',
       order: variants.length
     };
@@ -549,7 +744,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       sizeOrder: variants.length + index,
       stock: 0,
       price: undefined,
-      regularPrice: undefined, // NEW FIELD
+      regularPrice: undefined,
       imageUrl: '',
       order: variants.length + index
     }));
@@ -617,7 +812,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
         body: JSON.stringify({
           ...data,
           code: data.code && data.code.trim() !== '' ? data.code : null,
-          slug: data.slug || generatedSlug, // Use the generated slug
+          slug: data.slug || generatedSlug,
           image: mainImage,
           images: productImages,
           variants: variants.filter(v => v.colorName || v.sizeName),
@@ -742,16 +937,20 @@ export function ProductForm({ initialData }: ProductFormProps) {
           onChange={setDescription}
           placeholder="Stručný popis produktu pro výpis..."
           height="150px"
+          useRawHtml={true} // Enable raw HTML mode for short description
         />
       </div>
 
       <div className="mt-6">
-        <label className="block text-sm font-medium mb-2 text-black">Detailní popis</label>
+        <label className="block text-sm font-medium mb-2 text-black">
+          Detailní popis
+        </label>
         <TiptapEditor
           value={detailDescription}
           onChange={setDetailDescription}
           placeholder="Podrobný popis produktu, specifikace, vlastnosti..."
           height="300px"
+          useRawHtml={true} // Enable raw HTML mode for detailed description
         />
       </div>
       
@@ -810,7 +1009,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
           productId={initialData?.id}
           value={productImages}
           onChange={setProductImages}
-          // Removed maxImages={10} to allow unlimited images (defaults to 999)
         />
       </div>
       
@@ -999,7 +1197,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
           Zrušit
         </button>
 
-        {/* Delete button - only show when editing existing product */}
         {initialData && (
           <button
             type="button"
