@@ -16,20 +16,28 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      // For now, just check the password directly
-      const ADMIN_PASSWORD = 'O87TJpfbh2qtUqvzTGc0KjkioE2jZCGA';
-      const ADMIN_TOKEN = 'd3a165840e65153fc24bf57c1228c1d927e16f2ff5122e72e2612b073d9749e2';
-      
-      if (password === ADMIN_PASSWORD) {
+      // Use the API route for authentication (secure)
+      const response = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         // Store token in localStorage for API calls
-        localStorage.setItem('adminToken', ADMIN_TOKEN);
+        localStorage.setItem('adminToken', data.token);
         
-        // Set the galaxy-admin-session cookie for middleware
-        document.cookie = `galaxy-admin-session=${ADMIN_TOKEN}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 days
+        // IMPORTANT: Set the galaxy-admin-session cookie for middleware
+        document.cookie = `galaxy-admin-session=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 days
         
         toast.success('Přihlášení úspěšné');
-        router.push('/admin');
-        router.refresh();
+        
+        // Force a page reload to ensure middleware picks up the cookie
+        window.location.href = '/admin';
       } else {
         toast.error('Nesprávné heslo');
       }
@@ -41,7 +49,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
         <div>
           <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
