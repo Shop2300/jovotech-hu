@@ -23,6 +23,7 @@ interface Order {
   createdAt: string;
   items?: any; // JSON string of order items
   hasAdminNotes?: boolean;
+  hasComments?: boolean;
   invoice: {
     id: string;
     invoiceNumber: string;
@@ -213,14 +214,61 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(100);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [paymentFilter, setPaymentFilter] = useState<string>('all');
-  const [hoveredOrderId, setHoveredOrderId] = useState<string | null>(null);
   const [bulkUpdating, setBulkUpdating] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [hoveredOrderId, setHoveredOrderId] = useState<string | null>(null);
   const [previewPosition, setPreviewPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // PERSISTENCE: Load saved filter state from sessionStorage
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('ordersTable_currentPage');
+      return saved ? parseInt(saved, 10) : 1;
+    }
+    return 1;
+  });
+
+  const [itemsPerPage, setItemsPerPage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('ordersTable_itemsPerPage');
+      return saved ? parseInt(saved, 10) : 100;
+    }
+    return 100;
+  });
+
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('ordersTable_statusFilter');
+      return saved || 'all';
+    }
+    return 'all';
+  });
+
+  const [paymentFilter, setPaymentFilter] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('ordersTable_paymentFilter');
+      return saved || 'all';
+    }
+    return 'all';
+  });
+
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('ordersTable_searchQuery');
+      return saved || '';
+    }
+    return '';
+  });
+
+  // Save filter state to sessionStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('ordersTable_currentPage', currentPage.toString());
+      sessionStorage.setItem('ordersTable_itemsPerPage', itemsPerPage.toString());
+      sessionStorage.setItem('ordersTable_statusFilter', statusFilter);
+      sessionStorage.setItem('ordersTable_paymentFilter', paymentFilter);
+      sessionStorage.setItem('ordersTable_searchQuery', searchQuery);
+    }
+  }, [currentPage, itemsPerPage, statusFilter, paymentFilter, searchQuery]);
 
   // Debounce search query
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -331,6 +379,13 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentOrders = filteredOrders.slice(startIndex, endIndex);
+
+  // PERSISTENCE: Adjust current page if it's out of bounds after filtering
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
 
   // Memoized callbacks
   const handleSearchChange = useCallback((value: string) => {
@@ -541,6 +596,24 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
     }
   }, [selectedOrders, filteredOrders, currentPage, itemsPerPage, router]);
 
+  // Clear all filters and sessionStorage
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery('');
+    setPaymentFilter('all');
+    setStatusFilter('all');
+    setCurrentPage(1);
+    setSelectedOrders([]);
+    
+    // Clear sessionStorage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('ordersTable_currentPage');
+      sessionStorage.removeItem('ordersTable_itemsPerPage');
+      sessionStorage.removeItem('ordersTable_statusFilter');
+      sessionStorage.removeItem('ordersTable_paymentFilter');
+      sessionStorage.removeItem('ordersTable_searchQuery');
+    }
+  }, []);
+
   if (!orders || orders.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
@@ -553,23 +626,35 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
     <div>
       {/* Search Bar */}
       <div className="mb-4 bg-white rounded-lg shadow p-4">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Search by order number, name or email..."
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => handleSearchChange('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              >
+                <XCircle className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              </button>
+            )}
           </div>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Search by order number, name or email..."
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-          {searchQuery && (
+          {/* Clear Filters Button */}
+          {(searchQuery || statusFilter !== 'all' || paymentFilter !== 'all') && (
             <button
-              onClick={() => handleSearchChange('')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={handleClearFilters}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition flex items-center gap-2"
             >
-              <XCircle className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              <XCircle size={16} />
+              Clear Filters
             </button>
           )}
         </div>
@@ -820,6 +905,12 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                             <span 
                               className="inline-block w-2 h-2 bg-blue-500 rounded-full" 
                               title="Has internal notes"
+                            />
+                          )}
+                          {order.hasComments && (
+                            <span 
+                              className="inline-block w-2 h-2 bg-yellow-500 rounded-full" 
+                              title="Has comments"
                             />
                           )}
                         </div>

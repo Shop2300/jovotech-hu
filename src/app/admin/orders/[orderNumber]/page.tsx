@@ -11,6 +11,7 @@ import { OrderActions } from './OrderActions';
 import { CustomerInfoEdit } from './CustomerInfoEdit';
 import { AddressEdit } from './AddressEdit';
 import { AdminNotes } from './AdminNotes';
+import { Comments } from './Comments';
 import { OrderHistory } from '@/components/admin/OrderHistory';
 import { getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 import { CopyButton } from '@/components/admin/CopyButton';
@@ -67,6 +68,7 @@ async function getOrder(orderNumber: string) {
       note: true,
       trackingNumber: true,
       adminNotes: true,
+      comments: true,
       createdAt: true,
       
       // Billing fields
@@ -184,7 +186,8 @@ async function getOrder(orderNumber: string) {
     total: Number(order.total),
     items: itemsWithProducts,
     paymentStatus: order.paymentStatus || 'unpaid',
-    adminNotes: order.adminNotes || ''
+    adminNotes: order.adminNotes || '',
+    comments: order.comments || ''
   };
 }
 
@@ -511,6 +514,12 @@ export default async function OrderDetailPage({
           <AdminNotes 
             orderNumber={order.orderNumber}
             initialNotes={order.adminNotes}
+          />
+
+          {/* Comments */}
+          <Comments 
+            orderNumber={order.orderNumber}
+            initialComments={order.comments}
           />
 
           {/* Order History */}

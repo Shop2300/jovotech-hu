@@ -148,6 +148,7 @@ async function getOrders() {
       createdAt: true,
       items: true,
       adminNotes: true,
+      comments: true,
       invoice: {
         select: {
           id: true,
@@ -181,6 +182,7 @@ async function getOrders() {
     createdAt: order.createdAt.toISOString(),
     items: order.items,
     hasAdminNotes: !!order.adminNotes,
+    hasComments: !!order.comments,
     invoice: order.invoice ? {
       id: order.invoice.id,
       invoiceNumber: order.invoice.invoiceNumber

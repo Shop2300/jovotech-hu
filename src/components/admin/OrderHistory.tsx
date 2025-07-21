@@ -16,7 +16,8 @@ import {
   CreditCard,
   User,
   MapPin,
-  StickyNote
+  StickyNote,
+  MessageSquare
 } from 'lucide-react';
 
 interface OrderHistoryEntry {
@@ -68,6 +69,9 @@ export function OrderHistory({ history }: OrderHistoryProps) {
     if (actionLower.includes('note')) {
       return <StickyNote className="w-5 h-5 text-amber-600" />;
     }
+    if (actionLower.includes('comments')) {
+      return <MessageSquare className="w-5 h-5 text-blue-600" />;
+    }
     
     return <History className="w-5 h-5 text-gray-600" />;
   };
@@ -101,6 +105,9 @@ export function OrderHistory({ history }: OrderHistoryProps) {
     }
     if (actionLower.includes('note')) {
       return 'border-amber-200 bg-amber-50';
+    }
+    if (actionLower.includes('comments')) {
+      return 'border-blue-200 bg-blue-50';
     }
     
     return 'border-gray-200 bg-gray-50';

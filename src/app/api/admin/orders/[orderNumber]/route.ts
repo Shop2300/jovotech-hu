@@ -352,6 +352,22 @@ export async function PATCH(
       }
     }
 
+    // Handle comments update
+    if (data.comments !== undefined) {
+      updateData.comments = data.comments;
+      
+      if (data.comments !== existingOrder.comments) {
+        historyEntries.push({
+          orderId: existingOrder.id,
+          action: 'comments_updated',
+          description: data.comments ? 'Added/updated comments' : 'Removed comments',
+          oldValue: existingOrder.comments,
+          newValue: data.comments,
+          metadata: { changedBy: 'Admin' }
+        });
+      }
+    }
+
     // Update order
     const updatedOrder = await prisma.order.update({
       where: { id: existingOrder.id },
