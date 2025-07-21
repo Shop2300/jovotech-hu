@@ -1,7 +1,7 @@
 // src/components/admin/OrdersTable.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -10,7 +10,6 @@ import { Eye, FileText, Trash2, CheckCircle, XCircle, Package, Search } from 'lu
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { getPaymentMethodLabel, getDeliveryMethodLabel } from '@/lib/order-options';
-
 interface Order {
   id: string;
   orderNumber: string;
@@ -23,7 +22,7 @@ interface Order {
   deliveryMethod?: string;
   createdAt: string;
   items?: any; // JSON string of order items
-  hasAdminNotes?: boolean; // Add this line
+  hasAdminNotes?: boolean;
   invoice: {
     id: string;
     invoiceNumber: string;
@@ -33,6 +32,180 @@ interface Order {
 interface OrdersTableProps {
   orders: Order[];
   onDelete?: (orderId: string) => void;
+}
+
+// Memoized component for order preview
+const OrderPreview = memo(({ order, position }: { order: Order; position: { x: number; y: number } }) => {
+  // Parse items once and memoize
+  const items = useMemo(() => {
+    try {
+      // Items might already be parsed or might be a JSON string
+      const parsedItems = typeof order.items === 'string' 
+        ? JSON.parse(order.items || '[]')
+        : order.items || [];
+      
+      return Array.isArray(parsedItems) ? parsedItems : [];
+    } catch (e) {
+      console.error('Error parsing items:', e);
+      return [];
+    }
+  }, [order.items]);
+
+  // Calculate position to ensure preview stays within viewport
+  const previewWidth = 384; // w-96 = 24rem = 384px
+  const previewMaxHeight = window.innerHeight * 0.8; // 80vh
+  const padding = 20;
+  
+  let left = position.x;
+  let top = position.y;
+  
+  // Adjust if preview would go off the right edge
+  if (left + previewWidth + padding > window.innerWidth) {
+    left = window.innerWidth - previewWidth - padding;
+  }
+  
+  // Adjust if preview would go off the bottom edge
+  if (top + 200 > window.innerHeight) { // Assuming minimum height of 200px
+    top = Math.max(padding, window.innerHeight - previewMaxHeight - padding);
+  }
+  
+  // Ensure preview doesn't go off the top edge
+  if (top < padding) {
+    top = padding;
+  }
+  
+  // Calculate arrow position (should always point to the order number)
+  const arrowTop = position.y + 12; // Align arrow with order number text
+  const showArrow = Math.abs(left - position.x) < 50;
+
+  return (
+    <>
+      {/* Arrow pointer - only show if preview hasn't been repositioned too much */}
+      {showArrow && (
+        <>
+          <div
+            className="fixed w-0 h-0"
+            style={{
+              zIndex: 9999,
+              left: `${left - 8}px`,
+              top: `${arrowTop}px`,
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              borderRight: '8px solid #e5e7eb',
+            }}
+          />
+          <div
+            className="fixed w-0 h-0"
+            style={{
+              zIndex: 9999,
+              left: `${left - 7}px`,
+              top: `${arrowTop}px`,
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              borderRight: '8px solid white',
+            }}
+          />
+        </>
+      )}
+      
+      {/* Preview box */}
+      <div 
+        className="fixed bg-white rounded-lg border border-gray-200 p-4 w-96 max-h-[80vh] overflow-y-auto" 
+        style={{ 
+          zIndex: 9999,
+          left: `${left}px`,
+          top: `${top}px`,
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)' 
+        }}
+      >
+        <div className="mb-3">
+          <h4 className="font-semibold text-gray-900">Order #{order.orderNumber}</h4>
+          <p className="text-sm text-gray-600">{order.customerName}</p>
+        </div>
+        
+        <div className="border-t pt-3">
+          <h5 className="text-sm font-medium text-gray-700 mb-3">Items:</h5>
+          {items.length === 0 ? (
+            <p className="text-sm text-gray-500">No items</p>
+          ) : (
+            items.map((item: any, index: number) => (
+              <div key={index} className="flex gap-3 mb-3 pb-3 border-b last:border-0">
+                {/* Product Image */}
+                <div className="flex-shrink-0">
+                  {item.image ? (
+                    <img 
+                      src={item.image} 
+                      alt={item.name || 'Product'}
+                      className="w-12 h-12 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                      <Package size={20} className="text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Product Details */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate pr-2" title={item.name || 'Product'}>
+                    {item.name || 'Product'}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {item.quantity}x {formatPrice(item.price)}
+                    {item.size && <span className="text-gray-500"> • {item.size}</span>}
+                    {item.color && <span className="text-gray-500"> • {item.color}</span>}
+                  </p>
+                </div>
+                
+                {/* Item Total */}
+                <div className="flex-shrink-0">
+                  <p className="text-sm font-medium text-gray-900">
+                    {formatPrice(item.price * item.quantity)}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        
+        <div className="border-t mt-3 pt-3">
+          <div className="flex justify-between text-sm mb-2">
+            <span className="font-medium">Total:</span>
+            <span className="font-bold text-lg">{formatPrice(order.total)}</span>
+          </div>
+          {order.deliveryMethod && (
+            <div className="text-xs text-gray-600 mb-1">
+              <span className="font-medium">Delivery:</span> {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+            </div>
+          )}
+          {order.paymentMethod && (
+            <div className="text-xs text-gray-600">
+              <span className="font-medium">Payment:</span> {getPaymentMethodLabel(order.paymentMethod, 'pl')}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+});
+
+OrderPreview.displayName = 'OrderPreview';
+
+// Custom hook for debouncing
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 }
 
 export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
@@ -49,6 +222,9 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [previewPosition, setPreviewPosition] = useState<{ x: number; y: number } | null>(null);
 
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
   // Hide preview on scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -62,29 +238,26 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [hoveredOrderId]);
 
-  // Filter orders by search query
-  const searchFilteredOrders = orders.filter(order => {
-    if (!searchQuery.trim()) return true;
-    
-    const query = searchQuery.toLowerCase().trim();
-    
-    // Search by order number (without #)
-    const orderNumberMatch = order.orderNumber.toLowerCase().includes(query) || 
-                           order.orderNumber.toLowerCase().includes(query.replace('#', ''));
-    
-    // Search by customer name
-    const customerNameMatch = order.customerName.toLowerCase().includes(query);
-    
-    // Search by customer email
-    const customerEmailMatch = order.customerEmail.toLowerCase().includes(query);
-    
-    return orderNumberMatch || customerNameMatch || customerEmailMatch;
-  });
+  // Memoized filtered orders
+  const filteredOrders = useMemo(() => {
+    let filtered = orders;
 
-  // Filter orders by payment status
-  const paymentFilteredOrders = paymentFilter === 'all' 
-    ? searchFilteredOrders 
-    : searchFilteredOrders.filter(order => {
+    // Search filter
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase().trim();
+      filtered = filtered.filter(order => {
+        const orderNumberMatch = order.orderNumber.toLowerCase().includes(query) || 
+                               order.orderNumber.toLowerCase().includes(query.replace('#', ''));
+        const customerNameMatch = order.customerName.toLowerCase().includes(query);
+        const customerEmailMatch = order.customerEmail.toLowerCase().includes(query);
+        
+        return orderNumberMatch || customerNameMatch || customerEmailMatch;
+      });
+    }
+
+    // Payment filter
+    if (paymentFilter !== 'all') {
+      filtered = filtered.filter(order => {
         if (paymentFilter === 'paid') {
           return order.paymentStatus === 'paid';
         } else if (paymentFilter === 'unpaid') {
@@ -92,11 +265,66 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         }
         return true;
       });
+    }
 
-  // Filter orders by status (after search and payment filters)
-  const filteredOrders = statusFilter === 'all' 
-    ? paymentFilteredOrders 
-    : paymentFilteredOrders.filter(order => order.status === statusFilter);
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(order => order.status === statusFilter);
+    }
+
+    return filtered;
+  }, [orders, debouncedSearchQuery, paymentFilter, statusFilter]);
+
+  // Memoized status counts
+  const statusCounts = useMemo(() => {
+    const searchAndPaymentFiltered = orders.filter(order => {
+      // Apply search filter
+      if (debouncedSearchQuery.trim()) {
+        const query = debouncedSearchQuery.toLowerCase().trim();
+        const match = order.orderNumber.toLowerCase().includes(query) || 
+                     order.orderNumber.toLowerCase().includes(query.replace('#', '')) ||
+                     order.customerName.toLowerCase().includes(query) ||
+                     order.customerEmail.toLowerCase().includes(query);
+        if (!match) return false;
+      }
+
+      // Apply payment filter
+      if (paymentFilter !== 'all') {
+        if (paymentFilter === 'paid' && order.paymentStatus !== 'paid') return false;
+        if (paymentFilter === 'unpaid' && order.paymentStatus === 'paid') return false;
+      }
+
+      return true;
+    });
+
+    return {
+      all: searchAndPaymentFiltered.length,
+      pending: searchAndPaymentFiltered.filter(o => o.status === 'pending').length,
+      processing: searchAndPaymentFiltered.filter(o => o.status === 'processing').length,
+      shipped: searchAndPaymentFiltered.filter(o => o.status === 'shipped').length,
+      delivered: searchAndPaymentFiltered.filter(o => o.status === 'delivered').length,
+      cancelled: searchAndPaymentFiltered.filter(o => o.status === 'cancelled').length,
+    };
+  }, [orders, debouncedSearchQuery, paymentFilter]);
+
+  // Memoized payment counts
+  const paymentCounts = useMemo(() => {
+    const searchFiltered = debouncedSearchQuery.trim() 
+      ? orders.filter(order => {
+          const query = debouncedSearchQuery.toLowerCase().trim();
+          return order.orderNumber.toLowerCase().includes(query) || 
+                 order.orderNumber.toLowerCase().includes(query.replace('#', '')) ||
+                 order.customerName.toLowerCase().includes(query) ||
+                 order.customerEmail.toLowerCase().includes(query);
+        })
+      : orders;
+
+    return {
+      all: searchFiltered.length,
+      paid: searchFiltered.filter(o => o.paymentStatus === 'paid').length,
+      unpaid: searchFiltered.filter(o => o.paymentStatus !== 'paid').length,
+    };
+  }, [orders, debouncedSearchQuery]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
@@ -104,36 +332,37 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
   const endIndex = startIndex + itemsPerPage;
   const currentOrders = filteredOrders.slice(startIndex, endIndex);
 
-  const handleSearchChange = (value: string) => {
+  // Memoized callbacks
+  const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
-    setCurrentPage(1); // Reset to first page when searching
-    setSelectedOrders([]); // Clear selections
-  };
+    setCurrentPage(1);
+    setSelectedOrders([]);
+  }, []);
 
-  const handleStatusFilterChange = (newFilter: string) => {
+  const handleStatusFilterChange = useCallback((newFilter: string) => {
     setStatusFilter(newFilter);
-    setCurrentPage(1); // Reset to first page when filter changes
-    setSelectedOrders([]); // Clear selections
-  };
+    setCurrentPage(1);
+    setSelectedOrders([]);
+  }, []);
 
-  const handlePaymentFilterChange = (newFilter: string) => {
+  const handlePaymentFilterChange = useCallback((newFilter: string) => {
     setPaymentFilter(newFilter);
-    setCurrentPage(1); // Reset to first page when filter changes
-    setSelectedOrders([]); // Clear selections
-  };
+    setCurrentPage(1);
+    setSelectedOrders([]);
+  }, []);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-    setSelectedOrders([]); // Clear selections when changing pages
-  };
+    setSelectedOrders([]);
+  }, []);
 
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+  const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
     setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Reset to first page
-    setSelectedOrders([]); // Clear selections
-  };
+    setCurrentPage(1);
+    setSelectedOrders([]);
+  }, []);
 
-  const handleStatusChange = async (orderNumber: string, newStatus: string) => {
+  const handleStatusChange = useCallback(async (orderNumber: string, newStatus: string) => {
     setUpdatingStatus(orderNumber);
     try {
       const response = await fetch(`/api/admin/orders/${orderNumber}`, {
@@ -155,9 +384,9 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
     } finally {
       setUpdatingStatus(null);
     }
-  };
+  }, [router]);
 
-  const handleBulkStatusChange = async (newStatus: string) => {
+  const handleBulkStatusChange = useCallback(async (newStatus: string) => {
     if (!confirm(`Are you sure you want to change the status of ${selectedOrders.length} orders?`)) {
       return;
     }
@@ -188,9 +417,9 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
     } finally {
       setBulkUpdating(false);
     }
-  };
+  }, [orders, selectedOrders, router]);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = useCallback((status: string) => {
     const statusConfig = {
       pending: { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' },
       processing: { label: 'Processing', className: 'bg-blue-100 text-blue-800' },
@@ -206,9 +435,9 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         {config.label}
       </span>
     );
-  };
+  }, []);
 
-  const getPaymentStatusBadge = (paymentStatus?: string) => {
+  const getPaymentStatusBadge = useCallback((paymentStatus?: string) => {
     if (!paymentStatus) return null;
 
     const isPaid = paymentStatus === 'paid';
@@ -229,9 +458,9 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         )}
       </span>
     );
-  };
+  }, []);
 
-  const handleDelete = async (orderId: string, orderNumber: string) => {
+  const handleDelete = useCallback(async (orderId: string, orderNumber: string) => {
     if (!confirm('Are you sure you want to delete this order?')) {
       return;
     }
@@ -255,9 +484,9 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
     } finally {
       setDeletingId(null);
     }
-  };
+  }, [onDelete]);
 
-  const toggleSelectAll = () => {
+  const toggleSelectAll = useCallback(() => {
     const currentOrderIds = currentOrders.map(order => order.id);
     if (selectedOrders.filter(id => currentOrderIds.includes(id)).length === currentOrders.length) {
       // All current page orders are selected, deselect them
@@ -266,17 +495,17 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
       // Select all orders on current page
       setSelectedOrders(prev => [...new Set([...prev, ...currentOrderIds])]);
     }
-  };
+  }, [currentOrders, selectedOrders]);
 
-  const toggleSelectOrder = (orderId: string) => {
+  const toggleSelectOrder = useCallback((orderId: string) => {
     setSelectedOrders(prev => 
       prev.includes(orderId) 
         ? prev.filter(id => id !== orderId)
         : [...prev, orderId]
     );
-  };
+  }, []);
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = useCallback(async () => {
     if (!confirm(`Are you sure you want to delete ${selectedOrders.length} orders?`)) {
       return;
     }
@@ -310,7 +539,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
     } catch (error) {
       toast.error('Error deleting orders');
     }
-  };
+  }, [selectedOrders, filteredOrders, currentPage, itemsPerPage, router]);
 
   if (!orders || orders.length === 0) {
     return (
@@ -319,23 +548,6 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
       </div>
     );
   }
-
-  // Get status counts (from search and payment filtered orders)
-  const statusCounts = {
-    all: paymentFilteredOrders.length,
-    pending: paymentFilteredOrders.filter(o => o.status === 'pending').length,
-    processing: paymentFilteredOrders.filter(o => o.status === 'processing').length,
-    shipped: paymentFilteredOrders.filter(o => o.status === 'shipped').length,
-    delivered: paymentFilteredOrders.filter(o => o.status === 'delivered').length,
-    cancelled: paymentFilteredOrders.filter(o => o.status === 'cancelled').length,
-  };
-
-  // Get payment status counts (from search filtered orders)
-  const paymentCounts = {
-    all: searchFilteredOrders.length,
-    paid: searchFilteredOrders.filter(o => o.paymentStatus === 'paid').length,
-    unpaid: searchFilteredOrders.filter(o => o.paymentStatus !== 'paid').length,
-  };
 
   return (
     <div>
@@ -363,8 +575,8 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         </div>
         {searchQuery && (
           <div className="mt-2 text-sm text-gray-600">
-            Found {searchFilteredOrders.length} orders
-            {searchFilteredOrders.length !== orders.length && (
+            Found {filteredOrders.length} orders
+            {filteredOrders.length !== orders.length && (
               <span> out of {orders.length} total</span>
             )}
           </div>
@@ -614,7 +826,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                         <div className="text-xs text-gray-500">
                           {format(new Date(order.createdAt), 'MMM d, yyyy', { locale: enUS })}
                           {' • '}
-                          {format(new Date(order.createdAt), 'HH:mm', { locale: enUS }                          )}
+                          {format(new Date(order.createdAt), 'HH:mm', { locale: enUS })}
                         </div>
                       </div>
                     </td>
@@ -818,154 +1030,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
         const hoveredOrder = orders.find(o => o.id === hoveredOrderId);
         if (!hoveredOrder) return null;
         
-        // Calculate position to ensure preview stays within viewport
-        const previewWidth = 384; // w-96 = 24rem = 384px
-        const previewMaxHeight = window.innerHeight * 0.8; // 80vh
-        const padding = 20;
-        
-        let left = previewPosition.x;
-        let top = previewPosition.y;
-        
-        // Adjust if preview would go off the right edge
-        if (left + previewWidth + padding > window.innerWidth) {
-          left = window.innerWidth - previewWidth - padding;
-        }
-        
-        // Adjust if preview would go off the bottom edge
-        if (top + 200 > window.innerHeight) { // Assuming minimum height of 200px
-          top = Math.max(padding, window.innerHeight - previewMaxHeight - padding);
-        }
-        
-        // Ensure preview doesn't go off the top edge
-        if (top < padding) {
-          top = padding;
-        }
-        
-        // Calculate arrow position (should always point to the order number)
-        const arrowTop = previewPosition.y + 12; // Align arrow with order number text
-        
-        return (
-          <>
-            {/* Arrow pointer - only show if preview hasn't been repositioned too much */}
-            {Math.abs(left - previewPosition.x) < 50 && (
-              <>
-                <div
-                  className="fixed w-0 h-0"
-                  style={{
-                    zIndex: 9999,
-                    left: `${left - 8}px`,
-                    top: `${arrowTop}px`,
-                    borderTop: '8px solid transparent',
-                    borderBottom: '8px solid transparent',
-                    borderRight: '8px solid #e5e7eb',
-                  }}
-                />
-                <div
-                  className="fixed w-0 h-0"
-                  style={{
-                    zIndex: 9999,
-                    left: `${left - 7}px`,
-                    top: `${arrowTop}px`,
-                    borderTop: '8px solid transparent',
-                    borderBottom: '8px solid transparent',
-                    borderRight: '8px solid white',
-                  }}
-                />
-              </>
-            )}
-            
-            {/* Preview box */}
-            <div 
-              className="fixed bg-white rounded-lg border border-gray-200 p-4 w-96 max-h-[80vh] overflow-y-auto" 
-              style={{ 
-                zIndex: 9999,
-                left: `${left}px`,
-                top: `${top}px`,
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)' 
-              }}
-            >
-            <div className="mb-3">
-              <h4 className="font-semibold text-gray-900">Order #{hoveredOrder.orderNumber}</h4>
-              <p className="text-sm text-gray-600">{hoveredOrder.customerName}</p>
-            </div>
-            
-            <div className="border-t pt-3">
-              <h5 className="text-sm font-medium text-gray-700 mb-3">Items:</h5>
-              {/* Parse items from order */}
-              {(() => {
-                try {
-                  // Items might already be parsed or might be a JSON string
-                  const items = typeof (hoveredOrder as any).items === 'string' 
-                    ? JSON.parse((hoveredOrder as any).items || '[]')
-                    : (hoveredOrder as any).items || [];
-                  
-                  if (!Array.isArray(items) || items.length === 0) {
-                    return <p className="text-sm text-gray-500">No items</p>;
-                  }
-                  
-                  return items.map((item: any, index: number) => (
-                    <div key={index} className="flex gap-3 mb-3 pb-3 border-b last:border-0">
-                      {/* Product Image */}
-                      <div className="flex-shrink-0">
-                        {item.image ? (
-                          <img 
-                            src={item.image} 
-                            alt={item.name || 'Product'}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
-                            <Package size={20} className="text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Product Details */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate pr-2" title={item.name || 'Product'}>
-                          {item.name || 'Product'}
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          {item.quantity}x {formatPrice(item.price)}
-                          {item.size && <span className="text-gray-500"> • {item.size}</span>}
-                          {item.color && <span className="text-gray-500"> • {item.color}</span>}
-                        </p>
-                      </div>
-                      
-                      {/* Item Total */}
-                      <div className="flex-shrink-0">
-                        <p className="text-sm font-medium text-gray-900">
-                          {formatPrice(item.price * item.quantity)}
-                        </p>
-                      </div>
-                    </div>
-                  ));
-                } catch (e) {
-                  console.error('Error parsing items:', e);
-                  return <p className="text-sm text-gray-500">Unable to load items</p>;
-                }
-              })()}
-            </div>
-            
-            <div className="border-t mt-3 pt-3">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="font-medium">Total:</span>
-                <span className="font-bold text-lg">{formatPrice(hoveredOrder.total)}</span>
-              </div>
-              {hoveredOrder.deliveryMethod && (
-                <div className="text-xs text-gray-600 mb-1">
-                  <span className="font-medium">Delivery:</span> {getDeliveryMethodLabel(hoveredOrder.deliveryMethod, 'pl')}
-                </div>
-              )}
-              {hoveredOrder.paymentMethod && (
-                <div className="text-xs text-gray-600">
-                  <span className="font-medium">Payment:</span> {getPaymentMethodLabel(hoveredOrder.paymentMethod, 'pl')}
-                </div>
-              )}
-            </div>
-          </div>
-          </>
-        );
+        return <OrderPreview order={hoveredOrder} position={previewPosition} />;
       })()}
     </div>
   );

@@ -7,6 +7,8 @@ import { generateInvoicePDF } from '@/lib/invoice-pdf-generator';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// This function is used when admin manually changes order status to "processing"
+// It's not called on page load anymore since orders are created as "processing"
 async function generateInvoiceForOrder(order: any) {
   try {
     // Check if invoice already exists
@@ -123,74 +125,40 @@ async function generateInvoiceForOrder(order: any) {
   }
 }
 
-async function updateOldPendingOrders() {
-  // Find orders that are:
-  // 1. In "pending" status
-  // 2. Created more than 30 minutes ago
-  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
-  
-  const oldPendingOrders = await prisma.order.findMany({
-    where: {
-      status: 'pending',
-      createdAt: {
-        lt: thirtyMinutesAgo
-      }
-    },
-    include: {
-      invoice: true
-    }
-  });
-
-  // Update each old pending order to "processing"
-  for (const order of oldPendingOrders) {
-    try {
-      // Update the order status
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          status: 'processing',
-          updatedAt: new Date()
-        }
-      });
-
-      // Create order history entry
-      await prisma.orderHistory.create({
-        data: {
-          orderId: order.id,
-          action: 'status_change',
-          description: 'Order status automatically changed to "Processing" after 30 minutes',
-          oldValue: 'pending',
-          newValue: 'processing',
-          performedBy: 'System',
-          metadata: {
-            automaticUpdate: true,
-            minutesElapsed: 30
-          }
-        }
-      });
-
-      console.log(`Automatically updated order ${order.orderNumber} from pending to processing`);
-
-      // Generate invoice for the order
-      await generateInvoiceForOrder(order);
-      
-    } catch (error) {
-      console.error(`Failed to update order ${order.orderNumber}:`, error);
-    }
-  }
-}
-
 async function getOrders() {
-  // First, update any old pending orders
-  await updateOldPendingOrders();
+  // NOTE: Removed automatic pending->processing update since orders 
+  // are now created with "processing" status immediately
   
-  // Then fetch all orders with invoice relation
+  // Since orders are created as "processing" immediately,
+  // we don't need to update pending orders anymore
   const orders = await prisma.order.findMany({
     orderBy: {
       createdAt: 'desc',
     },
-    include: {
-      invoice: true
+    select: {
+      id: true,
+      orderNumber: true,
+      customerName: true,
+      customerEmail: true,
+      total: true,
+      status: true,
+      paymentStatus: true,
+      paymentMethod: true,
+      deliveryMethod: true,
+      createdAt: true,
+      items: true,
+      adminNotes: true,
+      invoice: {
+        select: {
+          id: true,
+          invoiceNumber: true
+        }
+      },
+      // Only fetch name fields for fallback
+      billingFirstName: true,
+      billingLastName: true,
+      firstName: true,
+      lastName: true,
     }
   });
 
@@ -212,7 +180,7 @@ async function getOrders() {
     deliveryMethod: order.deliveryMethod || undefined,
     createdAt: order.createdAt.toISOString(),
     items: order.items,
-    hasAdminNotes: !!order.adminNotes, // Add this line to indicate if order has admin notes
+    hasAdminNotes: !!order.adminNotes,
     invoice: order.invoice ? {
       id: order.invoice.id,
       invoiceNumber: order.invoice.invoiceNumber
