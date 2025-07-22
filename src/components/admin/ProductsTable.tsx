@@ -18,6 +18,7 @@ interface Product {
   image: string | null;
   brand?: string | null;
   warranty?: string | null;
+  availability?: string | null; // NEW FIELD
   category?: {
     id: string;
     name: string;
@@ -355,6 +356,36 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
     return pages;
   };
 
+  // NEW FUNCTION: Get availability display text
+  const getAvailabilityText = (product: Product) => {
+    if (product.stock === 0) {
+      return 'Vyprodáno';
+    }
+    
+    if (product.availability === 'in_stock_supplier') {
+      return 'U dodavatele';
+    }
+    
+    return 'Na skladě';
+  };
+
+  // NEW FUNCTION: Get availability badge color
+  const getAvailabilityColor = (product: Product) => {
+    if (product.stock === 0) {
+      return 'bg-red-100 text-red-800';
+    }
+    
+    if (product.availability === 'in_stock_supplier') {
+      return 'bg-blue-100 text-blue-800';
+    }
+    
+    if (product.stock > 10) {
+      return 'bg-green-100 text-green-800';
+    } else {
+      return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
   return (
     <div>
       {/* Bulk actions bar */}
@@ -541,20 +572,20 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
                   <span className="text-sm font-semibold">{formatPrice(product.price)}</span>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    product.stock > 10 
-                      ? 'bg-green-100 text-green-800' 
-                      : product.stock > 0 
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {product.stock} ks
-                  </span>
-                  {product._count && product._count.variants > 0 && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      + ve variantách
-                    </div>
-                  )}
+                  {/* UPDATED STOCK DISPLAY WITH AVAILABILITY */}
+                  <div className="flex flex-col gap-1">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getAvailabilityColor(product)}`}>
+                      {product.stock} ks
+                    </span>
+                    <span className="text-xs text-gray-600">
+                      {getAvailabilityText(product)}
+                    </span>
+                    {product._count && product._count.variants > 0 && (
+                      <div className="text-xs text-gray-500">
+                        + ve variantách
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex gap-2">

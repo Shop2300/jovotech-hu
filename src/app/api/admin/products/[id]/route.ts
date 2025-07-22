@@ -61,6 +61,7 @@ export async function PUT(
         categoryId: productData.categoryId || null,
         brand: productData.brand || null,
         warranty: productData.warranty || null,
+        availability: productData.availability || 'in_stock', // NEW FIELD with default
       },
     });
     

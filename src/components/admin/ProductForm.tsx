@@ -569,6 +569,7 @@ interface ProductFormData {
   categoryId: string | null;
   brand: string | null;
   warranty: string | null;
+  availability: string; // NEW FIELD
 }
 
 interface Category {
@@ -626,6 +627,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       categoryId: null,
       brand: null,
       warranty: null,
+      availability: 'in_stock', // NEW FIELD DEFAULT
     }
   });
 
@@ -820,6 +822,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
           regularPrice: data.regularPrice || null,
           brand: data.brand || null,
           warranty: data.warranty || null,
+          availability: data.availability || 'in_stock', // INCLUDE AVAILABILITY
         }),
       });
 
@@ -928,6 +931,21 @@ export function ProductForm({ initialData }: ProductFormProps) {
             placeholder="např. 24 měsíců..."
           />
         </div>
+      </div>
+
+      {/* NEW AVAILABILITY FIELD */}
+      <div className="mt-6">
+        <label className="block text-sm font-medium mb-2 text-black">Dostupnost produktu</label>
+        <select
+          {...register('availability')}
+          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="in_stock">Na stanie</option>
+          <option value="in_stock_supplier">W magazynie u dostawcy</option>
+        </select>
+        <p className="text-xs text-gray-500 mt-1">
+          Toto nastavení určuje, jak se zobrazí dostupnost když má produkt skladem více než 0 kusů
+        </p>
       </div>
       
       <div className="mt-6">

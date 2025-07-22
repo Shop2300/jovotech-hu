@@ -46,13 +46,19 @@ function getNextDeliveryDate(): string {
 }
 
 // Helper function to format stock display
-function formatStockDisplay(stock: number): string {
+function formatStockDisplay(stock: number, availability: string = 'in_stock'): string {
   if (stock === 0) {
     return 'Wyprzedane';
   } else if (stock > 5) {
-    return 'Na stanie: >5 SZT';
+    // Use availability field to determine display text
+    return availability === 'in_stock_supplier' 
+      ? 'W magazynie u dostawcy: >5 SZT'
+      : 'Na stanie: >5 SZT';
   } else {
-    return `Na stanie: ${stock} szt`;
+    // Use availability field to determine display text
+    return availability === 'in_stock_supplier'
+      ? `W magazynie u dostawcy: ${stock} szt`
+      : `Na stanie: ${stock} szt`;
   }
 }
 
@@ -88,6 +94,7 @@ interface ProductDetailClientProps {
     image: string | null;
     brand?: string | null;
     warranty?: string | null;
+    availability?: string | null; // NEW FIELD
     averageRating?: number;
     totalRatings?: number;
     images?: ProductImage[];
@@ -132,7 +139,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   // Handle star rating click
   const handleStarClick = async (selectedRating: number) => {
     if (hasRated) {
-      toast.error('Już oceniłeś ten produkt');
+      toast.error('Už oceniłeś ten produkt');
       return;
     }
 
@@ -638,12 +645,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 </div>
               )}
               
-              {/* Stock Status */}
+              {/* Stock Status - UPDATED to use availability field */}
               <div className="flex items-center gap-2">
                 <Package className={effectiveStock > 0 ? 'text-[#6da306]' : 'text-red-600'} size={20} />
                 <div>
                   <span className={`font-semibold ${effectiveStock > 0 ? 'text-[#6da306]' : 'text-red-600'}`}>
-                    {formatStockDisplay(effectiveStock)}
+                    {formatStockDisplay(effectiveStock, product.availability || 'in_stock')}
                   </span>
                   {effectiveStock > 0 && (
                     <p className="text-sm text-gray-600 mt-1">

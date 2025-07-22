@@ -154,6 +154,7 @@ model Product {
   categoryId        String?
   brand             String?
   warranty          String?
+  availability      String           @default("in_stock") // NEW FIELD: "in_stock" or "in_stock_supplier"
   averageRating     Float            @default(0)
   totalRatings      Int              @default(0)
   createdAt         DateTime         @default(now())

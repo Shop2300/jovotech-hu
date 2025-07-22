@@ -30,6 +30,7 @@ interface Product {
   stock: number;
   image: string | null;
   brand?: string | null;
+  availability?: string | null; // NEW FIELD
   averageRating?: number;
   totalRatings?: number;
   category?: {
@@ -117,6 +118,20 @@ export function ProductCard({ product }: { product: Product }) {
     }
   };
 
+  // Determine availability text based on stock and availability field
+  const getAvailabilityText = (): string => {
+    if (!inStock) {
+      return 'Wyprodáno';
+    }
+    
+    // NEW LOGIC: Use availability field when in stock
+    if (product.availability === 'in_stock_supplier') {
+      return 'W magazynie u dostawcy';
+    }
+    
+    return 'Na stanie';
+  };
+
   // San Francisco font family
   const sfFontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif';
 
@@ -161,10 +176,10 @@ export function ProductCard({ product }: { product: Product }) {
             {product.name}
           </h3>
 
-          {/* Availability - Centered */}
+          {/* Availability - Centered - UPDATED */}
           <div className="text-center mb-3">
             <span className={`text-sm font-medium ${inStock ? 'text-green-600' : 'text-red-600'}`} style={{ fontFamily: sfFontFamily }}>
-              {inStock ? 'Na stanie' : 'Wyprodáno'}
+              {getAvailabilityText()}
             </span>
           </div>
 
