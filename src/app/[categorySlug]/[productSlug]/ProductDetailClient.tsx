@@ -128,13 +128,18 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [addedQuantity, setAddedQuantity] = useState(1);
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
 
+  // Check if variants are "random" type (have colorName but no colorCode and no sizeName)
+  const isRandomVariant = product.variants && product.variants.length > 0 && 
+    product.variants.every(v => v.colorName && !v.colorCode && !v.sizeName);
+
   // Get unique colors and sizes - ALL of them, not filtered
   const colors = Array.from(new Set(product.variants?.filter(v => v.colorName).map(v => v.colorName))) as string[];
   const sizes = Array.from(new Set(product.variants?.filter(v => v.sizeName).map(v => v.sizeName))) as string[];
   
-  const hasColors = colors.length > 0;
+  const hasColors = colors.length > 0 && !isRandomVariant; // Don't treat as colors if random variant
   const hasSizes = sizes.length > 0;
   const hasVariants = product.variants && product.variants.length > 0;
+  const hasRandomVariants = isRandomVariant;
 
   // Handle star rating click
   const handleStarClick = async (selectedRating: number) => {
@@ -282,24 +287,24 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       variant = product.variants?.find(v => 
         v.colorName === selectedColor && v.sizeName === selectedSize
       );
-    } else if (hasColors && selectedColor && !hasSizes) {
+    } else if ((hasColors || hasRandomVariants) && selectedColor && !hasSizes) {
       variant = product.variants?.find(v => v.colorName === selectedColor);
-    } else if (hasSizes && selectedSize && !hasColors) {
+    } else if (hasSizes && selectedSize && !hasColors && !hasRandomVariants) {
       variant = product.variants?.find(v => v.sizeName === selectedSize);
     }
 
     setSelectedVariant(variant || null);
-  }, [selectedColor, selectedSize, product.variants, hasColors, hasSizes, hasVariants]);
+  }, [selectedColor, selectedSize, product.variants, hasColors, hasSizes, hasVariants, hasRandomVariants]);
 
   // Auto-select first available option
   useEffect(() => {
-    if (hasColors && !selectedColor && colors.length > 0) {
+    if ((hasColors || hasRandomVariants) && !selectedColor && colors.length > 0) {
       setSelectedColor(colors[0]);
     }
     if (hasSizes && !selectedSize && sizes.length > 0) {
       setSelectedSize(sizes[0]);
     }
-  }, [colors, sizes, hasColors, hasSizes, selectedColor, selectedSize]);
+  }, [colors, sizes, hasColors, hasSizes, hasRandomVariants, selectedColor, selectedSize]);
 
   // Calculate effective price, regular price and stock
   const effectivePrice = selectedVariant?.price || product.price;
@@ -312,7 +317,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     
     if (hasColors && hasSizes) {
       return product.variants?.some(v => v.colorName === color && v.sizeName === size) || false;
-    } else if (hasColors) {
+    } else if (hasColors || hasRandomVariants) {
       return product.variants?.some(v => v.colorName === color) || false;
     } else if (hasSizes) {
       return product.variants?.some(v => v.sizeName === size) || false;
@@ -327,8 +332,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       return;
     }
   
-    if (hasColors && !selectedColor) {
-      toast.error('Proszę wybrać kolor');
+    if ((hasColors || hasRandomVariants) && !selectedColor) {
+      toast.error(hasRandomVariants ? 'Proszę wybrać wariant' : 'Proszę wybrać kolor');
       return;
     }
   
@@ -560,8 +565,38 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 )}
               </div>
               
-              {/* Color Selection - Updated with improved logic */}
-              {hasColors && (
+              {/* Random Variant Selection */}
+              {hasRandomVariants && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-black">Variant</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {colors.map((variantName) => {
+                      const variant = product.variants?.find(v => v.colorName === variantName);
+                      const hasStock = variant && variant.stock > 0;
+                      
+                      return (
+                        <button
+                          key={variantName}
+                          onClick={() => setSelectedColor(variantName)}
+                          className={`px-4 py-2 rounded-lg border-2 transition ${
+                            selectedColor === variantName
+                              ? 'border-blue-600 bg-blue-50'
+                              : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <span className="text-black">{variantName}</span>
+                          {!hasStock && (
+                            <span className="text-xs text-red-500 ml-1">(niedostępne)</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {/* Color Selection - Only show if not random variants */}
+              {hasColors && !hasRandomVariants && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 text-black">Kolor</h3>
                   <div className="flex flex-wrap gap-2">
@@ -1007,7 +1042,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     <h4 className="font-semibold text-[#131921] text-lg">{product.name}</h4>
                     {(selectedColor || selectedSize) && (
                       <p className="text-gray-600 text-sm">
-                        {selectedColor && <span>Kolor: {selectedColor}</span>}
+                        {selectedColor && <span>{hasRandomVariants ? 'Variant' : 'Kolor'}: {selectedColor}</span>}
                         {selectedColor && selectedSize && <span> • </span>}
                         {selectedSize && <span>Rozmiar: {selectedSize}</span>}
                       </p>
