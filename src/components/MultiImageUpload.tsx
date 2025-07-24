@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Upload, X, Loader2, GripVertical, Star, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Upload, X, Loader2, GripVertical, Star, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ProductImage {
@@ -29,25 +29,68 @@ export function MultiImageUpload({
 }: MultiImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sort images by order
   const sortedImages = [...value].sort((a, b) => a.order - b.order);
 
-  const validateFile = (file: File): string | null => {
-    // Check file type
-    const fileType = file.type.toLowerCase();
-    if (!ALLOWED_TYPES.includes(fileType)) {
-      return `${file.name}: Invalid file type (only JPG, PNG, GIF, WebP allowed)`;
-    }
-
-    // Check for problematic filename patterns
-    if (file.name.includes('..') || file.name.includes('//')) {
-      return `${file.name}: Invalid filename`;
-    }
-
-    return null;
+  // Convert image to standard format using canvas
+  const convertImageToStandardFormat = async (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      img.onload = () => {
+        try {
+          // Set canvas size to image size (max 4096px for compatibility)
+          const maxSize = 4096;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > maxSize || height > maxSize) {
+            const scale = Math.min(maxSize / width, maxSize / height);
+            width *= scale;
+            height *= scale;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw image on canvas
+          ctx!.drawImage(img, 0, 0, width, height);
+          
+          // Convert to blob (JPEG for better compatibility)
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error('Failed to convert image'));
+              }
+            },
+            'image/jpeg',
+            0.95 // High quality
+          );
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+      
+      // Create object URL for the image
+      const objectUrl = URL.createObjectURL(file);
+      img.src = objectUrl;
+      
+      // Clean up
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        img.onload = null;
+      };
+    });
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,84 +98,96 @@ export function MultiImageUpload({
     if (!files.length) return;
 
     if (value.length + files.length > maxImages) {
-      toast.error(`Maximum ${maxImages} images allowed`);
+      toast.error(`Maximální počet obrázků překročen`);
       return;
-    }
-
-    // Pre-validate all files
-    const errors: string[] = [];
-    const validFiles: File[] = [];
-
-    for (const file of files) {
-      const error = validateFile(file);
-      if (error) {
-        errors.push(error);
-      } else {
-        validFiles.push(file);
-      }
-    }
-
-    if (errors.length > 0) {
-      setUploadErrors(errors);
-      // Still proceed with valid files
-      if (validFiles.length === 0) {
-        return;
-      }
     }
 
     setIsUploading(true);
     const newImages: ProductImage[] = [];
-    const uploadPromises: Promise<void>[] = [];
 
-    // Upload files in parallel with error handling
-    for (const file of validFiles) {
-      const uploadPromise = (async () => {
+    try {
+      for (const file of files) {
         try {
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('type', 'products');
+          let fileToUpload: File | Blob = file;
+          let filename = file.name;
+          
+          // If upload fails with original file, try converting it
+          let uploadAttempts = 0;
+          let uploadSuccess = false;
+          
+          while (uploadAttempts < 2 && !uploadSuccess) {
+            uploadAttempts++;
+            
+            // On second attempt, convert the image
+            if (uploadAttempts === 2) {
+              console.log(`Converting ${filename} to standard format...`);
+              try {
+                const convertedBlob = await convertImageToStandardFormat(file);
+                // Create a new File from the blob
+                const convertedFilename = filename.replace(/\.[^.]+$/, '.jpg');
+                fileToUpload = new File([convertedBlob], convertedFilename, { type: 'image/jpeg' });
+                filename = convertedFilename;
+                toast(`Converting ${file.name} to standard format...`, {
+                  icon: '🔄',
+                  duration: 3000,
+                });
+              } catch (conversionError) {
+                console.error('Image conversion failed:', conversionError);
+                throw new Error('Unable to process this image file');
+              }
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileToUpload);
+            formData.append('type', 'products');
 
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
+            const response = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            });
 
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Upload failed');
+            if (response.ok) {
+              const data = await response.json();
+              newImages.push({
+                url: data.url,
+                order: value.length + newImages.length,
+                alt: file.name.split('.')[0]
+              });
+              uploadSuccess = true;
+            } else {
+              const error = await response.json();
+              console.error(`Upload attempt ${uploadAttempts} failed:`, error);
+              
+              if (uploadAttempts === 1 && error.error?.includes('pattern')) {
+                // Will retry with conversion
+                continue;
+              } else {
+                throw new Error(error.error || 'Upload failed');
+              }
+            }
           }
-
-          const data = await response.json();
-          newImages.push({
-            url: data.url,
-            order: value.length + newImages.length,
-            alt: file.name.split('.')[0].replace(/[^a-zA-Z0-9-_\s]/g, '')
-          });
-        } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : 'Upload failed';
-          errors.push(`${file.name}: ${errorMsg}`);
-          console.error(`Failed to upload ${file.name}:`, error);
+          
+          if (!uploadSuccess) {
+            throw new Error('Failed after conversion attempt');
+          }
+          
+        } catch (fileError: any) {
+          console.error(`Failed to upload ${file.name}:`, fileError);
+          toast.error(`${file.name}: ${fileError.message || 'Nahrávání selhalo'}`);
         }
-      })();
+      }
 
-      uploadPromises.push(uploadPromise);
-    }
-
-    // Wait for all uploads to complete
-    await Promise.all(uploadPromises);
-
-    if (newImages.length > 0) {
-      onChange([...value, ...newImages]);
-      toast.success(`${newImages.length} image${newImages.length > 1 ? 's' : ''} uploaded successfully`);
-    }
-
-    if (errors.length > 0) {
-      setUploadErrors(errors);
-    }
-
-    setIsUploading(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      if (newImages.length > 0) {
+        onChange([...value, ...newImages]);
+        toast.success(`${newImages.length} obrázků nahráno`);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Chyba při nahrávání');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -178,30 +233,20 @@ export function MultiImageUpload({
     // Update order values
     const reorderedImages = newImages.map((img, i) => ({ ...img, order: i }));
     onChange(reorderedImages);
-    toast.success('Primary image set');
+    toast.success('Hlavní obrázek nastaven');
   };
 
   const handleRemoveAll = () => {
-    if (confirm('Are you sure you want to remove all images?')) {
+    if (confirm('Opravdu chcete odstranit všechny obrázky?')) {
       onChange([]);
-      toast.success('All images removed');
+      toast.success('Všechny obrázky byly odstraněny');
     }
   };
-
-  // Clear errors after 10 seconds
-  useEffect(() => {
-    if (uploadErrors.length > 0) {
-      const timer = setTimeout(() => {
-        setUploadErrors([]);
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
-  }, [uploadErrors]);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="block text-sm font-medium text-black">Product Images</label>
+        <label className="block text-sm font-medium text-black">Obrázky produktu</label>
         <div className="flex items-center gap-3">
           {value.length > 0 && (
             <button
@@ -209,31 +254,14 @@ export function MultiImageUpload({
               onClick={handleRemoveAll}
               className="text-sm text-red-600 hover:text-red-700 transition"
             >
-              Remove all
+              Odstranit vše
             </button>
           )}
           <span className="text-sm text-gray-500">
-            {value.length} image{value.length !== 1 ? 's' : ''}
+            {value.length} obrázků
           </span>
         </div>
       </div>
-
-      {/* Error messages */}
-      {uploadErrors.length > 0 && (
-        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={16} />
-            <div className="text-sm text-red-700">
-              <p className="font-medium mb-1">Upload errors:</p>
-              <ul className="list-disc list-inside space-y-0.5">
-                {uploadErrors.map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
         {/* Existing images */}
@@ -252,12 +280,6 @@ export function MultiImageUpload({
               src={image.url}
               alt={image.alt || `Product image ${index + 1}`}
               className="w-full h-full object-cover"
-              loading="lazy"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = '/images/placeholder.png'; // Add a placeholder image
-                target.onerror = null; // Prevent infinite loop
-              }}
             />
             
             {/* Overlay controls */}
@@ -267,7 +289,7 @@ export function MultiImageUpload({
                   type="button"
                   onClick={() => setPrimaryImage(index)}
                   className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
-                  title="Set as primary"
+                  title="Nastavit jako hlavní"
                 >
                   <Star size={14} />
                 </button>
@@ -276,7 +298,7 @@ export function MultiImageUpload({
                 type="button"
                 onClick={() => handleRemove(index)}
                 className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
-                title="Remove"
+                title="Odstranit"
               >
                 <X size={14} />
               </button>
@@ -290,7 +312,7 @@ export function MultiImageUpload({
             {/* Primary badge */}
             {index === 0 && (
               <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded">
-                Primary
+                Hlavní
               </div>
             )}
           </div>
@@ -302,7 +324,7 @@ export function MultiImageUpload({
             <input
               ref={fileInputRef}
               type="file"
-              accept={ALLOWED_TYPES.join(',')}
+              accept="image/*"
               multiple
               onChange={handleUpload}
               className="hidden"
@@ -316,24 +338,19 @@ export function MultiImageUpload({
               {isUploading ? (
                 <>
                   <Loader2 className="animate-spin text-gray-400" size={20} />
-                  <span className="text-xs text-gray-500">Uploading...</span>
+                  <span className="text-xs text-gray-500">Nahrávám...</span>
                 </>
               ) : (
                 <>
                   <Upload className="text-gray-400" size={20} />
-                  <span className="text-xs text-gray-600">Add</span>
-                  <span className="text-xs text-gray-500">images</span>
+                  <span className="text-xs text-gray-600">Přidat</span>
+                  <span className="text-xs text-gray-500">obrázky</span>
                 </>
               )}
             </button>
           </div>
         )}
       </div>
-
-      <p className="text-xs text-gray-500 mt-2">
-        Supported formats: JPG, PNG, GIF, WebP. 
-        Drag images to reorder. First image is the primary image.
-      </p>
     </div>
   );
 }
