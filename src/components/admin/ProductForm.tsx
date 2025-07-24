@@ -958,8 +958,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
           {...register('availability')}
           className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="in_stock">Na stanie</option>
-          <option value="in_stock_supplier">W magazynie u dostawcy</option>
+          <option value="in_stock">In stock</option>
+          <option value="in_stock_supplier">In stock at the supplier</option>
         </select>
         <p className="text-xs text-gray-500 mt-1">
           Toto nastavení určuje, jak se zobrazí dostupnost když má produkt skladem více než 0 kusů
