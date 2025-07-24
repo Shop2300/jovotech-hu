@@ -32,6 +32,64 @@ export function MultiImageUpload({
   // Sort images by order
   const sortedImages = [...value].sort((a, b) => a.order - b.order);
 
+  // Compress image using canvas
+  const compressImage = async (file: File, maxWidth: number = 2048, maxHeight: number = 2048, quality: number = 0.9): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width *= ratio;
+          height *= ratio;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // White background for JPEG (in case of transparency)
+        ctx!.fillStyle = '#FFFFFF';
+        ctx!.fillRect(0, 0, width, height);
+        
+        // Draw resized image
+        ctx!.drawImage(img, 0, 0, width, height);
+        
+        // Convert to blob with compression
+        canvas.toBlob((blob) => {
+          if (blob) {
+            // Create new file with compressed data
+            const compressedFile = new File(
+              [blob], 
+              file.name.replace(/\.[^.]+$/, '.jpg'),
+              { type: 'image/jpeg' }
+            );
+            
+            console.log(`Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(blob.size / 1024 / 1024).toFixed(2)}MB`);
+            resolve(compressedFile);
+          } else {
+            reject(new Error('Compression failed'));
+          }
+        }, 'image/jpeg', quality);
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      
+      // Read file
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
@@ -45,39 +103,46 @@ export function MultiImageUpload({
     const newImages: ProductImage[] = [];
 
     try {
-      for (const file of files) {
+      for (let file of files) {
         try {
-          console.log(`Uploading ${file.name} using base64...`);
+          const originalSizeMB = file.size / 1024 / 1024;
+          console.log(`Processing ${file.name} (${originalSizeMB.toFixed(2)}MB)...`);
           
-          // Convert file to base64
-          const reader = new FileReader();
-          const base64Promise = new Promise<string>((resolve, reject) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-          });
-          reader.readAsDataURL(file);
-          const base64Data = await base64Promise;
+          // Compress if file is larger than 4MB or is PNG
+          if (originalSizeMB > 4 || file.type === 'image/png') {
+            toast(`Compressing ${file.name}...`, {
+              icon: '🗜️',
+              duration: 2000,
+            });
+            file = await compressImage(file);
+          }
           
-          // Send as JSON instead of FormData
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('type', 'products');
+
           const response = await fetch('/api/upload', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              file: base64Data,
-              filename: file.name,
-              type: 'products',
-              mimeType: file.type,
-            }),
+            body: formData,
           });
 
-          const data = await response.json();
-          
           if (!response.ok) {
-            throw new Error(data.error || 'Upload failed');
+            const errorText = await response.text();
+            let errorMessage = 'Upload failed';
+            
+            try {
+              const errorData = JSON.parse(errorText);
+              errorMessage = errorData.error || errorMessage;
+            } catch {
+              if (response.status === 413) {
+                errorMessage = 'File too large even after compression';
+              }
+            }
+            
+            throw new Error(errorMessage);
           }
 
+          const data = await response.json();
           newImages.push({
             url: data.url,
             order: value.length + newImages.length,
@@ -108,7 +173,6 @@ export function MultiImageUpload({
 
   const handleRemove = (index: number) => {
     const newImages = sortedImages.filter((_, i) => i !== index);
-    // Reorder remaining images
     const reorderedImages = newImages.map((img, i) => ({ ...img, order: i }));
     onChange(reorderedImages);
   };
@@ -128,12 +192,9 @@ export function MultiImageUpload({
     const draggedImage = sortedImages[draggedIndex];
     const newImages = [...sortedImages];
     
-    // Remove dragged item
     newImages.splice(draggedIndex, 1);
-    // Insert at new position
     newImages.splice(dropIndex, 0, draggedImage);
     
-    // Update order values
     const reorderedImages = newImages.map((img, i) => ({ ...img, order: i }));
     onChange(reorderedImages);
     setDraggedIndex(null);
@@ -141,11 +202,9 @@ export function MultiImageUpload({
 
   const setPrimaryImage = (index: number) => {
     const newImages = [...sortedImages];
-    // Move selected image to first position
     const [selectedImage] = newImages.splice(index, 1);
     newImages.unshift(selectedImage);
     
-    // Update order values
     const reorderedImages = newImages.map((img, i) => ({ ...img, order: i }));
     onChange(reorderedImages);
     toast.success('Hlavní obrázek nastaven');
@@ -179,7 +238,6 @@ export function MultiImageUpload({
       </div>
 
       <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
-        {/* Existing images */}
         {sortedImages.map((image, index) => (
           <div
             key={image.id || image.url}
@@ -197,7 +255,6 @@ export function MultiImageUpload({
               className="w-full h-full object-cover"
             />
             
-            {/* Overlay controls */}
             <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
               {index !== 0 && (
                 <button
@@ -219,12 +276,10 @@ export function MultiImageUpload({
               </button>
             </div>
             
-            {/* Drag handle */}
             <div className="absolute top-1 left-1 p-0.5 bg-white rounded shadow opacity-0 group-hover:opacity-100 transition">
               <GripVertical size={12} className="text-gray-600" />
             </div>
             
-            {/* Primary badge */}
             {index === 0 && (
               <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded">
                 Hlavní
@@ -233,7 +288,6 @@ export function MultiImageUpload({
           </div>
         ))}
 
-        {/* Upload button */}
         {value.length < maxImages && (
           <div className="aspect-square">
             <input
