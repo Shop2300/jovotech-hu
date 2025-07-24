@@ -568,7 +568,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Random Variant Selection */}
               {hasRandomVariants && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-black">Variant</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-black">Wariant</h3>
                   <div className="flex flex-wrap gap-2">
                     {colors.map((variantName) => {
                       const variant = product.variants?.find(v => v.colorName === variantName);
@@ -1042,7 +1042,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     <h4 className="font-semibold text-[#131921] text-lg">{product.name}</h4>
                     {(selectedColor || selectedSize) && (
                       <p className="text-gray-600 text-sm">
-                        {selectedColor && <span>{hasRandomVariants ? 'Variant' : 'Kolor'}: {selectedColor}</span>}
+                        {selectedColor && <span>{hasRandomVariants ? 'Wariant' : 'Kolor'}: {selectedColor}</span>}
                         {selectedColor && selectedSize && <span> • </span>}
                         {selectedSize && <span>Rozmiar: {selectedSize}</span>}
                       </p>
