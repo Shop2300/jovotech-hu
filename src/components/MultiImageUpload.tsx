@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Upload, X, Loader2, GripVertical, Star, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Loader2, GripVertical, Star, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ProductImage {
@@ -19,6 +19,8 @@ interface MultiImageUploadProps {
   maxImages?: number;
 }
 
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
 export function MultiImageUpload({ 
   productId,
   value = [], 
@@ -27,56 +29,110 @@ export function MultiImageUpload({
 }: MultiImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sort images by order
   const sortedImages = [...value].sort((a, b) => a.order - b.order);
+
+  const validateFile = (file: File): string | null => {
+    // Check file type
+    const fileType = file.type.toLowerCase();
+    if (!ALLOWED_TYPES.includes(fileType)) {
+      return `${file.name}: Invalid file type (only JPG, PNG, GIF, WebP allowed)`;
+    }
+
+    // Check for problematic filename patterns
+    if (file.name.includes('..') || file.name.includes('//')) {
+      return `${file.name}: Invalid filename`;
+    }
+
+    return null;
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
     if (value.length + files.length > maxImages) {
-      toast.error(`Maximální počet obrázků překročen`);
+      toast.error(`Maximum ${maxImages} images allowed`);
       return;
+    }
+
+    // Pre-validate all files
+    const errors: string[] = [];
+    const validFiles: File[] = [];
+
+    for (const file of files) {
+      const error = validateFile(file);
+      if (error) {
+        errors.push(error);
+      } else {
+        validFiles.push(file);
+      }
+    }
+
+    if (errors.length > 0) {
+      setUploadErrors(errors);
+      // Still proceed with valid files
+      if (validFiles.length === 0) {
+        return;
+      }
     }
 
     setIsUploading(true);
     const newImages: ProductImage[] = [];
+    const uploadPromises: Promise<void>[] = [];
 
-    try {
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('type', 'products');
+    // Upload files in parallel with error handling
+    for (const file of validFiles) {
+      const uploadPromise = (async () => {
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('type', 'products');
 
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Upload failed');
+          }
+
+          const data = await response.json();
+          newImages.push({
+            url: data.url,
+            order: value.length + newImages.length,
+            alt: file.name.split('.')[0].replace(/[^a-zA-Z0-9-_\s]/g, '')
+          });
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Upload failed';
+          errors.push(`${file.name}: ${errorMsg}`);
+          console.error(`Failed to upload ${file.name}:`, error);
         }
+      })();
 
-        const data = await response.json();
-        newImages.push({
-          url: data.url,
-          order: value.length + newImages.length,
-          alt: file.name.split('.')[0]
-        });
-      }
+      uploadPromises.push(uploadPromise);
+    }
 
+    // Wait for all uploads to complete
+    await Promise.all(uploadPromises);
+
+    if (newImages.length > 0) {
       onChange([...value, ...newImages]);
-      toast.success(`${newImages.length} obrázků nahráno`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Chyba při nahrávání');
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      toast.success(`${newImages.length} image${newImages.length > 1 ? 's' : ''} uploaded successfully`);
+    }
+
+    if (errors.length > 0) {
+      setUploadErrors(errors);
+    }
+
+    setIsUploading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -122,20 +178,30 @@ export function MultiImageUpload({
     // Update order values
     const reorderedImages = newImages.map((img, i) => ({ ...img, order: i }));
     onChange(reorderedImages);
-    toast.success('Hlavní obrázek nastaven');
+    toast.success('Primary image set');
   };
 
   const handleRemoveAll = () => {
-    if (confirm('Opravdu chcete odstranit všechny obrázky?')) {
+    if (confirm('Are you sure you want to remove all images?')) {
       onChange([]);
-      toast.success('Všechny obrázky byly odstraněny');
+      toast.success('All images removed');
     }
   };
+
+  // Clear errors after 10 seconds
+  useEffect(() => {
+    if (uploadErrors.length > 0) {
+      const timer = setTimeout(() => {
+        setUploadErrors([]);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [uploadErrors]);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="block text-sm font-medium text-black">Obrázky produktu</label>
+        <label className="block text-sm font-medium text-black">Product Images</label>
         <div className="flex items-center gap-3">
           {value.length > 0 && (
             <button
@@ -143,14 +209,31 @@ export function MultiImageUpload({
               onClick={handleRemoveAll}
               className="text-sm text-red-600 hover:text-red-700 transition"
             >
-              Odstranit vše
+              Remove all
             </button>
           )}
           <span className="text-sm text-gray-500">
-            {value.length} obrázků
+            {value.length} image{value.length !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
+
+      {/* Error messages */}
+      {uploadErrors.length > 0 && (
+        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={16} />
+            <div className="text-sm text-red-700">
+              <p className="font-medium mb-1">Upload errors:</p>
+              <ul className="list-disc list-inside space-y-0.5">
+                {uploadErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
         {/* Existing images */}
@@ -169,6 +252,12 @@ export function MultiImageUpload({
               src={image.url}
               alt={image.alt || `Product image ${index + 1}`}
               className="w-full h-full object-cover"
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/images/placeholder.png'; // Add a placeholder image
+                target.onerror = null; // Prevent infinite loop
+              }}
             />
             
             {/* Overlay controls */}
@@ -178,7 +267,7 @@ export function MultiImageUpload({
                   type="button"
                   onClick={() => setPrimaryImage(index)}
                   className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
-                  title="Nastavit jako hlavní"
+                  title="Set as primary"
                 >
                   <Star size={14} />
                 </button>
@@ -187,7 +276,7 @@ export function MultiImageUpload({
                 type="button"
                 onClick={() => handleRemove(index)}
                 className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
-                title="Odstranit"
+                title="Remove"
               >
                 <X size={14} />
               </button>
@@ -201,7 +290,7 @@ export function MultiImageUpload({
             {/* Primary badge */}
             {index === 0 && (
               <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded">
-                Hlavní
+                Primary
               </div>
             )}
           </div>
@@ -213,7 +302,7 @@ export function MultiImageUpload({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept={ALLOWED_TYPES.join(',')}
               multiple
               onChange={handleUpload}
               className="hidden"
@@ -227,19 +316,24 @@ export function MultiImageUpload({
               {isUploading ? (
                 <>
                   <Loader2 className="animate-spin text-gray-400" size={20} />
-                  <span className="text-xs text-gray-500">Nahrávám...</span>
+                  <span className="text-xs text-gray-500">Uploading...</span>
                 </>
               ) : (
                 <>
                   <Upload className="text-gray-400" size={20} />
-                  <span className="text-xs text-gray-600">Přidat</span>
-                  <span className="text-xs text-gray-500">obrázky</span>
+                  <span className="text-xs text-gray-600">Add</span>
+                  <span className="text-xs text-gray-500">images</span>
                 </>
               )}
             </button>
           </div>
         )}
       </div>
+
+      <p className="text-xs text-gray-500 mt-2">
+        Supported formats: JPG, PNG, GIF, WebP. 
+        Drag images to reorder. First image is the primary image.
+      </p>
     </div>
   );
 }
