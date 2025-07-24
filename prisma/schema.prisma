@@ -204,6 +204,7 @@ model ProductVariant {
   imageUrl     String?
   order        Int      @default(0)
   isActive     Boolean  @default(true)
+  variantName  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)

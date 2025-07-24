@@ -110,7 +110,7 @@ export async function POST(request: Request) {
         categoryId: productData.categoryId || null,
         brand: productData.brand || null,
         warranty: productData.warranty || null,
-        availability: productData.availability || 'in_stock', // NEW FIELD with default
+        availability: productData.availability || 'in_stock',
       },
     });
     
@@ -142,10 +142,11 @@ export async function POST(request: Request) {
           colorName: variant.colorName || null,
           colorCode: variant.colorCode || null,
           sizeName: variant.sizeName || null,
+          variantName: variant.variantName || null, // NEW FIELD
           sizeOrder: variant.sizeOrder || 0,
           stock: parseInt(variant.stock) || 0,
           price: variant.price ? parseFloat(variant.price) : null,
-          regularPrice: variant.regularPrice ? parseFloat(variant.regularPrice) : null, // NEW FIELD
+          regularPrice: variant.regularPrice ? parseFloat(variant.regularPrice) : null,
           imageUrl: variant.imageUrl || null,
           order: variant.order || 0
         }))

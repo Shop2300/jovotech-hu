@@ -555,6 +555,7 @@ interface ProductVariant {
   regularPrice?: number;
   imageUrl?: string;
   order: number;
+  variantName?: string; // NEW: For random variant type
 }
 
 interface ProductFormData {
@@ -600,7 +601,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
-  const [variantType, setVariantType] = useState<'color' | 'size' | 'both'>('color');
+  const [variantType, setVariantType] = useState<'color' | 'size' | 'both' | 'random'>('color');
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [description, setDescription] = useState(initialData?.description || '');
   const [detailDescription, setDetailDescription] = useState(initialData?.detailDescription || '');
@@ -670,7 +671,10 @@ export function ProductForm({ initialData }: ProductFormProps) {
         setVariants(initialData.variants);
         const hasColors = initialData.variants.some(v => v.colorName);
         const hasSizes = initialData.variants.some(v => v.sizeName);
-        if (hasColors && hasSizes) setVariantType('both');
+        const hasVariantNames = initialData.variants.some(v => v.variantName);
+        
+        if (hasVariantNames) setVariantType('random');
+        else if (hasColors && hasSizes) setVariantType('both');
         else if (hasSizes) setVariantType('size');
         else setVariantType('color');
       }
@@ -727,15 +731,16 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
   const addVariant = () => {
     const newVariant: ProductVariant = {
-      colorName: variantType !== 'size' ? '' : undefined,
-      colorCode: '',
-      sizeName: variantType !== 'color' ? '' : undefined,
+      colorName: variantType === 'color' || variantType === 'both' ? '' : undefined,
+      colorCode: variantType === 'color' || variantType === 'both' ? '' : undefined,
+      sizeName: variantType === 'size' || variantType === 'both' ? '' : undefined,
       sizeOrder: variants.length,
       stock: 0,
       price: undefined,
       regularPrice: undefined,
       imageUrl: '',
-      order: variants.length
+      order: variants.length,
+      variantName: variantType === 'random' ? '' : undefined,
     };
     setVariants([...variants, newVariant]);
   };
@@ -806,6 +811,19 @@ export function ProductForm({ initialData }: ProductFormProps) {
       
       const mainImage = productImages.find(img => img.order === 0)?.url || productImages[0]?.url;
       
+      // Process variants based on type
+      const processedVariants = variants.map(v => {
+        if (variantType === 'random') {
+          // For random variants, we'll store the variant name in colorName field
+          return {
+            ...v,
+            colorName: v.variantName,
+            variantName: undefined,
+          };
+        }
+        return v;
+      });
+      
       const response = await fetch(url, {
         method,
         headers: {
@@ -817,7 +835,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
           slug: data.slug || generatedSlug,
           image: mainImage,
           images: productImages,
-          variants: variants.filter(v => v.colorName || v.sizeName),
+          variants: processedVariants.filter(v => v.colorName || v.sizeName),
           categoryId: data.categoryId || null,
           regularPrice: data.regularPrice || null,
           brand: data.brand || null,
@@ -1037,12 +1055,13 @@ export function ProductForm({ initialData }: ProductFormProps) {
           <div className="flex gap-2">
             <select
               value={variantType}
-              onChange={(e) => setVariantType(e.target.value as 'color' | 'size' | 'both')}
+              onChange={(e) => setVariantType(e.target.value as 'color' | 'size' | 'both' | 'random')}
               className="px-3 py-2 border rounded-lg text-sm"
             >
-              <option value="color">Pouze barvy</option>
-              <option value="size">Pouze velikosti</option>
+              <option value="color">Barva</option>
+              <option value="size">Velikosti</option>
               <option value="both">Barvy a velikosti</option>
+              <option value="random">Random</option>
             </select>
             <button
               type="button"
@@ -1056,7 +1075,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </div>
 
         {/* Quick size buttons */}
-        {variantType !== 'color' && variants.length === 0 && (
+        {variantType === 'size' && variants.length === 0 && (
           <div className="mb-4 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm font-medium mb-2 text-black">Rychlé přidání velikostí:</p>
             <div className="flex flex-wrap gap-2">
@@ -1090,86 +1109,141 @@ export function ProductForm({ initialData }: ProductFormProps) {
             {variants.map((variant, index) => (
               <div key={index} className="border rounded-lg p-4 bg-gray-50">
                 <div className="grid grid-cols-12 gap-3">
-                  {variantType !== 'size' && (
+                  {/* Random variant type layout */}
+                  {variantType === 'random' && (
                     <>
                       <div className="col-span-3">
-                        <label className="block text-sm font-medium mb-1 text-black">Barva</label>
+                        <label className="block text-sm font-medium mb-1 text-black">Varianta</label>
                         <input
                           type="text"
-                          value={variant.colorName || ''}
-                          onChange={(e) => updateVariant(index, 'colorName', e.target.value)}
-                          placeholder="např. Červená"
+                          value={variant.variantName || ''}
+                          onChange={(e) => updateVariant(index, 'variantName', e.target.value)}
+                          placeholder="např. Premium"
                           className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         />
                       </div>
                       
                       <div className="col-span-2">
-                        <label className="block text-sm font-medium mb-1 text-black">Kód barvy</label>
-                        <div className="flex gap-1">
-                          <input
-                            type="text"
-                            value={variant.colorCode || ''}
-                            onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
-                            placeholder="#FF0000"
-                            className="flex-1 px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                          />
-                          <input
-                            type="color"
-                            value={variant.colorCode || '#000000'}
-                            onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
-                            className="w-10 h-10 border rounded cursor-pointer"
-                          />
-                        </div>
+                        <label className="block text-sm font-medium mb-1 text-black">Skladem</label>
+                        <input
+                          type="number"
+                          value={variant.stock}
+                          onChange={(e) => updateVariant(index, 'stock', parseInt(e.target.value))}
+                          className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                      </div>
+                      
+                      <div className="col-span-3">
+                        <label className="block text-sm font-medium mb-1 text-black">Cena (prázdné = základní)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={variant.price || ''}
+                          onChange={(e) => updateVariant(index, 'price', e.target.value ? parseFloat(e.target.value) : undefined)}
+                          placeholder="Základní cena"
+                          className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                      </div>
+                      
+                      <div className="col-span-3">
+                        <label className="block text-sm font-medium mb-1 text-black">Běžná cena (Kč)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={variant.regularPrice || ''}
+                          onChange={(e) => updateVariant(index, 'regularPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                          placeholder="Nepovinné"
+                          className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
                       </div>
                     </>
                   )}
-                  
-                  {variantType !== 'color' && (
-                    <div className={variantType === 'size' ? 'col-span-2' : 'col-span-1'}>
-                      <label className="block text-sm font-medium mb-1 text-black">Velikost</label>
-                      <input
-                        type="text"
-                        value={variant.sizeName || ''}
-                        onChange={(e) => updateVariant(index, 'sizeName', e.target.value)}
-                        placeholder="M"
-                        className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      />
-                    </div>
+
+                  {/* Original variant layouts for color, size, and both */}
+                  {variantType !== 'random' && (
+                    <>
+                      {variantType !== 'size' && (
+                        <>
+                          <div className="col-span-3">
+                            <label className="block text-sm font-medium mb-1 text-black">Barva</label>
+                            <input
+                              type="text"
+                              value={variant.colorName || ''}
+                              onChange={(e) => updateVariant(index, 'colorName', e.target.value)}
+                              placeholder="např. Červená"
+                              className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            />
+                          </div>
+                          
+                          <div className="col-span-2">
+                            <label className="block text-sm font-medium mb-1 text-black">Kód barvy</label>
+                            <div className="flex gap-1">
+                              <input
+                                type="text"
+                                value={variant.colorCode || ''}
+                                onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
+                                placeholder="#FF0000"
+                                className="flex-1 px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              />
+                              <input
+                                type="color"
+                                value={variant.colorCode || '#000000'}
+                                onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
+                                className="w-10 h-10 border rounded cursor-pointer"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      
+                      {variantType !== 'color' && (
+                        <div className={variantType === 'size' ? 'col-span-2' : 'col-span-1'}>
+                          <label className="block text-sm font-medium mb-1 text-black">Velikost</label>
+                          <input
+                            type="text"
+                            value={variant.sizeName || ''}
+                            onChange={(e) => updateVariant(index, 'sizeName', e.target.value)}
+                            placeholder="M"
+                            className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className={variantType === 'both' ? 'col-span-1' : variantType === 'size' ? 'col-span-2' : 'col-span-2'}>
+                        <label className="block text-sm font-medium mb-1 text-black">Skladem</label>
+                        <input
+                          type="number"
+                          value={variant.stock}
+                          onChange={(e) => updateVariant(index, 'stock', parseInt(e.target.value))}
+                          className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                      </div>
+                      
+                      <div className={variantType === 'both' ? 'col-span-2' : 'col-span-3'}>
+                        <label className="block text-sm font-medium mb-1 text-black">Cena (prázdné = základní)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={variant.price || ''}
+                          onChange={(e) => updateVariant(index, 'price', e.target.value ? parseFloat(e.target.value) : undefined)}
+                          placeholder="Základní cena"
+                          className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                      </div>
+                      
+                      <div className={variantType === 'both' ? 'col-span-2' : 'col-span-3'}>
+                        <label className="block text-sm font-medium mb-1 text-black">Běžná cena (Kč)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={variant.regularPrice || ''}
+                          onChange={(e) => updateVariant(index, 'regularPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                          placeholder="Nepovinné"
+                          className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                      </div>
+                    </>
                   )}
-                  
-                  <div className={variantType === 'both' ? 'col-span-1' : variantType === 'size' ? 'col-span-2' : 'col-span-2'}>
-                    <label className="block text-sm font-medium mb-1 text-black">Skladem</label>
-                    <input
-                      type="number"
-                      value={variant.stock}
-                      onChange={(e) => updateVariant(index, 'stock', parseInt(e.target.value))}
-                      className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    />
-                  </div>
-                  
-                  <div className={variantType === 'both' ? 'col-span-2' : 'col-span-3'}>
-                    <label className="block text-sm font-medium mb-1 text-black">Cena (prázdné = základní)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={variant.price || ''}
-                      onChange={(e) => updateVariant(index, 'price', e.target.value ? parseFloat(e.target.value) : undefined)}
-                      placeholder="Základní cena"
-                      className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    />
-                  </div>
-                  
-                  <div className={variantType === 'both' ? 'col-span-2' : 'col-span-3'}>
-                    <label className="block text-sm font-medium mb-1 text-black">Běžná cena (Kč)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={variant.regularPrice || ''}
-                      onChange={(e) => updateVariant(index, 'regularPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
-                      placeholder="Nepovinné"
-                      className="w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    />
-                  </div>
                   
                   <div className="col-span-1 flex items-end">
                     <button

@@ -34,7 +34,7 @@ export default async function EditProductPage({
   const serializedProduct = {
     ...product,
     code: product.code || undefined,
-    slug: product.slug || createSlug(product.name), // Ensure slug is always a string
+    slug: product.slug || createSlug(product.name),
     price: product.price.toNumber(),
     regularPrice: product.regularPrice?.toNumber() || null,
     description: product.description || null,
@@ -47,15 +47,23 @@ export default async function EditProductPage({
       ...img,
       alt: img.alt || undefined
     })),
-    variants: product.variants.map(v => ({
-      ...v,
-      price: v.price?.toNumber() || undefined,
-      regularPrice: v.regularPrice?.toNumber() || undefined, // THIS WAS MISSING!
-      colorName: v.colorName || undefined,
-      colorCode: v.colorCode || undefined,
-      sizeName: v.sizeName || undefined,
-      imageUrl: v.imageUrl || undefined
-    }))
+    variants: product.variants.map(v => {
+      // Check if this is a "random" variant (stored in colorName but with no color code)
+      const isRandomVariant = v.colorName && !v.colorCode && !v.sizeName;
+      
+      return {
+        ...v,
+        price: v.price?.toNumber() || undefined,
+        regularPrice: v.regularPrice?.toNumber() || undefined,
+        colorName: isRandomVariant ? undefined : (v.colorName ?? undefined),
+        colorCode: v.colorCode ?? undefined,
+        sizeName: v.sizeName ?? undefined,
+        imageUrl: v.imageUrl ?? undefined,
+        // For random variants, move colorName to variantName
+        variantName: isRandomVariant ? (v.colorName ?? undefined) : (v.variantName ?? undefined),
+        stock: v.stock,
+      };
+    })
   };
 
   return (

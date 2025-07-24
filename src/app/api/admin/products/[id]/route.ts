@@ -94,10 +94,11 @@ export async function PUT(
           colorName: variant.colorName || null,
           colorCode: variant.colorCode || null,
           sizeName: variant.sizeName || null,
+          variantName: variant.variantName || null, // NEW FIELD for Random variant type
           sizeOrder: variant.sizeOrder || 0,
           stock: parseInt(variant.stock) || 0,
           price: variant.price ? parseFloat(variant.price) : null,
-          regularPrice: variant.regularPrice ? parseFloat(variant.regularPrice) : null, // NEW FIELD
+          regularPrice: variant.regularPrice ? parseFloat(variant.regularPrice) : null,
           imageUrl: variant.imageUrl || null,
           order: variant.order || 0
         }))
