@@ -47,42 +47,35 @@ export function MultiImageUpload({
     try {
       for (const file of files) {
         try {
-          console.log(`Uploading ${file.name}...`);
+          console.log(`Uploading ${file.name} using base64...`);
           
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('type', 'products');
-
+          // Convert file to base64
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+          });
+          reader.readAsDataURL(file);
+          const base64Data = await base64Promise;
+          
+          // Send as JSON instead of FormData
           const response = await fetch('/api/upload', {
             method: 'POST',
-            body: formData,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              file: base64Data,
+              filename: file.name,
+              type: 'products',
+              mimeType: file.type,
+            }),
           });
 
-          // Get response as text first to debug
-          const responseText = await response.text();
-          console.log('Response status:', response.status);
-          console.log('Response text:', responseText);
+          const data = await response.json();
           
-          // Try to parse as JSON
-          let data;
-          try {
-            data = JSON.parse(responseText);
-          } catch (parseError) {
-            console.error('JSON parse error:', parseError);
-            // If parsing fails, check if it's HTML (error page)
-            if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
-              throw new Error('Server returned HTML instead of JSON - possible error page');
-            }
-            throw new Error('Invalid server response');
-          }
-
           if (!response.ok) {
-            throw new Error(data.error || `Upload failed with status ${response.status}`);
-          }
-
-          if (!data.url) {
-            console.error('Response missing URL:', data);
-            throw new Error('Upload succeeded but no URL returned');
+            throw new Error(data.error || 'Upload failed');
           }
 
           newImages.push({
@@ -94,13 +87,7 @@ export function MultiImageUpload({
           console.log(`Successfully uploaded ${file.name}`);
         } catch (error: any) {
           console.error(`Failed to upload ${file.name}:`, error);
-          
-          // Check for specific error patterns
-          if (error.message?.includes('pattern')) {
-            toast.error(`${file.name}: Soubor má nekompatibilní formát. Zkuste ho převést na standardní JPG.`);
-          } else {
-            toast.error(`${file.name}: ${error.message || 'Nahrávání selhalo'}`);
-          }
+          toast.error(`${file.name}: ${error.message || 'Nahrávání selhalo'}`);
         }
       }
 
@@ -121,6 +108,7 @@ export function MultiImageUpload({
 
   const handleRemove = (index: number) => {
     const newImages = sortedImages.filter((_, i) => i !== index);
+    // Reorder remaining images
     const reorderedImages = newImages.map((img, i) => ({ ...img, order: i }));
     onChange(reorderedImages);
   };
@@ -140,9 +128,12 @@ export function MultiImageUpload({
     const draggedImage = sortedImages[draggedIndex];
     const newImages = [...sortedImages];
     
+    // Remove dragged item
     newImages.splice(draggedIndex, 1);
+    // Insert at new position
     newImages.splice(dropIndex, 0, draggedImage);
     
+    // Update order values
     const reorderedImages = newImages.map((img, i) => ({ ...img, order: i }));
     onChange(reorderedImages);
     setDraggedIndex(null);
@@ -150,9 +141,11 @@ export function MultiImageUpload({
 
   const setPrimaryImage = (index: number) => {
     const newImages = [...sortedImages];
+    // Move selected image to first position
     const [selectedImage] = newImages.splice(index, 1);
     newImages.unshift(selectedImage);
     
+    // Update order values
     const reorderedImages = newImages.map((img, i) => ({ ...img, order: i }));
     onChange(reorderedImages);
     toast.success('Hlavní obrázek nastaven');
@@ -186,6 +179,7 @@ export function MultiImageUpload({
       </div>
 
       <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
+        {/* Existing images */}
         {sortedImages.map((image, index) => (
           <div
             key={image.id || image.url}
@@ -203,6 +197,7 @@ export function MultiImageUpload({
               className="w-full h-full object-cover"
             />
             
+            {/* Overlay controls */}
             <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
               {index !== 0 && (
                 <button
@@ -224,10 +219,12 @@ export function MultiImageUpload({
               </button>
             </div>
             
+            {/* Drag handle */}
             <div className="absolute top-1 left-1 p-0.5 bg-white rounded shadow opacity-0 group-hover:opacity-100 transition">
               <GripVertical size={12} className="text-gray-600" />
             </div>
             
+            {/* Primary badge */}
             {index === 0 && (
               <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded">
                 Hlavní
@@ -236,6 +233,7 @@ export function MultiImageUpload({
           </div>
         ))}
 
+        {/* Upload button */}
         {value.length < maxImages && (
           <div className="aspect-square">
             <input

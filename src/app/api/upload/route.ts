@@ -6,74 +6,96 @@ import path from 'path';
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const type = formData.get('type') as string || 'products';
+    const contentType = request.headers.get('content-type') || '';
     
-    if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
+    let file: File | null = null;
+    let buffer: Buffer;
+    let filename: string;
+    let mimeType: string;
+    let type: string = 'products';
+    
+    // Handle JSON/Base64 upload
+    if (contentType.includes('application/json')) {
+      const body = await request.json();
+      const { file: base64Data, filename: originalName, type: uploadType, mimeType: fileMimeType } = body;
+      
+      if (!base64Data || !originalName) {
+        return NextResponse.json(
+          { error: 'Missing file data or filename' },
+          { status: 400 }
+        );
+      }
+      
+      // Remove data URL prefix if present
+      const base64 = base64Data.replace(/^data:image\/\w+;base64,/, '');
+      buffer = Buffer.from(base64, 'base64');
+      filename = originalName;
+      mimeType = fileMimeType || 'image/jpeg';
+      type = uploadType || 'products';
+    } 
+    // Handle FormData upload
+    else {
+      const formData = await request.formData();
+      file = formData.get('file') as File;
+      type = formData.get('type') as string || 'products';
+      
+      if (!file) {
+        return NextResponse.json(
+          { error: 'No file provided' },
+          { status: 400 }
+        );
+      }
+      
+      const bytes = await file.arrayBuffer();
+      buffer = Buffer.from(bytes);
+      filename = file.name;
+      mimeType = file.type;
     }
     
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
+    if (!allowedTypes.includes(mimeType)) {
       return NextResponse.json(
         { error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.' },
         { status: 400 }
       );
     }
     
-    // Generate unique filename - simple and safe
+    // Generate safe filename
     const timestamp = Date.now();
     const random = Math.round(Math.random() * 1000);
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const filename = `${type}/${timestamp}-${random}.${ext}`;
+    const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
+    const safeFilename = `${timestamp}-${random}.${ext}`;
+    const uploadPath = `${type}/${safeFilename}`;
     
-    // Convert to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    
-    // Check if we're using Vercel Blob or local storage
+    // Try Vercel Blob first
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       try {
-        // Upload to Vercel Blob
-        const blob = await put(filename, buffer, {
+        const blob = await put(uploadPath, buffer, {
           access: 'public',
           addRandomSuffix: false,
-          contentType: file.type,
+          contentType: mimeType,
         });
         
         return NextResponse.json({ url: blob.url });
       } catch (blobError: any) {
         console.error('Vercel Blob upload error:', blobError);
-        // Fall back to local storage
       }
     }
     
-    // Fallback: Local file storage
-    try {
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
-      const { mkdir } = await import('fs/promises');
-      await mkdir(uploadDir, { recursive: true });
-      
-      const localFilename = `${timestamp}-${random}.${ext}`;
-      const filepath = path.join(uploadDir, localFilename);
-      await writeFile(filepath, buffer);
-      
-      const url = `/uploads/${type}/${localFilename}`;
-      return NextResponse.json({ url });
-    } catch (localError: any) {
-      console.error('Local storage error:', localError);
-      throw new Error('Failed to save file locally');
-    }
+    // Fallback to local storage
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
+    await import('fs/promises').then(fs => fs.mkdir(uploadDir, { recursive: true }));
+    
+    const localPath = path.join(uploadDir, safeFilename);
+    await writeFile(localPath, buffer);
+    
+    return NextResponse.json({ url: `/uploads/${type}/${safeFilename}` });
     
   } catch (error: any) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Failed to upload file' },
+      { error: error.message || 'Failed to upload file' },
       { status: 500 }
     );
   }
