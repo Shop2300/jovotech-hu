@@ -28,12 +28,13 @@ export async function GET(request: Request) {
       const variantsTemplate = [{
         'Kód produktu': '',
         'Název produktu': '',
+        'Varianta': '',  // For random variants
         'Barva': '',
         'Kód barvy': '',
         'Velikost': '',
         'Skladem': '',
         'Cena varianty': '',
-        'Obrázek varianty': ''
+        'Běžná cena (Kč)': ''  // Added regular price for variants
       }];
       
       // Create workbook
@@ -107,16 +108,39 @@ export async function GET(request: Request) {
     const variantsData: any[] = [];
     products.forEach(product => {
       product.variants.forEach(variant => {
-        variantsData.push({
-          'Kód produktu': product.code || product.id,
-          'Název produktu': product.name,
-          'Barva': variant.colorName || '',
-          'Kód barvy': variant.colorCode || '',
-          'Velikost': variant.sizeName || '',
-          'Skladem': variant.stock,
-          'Cena varianty': variant.price ? Number(variant.price) : '',
-          'Obrázek varianty': variant.imageUrl || ''
-        });
+        // Check if this is likely a "random" variant
+        // Random variants: have colorName but no sizeName and either no colorCode or not a hex color
+        const isRandomVariant = variant.colorName && 
+                               !variant.sizeName && 
+                               (!variant.colorCode || !variant.colorCode.match(/^#[0-9A-Fa-f]{6}$/));
+        
+        if (isRandomVariant) {
+          // Export random variants with "Varianta" column
+          variantsData.push({
+            'Kód produktu': product.code || product.id,
+            'Název produktu': product.name,
+            'Varianta': variant.colorName || '', // Random variant name goes here
+            'Barva': '', // Leave color empty for random variants
+            'Kód barvy': '',
+            'Velikost': '',
+            'Skladem': variant.stock,
+            'Cena varianty': variant.price ? Number(variant.price) : '',
+            'Běžná cena (Kč)': variant.regularPrice ? Number(variant.regularPrice) : ''
+          });
+        } else {
+          // Export normal color/size variants
+          variantsData.push({
+            'Kód produktu': product.code || product.id,
+            'Název produktu': product.name,
+            'Varianta': '', // Leave empty for normal variants
+            'Barva': variant.colorName || '',
+            'Kód barvy': variant.colorCode || '',
+            'Velikost': variant.sizeName || '',
+            'Skladem': variant.stock,
+            'Cena varianty': variant.price ? Number(variant.price) : '',
+            'Běžná cena (Kč)': variant.regularPrice ? Number(variant.regularPrice) : ''
+          });
+        }
       });
     });
     

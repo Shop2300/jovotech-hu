@@ -95,7 +95,7 @@ export default function OrderSearchPage() {
             Nie możesz znaleźć swojego zamówienia?
           </p>
           <a 
-            href="mailto:info@galaxysklep.pl" 
+            href="mailto:support@galaxysklep.pl" 
             className="text-sm text-blue-600 hover:text-blue-700"
           >
             Skontaktuj się z nami

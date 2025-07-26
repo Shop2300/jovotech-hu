@@ -1,7 +1,7 @@
 // src/app/ocena-sklepu/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Metadata } from 'next';
 import { Star, Shield, Award, ThumbsUp, MessageSquare, CheckCircle, TrendingUp, Users, Calendar, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -16,7 +16,7 @@ interface Review {
   id: number;
   author: string;
   rating: number;
-  date: string;
+  daysAgo: number; // Changed from date to daysAgo
   verified: boolean;
   product: string;
   title: string;
@@ -25,14 +25,26 @@ interface Review {
   images: string[];
 }
 
+// Helper function to calculate date from days ago
+const getDateFromDaysAgo = (daysAgo: number): string => {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  return date.toISOString().split('T')[0];
+};
+
 export default function OcenaSklepuPage() {
-  // Initial review data
+  // Set page title
+  useEffect(() => {
+    document.title = 'Ocena sklepu - Opinie klientów | Galaxysklep.pl';
+  }, []);
+
+  // Initial review data with dynamic dates (40 reviews)
   const [reviews, setReviews] = useState<Review[]>([
     {
       id: 1,
       author: 'Katarzyna M.',
       rating: 5,
-      date: '2025-06-08',
+      daysAgo: 0, // Today
       verified: true,
       product: 'Router CNC 3040',
       title: 'Świetny sklep, polecam!',
@@ -44,7 +56,7 @@ export default function OcenaSklepuPage() {
       id: 2,
       author: 'Piotr K.',
       rating: 5,
-      date: '2025-06-05',
+      daysAgo: 1, // Yesterday
       verified: true,
       product: 'Ultradźwięki 40kHz',
       title: 'Profesjonalna obsługa',
@@ -56,7 +68,7 @@ export default function OcenaSklepuPage() {
       id: 3,
       author: 'Anna W.',
       rating: 4,
-      date: '2025-06-03',
+      daysAgo: 2,
       verified: true,
       product: 'Prasa termotransferowa 38x38',
       title: 'Dobry produkt, szybka wysyłka',
@@ -68,7 +80,7 @@ export default function OcenaSklepuPage() {
       id: 4,
       author: 'Marek J.',
       rating: 5,
-      date: '2025-05-28',
+      daysAgo: 3,
       verified: true,
       product: 'Laser grawerujący 80W',
       title: 'Najlepsza cena na rynku',
@@ -80,7 +92,7 @@ export default function OcenaSklepuPage() {
       id: 5,
       author: 'Ewa S.',
       rating: 5,
-      date: '2025-05-25',
+      daysAgo: 4,
       verified: true,
       product: 'Akcesoria do routera CNC',
       title: 'Szeroki wybór akcesoriów',
@@ -89,617 +101,425 @@ export default function OcenaSklepuPage() {
       images: []
     },
     {
-        id: 6,
-        author: 'Tomasz B.',
-        rating: 5,
-        date: '2025-05-22',
-        verified: true,
-        product: 'Router CNC 6090',
-        title: 'Profesjonalne urządzenie',
-        content: 'Router CNC 6090 spełnił wszystkie moje oczekiwania. Precyzja obróbki jest niesamowita. Wsparcie techniczne pomogło w konfiguracji.',
-        helpful: 28,
-        images: []
-      },
-      {
-        id: 7,
-        author: 'Magdalena K.',
-        rating: 5,
-        date: '2025-05-20',
-        verified: true,
-        product: 'Prasa termotransferowa 5w1',
-        title: 'Idealna do małej firmy',
-        content: 'Prowadzę małą firmę z nadrukami. Ta prasa to strzał w dziesiątkę! Możliwość druku na różnych powierzchniach to ogromny plus.',
-        helpful: 19,
-        images: []
-      },
-      {
-        id: 8,
-        author: 'Robert S.',
-        rating: 4,
-        date: '2025-05-18',
-        verified: false,
-        product: 'Ultradźwięki 15L',
-        title: 'Solidne wykonanie',
-        content: 'Myjka ultradźwiękowa działa świetnie. Minus za głośną pracę, ale efekty czyszczenia rekompensują ten mankament.',
-        helpful: 14,
-        images: []
-      },
-      {
-        id: 9,
-        author: 'Agnieszka W.',
-        rating: 5,
-        date: '2025-05-15',
-        verified: true,
-        product: 'Laser CO2 40W',
-        title: 'Łatwa obsługa',
-        content: 'Pierwszy raz kupiłam laser i obawiałam się obsługi. Niepotrzebnie! Wszystko jest intuicyjne, a instrukcja bardzo pomocna.',
-        helpful: 22,
-        images: []
-      },
-      {
-        id: 10,
-        author: 'Krzysztof M.',
-        rating: 5,
-        date: '2025-05-12',
-        verified: true,
-        product: 'Frezy do CNC - zestaw',
-        title: 'Świetna jakość frezów',
-        content: 'Zamówiłem zestaw frezów do mojego routera. Jakość wykonania na najwyższym poziomie, ostrza trzymają długo.',
-        helpful: 16,
-        images: []
-      },
-      {
-        id: 11,
-        author: 'Beata L.',
-        rating: 5,
-        date: '2025-05-10',
-        verified: true,
-        product: 'Prasa do kubków',
-        title: 'Rewelacja!',
-        content: 'Prasa do kubków działa perfekcyjnie. Nadruki wychodzą ostre i trwałe. Dostawa była ekspresowa!',
-        helpful: 25,
-        images: []
-      },
-      {
-        id: 12,
-        author: 'Paweł D.',
-        rating: 4,
-        date: '2025-05-08',
-        verified: false,
-        product: 'Router CNC 3018',
-        title: 'Dobry na początek',
-        content: 'Jako pierwszy router CNC sprawdza się dobrze. Wymaga trochę doświadczenia w konfiguracji, ale efekty są zadowalające.',
-        helpful: 11,
-        images: []
-      },
-      {
-        id: 13,
-        author: 'Joanna P.',
-        rating: 5,
-        date: '2025-05-05',
-        verified: true,
-        product: 'Ultradźwięki 30L',
-        title: 'Niezbędne w warsztacie',
-        content: 'Używam do czyszczenia części samochodowych. Efekty są spektakularne! Polecam każdemu mechanikowi.',
-        helpful: 33,
-        images: []
-      },
-      {
-        id: 14,
-        author: 'Michał R.',
-        rating: 5,
-        date: '2025-05-03',
-        verified: true,
-        product: 'Laser grawerujący 100W',
-        title: 'Moc i precyzja',
-        content: 'Laser 100W to bestia! Graweruję nim drewno, skórę i metal. Każdy materiał wychodzi idealnie.',
-        helpful: 27,
-        images: []
-      },
-      {
-        id: 15,
-        author: 'Alicja G.',
-        rating: 5,
-        date: '2025-04-30',
-        verified: true,
-        product: 'Akcesoria do pras termotransferowych',
-        title: 'Wszystko czego potrzeba',
-        content: 'Szeroki wybór akcesoriów w jednym miejscu. Nie muszę szukać po różnych sklepach. Ceny bardzo konkurencyjne.',
-        helpful: 9,
-        images: []
-      },
-      {
-        id: 16,
-        author: 'Dariusz K.',
-        rating: 4,
-        date: '2025-04-28',
-        verified: false,
-        product: 'Router CNC 4030',
-        title: 'Solidna konstrukcja',
-        content: 'Router jest bardzo solidny. Jedynie software mógłby być bardziej intuicyjny, ale po czasie się przyzwyczaiłem.',
-        helpful: 13,
-        images: []
-      },
-      {
-        id: 17,
-        author: 'Natalia B.',
-        rating: 5,
-        date: '2025-04-25',
-        verified: true,
-        product: 'Prasa do czapek',
-        title: 'Idealna do haftu',
-        content: 'Kupowałam specjalnie do transferu na czapki z daszkiem. Działa bez zarzutu, nadruki są trwałe.',
-        helpful: 17,
-        images: []
-      },
-      {
-        id: 18,
-        author: 'Wojciech T.',
-        rating: 5,
-        date: '2025-04-22',
-        verified: true,
-        product: 'Ultradźwięki 6L',
-        title: 'Kompaktowe i wydajne',
-        content: 'Małe ultradźwięki do domowego warsztatu. Mimo niewielkich rozmiarów radzi sobie z każdym brudem.',
-        helpful: 20,
-        images: []
-      },
-      {
-        id: 19,
-        author: 'Monika S.',
-        rating: 5,
-        date: '2025-04-20',
-        verified: true,
-        product: 'Laser CO2 60W',
-        title: 'Spełnia oczekiwania',
-        content: 'Laser działa dokładnie tak jak opisano. Wsparcie techniczne bardzo pomocne przy pierwszym uruchomieniu.',
-        helpful: 24,
-        images: []
-      },
-      {
-        id: 20,
-        author: 'Adam W.',
-        rating: 4,
-        date: '2025-04-18',
-        verified: false,
-        product: 'Chłodzenie do lasera',
-        title: 'Niezbędny dodatek',
-        content: 'System chłodzenia działa dobrze, choć jest dość głośny. Temperatura lasera utrzymuje się na stabilnym poziomie.',
-        helpful: 8,
-        images: []
-      },
-      {
-        id: 21,
-        author: 'Karolina M.',
-        rating: 5,
-        date: '2025-04-15',
-        verified: true,
-        product: 'Prasa termotransferowa 40x50',
-        title: 'Duża powierzchnia robocza',
-        content: 'Prasa z dużą powierzchnią roboczą - idealna do koszulek XXL. Równomierne nagrzewanie na całej powierzchni.',
-        helpful: 31,
-        images: []
-      },
-      {
-        id: 22,
-        author: 'Łukasz J.',
-        rating: 5,
-        date: '2025-04-12',
-        verified: true,
-        product: 'Router CNC 1610',
-        title: 'Świetny do PCB',
-        content: 'Używam do frezowania płytek PCB. Precyzja jest wystarczająca nawet do bardzo cienkich ścieżek.',
-        helpful: 15,
-        images: []
-      },
-      {
-        id: 23,
-        author: 'Ewa K.',
-        rating: 5,
-        date: '2025-04-10',
-        verified: true,
-        product: 'Ultradźwięki 2L',
-        title: 'Do biżuterii idealnie',
-        content: 'Małe ultradźwięki do czyszczenia biżuterii. Efekt jak nowa! Polecam każdej kobiecie.',
-        helpful: 26,
-        images: []
-      },
-      {
-        id: 24,
-        author: 'Marcin P.',
-        rating: 4,
-        date: '2025-04-08',
-        verified: false,
-        product: 'Wrzeciono do CNC 500W',
-        title: 'Dobre wrzeciono',
-        content: 'Wrzeciono pracuje cicho i płynnie. Moc wystarczająca do drewna i plastiku. Do metalu bym wziął mocniejsze.',
-        helpful: 12,
-        images: []
-      },
-      {
-        id: 25,
-        author: 'Patrycja A.',
-        rating: 5,
-        date: '2025-04-05',
-        verified: true,
-        product: 'Prasa do puzzli',
-        title: 'Świetna do sublimacji',
-        content: 'Specjalna prasa do puzzli - nareszcie mogę robić personalizowane puzzle! Jakość transferu rewelacyjna.',
-        helpful: 18,
-        images: []
-      },
-      {
-        id: 26,
-        author: 'Grzegorz N.',
-        rating: 5,
-        date: '2025-04-03',
-        verified: true,
-        product: 'Laser grawerujący 50W',
-        title: 'Uniwersalne urządzenie',
-        content: 'Laser 50W to złoty środek - wystarcza do większości zastosowań hobbystycznych i małego biznesu.',
-        helpful: 29,
-        images: []
-      },
-      {
-        id: 27,
-        author: 'Sylwia R.',
-        rating: 5,
-        date: '2025-04-01',
-        verified: true,
-        product: 'Ultradźwięki 10L z podgrzewaniem',
-        title: 'Podgrzewanie robi różnicę',
-        content: 'Wersja z podgrzewaniem to zupełnie inna liga. Czyszczenie jest dużo skuteczniejsze. Warto dopłacić!',
-        helpful: 35,
-        images: []
-      },
-      {
-        id: 28,
-        author: 'Bartosz L.',
-        rating: 4,
-        date: '2025-03-28',
-        verified: false,
-        product: 'Router CNC 3040 z 4 osią',
-        title: 'Czwarta oś przydatna',
-        content: 'Router z 4 osią daje więcej możliwości. Konfiguracja była trudniejsza niż myślałem, ale było warto.',
-        helpful: 10,
-        images: []
-      },
-      {
-        id: 29,
-        author: 'Aleksandra C.',
-        rating: 5,
-        date: '2025-03-25',
-        verified: true,
-        product: 'Prasa do talerzy',
-        title: 'Do ceramiki idealna',
-        content: 'Robię personalizowane talerze i kubki. Ta prasa jest do tego idealna! Równomierne dociskanie.',
-        helpful: 21,
-        images: []
-      },
-      {
-        id: 30,
-        author: 'Rafał B.',
-        rating: 5,
-        date: '2025-03-22',
-        verified: true,
-        product: 'Laser CO2 80W',
-        title: 'Mocny i szybki',
-        content: 'Laser 80W tnie grube materiały bez problemu. Prędkość pracy znacznie większa niż w słabszych modelach.',
-        helpful: 23,
-        images: []
-      },
-      {
-        id: 31,
-        author: 'Marta D.',
-        rating: 5,
-        date: '2025-03-20',
-        verified: true,
-        product: 'Akcesoria do ultradźwięków',
-        title: 'Przydatne kosze i uchwyty',
-        content: 'Dokupowałam akcesoria do mojej myjki. Kosze na drobne elementy bardzo ułatwiają pracę.',
-        helpful: 7,
-        images: []
-      },
-      {
-        id: 32,
-        author: 'Kamil W.',
-        rating: 4,
-        date: '2025-03-18',
-        verified: false,
-        product: 'Router CNC 6040',
-        title: 'Wart swojej ceny',
-        content: 'Dobry stosunek jakości do ceny. Nie jest to sprzęt profesjonalny, ale do warsztatu w sam raz.',
-        helpful: 16,
-        images: []
-      },
-      {
-        id: 33,
-        author: 'Izabela T.',
-        rating: 5,
-        date: '2025-03-15',
-        verified: true,
-        product: 'Prasa próżniowa 3D',
-        title: 'Do przedmiotów 3D super',
-        content: 'Prasa próżniowa świetnie sprawdza się przy nietypowych kształtach. Transfer na butelkach wychodzi idealnie.',
-        helpful: 30,
-        images: []
-      },
-      {
-        id: 34,
-        author: 'Piotr Z.',
-        rating: 5,
-        date: '2025-03-12',
-        verified: true,
-        product: 'Ultradźwięki 20L',
-        title: 'Duża pojemność',
-        content: 'Potrzebowałem dużej myjki do części motocyklowych. 20L to idealna pojemność, wszystko się mieści.',
-        helpful: 25,
-        images: []
-      },
-      {
-        id: 35,
-        author: 'Justyna M.',
-        rating: 5,
-        date: '2025-03-10',
-        verified: true,
-        product: 'Laser grawerujący 30W',
-        title: 'Do grawerowania wystarczy',
-        content: 'Do grawerowania 30W w zupełności wystarcza. Drewno, skóra, plastik - wszystko wychodzi pięknie.',
-        helpful: 19,
-        images: []
-      },
-      {
-        id: 36,
-        author: 'Dawid K.',
-        rating: 4,
-        date: '2025-03-08',
-        verified: false,
-        product: 'Sterownik do CNC',
-        title: 'Dobry zamiennik',
-        content: 'Wymieniłem stary sterownik na ten. Działa lepiej, choć dokumentacja mogłaby być bardziej szczegółowa.',
-        helpful: 6,
-        images: []
-      },
-      {
-        id: 37,
-        author: 'Paulina S.',
-        rating: 5,
-        date: '2025-03-05',
-        verified: true,
-        product: 'Prasa do długopisów',
-        title: 'Niszowy, ale potrzebny sprzęt',
-        content: 'Trudno znaleźć dobrą prasę do długopisów. Ta działa świetnie, transfer jest trwały i ostry.',
-        helpful: 14,
-        images: []
-      },
-      {
-        id: 38,
-        author: 'Sebastian R.',
-        rating: 5,
-        date: '2025-03-03',
-        verified: true,
-        product: 'Router CNC 1325',
-        title: 'Profesjonalna maszyna',
-        content: 'Duży router do profesjonalnych zastosowań. Pracuje non-stop w mojej firmie. Zero problemów!',
-        helpful: 37,
-        images: []
-      },
-      {
-        id: 39,
-        author: 'Aneta B.',
-        rating: 5,
-        date: '2025-03-01',
-        verified: true,
-        product: 'Ultradźwięki 3L',
-        title: 'Małe, ale skuteczne',
-        content: 'Do okularów i małej biżuterii idealnie. Zajmuje mało miejsca, a efekty czyszczenia super.',
-        helpful: 22,
-        images: []
-      },
-      {
-        id: 40,
-        author: 'Mariusz L.',
-        rating: 4,
-        date: '2025-02-28',
-        verified: false,
-        product: 'Odsysacz do lasera',
-        title: 'Konieczność przy laserze',
-        content: 'Odsysacz dobrze filtruje powietrze. Trochę głośny, ale bezpieczeństwo przede wszystkim.',
-        helpful: 11,
-        images: []
-      },
-      {
-        id: 41,
-        author: 'Katarzyna P.',
-        rating: 5,
-        date: '2025-02-25',
-        verified: true,
-        product: 'Prasa do butów',
-        title: 'Specjalistyczny sprzęt',
-        content: 'Prasa specjalnie do butów - myślałam, że będzie trudna w obsłudze, ale jest bardzo prosta!',
-        helpful: 17,
-        images: []
-      },
-      {
-        id: 42,
-        author: 'Tomasz W.',
-        rating: 5,
-        date: '2025-02-22',
-        verified: true,
-        product: 'Laser CO2 150W',
-        title: 'Moc do zadań specjalnych',
-        content: 'Potrzebowałem mocnego lasera do cięcia grubej sklejki. 150W radzi sobie bez problemu.',
-        helpful: 28,
-        images: []
-      },
-      {
-        id: 43,
-        author: 'Małgorzata A.',
-        rating: 5,
-        date: '2025-02-20',
-        verified: true,
-        product: 'Ultradźwięki 50L',
-        title: 'Do dużych elementów',
-        content: 'Prowadzę warsztat i potrzebowałam dużej myjki. 50L pomieści nawet duże części. Świetny zakup!',
-        helpful: 32,
-        images: []
-      },
-      {
-        id: 44,
-        author: 'Jakub N.',
-        rating: 4,
-        date: '2025-02-18',
-        verified: false,
-        product: 'Router CNC 2030',
-        title: 'Kompaktowy i wydajny',
-        content: 'Mały router, ale radzi sobie dobrze. Idealny gdy nie ma dużo miejsca w warsztacie.',
-        helpful: 9,
-        images: []
-      },
-      {
-        id: 45,
-        author: 'Ewelina K.',
-        rating: 5,
-        date: '2025-02-15',
-        verified: true,
-        product: 'Zestaw pras termotransferowych',
-        title: 'Wszystko w jednym',
-        content: 'Kupiłam zestaw 8w1 - mogę drukować na wszystkim! Od koszulek po kubki i puzzle. Rewelacja!',
-        helpful: 36,
-        images: []
-      },
-      {
-        id: 46,
-        author: 'Artur S.',
-        rating: 5,
-        date: '2025-02-12',
-        verified: true,
-        product: 'Laser światłowodowy 20W',
-        title: 'Precyzja na metalu',
-        content: 'Laser światłowodowy do metalu - precyzja grawerowania jest niesamowita. Wart każdej złotówki.',
-        helpful: 26,
-        images: []
-      },
-      {
-        id: 47,
-        author: 'Natalia G.',
-        rating: 5,
-        date: '2025-02-10',
-        verified: true,
-        product: 'Płyny do ultradźwięków',
-        title: 'Skuteczne środki czyszczące',
-        content: 'Dokupowałam specjalne płyny do myjki. Różnica w czyszczeniu jest ogromna! Polecam.',
-        helpful: 13,
-        images: []
-      },
-      {
-        id: 48,
-        author: 'Przemysław B.',
-        rating: 4,
-        date: '2025-02-08',
-        verified: false,
-        product: 'Router CNC 3020',
-        title: 'Na start idealny',
-        content: 'Pierwszy router, uczę się na nim. Na początek przygody z CNC jest bardzo dobry.',
-        helpful: 15,
-        images: []
-      },
-      {
-        id: 49,
-        author: 'Dorota M.',
-        rating: 5,
-        date: '2025-02-05',
-        verified: true,
-        product: 'Prasa do maskotki',
-        title: 'Do pluszaków świetna',
-        content: 'Robię personalizowane maskotki. Ta prasa jest idealna - dociska równomiernie nawet na nierównych powierzchniach.',
-        helpful: 20,
-        images: []
-      },
-      {
-        id: 50,
-        author: 'Łukasz W.',
-        rating: 5,
-        date: '2025-02-03',
-        verified: true,
-        product: 'Laser CO2 100W z Ruida',
-        title: 'Kontroler Ruida to podstawa',
-        content: 'Laser ze sterownikiem Ruida to zupełnie inna jakość pracy. Warto dopłacić za lepszy kontroler.',
-        helpful: 34,
-        images: []
-      },
-      {
-        id: 51,
-        author: 'Monika J.',
-        rating: 5,
-        date: '2025-02-01',
-        verified: true,
-        product: 'Ultradźwięki 8L',
-        title: 'Uniwersalny rozmiar',
-        content: 'Rozmiar 8L to złoty środek - nie za mały, nie za duży. Świetnie sprawdza się w domu.',
-        helpful: 18,
-        images: []
-      },
-      {
-        id: 52,
-        author: 'Bartłomiej K.',
-        rating: 4,
-        date: '2025-01-30',
-        verified: false,
-        product: 'Akcesoria do routera CNC',
-        title: 'Bogaty wybór',
-        content: 'Duży wybór akcesoriów w dobrych cenach. Znalazłem wszystko czego szukałem. Szybka wysyłka.',
-        helpful: 8,
-        images: []
-      },
-      {
-        id: 53,
-        author: 'Agata S.',
-        rating: 5,
-        date: '2025-01-28',
-        verified: true,
-        product: 'Prasa kombi 40x50',
-        title: 'Wygodna wymiana płyt',
-        content: 'Prasa z wymiennymi płytami to świetne rozwiązanie. Mogę drukować na różnych przedmiotach bez kupowania osobnych pras.',
-        helpful: 24,
-        images: []
-      },
-      {
-        id: 54,
-        author: 'Rafał M.',
-        rating: 5,
-        date: '2025-01-25',
-        verified: true,
-        product: 'Laser grawerujący 70W',
-        title: 'Optymalny wybór',
-        content: 'Długo zastanawiałem się nad mocą. 70W to optymalne rozwiązanie - tnie i graweruje większość materiałów.',
-        helpful: 29,
-        images: []
-      },
-      {
-        id: 55,
-        author: 'Weronika D.',
-        rating: 5,
-        date: '2025-01-22',
-        verified: true,
-        product: 'Ultradźwięki 5L z timerem',
-        title: 'Timer bardzo przydatny',
-        content: 'Model z timerem to duże ułatwienie. Można ustawić czas i zająć się czymś innym. Polecam!',
-        helpful: 16,
-        images: []
-      },
-      {
-        id: 56,
-        author: 'Krzysztof L.',
-        rating: 5,
-        date: '2025-01-20',
-        verified: true,
-        product: 'Router CNC 4060 ATC',
-        title: 'Automatyczna zmiana narzędzi',
-        content: 'Router z ATC to ogromna oszczędność czasu. Automatyczna zmiana narzędzi działa bez zarzutu. Profesjonalny sprzęt!',
-        helpful: 40,
-        images: []
-      }
+      id: 6,
+      author: 'Tomasz B.',
+      rating: 5,
+      daysAgo: 5,
+      verified: true,
+      product: 'Router CNC 6090',
+      title: 'Profesjonalne urządzenie',
+      content: 'Router CNC 6090 spełnił wszystkie moje oczekiwania. Precyzja obróbki jest niesamowita. Wsparcie techniczne pomogło w konfiguracji.',
+      helpful: 28,
+      images: []
+    },
+    {
+      id: 7,
+      author: 'Magdalena K.',
+      rating: 5,
+      daysAgo: 6,
+      verified: true,
+      product: 'Prasa termotransferowa 5w1',
+      title: 'Idealna do małej firmy',
+      content: 'Prowadzę małą firmę z nadrukami. Ta prasa to strzał w dziesiątkę! Możliwość druku na różnych powierzchniach to ogromny plus.',
+      helpful: 19,
+      images: []
+    },
+    {
+      id: 8,
+      author: 'Robert S.',
+      rating: 4,
+      daysAgo: 7,
+      verified: false,
+      product: 'Ultradźwięki 15L',
+      title: 'Solidne wykonanie',
+      content: 'Myjka ultradźwiękowa działa świetnie. Minus za głośną pracę, ale efekty czyszczenia rekompensują ten mankament.',
+      helpful: 14,
+      images: []
+    },
+    {
+      id: 9,
+      author: 'Agnieszka W.',
+      rating: 5,
+      daysAgo: 8,
+      verified: true,
+      product: 'Laser CO2 40W',
+      title: 'Łatwa obsługa',
+      content: 'Pierwszy raz kupiłam laser i obawiałam się obsługi. Niepotrzebnie! Wszystko jest intuicyjne, a instrukcja bardzo pomocna.',
+      helpful: 22,
+      images: []
+    },
+    {
+      id: 10,
+      author: 'Krzysztof M.',
+      rating: 5,
+      daysAgo: 9,
+      verified: true,
+      product: 'Frezy do CNC - zestaw',
+      title: 'Świetna jakość frezów',
+      content: 'Zamówiłem zestaw frezów do mojego routera. Jakość wykonania na najwyższym poziomie, ostrza trzymają długo.',
+      helpful: 16,
+      images: []
+    },
+    {
+      id: 11,
+      author: 'Beata L.',
+      rating: 5,
+      daysAgo: 10,
+      verified: true,
+      product: 'Prasa do kubków',
+      title: 'Rewelacja!',
+      content: 'Prasa do kubków działa perfekcyjnie. Nadruki wychodzą ostre i trwałe. Dostawa była ekspresowa!',
+      helpful: 25,
+      images: []
+    },
+    {
+      id: 12,
+      author: 'Paweł D.',
+      rating: 4,
+      daysAgo: 11,
+      verified: false,
+      product: 'Router CNC 3018',
+      title: 'Dobry na początek',
+      content: 'Jako pierwszy router CNC sprawdza się dobrze. Wymaga trochę doświadczenia w konfiguracji, ale efekty są zadowalające.',
+      helpful: 11,
+      images: []
+    },
+    {
+      id: 13,
+      author: 'Joanna P.',
+      rating: 5,
+      daysAgo: 12,
+      verified: true,
+      product: 'Ultradźwięki 30L',
+      title: 'Niezbędne w warsztacie',
+      content: 'Używam do czyszczenia części samochodowych. Efekty są spektakularne! Polecam każdemu mechanikowi.',
+      helpful: 33,
+      images: []
+    },
+    {
+      id: 14,
+      author: 'Michał R.',
+      rating: 5,
+      daysAgo: 13,
+      verified: true,
+      product: 'Laser grawerujący 100W',
+      title: 'Moc i precyzja',
+      content: 'Laser 100W to bestia! Graweruję nim drewno, skórę i metal. Każdy materiał wychodzi idealnie.',
+      helpful: 27,
+      images: []
+    },
+    {
+      id: 15,
+      author: 'Alicja G.',
+      rating: 5,
+      daysAgo: 14,
+      verified: true,
+      product: 'Akcesoria do pras termotransferowych',
+      title: 'Wszystko czego potrzeba',
+      content: 'Szeroki wybór akcesoriów w jednym miejscu. Nie muszę szukać po różnych sklepach. Ceny bardzo konkurencyjne.',
+      helpful: 9,
+      images: []
+    },
+    {
+      id: 16,
+      author: 'Dariusz K.',
+      rating: 4,
+      daysAgo: 15,
+      verified: false,
+      product: 'Router CNC 4030',
+      title: 'Solidna konstrukcja',
+      content: 'Router jest bardzo solidny. Jedynie software mógłby być bardziej intuicyjny, ale po czasie się przyzwyczaiłem.',
+      helpful: 13,
+      images: []
+    },
+    {
+      id: 17,
+      author: 'Natalia B.',
+      rating: 5,
+      daysAgo: 16,
+      verified: true,
+      product: 'Prasa do czapek',
+      title: 'Idealna do haftu',
+      content: 'Kupowałam specjalnie do transferu na czapki z daszkiem. Działa bez zarzutu, nadruki są trwałe.',
+      helpful: 17,
+      images: []
+    },
+    {
+      id: 18,
+      author: 'Wojciech T.',
+      rating: 5,
+      daysAgo: 17,
+      verified: true,
+      product: 'Ultradźwięki 6L',
+      title: 'Kompaktowe i wydajne',
+      content: 'Małe ultradźwięki do domowego warsztatu. Mimo niewielkich rozmiarów radzi sobie z każdym brudem.',
+      helpful: 20,
+      images: []
+    },
+    {
+      id: 19,
+      author: 'Monika S.',
+      rating: 5,
+      daysAgo: 18,
+      verified: true,
+      product: 'Laser CO2 60W',
+      title: 'Spełnia oczekiwania',
+      content: 'Laser działa dokładnie tak jak opisano. Wsparcie techniczne bardzo pomocne przy pierwszym uruchomieniu.',
+      helpful: 24,
+      images: []
+    },
+    {
+      id: 20,
+      author: 'Adam W.',
+      rating: 4,
+      daysAgo: 19,
+      verified: false,
+      product: 'Chłodzenie do lasera',
+      title: 'Niezbędny dodatek',
+      content: 'System chłodzenia działa dobrze, choć jest dość głośny. Temperatura lasera utrzymuje się na stabilnym poziomie.',
+      helpful: 8,
+      images: []
+    },
+    {
+      id: 21,
+      author: 'Karolina M.',
+      rating: 5,
+      daysAgo: 20,
+      verified: true,
+      product: 'Prasa termotransferowa 40x50',
+      title: 'Duża powierzchnia robocza',
+      content: 'Prasa z dużą powierzchnią roboczą - idealna do koszulek XXL. Równomierne nagrzewanie na całej powierzchni.',
+      helpful: 31,
+      images: []
+    },
+    {
+      id: 22,
+      author: 'Łukasz J.',
+      rating: 5,
+      daysAgo: 21,
+      verified: true,
+      product: 'Router CNC 1610',
+      title: 'Świetny do PCB',
+      content: 'Używam do frezowania płytek PCB. Precyzja jest wystarczająca nawet do bardzo cienkich ścieżek.',
+      helpful: 15,
+      images: []
+    },
+    {
+      id: 23,
+      author: 'Ewa K.',
+      rating: 5,
+      daysAgo: 22,
+      verified: true,
+      product: 'Ultradźwięki 2L',
+      title: 'Do biżuterii idealnie',
+      content: 'Małe ultradźwięki do czyszczenia biżuterii. Efekt jak nowa! Polecam każdej kobiecie.',
+      helpful: 26,
+      images: []
+    },
+    {
+      id: 24,
+      author: 'Marcin P.',
+      rating: 4,
+      daysAgo: 23,
+      verified: false,
+      product: 'Wrzeciono do CNC 500W',
+      title: 'Dobre wrzeciono',
+      content: 'Wrzeciono pracuje cicho i płynnie. Moc wystarczająca do drewna i plastiku. Do metalu bym wziął mocniejsze.',
+      helpful: 12,
+      images: []
+    },
+    {
+      id: 25,
+      author: 'Patrycja A.',
+      rating: 5,
+      daysAgo: 24,
+      verified: true,
+      product: 'Prasa do puzzli',
+      title: 'Świetna do sublimacji',
+      content: 'Specjalna prasa do puzzli - nareszcie mogę robić personalizowane puzzle! Jakość transferu rewelacyjna.',
+      helpful: 18,
+      images: []
+    },
+    {
+      id: 26,
+      author: 'Grzegorz N.',
+      rating: 5,
+      daysAgo: 25,
+      verified: true,
+      product: 'Laser grawerujący 50W',
+      title: 'Uniwersalne urządzenie',
+      content: 'Laser 50W to złoty środek - wystarcza do większości zastosowań hobbystycznych i małego biznesu.',
+      helpful: 29,
+      images: []
+    },
+    {
+      id: 27,
+      author: 'Sylwia R.',
+      rating: 5,
+      daysAgo: 26,
+      verified: true,
+      product: 'Ultradźwięki 10L z podgrzewaniem',
+      title: 'Podgrzewanie robi różnicę',
+      content: 'Wersja z podgrzewaniem to zupełnie inna liga. Czyszczenie jest dużo skuteczniejsze. Warto dopłacić!',
+      helpful: 35,
+      images: []
+    },
+    {
+      id: 28,
+      author: 'Bartosz L.',
+      rating: 4,
+      daysAgo: 27,
+      verified: false,
+      product: 'Router CNC 3040 z 4 osią',
+      title: 'Czwarta oś przydatna',
+      content: 'Router z 4 osią daje więcej możliwości. Konfiguracja była trudniejsza niż myślałem, ale było warto.',
+      helpful: 10,
+      images: []
+    },
+    {
+      id: 29,
+      author: 'Aleksandra C.',
+      rating: 5,
+      daysAgo: 28,
+      verified: true,
+      product: 'Prasa do talerzy',
+      title: 'Do ceramiki idealna',
+      content: 'Robię personalizowane talerze i kubki. Ta prasa jest do tego idealna! Równomierne dociskanie.',
+      helpful: 21,
+      images: []
+    },
+    {
+      id: 30,
+      author: 'Rafał B.',
+      rating: 5,
+      daysAgo: 29,
+      verified: true,
+      product: 'Laser CO2 80W',
+      title: 'Mocny i szybki',
+      content: 'Laser 80W tnie grube materiały bez problemu. Prędkość pracy znacznie większa niż w słabszych modelach.',
+      helpful: 23,
+      images: []
+    },
+    {
+      id: 31,
+      author: 'Marta D.',
+      rating: 5,
+      daysAgo: 30,
+      verified: true,
+      product: 'Akcesoria do ultradźwięków',
+      title: 'Przydatne kosze i uchwyty',
+      content: 'Dokupowałam akcesoria do mojej myjki. Kosze na drobne elementy bardzo ułatwiają pracę.',
+      helpful: 7,
+      images: []
+    },
+    {
+      id: 32,
+      author: 'Kamil W.',
+      rating: 4,
+      daysAgo: 31,
+      verified: false,
+      product: 'Router CNC 6040',
+      title: 'Wart swojej ceny',
+      content: 'Dobry stosunek jakości do ceny. Nie jest to sprzęt profesjonalny, ale do warsztatu w sam raz.',
+      helpful: 16,
+      images: []
+    },
+    {
+      id: 33,
+      author: 'Izabela T.',
+      rating: 5,
+      daysAgo: 32,
+      verified: true,
+      product: 'Prasa próżniowa 3D',
+      title: 'Do przedmiotów 3D super',
+      content: 'Prasa próżniowa świetnie sprawdza się przy nietypowych kształtach. Transfer na butelkach wychodzi idealnie.',
+      helpful: 30,
+      images: []
+    },
+    {
+      id: 34,
+      author: 'Piotr Z.',
+      rating: 5,
+      daysAgo: 33,
+      verified: true,
+      product: 'Ultradźwięki 20L',
+      title: 'Duża pojemność',
+      content: 'Potrzebowałem dużej myjki do części motocyklowych. 20L to idealna pojemność, wszystko się mieści.',
+      helpful: 25,
+      images: []
+    },
+    {
+      id: 35,
+      author: 'Justyna M.',
+      rating: 5,
+      daysAgo: 34,
+      verified: true,
+      product: 'Laser grawerujący 30W',
+      title: 'Do grawerowania wystarczy',
+      content: 'Do grawerowania 30W w zupełności wystarcza. Drewno, skóra, plastik - wszystko wychodzi pięknie.',
+      helpful: 19,
+      images: []
+    },
+    {
+      id: 36,
+      author: 'Dawid K.',
+      rating: 4,
+      daysAgo: 35,
+      verified: false,
+      product: 'Sterownik do CNC',
+      title: 'Dobry zamiennik',
+      content: 'Wymieniłem stary sterownik na ten. Działa lepiej, choć dokumentacja mogłaby być bardziej szczegółowa.',
+      helpful: 6,
+      images: []
+    },
+    {
+      id: 37,
+      author: 'Paulina S.',
+      rating: 5,
+      daysAgo: 36,
+      verified: true,
+      product: 'Prasa do długopisów',
+      title: 'Niszowy, ale potrzebny sprzęt',
+      content: 'Trudno znaleźć dobrą prasę do długopisów. Ta działa świetnie, transfer jest trwały i ostry.',
+      helpful: 14,
+      images: []
+    },
+    {
+      id: 38,
+      author: 'Sebastian R.',
+      rating: 5,
+      daysAgo: 37,
+      verified: true,
+      product: 'Router CNC 1325',
+      title: 'Profesjonalna maszyna',
+      content: 'Duży router do profesjonalnych zastosowań. Pracuje non-stop w mojej firmie. Zero problemów!',
+      helpful: 37,
+      images: []
+    },
+    {
+      id: 39,
+      author: 'Aneta B.',
+      rating: 5,
+      daysAgo: 38,
+      verified: true,
+      product: 'Ultradźwięki 3L',
+      title: 'Małe, ale skuteczne',
+      content: 'Do okularów i małej biżuterii idealnie. Zajmuje mało miejsca, a efekty czyszczenia super.',
+      helpful: 22,
+      images: []
+    },
+    {
+      id: 40,
+      author: 'Mariusz L.',
+      rating: 4,
+      daysAgo: 39,
+      verified: false,
+      product: 'Odsysacz do lasera',
+      title: 'Konieczność przy laserze',
+      content: 'Odsysacz dobrze filtruje powietrze. Trochę głośny, ale bezpieczeństwo przede wszystkim.',
+      helpful: 11,
+      images: []
+    }
   ]);
 
   const [helpfulClicked, setHelpfulClicked] = useState<Set<number>>(new Set());
@@ -714,8 +534,8 @@ export default function OcenaSklepuPage() {
   });
 
   const ratingDistribution = [
-    { stars: 5, count: 147, percentage: 73 },
-    { stars: 4, count: 38, percentage: 19 },
+    { stars: 5, count: 447, percentage: 73 },
+    { stars: 4, count: 338, percentage: 19 },
     { stars: 3, count: 10, percentage: 5 },
     { stars: 2, count: 4, percentage: 2 },
     { stars: 1, count: 2, percentage: 1 },
@@ -759,7 +579,7 @@ export default function OcenaSklepuPage() {
       id: reviews.length + 1,
       author: newReview.author,
       rating: newReview.rating,
-      date: new Date().toISOString().split('T')[0],
+      daysAgo: 0, // New review is from today
       verified: false,
       product: newReview.product,
       title: newReview.title,
@@ -899,67 +719,73 @@ export default function OcenaSklepuPage() {
 
           {/* Individual Reviews */}
           <div className="space-y-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="border-b border-gray-200 pb-6 last:border-0">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-semibold text-gray-900">{review.author}</h3>
-                      {review.verified && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" />
-                          Zweryfikowany zakup
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-4 h-4 ${
-                              star <= review.rating
-                                ? 'text-yellow-400 fill-current'
-                                : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
+            {reviews
+              .sort((a, b) => a.daysAgo - b.daysAgo) // Sort by daysAgo ascending (newest first)
+              .map((review) => {
+              const reviewDate = getDateFromDaysAgo(review.daysAgo);
+              
+              return (
+                <div key={review.id} className="border-b border-gray-200 pb-6 last:border-0">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <h3 className="font-semibold text-gray-900">{review.author}</h3>
+                        {review.verified && (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            Zweryfikowany zakup
+                          </span>
+                        )}
                       </div>
-                      <span>{new Date(review.date).toLocaleDateString('pl-PL')}</span>
-                      {review.product && (
-                        <>
-                          <span>•</span>
-                          <span className="text-blue-600">{review.product}</span>
-                        </>
-                      )}
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-4 h-4 ${
+                                star <= review.rating
+                                  ? 'text-yellow-400 fill-current'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span>{new Date(reviewDate).toLocaleDateString('pl-PL')}</span>
+                        {review.product && (
+                          <>
+                            <span>•</span>
+                            <span className="text-blue-600">{review.product}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <h4 className="font-semibold text-gray-900 mb-2">{review.title}</h4>
-                <p className="text-gray-700 mb-3">{review.content}</p>
+                  <h4 className="font-semibold text-gray-900 mb-2">{review.title}</h4>
+                  <p className="text-gray-700 mb-3">{review.content}</p>
 
-                <div className="flex items-center gap-4">
-                  <button 
-                    onClick={() => handleHelpful(review.id)}
-                    className={`flex items-center gap-2 text-sm transition ${
-                      helpfulClicked.has(review.id) 
-                        ? 'text-green-600' 
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <ThumbsUp className="w-4 h-4" />
-                    Pomocne ({review.helpful})
-                  </button>
-                  <button 
-                    onClick={() => handleReport(review.id)}
-                    className="text-sm text-gray-600 hover:text-gray-900"
-                  >
-                    Zgłoś
-                  </button>
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => handleHelpful(review.id)}
+                      className={`flex items-center gap-2 text-sm transition ${
+                        helpfulClicked.has(review.id) 
+                          ? 'text-green-600' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <ThumbsUp className="w-4 h-4" />
+                      Pomocne ({review.helpful})
+                    </button>
+                    <button 
+                      onClick={() => handleReport(review.id)}
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Zgłoś
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Load More Button */}

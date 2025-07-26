@@ -6,12 +6,19 @@ interface Review {
   id: number;
   author: string;
   rating: number;
-  date: string;
+  daysAgo: number; // Changed from date to daysAgo
   verified: boolean;
   product: string;
   title: string;
   content: string;
 }
+
+// Helper function to calculate date from days ago
+const getDateFromDaysAgo = (daysAgo: number): string => {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  return date.toISOString().split('T')[0];
+};
 
 // Sample recent reviews - in production, these would come from your database
 const recentReviews: Review[] = [
@@ -19,7 +26,7 @@ const recentReviews: Review[] = [
     id: 1,
     author: 'Katarzyna M.',
     rating: 5,
-    date: '2025-06-08',
+    daysAgo: 2, // 2 days ago
     verified: true,
     product: 'Router CNC 3040',
     title: 'Świetny sklep, polecam!',
@@ -29,7 +36,7 @@ const recentReviews: Review[] = [
     id: 2,
     author: 'Piotr K.',
     rating: 5,
-    date: '2025-06-05',
+    daysAgo: 5, // 5 days ago
     verified: true,
     product: 'Ultradźwięki 40kHz',
     title: 'Profesjonalna obsługa',
@@ -39,7 +46,7 @@ const recentReviews: Review[] = [
     id: 3,
     author: 'Anna W.',
     rating: 4,
-    date: '2025-06-03',
+    daysAgo: 7, // 7 days ago
     verified: true,
     product: 'Prasa termotransferowa 38x38',
     title: 'Dobry produkt, szybka wysyłka',
@@ -49,7 +56,7 @@ const recentReviews: Review[] = [
     id: 4,
     author: 'Marek J.',
     rating: 5,
-    date: '2025-05-28',
+    daysAgo: 12, // 12 days ago
     verified: true,
     product: 'Laser grawerujący 80W',
     title: 'Najlepsza cena na rynku',
@@ -68,71 +75,75 @@ export function RecentReviews() {
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {recentReviews.map((review) => (
-            <div 
-              key={review.id} 
-              className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100"
-            >
-              {/* Header with author and rating */}
-              <div className="mb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-gray-900">{review.author}</h3>
-                  {review.verified && (
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" />
-                      Zweryfikowany
+          {recentReviews.map((review) => {
+            const reviewDate = getDateFromDaysAgo(review.daysAgo);
+            
+            return (
+              <div 
+                key={review.id} 
+                className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100"
+              >
+                {/* Header with author and rating */}
+                <div className="mb-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold text-gray-900">{review.author}</h3>
+                    {review.verified && (
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" />
+                        Zweryfikowany
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Stars */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= review.rating
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      {new Date(reviewDate).toLocaleDateString('pl-PL', { 
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
                     </span>
+                  </div>
+                  
+                  {/* Product name */}
+                  {review.product && (
+                    <p className="text-sm text-blue-600 font-medium mb-2">{review.product}</p>
                   )}
                 </div>
                 
-                {/* Stars */}
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-4 h-4 ${
-                          star <= review.rating
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {new Date(review.date).toLocaleDateString('pl-PL', { 
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </span>
-                </div>
+                {/* Review title */}
+                <h4 className="font-semibold text-gray-900 mb-2 line-clamp-1">
+                  {review.title}
+                </h4>
                 
-                {/* Product name */}
-                {review.product && (
-                  <p className="text-sm text-blue-600 font-medium mb-2">{review.product}</p>
-                )}
+                {/* Review content - truncated */}
+                <p className="text-gray-700 text-sm line-clamp-3 mb-4">
+                  {review.content}
+                </p>
+                
+                {/* Read more link */}
+                <Link 
+                  href="/ocena-sklepu" 
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center"
+                >
+                  Czytaj więcej →
+                </Link>
               </div>
-              
-              {/* Review title */}
-              <h4 className="font-semibold text-gray-900 mb-2 line-clamp-1">
-                {review.title}
-              </h4>
-              
-              {/* Review content - truncated */}
-              <p className="text-gray-700 text-sm line-clamp-3 mb-4">
-                {review.content}
-              </p>
-              
-              {/* Read more link */}
-              <Link 
-                href="/ocena-sklepu" 
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center"
-              >
-                Czytaj więcej →
-              </Link>
-            </div>
-          ))}
+            );
+          })}
         </div>
         
         {/* Trust indicators */}

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
+import { X, Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Info, Package, Palette, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 
@@ -18,6 +18,17 @@ interface ImportResult {
     action: 'created' | 'updated' | 'skipped' | 'error';
     message?: string;
   }[];
+  variants?: {
+    created: number;
+    updated: number;
+    errors: number;
+    details: {
+      productCode: string;
+      variant: string;
+      action: 'created' | 'updated' | 'error';
+      message?: string;
+    }[];
+  };
 }
 
 interface ProductImportModalProps {
@@ -33,6 +44,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [activeTab, setActiveTab] = useState<'products' | 'variants'>('products');
   
   // Progress tracking
   const [currentChunk, setCurrentChunk] = useState(0);
@@ -91,9 +103,11 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
       
       // Check for variants sheet
       let variants: any[] = [];
-      if (workbook.SheetNames.includes('Varianty')) {
+      const hasVariantsSheet = workbook.SheetNames.includes('Varianty');
+      if (hasVariantsSheet) {
         const variantsSheet = workbook.Sheets['Varianty'];
         variants = XLSX.utils.sheet_to_json(variantsSheet);
+        console.log(`Found ${variants.length} variants to import`);
       }
       
       // Calculate chunks
@@ -111,7 +125,13 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
         updated: 0,
         skipped: 0,
         errors: [],
-        details: []
+        details: [],
+        variants: hasVariantsSheet ? {
+          created: 0,
+          updated: 0,
+          errors: 0,
+          details: []
+        } : undefined
       };
       
       // Process products in chunks
@@ -163,6 +183,14 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
         aggregatedResult.errors.push(...result.errors);
         aggregatedResult.details.push(...result.details);
         
+        // Aggregate variant results if present
+        if (result.variants && aggregatedResult.variants) {
+          aggregatedResult.variants.created += result.variants.created;
+          aggregatedResult.variants.updated += result.variants.updated;
+          aggregatedResult.variants.errors += result.variants.errors;
+          aggregatedResult.variants.details.push(...result.variants.details);
+        }
+        
         setProcessedCount(end);
         
         // Small delay between chunks to avoid overwhelming the server
@@ -173,8 +201,14 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
       
       setImportResult(aggregatedResult);
       
+      let message = `Import dokončen: ${aggregatedResult.created} vytvořeno, ${aggregatedResult.updated} aktualizováno, ${aggregatedResult.skipped} přeskočeno`;
+      
+      if (aggregatedResult.variants) {
+        message += ` | Varianty: ${aggregatedResult.variants.created} vytvořeno, ${aggregatedResult.variants.updated} aktualizováno`;
+      }
+      
       if (aggregatedResult.errors.length === 0) {
-        toast.success(`Import dokončen: ${aggregatedResult.created} vytvořeno, ${aggregatedResult.updated} aktualizováno, ${aggregatedResult.skipped} přeskočeno`);
+        toast.success(message);
       } else {
         toast.error(`Import dokončen s chybami: ${aggregatedResult.errors.length} chyb`);
       }
@@ -203,6 +237,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
     setImportResult(null);
     setProcessedCount(0);
     setTotalCount(0);
+    setActiveTab('products');
     onClose();
   };
 
@@ -215,7 +250,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-900">Import produktů</h2>
           <button
@@ -229,61 +264,93 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
 
         {!importResult ? (
           <>
-            <div className="mb-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <div className="flex items-start gap-2">
-                  <Info className="text-blue-600 mt-0.5" size={20} />
-                  <div className="text-sm text-blue-800">
-                    <p className="font-semibold mb-1">Jak funguje import:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      <li><strong>Kód produktu je povinný</strong> - používá se pro identifikaci produktů</li>
-                      <li>Pokud produkt s daným kódem existuje, <strong>aktualizují se pouze pole obsažená v importu</strong></li>
-                      <li>Pokud produkt neexistuje, vytvoří se nový (musí obsahovat všechna povinná pole)</li>
-                      <li>Prázdné buňky nebo chybějící sloupce neovlivní existující data</li>
-                      <li><strong>Velké soubory jsou automaticky zpracovány po částech</strong> pro rychlejší import</li>
+            {/* Simplified instructions */}
+            <div className="mb-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                  <Info size={20} />
+                  Jak funguje import
+                </h3>
+                <div className="space-y-2 text-sm text-blue-800">
+                  <p>• <strong>Kód produktu je klíčový</strong> - podle něj se produkty identifikují</p>
+                  <p>• Existující produkty se <strong>aktualizují pouze v zadaných polích</strong></p>
+                  <p>• Prázdná pole nebo chybějící sloupce <strong>neovlivní existující data</strong></p>
+                  <p>• Soubory s mnoha produkty jsou <strong>automaticky zpracovány po částech</strong></p>
+                </div>
+              </div>
+            </div>
+
+            {/* Cleaner field structure display */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Package size={18} />
+                  List 1: Produkty
+                </h4>
+                
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="font-medium text-gray-700 mb-1">Povinné pro nové produkty:</p>
+                    <ul className="space-y-1 text-gray-600 ml-4">
+                      <li>• <strong>Kód</strong> - unikátní identifikátor</li>
+                      <li>• <strong>Název</strong> - název produktu</li>
+                      <li>• <strong>Cena</strong> - prodejní cena</li>
+                      <li>• <strong>Skladem</strong> - počet kusů</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <p className="font-medium text-gray-700 mb-1">Volitelné pole:</p>
+                    <ul className="space-y-1 text-gray-600 ml-4">
+                      <li>• Kategorie, Značka</li>
+                      <li>• Běžná cena (přeškrtnutá)</li>
+                      <li>• Krátký a detailní popis</li>
+                      <li>• Záruka</li>
                     </ul>
                   </div>
                 </div>
               </div>
-
-              <p className="text-sm text-gray-600 mb-2">
-                Nahrajte Excel soubor (.xlsx nebo .xls) s produkty. Dostupné sloupce:
-              </p>
-              <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-4">
-                <div>
-                  <p className="font-semibold">Povinné pro nové produkty:</p>
-                  <ul className="list-disc list-inside">
-                    <li>Kód - unikátní identifikátor</li>
-                    <li>Název</li>
-                    <li>Cena</li>
-                    <li>Skladem</li>
+              
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Palette size={18} />
+                  List 2: Varianty (volitelné)
+                </h4>
+                
+                <div className="space-y-3 text-sm">
+                  <p className="text-gray-600">Pro produkty s různými barvami nebo velikostmi:</p>
+                  
+                  <ul className="space-y-1 text-gray-600 ml-4">
+                    <li>• <strong>Kód produktu</strong> - musí odpovídat kódu v listu 1</li>
+                    <li>• <strong>Barva</strong> + <strong>Kód barvy</strong> - pro barevné varianty</li>
+                    <li>• <strong>Velikost</strong> - pro velikostní varianty</li>
+                    <li>• <strong>Varianta</strong> - pro jiné typy variant</li>
+                    <li>• Skladem, Cena varianty, Běžná cena</li>
                   </ul>
-                </div>
-                <div>
-                  <p className="font-semibold">Volitelné:</p>
-                  <ul className="list-disc list-inside">
-                    <li>Kategorie</li>
-                    <li>Značka</li>
-                    <li>Běžná cena</li>
-                    <li>Krátký popis</li>
-                    <li>Detailní popis</li>
-                    <li>Záruka</li>
-                    <li>Hlavní obrázek</li>
-                    <li>Slug (URL adresa)</li>
-                  </ul>
+                  
+                  <div className="bg-yellow-100 border border-yellow-300 rounded p-2 mt-2">
+                    <p className="text-xs text-yellow-800">
+                      <strong>Tip:</strong> Pořadí variant v souboru odpovídá pořadí na webu
+                    </p>
+                  </div>
                 </div>
               </div>
-              
+            </div>
+            
+            {/* Template download */}
+            <div className="flex justify-center mb-6">
               <button
                 onClick={downloadTemplate}
-                className="text-blue-600 hover:underline text-sm"
+                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:underline"
               >
-                Stáhnout prázdnou šablonu
+                <Download size={18} />
+                Stáhnout prázdnou šablonu Excel
               </button>
             </div>
 
+            {/* File upload area */}
             <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center ${
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                 dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
               }`}
               onDragEnter={handleDrag}
@@ -307,7 +374,7 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
                 <>
                   <Upload className="mx-auto text-gray-400 mb-2" size={48} />
                   <p className="text-gray-600 mb-2">
-                    Přetáhněte soubor sem nebo
+                    Přetáhněte soubor Excel sem nebo
                   </p>
                   <label className="cursor-pointer">
                     <span className="text-blue-600 hover:underline">vyberte soubor</span>
@@ -318,6 +385,9 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
                       className="hidden"
                     />
                   </label>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Podporované formáty: .xlsx, .xls
+                  </p>
                 </>
               )}
             </div>
@@ -382,48 +452,123 @@ export function ProductImportModal({ isOpen, onClose, onImportComplete }: Produc
                   <p className="text-2xl font-bold text-red-600">{importResult.errors.length}</p>
                 </div>
               </div>
+
+              {importResult.variants && (
+                <div className="mb-4">
+                  <h4 className="font-medium text-gray-700 mb-2">Varianty:</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-green-50 p-3 rounded">
+                      <p className="text-sm text-gray-600">Vytvořeno variant</p>
+                      <p className="text-xl font-bold text-green-600">{importResult.variants.created}</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded">
+                      <p className="text-sm text-gray-600">Aktualizováno variant</p>
+                      <p className="text-xl font-bold text-blue-600">{importResult.variants.updated}</p>
+                    </div>
+                    <div className="bg-red-50 p-3 rounded">
+                      <p className="text-sm text-gray-600">Chyb variant</p>
+                      <p className="text-xl font-bold text-red-600">{importResult.variants.errors}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {importResult.details.length > 0 && (
-              <div className="mb-4 max-h-64 overflow-y-auto border rounded">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 sticky top-0">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Kód</th>
-                      <th className="px-3 py-2 text-left">Produkt</th>
-                      <th className="px-3 py-2 text-left">Akce</th>
-                      <th className="px-3 py-2 text-left">Zpráva</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {importResult.details.map((detail, index) => (
-                      <tr key={index}>
-                        <td className="px-3 py-2 font-mono text-xs">{detail.productCode}</td>
-                        <td className="px-3 py-2">{detail.productName}</td>
-                        <td className="px-3 py-2">
-                          <span className={`inline-flex items-center gap-1 ${
-                            detail.action === 'created' ? 'text-green-600' :
-                            detail.action === 'updated' ? 'text-blue-600' :
-                            detail.action === 'skipped' ? 'text-gray-600' :
-                            'text-red-600'
-                          }`}>
-                            {detail.action === 'created' && <CheckCircle size={16} />}
-                            {detail.action === 'updated' && <AlertCircle size={16} />}
-                            {detail.action === 'skipped' && <AlertCircle size={16} />}
-                            {detail.action === 'error' && <XCircle size={16} />}
-                            {detail.action === 'created' ? 'Vytvořeno' :
-                             detail.action === 'updated' ? 'Aktualizováno' :
-                             detail.action === 'skipped' ? 'Přeskočeno' :
-                             'Chyba'}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2 text-gray-600">
-                          {detail.message || '—'}
-                        </td>
+            {(importResult.details.length > 0 || (importResult.variants && importResult.variants.details.length > 0)) && (
+              <div className="mb-4">
+                <div className="flex space-x-4 mb-4 border-b">
+                  <button
+                    onClick={() => setActiveTab('products')}
+                    className={`pb-2 px-1 flex items-center space-x-2 ${
+                      activeTab === 'products' 
+                        ? 'border-b-2 border-blue-500 text-blue-600' 
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <Package className="w-4 h-4" />
+                    <span>Produkty ({importResult.details.length})</span>
+                  </button>
+                  {importResult.variants && importResult.variants.details.length > 0 && (
+                    <button
+                      onClick={() => setActiveTab('variants')}
+                      className={`pb-2 px-1 flex items-center space-x-2 ${
+                        activeTab === 'variants' 
+                          ? 'border-b-2 border-blue-500 text-blue-600' 
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      <Palette className="w-4 h-4" />
+                      <span>Varianty ({importResult.variants.details.length})</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-64 overflow-y-auto border rounded">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 sticky top-0">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Kód</th>
+                        <th className="px-3 py-2 text-left">{activeTab === 'products' ? 'Produkt' : 'Varianta'}</th>
+                        <th className="px-3 py-2 text-left">Akce</th>
+                        <th className="px-3 py-2 text-left">Zpráva</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y">
+                      {activeTab === 'products' ? (
+                        importResult.details.map((detail, index) => (
+                          <tr key={index}>
+                            <td className="px-3 py-2 font-mono text-xs">{detail.productCode}</td>
+                            <td className="px-3 py-2">{detail.productName}</td>
+                            <td className="px-3 py-2">
+                              <span className={`inline-flex items-center gap-1 ${
+                                detail.action === 'created' ? 'text-green-600' :
+                                detail.action === 'updated' ? 'text-blue-600' :
+                                detail.action === 'skipped' ? 'text-gray-600' :
+                                'text-red-600'
+                              }`}>
+                                {detail.action === 'created' && <CheckCircle size={16} />}
+                                {detail.action === 'updated' && <AlertCircle size={16} />}
+                                {detail.action === 'skipped' && <AlertCircle size={16} />}
+                                {detail.action === 'error' && <XCircle size={16} />}
+                                {detail.action === 'created' ? 'Vytvořeno' :
+                                 detail.action === 'updated' ? 'Aktualizováno' :
+                                 detail.action === 'skipped' ? 'Přeskočeno' :
+                                 'Chyba'}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-gray-600">
+                              {detail.message || '—'}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        importResult.variants?.details.map((detail, index) => (
+                          <tr key={index}>
+                            <td className="px-3 py-2 font-mono text-xs">{detail.productCode}</td>
+                            <td className="px-3 py-2">{detail.variant}</td>
+                            <td className="px-3 py-2">
+                              <span className={`inline-flex items-center gap-1 ${
+                                detail.action === 'created' ? 'text-green-600' :
+                                detail.action === 'updated' ? 'text-blue-600' :
+                                'text-red-600'
+                              }`}>
+                                {detail.action === 'created' && <CheckCircle size={16} />}
+                                {detail.action === 'updated' && <AlertCircle size={16} />}
+                                {detail.action === 'error' && <XCircle size={16} />}
+                                {detail.action === 'created' ? 'Vytvořeno' :
+                                 detail.action === 'updated' ? 'Aktualizováno' :
+                                 'Chyba'}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-gray-600">
+                              {detail.message || '—'}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

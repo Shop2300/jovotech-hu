@@ -16,6 +16,17 @@ interface ImportResult {
     action: 'created' | 'updated' | 'skipped' | 'error';
     message?: string;
   }[];
+  variants?: {
+    created: number;
+    updated: number;
+    errors: number;
+    details: {
+      productCode: string;
+      variant: string;
+      action: 'created' | 'updated' | 'error';
+      message?: string;
+    }[];
+  };
 }
 
 interface ChunkInfo {
@@ -24,18 +35,46 @@ interface ChunkInfo {
   isLastChunk: boolean;
 }
 
+interface VariantResult {
+  productCode: string;
+  variant: string;
+  action: 'created' | 'updated' | 'error';
+  message?: string;
+}
+
+interface VariantRow {
+  'Kód produktu'?: string;
+  'Název produktu'?: string;
+  'Varianta'?: string;
+  'Barva'?: string;
+  'Kód barvy'?: string;
+  'Velikost'?: string;
+  'Skladem'?: string | number;
+  'Cena varianty'?: string | number;
+  'Běžná cena (Kč)'?: string | number;
+}
+
 // Required fields for creating a new product
 const REQUIRED_FIELDS_FOR_NEW = ['Kód', 'Název', 'Cena', 'Skladem'];
 
+// Maximum details to keep in response (to avoid huge payloads)
+const MAX_DETAILS_IN_RESPONSE = 1000;
+const MAX_ERRORS_IN_RESPONSE = 100;
+
 // Cache for categories to avoid repeated database queries
 let categoryCache: Map<string, any> | null = null;
+
+// Helper function to normalize values - empty strings become null
+const normalize = (value: any): string | null => {
+  if (!value || value === '') return null;
+  return value.toString().trim();
+};
 
 // Helper function to generate unique slug
 async function generateUniqueSlug(name: string, excludeId?: string): Promise<string> {
   let slug = createSlug(name);
   let counter = 1;
   
-  // Ensure unique slug
   while (true) {
     const existingProduct = await prisma.product.findFirst({ 
       where: { 
@@ -51,6 +90,314 @@ async function generateUniqueSlug(name: string, excludeId?: string): Promise<str
   }
   
   return slug;
+}
+
+// Process variant with position-based matching
+async function processVariantByPosition(
+  variant: VariantRow, 
+  rowNumber: number,
+  productCode: string,
+  product: any,
+  variantPosition: number
+): Promise<VariantResult> {
+  try {
+    // Check if this is a "random" variant (has "Varianta" column)
+    const isRandomVariant = 'Varianta' in variant && variant['Varianta'];
+    
+    // Extract and normalize variant data
+    let colorName: string | null;
+    let colorCode: string | null;
+    let sizeName: string | null;
+    
+    if (isRandomVariant) {
+      colorName = normalize(variant['Varianta']);
+      colorCode = null;
+      sizeName = null;
+    } else {
+      colorName = normalize(variant['Barva']);
+      colorCode = normalize(variant['Kód barvy']);
+      sizeName = normalize(variant['Velikost']);
+    }
+    
+    const stock = parseInt(variant['Skladem']?.toString() || '0') || 0;
+    const price = variant['Cena varianty'] ? 
+      parseFloat(variant['Cena varianty'].toString().replace(/[^\d.,]/g, '').replace(',', '.')) : 
+      null;
+    const regularPrice = variant['Běžná cena (Kč)'] ? 
+      parseFloat(variant['Běžná cena (Kč)'].toString().replace(/[^\d.,]/g, '').replace(',', '.')) : 
+      null;
+    
+    // Build variant identifier for logging
+    const variantIdentifier = isRandomVariant 
+      ? colorName || 'Základní varianta'
+      : [colorName, sizeName].filter(Boolean).join(' ') || 'Základní varianta';
+    
+    // Must have at least some identifying information
+    if (!colorName && !sizeName) {
+      throw new Error('Varianta musí mít alespoň barvu, velikost nebo název varianty');
+    }
+    
+    // Get all existing variants for this product in a consistent order
+    const existingVariants = await prisma.productVariant.findMany({
+      where: { productId: product.id },
+      orderBy: [
+        { order: 'asc' },
+        { id: 'asc' }  // Consistent secondary sort by ID
+      ]
+    });
+    
+    // POSITION-BASED MATCHING
+    let existingVariant = null;
+    
+    // Group existing variants by type for proper position matching
+    const randomVariants = existingVariants.filter(v => v.colorName && !v.sizeName && !v.colorCode?.match(/^#[0-9A-Fa-f]{6}$/));
+    const colorVariants = existingVariants.filter(v => v.colorName && !v.sizeName && v.colorCode?.match(/^#[0-9A-Fa-f]{6}$/));
+    const sizeVariants = existingVariants.filter(v => !v.colorName && v.sizeName);
+    const colorSizeVariants = existingVariants.filter(v => v.colorName && v.sizeName);
+    
+    if (isRandomVariant) {
+      // Match random variant by position within random variants
+      if (variantPosition < randomVariants.length) {
+        existingVariant = randomVariants[variantPosition];
+      }
+    } else if (colorName && sizeName) {
+      // Match color+size variant by position within color+size variants
+      if (variantPosition < colorSizeVariants.length) {
+        existingVariant = colorSizeVariants[variantPosition];
+      }
+    } else if (colorName) {
+      // Match color variant by position within color variants
+      if (variantPosition < colorVariants.length) {
+        existingVariant = colorVariants[variantPosition];
+      }
+    } else if (sizeName) {
+      // Match size variant by position within size variants
+      if (variantPosition < sizeVariants.length) {
+        existingVariant = sizeVariants[variantPosition];
+      }
+    }
+    
+    if (existingVariant) {
+      // UPDATE existing variant
+      const updateData: any = {};
+      const updatedFields: string[] = [];
+      
+      // Allow name changes for all variant types when using position matching
+      if (colorName !== existingVariant.colorName) {
+        updateData.colorName = colorName;
+        const oldName = existingVariant.colorName || '';
+        const newName = colorName || '';
+        updatedFields.push(`název: "${oldName}" → "${newName}"`);
+      }
+      
+      if (sizeName !== existingVariant.sizeName) {
+        updateData.sizeName = sizeName;
+        const oldSize = existingVariant.sizeName || '';
+        const newSize = sizeName || '';
+        updatedFields.push(`velikost: "${oldSize}" → "${newSize}"`);
+      }
+      
+      if (!isRandomVariant && colorCode !== existingVariant.colorCode) {
+        updateData.colorCode = colorCode;
+        updatedFields.push('kód barvy');
+      }
+      
+      if (stock !== existingVariant.stock) {
+        updateData.stock = stock;
+        updatedFields.push(`skladem: ${existingVariant.stock} → ${stock}`);
+      }
+      
+      if (price !== null) {
+        const existingPrice = existingVariant.price ? Number(existingVariant.price) : null;
+        if (price !== existingPrice) {
+          updateData.price = price;
+          updatedFields.push(`cena: ${existingPrice || 0} → ${price}`);
+        }
+      }
+      
+      if (regularPrice !== null) {
+        const existingRegularPrice = existingVariant.regularPrice ? Number(existingVariant.regularPrice) : null;
+        if (regularPrice !== existingRegularPrice) {
+          updateData.regularPrice = regularPrice;
+          updatedFields.push(`běžná cena: ${existingRegularPrice || 0} → ${regularPrice}`);
+        }
+      }
+      
+      if (Object.keys(updateData).length > 0) {
+        await prisma.productVariant.update({
+          where: { id: existingVariant.id },
+          data: updateData
+        });
+        
+        return {
+          productCode,
+          variant: variantIdentifier,
+          action: 'updated',
+          message: `Aktualizováno: ${updatedFields.join(', ')}`
+        };
+      } else {
+        return {
+          productCode,
+          variant: variantIdentifier,
+          action: 'updated',
+          message: 'Žádné změny'
+        };
+      }
+    } else {
+      // CREATE new variant (only if beyond existing count)
+      await prisma.productVariant.create({
+        data: {
+          productId: product.id,
+          colorName: colorName,
+          colorCode: colorCode,
+          sizeName: sizeName,
+          stock: stock,
+          price: price,
+          regularPrice: regularPrice,
+          order: 0,
+          sizeOrder: 0
+        }
+      });
+      
+      return {
+        productCode,
+        variant: variantIdentifier,
+        action: 'created',
+        message: 'Nová varianta vytvořena'
+      };
+    }
+  } catch (error) {
+    // Ensure we always return a valid VariantResult even on error
+    return {
+      productCode,
+      variant: 'Unknown',
+      action: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
+// Process variants in batches to avoid memory issues
+async function processVariantsInBatches(
+  variantsData: VariantRow[],
+  batchSize: number = 10
+): Promise<{
+  created: number;
+  updated: number;
+  errors: number;
+  details: VariantResult[];
+  errorMessages: string[];
+}> {
+  const result = {
+    created: 0,
+    updated: 0,
+    errors: 0,
+    details: [] as VariantResult[],
+    errorMessages: [] as string[]
+  };
+
+  // Group variants by product code
+  const variantsByProduct = new Map<string, VariantRow[]>();
+  for (const variant of variantsData) {
+    const productCode = normalize(variant['Kód produktu']);
+    if (!productCode) continue;
+    
+    if (!variantsByProduct.has(productCode)) {
+      variantsByProduct.set(productCode, []);
+    }
+    variantsByProduct.get(productCode)!.push(variant);
+  }
+
+  // Process products in batches
+  const productCodes = Array.from(variantsByProduct.keys());
+  for (let i = 0; i < productCodes.length; i += batchSize) {
+    const batch = productCodes.slice(i, i + batchSize);
+    
+    await Promise.all(batch.map(async (productCode) => {
+      try {
+        const product = await prisma.product.findFirst({
+          where: { code: productCode }
+        });
+        
+        if (!product) {
+          const productVariants = variantsByProduct.get(productCode)!;
+          for (const variant of productVariants) {
+            result.errors++;
+            result.errorMessages.push(`Varianty: Produkt s kódem ${productCode} nenalezen`);
+            result.details.push({
+              productCode,
+              variant: 'N/A',
+              action: 'error',
+              message: 'Produkt nenalezen'
+            });
+          }
+          return;
+        }
+
+        const productVariants = variantsByProduct.get(productCode)!;
+        
+        // Track position by variant type
+        let randomVariantPosition = 0;
+        let colorVariantPosition = 0;
+        let sizeVariantPosition = 0;
+        let colorSizeVariantPosition = 0;
+        
+        for (const variant of productVariants) {
+          try {
+            // Determine variant type and position
+            const isRandomVariant = 'Varianta' in variant && variant['Varianta'];
+            const hasColor = variant['Barva'] && variant['Barva'].toString().trim();
+            const hasSize = variant['Velikost'] && variant['Velikost'].toString().trim();
+            
+            let position = 0;
+            if (isRandomVariant) {
+              position = randomVariantPosition++;
+            } else if (hasColor && hasSize) {
+              position = colorSizeVariantPosition++;
+            } else if (hasColor) {
+              position = colorVariantPosition++;
+            } else if (hasSize) {
+              position = sizeVariantPosition++;
+            }
+            
+            const variantResult = await processVariantByPosition(
+              variant,
+              0, // row number not used in batched processing
+              productCode,
+              product,
+              position
+            );
+            
+            if (variantResult.action === 'created') {
+              result.created++;
+            } else if (variantResult.action === 'updated') {
+              result.updated++;
+            } else if (variantResult.action === 'error') {
+              result.errors++;
+            }
+            
+            result.details.push(variantResult);
+          } catch (error) {
+            result.errors++;
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            result.errorMessages.push(`Varianta pro produkt ${productCode}: ${errorMessage}`);
+            result.details.push({
+              productCode,
+              variant: 'Unknown',
+              action: 'error',
+              message: errorMessage
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Error processing product ${productCode}:`, error);
+        result.errors++;
+        result.errorMessages.push(`Produkt ${productCode}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }));
+  }
+
+  return result;
 }
 
 export async function POST(request: Request) {
@@ -71,7 +418,6 @@ export async function POST(request: Request) {
       );
     }
     
-    // Check file type
     const fileName = file.name.toLowerCase();
     if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
       return NextResponse.json(
@@ -80,17 +426,25 @@ export async function POST(request: Request) {
       );
     }
     
-    // Read file
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     
-    // Parse Excel file
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(worksheet);
+    let workbook: XLSX.WorkBook;
+    let data: any[];
     
-    // Initialize result tracking
+    try {
+      workbook = XLSX.read(buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      data = XLSX.utils.sheet_to_json(worksheet);
+    } catch (parseError) {
+      console.error('Excel parsing error:', parseError);
+      return NextResponse.json(
+        { error: 'Failed to parse Excel file. Please ensure the file is valid.' },
+        { status: 400 }
+      );
+    }
+    
     const result: ImportResult = {
       success: true,
       created: 0,
@@ -100,53 +454,48 @@ export async function POST(request: Request) {
       details: []
     };
     
-    // Initialize or use cached categories
+    // Initialize or use existing category cache
     if (!categoryCache || (chunkInfo && chunkInfo.currentChunk === 1)) {
       const categories = await prisma.category.findMany();
-      categoryCache = new Map(categories.map(c => [c.name.toLowerCase(), c]));
+      categoryCache = new Map(categories.map((c: any) => [c.name.toLowerCase(), c]));
     }
     
-    // Process each row
+    // Process products
     for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
       const row = data[rowIndex] as any;
       
       try {
-        // Check if code is present (required) - always trim to handle spaces
-        const rawCode = row['Kód'] || row['Kod'] || row['Code']; // Support multiple column names
+        const rawCode = row['Kód'] || row['Kod'] || row['Code'];
         const code = rawCode?.toString().trim();
         if (!code) {
           result.errors.push(`Řádek ${rowIndex + 2}: Chybí povinný kód produktu`);
-          result.details.push({
-            productCode: 'N/A',
-            productName: row['Název'] || 'Neznámý',
-            action: 'error',
-            message: 'Chybí kód produktu'
-          });
+          if (result.details.length < MAX_DETAILS_IN_RESPONSE) {
+            result.details.push({
+              productCode: 'N/A',
+              productName: row['Název'] || 'Neznámý',
+              action: 'error',
+              message: 'Chybí kód produktu'
+            });
+          }
           continue;
         }
         
-        // Detect if trimming was needed
-        const wasTrimmed = rawCode !== code;
-        
-        // Check if product exists by code
         const existingProduct = await prisma.product.findFirst({
           where: { code }
         });
         
         if (existingProduct) {
-          // UPDATE EXISTING PRODUCT - Only update fields that are present
+          // UPDATE EXISTING PRODUCT
           const updateData: any = {};
           let nameChanged = false;
           let slugUpdated = false;
           
-          // Check if name is being updated
           if ('Název' in row && row['Název']) {
             const newName = row['Název'].toString().trim();
             if (newName !== existingProduct.name) {
               updateData.name = newName;
               nameChanged = true;
               
-              // If name changed and no explicit slug provided, generate new slug
               if (!('Slug' in row && row['Slug'])) {
                 updateData.slug = await generateUniqueSlug(newName, existingProduct.id);
                 slugUpdated = true;
@@ -154,10 +503,8 @@ export async function POST(request: Request) {
             }
           }
           
-          // Handle explicit slug if provided
           if ('Slug' in row && row['Slug']) {
             const providedSlug = row['Slug'].toString().trim();
-            // Validate that the provided slug is unique
             const existingWithSlug = await prisma.product.findFirst({
               where: {
                 slug: providedSlug,
@@ -166,7 +513,6 @@ export async function POST(request: Request) {
             });
             
             if (existingWithSlug) {
-              // If slug already exists, generate a unique one
               updateData.slug = await generateUniqueSlug(
                 updateData.name || existingProduct.name, 
                 existingProduct.id
@@ -184,7 +530,6 @@ export async function POST(request: Request) {
               if (category) {
                 updateData.categoryId = category.id;
               } else {
-                // Create new category if it doesn't exist
                 const newCategory = await prisma.category.create({
                   data: {
                     name: categoryName,
@@ -201,7 +546,7 @@ export async function POST(request: Request) {
           }
           
           if ('Značka' in row) {
-            updateData.brand = row['Značka']?.toString().trim() || null;
+            updateData.brand = normalize(row['Značka']);
           }
           
           if ('Cena' in row && row['Cena'] !== undefined && row['Cena'] !== '') {
@@ -219,22 +564,21 @@ export async function POST(request: Request) {
           }
           
           if ('Krátký popis' in row) {
-            updateData.description = row['Krátký popis']?.toString().trim() || null;
+            updateData.description = normalize(row['Krátký popis']);
           }
           
           if ('Detailní popis' in row) {
-            updateData.detailDescription = row['Detailní popis']?.toString().trim() || null;
+            updateData.detailDescription = normalize(row['Detailní popis']);
           }
           
           if ('Záruka' in row) {
-            updateData.warranty = row['Záruka']?.toString().trim() || null;
+            updateData.warranty = normalize(row['Záruka']);
           }
           
           if ('Hlavní obrázek' in row) {
-            updateData.image = row['Hlavní obrázek']?.toString().trim() || null;
+            updateData.image = normalize(row['Hlavní obrázek']);
           }
           
-          // Only update if there are fields to update
           if (Object.keys(updateData).length > 0) {
             await prisma.product.update({
               where: { id: existingProduct.id },
@@ -243,26 +587,29 @@ export async function POST(request: Request) {
             
             result.updated++;
             let message = `Aktualizováno ${Object.keys(updateData).length} polí`;
-            if (wasTrimmed) message += ' (kód byl oříznut)';
             if (slugUpdated) message += ' (URL automaticky aktualizováno)';
             
-            result.details.push({
-              productCode: code,
-              productName: updateData.name || existingProduct.name,
-              action: 'updated',
-              message
-            });
+            if (result.details.length < MAX_DETAILS_IN_RESPONSE) {
+              result.details.push({
+                productCode: code,
+                productName: updateData.name || existingProduct.name,
+                action: 'updated',
+                message
+              });
+            }
           } else {
             result.skipped++;
-            result.details.push({
-              productCode: code,
-              productName: existingProduct.name,
-              action: 'skipped',
-              message: 'Žádné změny'
-            });
+            if (result.details.length < MAX_DETAILS_IN_RESPONSE) {
+              result.details.push({
+                productCode: code,
+                productName: existingProduct.name,
+                action: 'skipped',
+                message: 'Žádné změny'
+              });
+            }
           }
         } else {
-          // CREATE NEW PRODUCT - Check if all required fields are present
+          // CREATE NEW PRODUCT
           const missingFields = [];
           
           for (const field of REQUIRED_FIELDS_FOR_NEW) {
@@ -272,31 +619,32 @@ export async function POST(request: Request) {
           }
           
           if (missingFields.length > 0) {
-            result.errors.push(`Řádek ${rowIndex + 2}: Nelze vytvořit nový produkt - chybí povinná pole: ${missingFields.join(', ')}`);
-            result.details.push({
-              productCode: code,
-              productName: row['Název'] || 'Neznámý',
-              action: 'error',
-              message: `Chybí povinná pole: ${missingFields.join(', ')}`
-            });
+            if (result.errors.length < MAX_ERRORS_IN_RESPONSE) {
+              result.errors.push(`Řádek ${rowIndex + 2}: Nelze vytvořit nový produkt - chybí povinná pole: ${missingFields.join(', ')}`);
+            }
+            if (result.details.length < MAX_DETAILS_IN_RESPONSE) {
+              result.details.push({
+                productCode: code,
+                productName: row['Název'] || 'Neznámý',
+                action: 'error',
+                message: `Chybí povinná pole: ${missingFields.join(', ')}`
+              });
+            }
             continue;
           }
           
-          // Process new product data
           const name = row['Název'].toString().trim();
           let slug = row['Slug']?.toString().trim();
           
           if (!slug) {
             slug = await generateUniqueSlug(name);
           } else {
-            // Validate provided slug is unique
             const existingWithSlug = await prisma.product.findFirst({ where: { slug } });
             if (existingWithSlug) {
               slug = await generateUniqueSlug(name);
             }
           }
           
-          // Process category
           let categoryId = null;
           if ('Kategorie' in row) {
             const categoryName = row['Kategorie']?.toString().trim();
@@ -305,7 +653,6 @@ export async function POST(request: Request) {
               if (category) {
                 categoryId = category.id;
               } else {
-                // Create new category if it doesn't exist
                 const newCategory = await prisma.category.create({
                   data: {
                     name: categoryName,
@@ -319,21 +666,20 @@ export async function POST(request: Request) {
             }
           }
           
-          // Create new product with all available data
           const newProductData = {
             code,
             name,
             slug,
             price: parseFloat(row['Cena'].toString().replace(/[^\d.,]/g, '').replace(',', '.') || '0'),
             stock: parseInt(row['Skladem'].toString().replace(/[^\d]/g, '') || '0'),
-            description: row['Krátký popis']?.toString().trim() || null,
-            detailDescription: row['Detailní popis']?.toString().trim() || null,
+            description: normalize(row['Krátký popis']),
+            detailDescription: normalize(row['Detailní popis']),
             regularPrice: row['Běžná cena'] && row['Běžná cena'] !== '' ? 
               parseFloat(row['Běžná cena'].toString().replace(/[^\d.,]/g, '').replace(',', '.')) : 
               null,
-            brand: row['Značka']?.toString().trim() || null,
-            warranty: row['Záruka']?.toString().trim() || null,
-            image: row['Hlavní obrázek']?.toString().trim() || null,
+            brand: normalize(row['Značka']),
+            warranty: normalize(row['Záruka']),
+            image: normalize(row['Hlavní obrázek']),
             categoryId
           };
           
@@ -342,143 +688,105 @@ export async function POST(request: Request) {
           });
           
           result.created++;
-          result.details.push({
-            productCode: code,
-            productName: name,
-            action: 'created'
-          });
+          if (result.details.length < MAX_DETAILS_IN_RESPONSE) {
+            result.details.push({
+              productCode: code,
+              productName: name,
+              action: 'created'
+            });
+          }
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        result.errors.push(`Řádek ${rowIndex + 2}: ${errorMessage}`);
-        result.details.push({
-          productCode: row['Kód'] || 'N/A',
-          productName: row['Název'] || 'Neznámý',
-          action: 'error',
-          message: errorMessage
-        });
-      }
-    }
-    
-    // Process variants sheet if it exists AND this is the last chunk
-    if ((!chunkInfo || chunkInfo.isLastChunk) && workbook.SheetNames.includes('Varianty')) {
-      const variantsSheet = workbook.Sheets['Varianty'];
-      const variantsData = XLSX.utils.sheet_to_json(variantsSheet);
-      
-      for (let varIndex = 0; varIndex < variantsData.length; varIndex++) {
-        const variant = variantsData[varIndex] as any;
-        try {
-          await processVariant(variant, varIndex + 2);
-        } catch (error) {
-          result.errors.push(`Varianty - řádek ${varIndex + 2}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        if (result.errors.length < MAX_ERRORS_IN_RESPONSE) {
+          result.errors.push(`Řádek ${rowIndex + 2}: ${errorMessage}`);
+        }
+        if (result.details.length < MAX_DETAILS_IN_RESPONSE) {
+          result.details.push({
+            productCode: row['Kód'] || 'N/A',
+            productName: row['Název'] || 'Neznámý',
+            action: 'error',
+            message: errorMessage
+          });
         }
       }
     }
     
-    // Clear category cache on last chunk
-    if (chunkInfo && chunkInfo.isLastChunk) {
+    // Process variants with batching
+    if (workbook.SheetNames.includes('Varianty')) {
+      try {
+        const variantsSheet = workbook.Sheets['Varianty'];
+        const variantsData = XLSX.utils.sheet_to_json<VariantRow>(variantsSheet);
+        
+        console.log(`Processing ${variantsData.length} variants with batching...`);
+        
+        // Process variants in batches to avoid memory issues
+        const variantResults = await processVariantsInBatches(variantsData, 10);
+        
+        result.variants = {
+          created: variantResults.created,
+          updated: variantResults.updated,
+          errors: variantResults.errors,
+          details: variantResults.details.slice(0, MAX_DETAILS_IN_RESPONSE)
+        };
+        
+        // Add variant errors to main errors array
+        if (variantResults.errorMessages.length > 0) {
+          result.errors.push(...variantResults.errorMessages.slice(0, MAX_ERRORS_IN_RESPONSE - result.errors.length));
+        }
+        
+        // Add summary if details were truncated
+        if (variantResults.details.length > MAX_DETAILS_IN_RESPONSE) {
+          result.variants.details.push({
+            productCode: '...',
+            variant: '...',
+            action: 'updated',
+            message: `A dalších ${variantResults.details.length - MAX_DETAILS_IN_RESPONSE} variant...`
+          });
+        }
+      } catch (variantError) {
+        console.error('Error processing variants:', variantError);
+        result.errors.push(`Chyba při zpracování variant: ${variantError instanceof Error ? variantError.message : 'Unknown error'}`);
+      }
+    }
+    
+    // Clear cache if this is the last chunk
+    if (!chunkInfo || chunkInfo.isLastChunk) {
       categoryCache = null;
+    }
+    
+    // Add summary messages if data was truncated
+    if (result.errors.length >= MAX_ERRORS_IN_RESPONSE) {
+      result.errors[MAX_ERRORS_IN_RESPONSE - 1] = `... a další chyby (celkem ${result.errors.length})`;
+      result.errors = result.errors.slice(0, MAX_ERRORS_IN_RESPONSE);
+    }
+    
+    if (result.details.length >= MAX_DETAILS_IN_RESPONSE) {
+      result.details[MAX_DETAILS_IN_RESPONSE - 1] = {
+        productCode: '...',
+        productName: '...',
+        action: 'skipped',
+        message: `A dalších ${result.created + result.updated + result.skipped - MAX_DETAILS_IN_RESPONSE} produktů...`
+      };
+      result.details = result.details.slice(0, MAX_DETAILS_IN_RESPONSE);
     }
     
     return NextResponse.json(result);
     
   } catch (error) {
     console.error('Import error:', error);
+    
+    // Always return a valid JSON response
     return NextResponse.json(
-      { error: 'Failed to import products', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        success: false,
+        created: 0,
+        updated: 0,
+        skipped: 0,
+        errors: ['Import failed: ' + (error instanceof Error ? error.message : 'Unknown error')],
+        details: []
+      },
       { status: 500 }
     );
-  }
-}
-
-async function processVariant(variant: any, rowNumber: number) {
-  // Support multiple column name variations and always trim
-  const rawCode = variant['Kód produktu'] || variant['Kod produktu'] || variant['Product Code'];
-  const productCode = rawCode?.toString().trim();
-  if (!productCode) {
-    throw new Error(`Chybí kód produktu pro variantu`);
-  }
-  
-  const product = await prisma.product.findFirst({
-    where: { code: productCode }
-  });
-  
-  if (!product) {
-    throw new Error(`Produkt s kódem ${productCode} nenalezen`);
-  }
-  
-  // Build variant data - only include fields that are present
-  const variantData: any = {
-    productId: product.id,
-    sizeOrder: 0,
-    order: 0,
-    stock: 0 // Default stock to 0
-  };
-  
-  // Only add fields that are present in the import
-  if ('Barva' in variant && variant['Barva']) {
-    variantData.colorName = variant['Barva'].toString().trim();
-  }
-  
-  if ('Kód barvy' in variant && variant['Kód barvy']) {
-    variantData.colorCode = variant['Kód barvy'].toString().trim();
-  }
-  
-  if ('Velikost' in variant && variant['Velikost']) {
-    variantData.sizeName = variant['Velikost'].toString().trim();
-  }
-  
-  if ('Skladem' in variant && variant['Skladem'] !== undefined && variant['Skladem'] !== '') {
-    variantData.stock = parseInt(variant['Skladem'].toString() || '0');
-  }
-  
-  if ('Cena varianty' in variant && variant['Cena varianty'] !== undefined && variant['Cena varianty'] !== '') {
-    variantData.price = parseFloat(variant['Cena varianty'].toString().replace(/[^\d.,]/g, '').replace(',', '.'));
-  }
-  
-  if ('Obrázek varianty' in variant && variant['Obrázek varianty']) {
-    variantData.imageUrl = variant['Obrázek varianty'].toString().trim();
-  }
-  
-  // Check if variant already exists
-  const whereConditions: any = {
-    productId: product.id
-  };
-  
-  if (variantData.colorName !== undefined) {
-    whereConditions.colorName = variantData.colorName;
-  }
-  if (variantData.sizeName !== undefined) {
-    whereConditions.sizeName = variantData.sizeName;
-  }
-  
-  const existingVariant = await prisma.productVariant.findFirst({
-    where: whereConditions
-  });
-  
-  if (existingVariant) {
-    // Update only the fields that are present in the import
-    const updateData: any = {};
-    
-    if ('colorName' in variantData) updateData.colorName = variantData.colorName;
-    if ('colorCode' in variantData) updateData.colorCode = variantData.colorCode;
-    if ('sizeName' in variantData) updateData.sizeName = variantData.sizeName;
-    if ('stock' in variantData) updateData.stock = variantData.stock;
-    if ('price' in variantData) updateData.price = variantData.price;
-    if ('imageUrl' in variantData) updateData.imageUrl = variantData.imageUrl;
-    
-    await prisma.productVariant.update({
-      where: { id: existingVariant.id },
-      data: updateData
-    });
-  } else {
-    // Create new variant only if it has at least color or size
-    if (!variantData.colorName && !variantData.sizeName) {
-      throw new Error('Varianta musí mít alespoň barvu nebo velikost');
-    }
-    
-    await prisma.productVariant.create({
-      data: variantData
-    });
   }
 }
