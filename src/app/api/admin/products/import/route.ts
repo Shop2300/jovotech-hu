@@ -61,6 +61,10 @@ const REQUIRED_FIELDS_FOR_NEW = ['Kód', 'Název', 'Cena', 'Skladem'];
 const MAX_DETAILS_IN_RESPONSE = 1000;
 const MAX_ERRORS_IN_RESPONSE = 100;
 
+// BATCH SIZE FOR PROCESSING - REDUCED TO 10
+const PRODUCT_BATCH_SIZE = 10;
+const VARIANT_BATCH_SIZE = 10;
+
 // Cache for categories to avoid repeated database queries
 let categoryCache: Map<string, any> | null = null;
 
@@ -280,7 +284,7 @@ async function processVariantByPosition(
 // Process variants in batches to avoid memory issues
 async function processVariantsInBatches(
   variantsData: VariantRow[],
-  batchSize: number = 10
+  batchSize: number = VARIANT_BATCH_SIZE
 ): Promise<{
   created: number;
   updated: number;
@@ -400,69 +404,28 @@ async function processVariantsInBatches(
   return result;
 }
 
-export async function POST(request: Request) {
-  try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const chunkInfoStr = formData.get('chunkInfo') as string;
+// NEW: Process products in batches
+async function processProductsInBatches(
+  data: any[],
+  batchSize: number = PRODUCT_BATCH_SIZE
+): Promise<ImportResult> {
+  const result: ImportResult = {
+    success: true,
+    created: 0,
+    updated: 0,
+    skipped: 0,
+    errors: [],
+    details: []
+  };
+
+  // Process products in batches
+  for (let i = 0; i < data.length; i += batchSize) {
+    const batch = data.slice(i, i + batchSize);
     
-    let chunkInfo: ChunkInfo | null = null;
-    if (chunkInfoStr) {
-      chunkInfo = JSON.parse(chunkInfoStr);
-    }
-    
-    if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
-    }
-    
-    const fileName = file.name.toLowerCase();
-    if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Please upload an Excel file (.xlsx or .xls)' },
-        { status: 400 }
-      );
-    }
-    
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
-    let workbook: XLSX.WorkBook;
-    let data: any[];
-    
-    try {
-      workbook = XLSX.read(buffer, { type: 'buffer' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      data = XLSX.utils.sheet_to_json(worksheet);
-    } catch (parseError) {
-      console.error('Excel parsing error:', parseError);
-      return NextResponse.json(
-        { error: 'Failed to parse Excel file. Please ensure the file is valid.' },
-        { status: 400 }
-      );
-    }
-    
-    const result: ImportResult = {
-      success: true,
-      created: 0,
-      updated: 0,
-      skipped: 0,
-      errors: [],
-      details: []
-    };
-    
-    // Initialize or use existing category cache
-    if (!categoryCache || (chunkInfo && chunkInfo.currentChunk === 1)) {
-      const categories = await prisma.category.findMany();
-      categoryCache = new Map(categories.map((c: any) => [c.name.toLowerCase(), c]));
-    }
-    
-    // Process products
-    for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
-      const row = data[rowIndex] as any;
+    // Process each product in the batch
+    for (let j = 0; j < batch.length; j++) {
+      const row = batch[j];
+      const rowIndex = i + j;
       
       try {
         const rawCode = row['Kód'] || row['Kod'] || row['Code'];
@@ -712,6 +675,69 @@ export async function POST(request: Request) {
       }
     }
     
+    // Small delay between batches to prevent overwhelming the database
+    if (i + batchSize < data.length) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+
+  return result;
+}
+
+export async function POST(request: Request) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    const chunkInfoStr = formData.get('chunkInfo') as string;
+    
+    let chunkInfo: ChunkInfo | null = null;
+    if (chunkInfoStr) {
+      chunkInfo = JSON.parse(chunkInfoStr);
+    }
+    
+    if (!file) {
+      return NextResponse.json(
+        { error: 'No file provided' },
+        { status: 400 }
+      );
+    }
+    
+    const fileName = file.name.toLowerCase();
+    if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
+      return NextResponse.json(
+        { error: 'Invalid file type. Please upload an Excel file (.xlsx or .xls)' },
+        { status: 400 }
+      );
+    }
+    
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    let workbook: XLSX.WorkBook;
+    let data: any[];
+    
+    try {
+      workbook = XLSX.read(buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      data = XLSX.utils.sheet_to_json(worksheet);
+    } catch (parseError) {
+      console.error('Excel parsing error:', parseError);
+      return NextResponse.json(
+        { error: 'Failed to parse Excel file. Please ensure the file is valid.' },
+        { status: 400 }
+      );
+    }
+    
+    // Initialize or use existing category cache
+    if (!categoryCache || (chunkInfo && chunkInfo.currentChunk === 1)) {
+      const categories = await prisma.category.findMany();
+      categoryCache = new Map(categories.map((c: any) => [c.name.toLowerCase(), c]));
+    }
+    
+    // Process products in batches
+    const result = await processProductsInBatches(data, PRODUCT_BATCH_SIZE);
+    
     // Process variants with batching
     if (workbook.SheetNames.includes('Varianty')) {
       try {
@@ -721,7 +747,7 @@ export async function POST(request: Request) {
         console.log(`Processing ${variantsData.length} variants with batching...`);
         
         // Process variants in batches to avoid memory issues
-        const variantResults = await processVariantsInBatches(variantsData, 10);
+        const variantResults = await processVariantsInBatches(variantsData, VARIANT_BATCH_SIZE);
         
         result.variants = {
           created: variantResults.created,

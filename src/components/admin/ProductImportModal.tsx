@@ -37,7 +37,7 @@ interface ProductImportModalProps {
   onImportComplete: () => void;
 }
 
-const CHUNK_SIZE = 50; // Process 50 products at a time
+const CHUNK_SIZE = 10; // Process 10 products at a time
 
 export function ProductImportModal({ isOpen, onClose, onImportComplete }: ProductImportModalProps) {
   const [file, setFile] = useState<File | null>(null);
