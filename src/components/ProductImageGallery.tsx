@@ -1,8 +1,7 @@
-// src/components/ProductImageGallery.tsx
 'use client';
 
-import { useState, useRef, MouseEvent } from 'react';
-import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { useState, useRef, MouseEvent, TouchEvent, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, ZoomIn, X, Maximize2 } from 'lucide-react';
 
 interface ProductImage {
   id: string;
@@ -21,7 +20,23 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
   const [showMagnifier, setShowMagnifier] = useState(false);
   const [magnifierPosition, setMagnifierPosition] = useState({ x: 0, y: 0 });
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [showFullscreen, setShowFullscreen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
   const imageRef = useRef<HTMLDivElement>(null);
+  const thumbnailsRef = useRef<HTMLDivElement>(null);
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Sort images by order
   const sortedImages = [...images].sort((a, b) => a.order - b.order);
@@ -44,8 +59,42 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
     setSelectedIndex((prev) => (prev === sortedImages.length - 1 ? 0 : prev + 1));
   };
 
+  // Touch handlers for swipe
+  const handleTouchStart = (e: TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && sortedImages.length > 1) {
+      goToNext();
+    }
+    if (isRightSwipe && sortedImages.length > 1) {
+      goToPrevious();
+    }
+  };
+
+  // Scroll to selected thumbnail
+  useEffect(() => {
+    if (thumbnailsRef.current && sortedImages.length > 1) {
+      const thumbnailElement = thumbnailsRef.current.children[selectedIndex] as HTMLElement;
+      if (thumbnailElement) {
+        thumbnailElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+  }, [selectedIndex, sortedImages.length]);
+
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    if (!imageRef.current) return;
+    if (!imageRef.current || isMobile) return;
 
     const rect = imageRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -53,8 +102,6 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
     
     setCursorPosition({ x, y });
     
-    // Calculate the background position for proper alignment
-    // This ensures the zoomed area matches exactly where the cursor is
     const backgroundX = -(x * zoomLevel - magnifierSize / 2);
     const backgroundY = -(y * zoomLevel - magnifierSize / 2);
     
@@ -62,129 +109,230 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
   };
 
   const handleMouseEnter = () => {
-    setShowMagnifier(true);
+    if (!isMobile) {
+      setShowMagnifier(true);
+    }
   };
 
   const handleMouseLeave = () => {
     setShowMagnifier(false);
   };
 
-  // Increased magnifier size and zoom level
-  const magnifierSize = 350; // Increased from 250px
-  const zoomLevel = 1.5; // Reduced zoom for better balance
+  const magnifierSize = 350;
+  const zoomLevel = 1.5;
 
-  return (
-    <div className="space-y-4">
-      {/* Main Image */}
-      <div className="relative group">
-        <div 
-          ref={imageRef}
-          className="relative overflow-hidden rounded-lg bg-white cursor-zoom-in"
-          onMouseMove={handleMouseMove}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <div className="aspect-square w-full relative">
-            <img
-              src={currentImage.url}
-              alt={currentImage.alt || `${productName} - zdjęcie ${selectedIndex + 1}`}
-              className="w-full h-full object-contain"
-            />
-            
-            {/* Zoom hint icon */}
-            <div className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              <ZoomIn size={20} className="text-gray-600" />
-            </div>
-
-            {/* Magnifier */}
-            {showMagnifier && (
-              <div
-                className="absolute pointer-events-none border-2 border-gray-300 rounded-full shadow-2xl overflow-hidden bg-white"
-                style={{
-                  width: `${magnifierSize}px`,
-                  height: `${magnifierSize}px`,
-                  left: `${cursorPosition.x - magnifierSize / 2}px`,
-                  top: `${cursorPosition.y - magnifierSize / 2}px`,
-                  zIndex: 50,
-                }}
-              >
-                <div
-                  className="absolute"
-                  style={{
-                    width: `${imageRef.current?.offsetWidth ? imageRef.current.offsetWidth * zoomLevel : 0}px`,
-                    height: `${imageRef.current?.offsetHeight ? imageRef.current.offsetHeight * zoomLevel : 0}px`,
-                    backgroundImage: `url(${currentImage.url})`,
-                    backgroundSize: `${imageRef.current?.offsetWidth ? imageRef.current.offsetWidth * zoomLevel : 0}px ${imageRef.current?.offsetHeight ? imageRef.current.offsetHeight * zoomLevel : 0}px`,
-                    backgroundPosition: `${magnifierPosition.x}px ${magnifierPosition.y}px`,
-                    backgroundRepeat: 'no-repeat',
-                  }}
-                />
-                {/* Crosshair in magnifier */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-px h-6 bg-gray-400 opacity-50" />
-                  <div className="w-6 h-px bg-gray-400 opacity-50 absolute" />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+  // Fullscreen modal for mobile zoom
+  const FullscreenModal = () => (
+    <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+      <button
+        onClick={() => setShowFullscreen(false)}
+        className="absolute top-4 right-4 z-10 bg-white/10 backdrop-blur text-white rounded-full p-3 hover:bg-white/20 transition touch-manipulation"
+      >
+        <X size={24} />
+      </button>
+      
+      <div className="relative w-full h-full flex items-center justify-center p-4">
+        <img
+          src={currentImage.url}
+          alt={currentImage.alt || `${productName} - zdjęcie ${selectedIndex + 1}`}
+          className="max-w-full max-h-full object-contain"
+        />
         
-        {/* Navigation arrows */}
+        {/* Navigation in fullscreen */}
         {sortedImages.length > 1 && (
           <>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                goToPrevious();
-              }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-100 transition opacity-0 group-hover:opacity-100"
-              aria-label="Previous image"
+              onClick={goToPrevious}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur text-white rounded-full p-3 hover:bg-white/20 transition touch-manipulation"
             >
-              <ChevronLeft size={24} className="text-gray-700" />
+              <ChevronLeft size={24} />
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                goToNext();
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-100 transition opacity-0 group-hover:opacity-100"
-              aria-label="Next image"
+              onClick={goToNext}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur text-white rounded-full p-3 hover:bg-white/20 transition touch-manipulation"
             >
-              <ChevronRight size={24} className="text-gray-700" />
+              <ChevronRight size={24} />
             </button>
           </>
         )}
         
-        {/* Image counter */}
+        {/* Counter in fullscreen */}
         {sortedImages.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white shadow-md px-3 py-1 rounded-full text-sm text-gray-700 font-medium opacity-90">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur text-white px-4 py-2 rounded-full">
             {selectedIndex + 1} / {sortedImages.length}
           </div>
         )}
       </div>
-      
-      {/* Thumbnail Grid */}
-      {sortedImages.length > 1 && (
-        <div className="grid grid-cols-6 gap-2">
-          {sortedImages.map((image, index) => (
-            <button
-              key={image.id}
-              onClick={() => setSelectedIndex(index)}
-              className={`aspect-square rounded-lg overflow-hidden border-2 transition ${
-                index === selectedIndex
-                  ? 'border-blue-500'
-                  : 'border-gray-200 hover:border-gray-400'
-              }`}
-            >
-              <img
-                src={image.url}
-                alt={image.alt || `${productName} - miniatura ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </button>
-          ))}
-        </div>
-      )}
     </div>
+  );
+
+  return (
+    <>
+      <div className="space-y-4">
+        {/* Main Image */}
+        <div className="relative group">
+          <div 
+            ref={imageRef}
+            className={`relative overflow-hidden rounded-lg bg-white ${!isMobile ? 'cursor-zoom-in' : ''}`}
+            onMouseMove={handleMouseMove}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="aspect-square w-full relative">
+              <img
+                src={currentImage.url}
+                alt={currentImage.alt || `${productName} - zdjęcie ${selectedIndex + 1}`}
+                className="w-full h-full object-contain"
+              />
+              
+              {/* Mobile: Fullscreen button */}
+              {isMobile && (
+                <button
+                  onClick={() => setShowFullscreen(true)}
+                  className="absolute top-4 right-4 bg-white rounded-full p-2.5 shadow-md touch-manipulation"
+                  aria-label="Powiększ zdjęcie"
+                >
+                  <Maximize2 size={20} className="text-gray-700" />
+                </button>
+              )}
+              
+              {/* Desktop: Zoom hint icon */}
+              {!isMobile && (
+                <div className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  <ZoomIn size={20} className="text-gray-600" />
+                </div>
+              )}
+
+              {/* Desktop Magnifier */}
+              {!isMobile && showMagnifier && (
+                <div
+                  className="absolute pointer-events-none border-2 border-gray-300 rounded-full shadow-2xl overflow-hidden bg-white"
+                  style={{
+                    width: `${magnifierSize}px`,
+                    height: `${magnifierSize}px`,
+                    left: `${cursorPosition.x - magnifierSize / 2}px`,
+                    top: `${cursorPosition.y - magnifierSize / 2}px`,
+                    zIndex: 50,
+                  }}
+                >
+                  <div
+                    className="absolute"
+                    style={{
+                      width: `${imageRef.current?.offsetWidth ? imageRef.current.offsetWidth * zoomLevel : 0}px`,
+                      height: `${imageRef.current?.offsetHeight ? imageRef.current.offsetHeight * zoomLevel : 0}px`,
+                      backgroundImage: `url(${currentImage.url})`,
+                      backgroundSize: `${imageRef.current?.offsetWidth ? imageRef.current.offsetWidth * zoomLevel : 0}px ${imageRef.current?.offsetHeight ? imageRef.current.offsetHeight * zoomLevel : 0}px`,
+                      backgroundPosition: `${magnifierPosition.x}px ${magnifierPosition.y}px`,
+                      backgroundRepeat: 'no-repeat',
+                    }}
+                  />
+                  {/* Crosshair in magnifier */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-px h-6 bg-gray-400 opacity-50" />
+                    <div className="w-6 h-px bg-gray-400 opacity-50 absolute" />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Navigation arrows - Always visible on mobile */}
+          {sortedImages.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToPrevious();
+                }}
+                className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 md:p-2 hover:bg-gray-100 transition touch-manipulation ${
+                  isMobile ? 'opacity-90' : 'opacity-0 group-hover:opacity-100'
+                }`}
+                style={isMobile ? { minWidth: '44px', minHeight: '44px' } : {}}
+                aria-label="Poprzednie zdjęcie"
+              >
+                <ChevronLeft size={isMobile ? 20 : 24} className="text-gray-700" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNext();
+                }}
+                className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 md:p-2 hover:bg-gray-100 transition touch-manipulation ${
+                  isMobile ? 'opacity-90' : 'opacity-0 group-hover:opacity-100'
+                }`}
+                style={isMobile ? { minWidth: '44px', minHeight: '44px' } : {}}
+                aria-label="Następne zdjęcie"
+              >
+                <ChevronRight size={isMobile ? 20 : 24} className="text-gray-700" />
+              </button>
+            </>
+          )}
+          
+          {/* Image counter */}
+          {sortedImages.length > 1 && (
+            <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 bg-white shadow-md px-3 py-1.5 rounded-full text-sm text-gray-700 font-medium ${
+              isMobile ? 'opacity-100' : 'opacity-90'
+            }`}>
+              {selectedIndex + 1} / {sortedImages.length}
+            </div>
+          )}
+          
+          {/* Mobile: Swipe indicator dots */}
+          {isMobile && sortedImages.length > 1 && (
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {sortedImages.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === selectedIndex 
+                      ? 'bg-[#8bc34a] w-6' 
+                      : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Thumbnail Grid - Horizontal scroll on mobile */}
+        {sortedImages.length > 1 && (
+          <div 
+            ref={thumbnailsRef}
+            className={`${
+              isMobile 
+                ? 'flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4' 
+                : 'grid grid-cols-6 gap-2'
+            }`}
+            style={isMobile ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}}
+          >
+            {sortedImages.map((image, index) => (
+              <button
+                key={image.id}
+                onClick={() => setSelectedIndex(index)}
+                className={`${
+                  isMobile ? 'flex-shrink-0 w-20 h-20' : 'aspect-square'
+                } rounded-lg overflow-hidden border-2 transition touch-manipulation ${
+                  index === selectedIndex
+                    ? 'border-[#8bc34a]'
+                    : 'border-gray-200 hover:border-gray-400'
+                }`}
+              >
+                <img
+                  src={image.url}
+                  alt={image.alt || `${productName} - miniatura ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Fullscreen Modal */}
+      {showFullscreen && <FullscreenModal />}
+    </>
   );
 }
