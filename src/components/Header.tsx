@@ -1,4 +1,3 @@
-// src/components/Header.tsx
 'use client';
 
 import Link from 'next/link';
@@ -11,22 +10,23 @@ import { memo, useState, useEffect } from 'react';
 export const Header = memo(function Header() {
   // Detect if we're on mobile for conditional loading
   const [isMobile, setIsMobile] = useState(false);
-  
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
-    
+
     // Debounced resize handler for performance
     let timeoutId: NodeJS.Timeout;
     const handleResize = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(checkMobile, 150);
     };
-    
+
     window.addEventListener('resize', handleResize);
+    
     return () => {
       window.removeEventListener('resize', handleResize);
       clearTimeout(timeoutId);
@@ -82,20 +82,6 @@ export const Header = memo(function Header() {
           {/* Search Bar - Mobile */}
           <div className="pb-3">
             <SearchBar />
-          </div>
-          
-          {/* Order Tracking Link - Mobile */}
-          <div className="border-t pt-3">
-            <Link 
-              href="/order-status" 
-              className="flex text-gray-700 hover:text-gray-900 text-sm font-medium items-center gap-2 py-2 touch-manipulation"
-              prefetch={false}
-              // Increased touch target for mobile
-              style={{ minHeight: '44px' }}
-            >
-              <Package size={20} className="shrink-0" />
-              <span>Śledzenie zamówienia</span>
-            </Link>
           </div>
         </div>
       </div>

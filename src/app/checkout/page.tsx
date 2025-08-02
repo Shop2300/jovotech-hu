@@ -315,11 +315,11 @@ export default function CheckoutPage() {
       </div>
 
       <div className="max-w-screen-2xl mx-auto px-4 md:px-6 py-4 md:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
               {/* Contact Information */}
-              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-[#131921]">Dane kontaktowe</h2>
                 
                 <div className="grid grid-cols-1 gap-4">
@@ -448,7 +448,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Billing Address */}
-              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-[#131921]">
                   {isCompany ? 'Adres firmy (rozliczeniowy)' : 'Adres rozliczeniowy'}
                 </h2>
@@ -566,7 +566,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Delivery Address */}
-              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-[#131921]">Adres dostawy</h2>
                   <label className="flex items-center gap-2 cursor-pointer touch-manipulation">
@@ -709,14 +709,14 @@ export default function CheckoutPage() {
               </div>
 
               {/* Delivery Method */}
-              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-[#131921]">Sposób dostawy</h2>
                 
                 <div className="space-y-3">
                   {DELIVERY_METHODS.map((method) => {
                     const Icon = method.icon;
                     return (
-                      <label key={method.value} className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 touch-manipulation">
+                      <label key={method.value} className="flex items-center p-4 border border-gray-200 md:border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 touch-manipulation">
                         <input
                           {...register('deliveryMethod')}
                           type="radio"
@@ -762,14 +762,14 @@ export default function CheckoutPage() {
               </div>
 
               {/* Payment Method */}
-              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-[#131921]">Sposób płatności</h2>
                 
                 <div className="space-y-3">
                   {PAYMENT_METHODS.map((method) => {
                     const Icon = method.icon;
                     return (
-                      <label key={method.value} className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 touch-manipulation">
+                      <label key={method.value} className="flex items-center p-4 border border-gray-200 md:border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 touch-manipulation">
                         <input
                           {...register('paymentMethod')}
                           type="radio"
@@ -864,7 +864,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Note */}
-              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+              <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-[#131921]">Uwagi do zamówienia</h2>
                 <textarea
                   {...register('note')}
@@ -979,7 +979,7 @@ export default function CheckoutPage() {
               <button
                 onClick={handleSubmit(onSubmit)}
                 disabled={isSubmitting}
-                className={`block w-full h-[48px] mt-6 rounded hover:bg-[#7cb342] transition relative overflow-hidden group touch-manipulation ${
+                className={`block w-full h-[48px] mt-6 rounded-lg hover:bg-[#7cb342] transition relative overflow-hidden group touch-manipulation ${
                   isSubmitting 
                     ? 'bg-gray-300 cursor-not-allowed' 
                     : 'bg-[#8bc34a] text-white'
@@ -1014,24 +1014,44 @@ export default function CheckoutPage() {
       </div>
 
       {/* Mobile Fixed Bottom Summary */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40">
         <div className="p-4 space-y-3">
+          {/* Total and Payment Info */}
           <div className="flex justify-between items-center">
-            <span className="text-[#131921] font-medium">Razem</span>
-            <span className="text-xl font-bold text-[#8bc34a]">{formatPrice(totalPrice)}</span>
+            <div>
+              <p className="text-xs text-gray-500">Razem</p>
+              <p className="text-xl font-semibold text-[#131921]">{formatPrice(totalPrice)}</p>
+              {deliveryPrice > 0 && (
+                <p className="text-xs text-gray-500">Zawiera dostawę: {formatPrice(deliveryPrice)}</p>
+              )}
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500">Dostawa</p>
+              <p className="text-sm text-[#8bc34a] font-semibold">
+                {deliveryPrice === 0 ? 'Gratis' : formatPrice(deliveryPrice)}
+              </p>
+            </div>
           </div>
           
+          {/* Submit Button */}
           <button
             onClick={handleSubmit(onSubmit)}
             disabled={isSubmitting}
-            className={`block w-full h-[48px] rounded transition touch-manipulation ${
+            className={`block w-full h-[48px] rounded-lg transition touch-manipulation ${
               isSubmitting 
                 ? 'bg-gray-300 cursor-not-allowed' 
                 : 'bg-[#8bc34a] text-white hover:bg-[#7cb342]'
             }`}
           >
             <span className="flex items-center justify-center h-full">
-              <span className="font-medium">{isSubmitting ? 'Przetwarzanie...' : 'Złóż zamówienie'}</span>
+              <span className="font-medium text-base">{isSubmitting ? 'Przetwarzanie...' : 'Złóż zamówienie'}</span>
+              {!isSubmitting && (
+                <span className="ml-3 flex items-center">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                  </svg>
+                </span>
+              )}
             </span>
           </button>
           
