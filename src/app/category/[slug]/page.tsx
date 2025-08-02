@@ -5,26 +5,33 @@ import { prisma } from '@/lib/prisma';
 import { CategoryProductsClient } from '@/components/CategoryProductsClient';
 import { FolderOpen, Home } from 'lucide-react';
 import { Prisma } from '@prisma/client';
+import { unstable_cache } from 'next/cache';
 
 const PRODUCTS_PER_PAGE = 32;
+const PRODUCTS_PER_PAGE_MOBILE = 20;
 
-async function getCategory(slug: string) {
-  const category = await prisma.category.findFirst({
-    where: { 
-      slug,
-      isActive: true 
-    },
-    include: {
-      children: {
-        where: { isActive: true },
-        orderBy: { order: 'asc' }
+// Cache category data
+const getCachedCategory = unstable_cache(
+  async (slug: string) => {
+    const category = await prisma.category.findFirst({
+      where: { 
+        slug,
+        isActive: true 
       },
-      parent: true
-    }
-  });
+      include: {
+        children: {
+          where: { isActive: true },
+          orderBy: { order: 'asc' }
+        },
+        parent: true
+      }
+    });
 
-  return category;
-}
+    return category;
+  },
+  ['category-by-slug'],
+  { revalidate: 3600, tags: ['categories'] }
+);
 
 async function getCategoryProductsCount(categoryId: string, includeSubcategories: boolean = true) {
   if (includeSubcategories) {
@@ -54,9 +61,10 @@ async function getSortedCategoryProducts(
   categoryId: string, 
   page: number = 1,
   sort: string = 'recommended',
-  includeSubcategories: boolean = true
+  includeSubcategories: boolean = true,
+  perPage: number = PRODUCTS_PER_PAGE
 ) {
-  const skip = (page - 1) * PRODUCTS_PER_PAGE;
+  const skip = (page - 1) * perPage;
   
   // Define order by clause based on sort
   let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
@@ -72,16 +80,15 @@ async function getSortedCategoryProducts(
       orderBy = { name: 'asc' };
       break;
     case 'bestselling':
-      // Using totalRatings as a proxy for popularity
-      // In a real scenario, you'd have a salesCount or similar field
       orderBy = { totalRatings: 'desc' };
       break;
     case 'recommended':
     default:
-      // Default to newest products first
       orderBy = { createdAt: 'desc' };
       break;
   }
+  
+  let whereClause: Prisma.ProductWhereInput;
   
   if (includeSubcategories) {
     const subcategories = await prisma.category.findMany({
@@ -93,83 +100,98 @@ async function getSortedCategoryProducts(
     });
     
     const categoryIds = [categoryId, ...subcategories.map(sub => sub.id)];
-    
-    const products = await prisma.product.findMany({
-      where: { 
-        categoryId: { in: categoryIds }
-      },
-      include: {
-        category: true,
-        variants: {
-          where: { isActive: true }
-        }
-      },
-      orderBy,
-      skip,
-      take: PRODUCTS_PER_PAGE
-    });
-    
-    return products.map(product => ({
-      ...product,
-      price: Number(product.price),
-      regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
-      averageRating: product.averageRating ? Number(product.averageRating) : undefined,
-      totalRatings: product.totalRatings || 0
-    }));
+    whereClause = { categoryId: { in: categoryIds } };
   } else {
-    const products = await prisma.product.findMany({
-      where: { categoryId },
-      include: {
-        category: true,
-        variants: {
-          where: { isActive: true }
-        }
-      },
-      orderBy,
-      skip,
-      take: PRODUCTS_PER_PAGE
-    });
-    
-    return products.map(product => ({
-      ...product,
-      price: Number(product.price),
-      regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
-      averageRating: product.averageRating ? Number(product.averageRating) : undefined,
-      totalRatings: product.totalRatings || 0
-    }));
+    whereClause = { categoryId };
   }
-}
-
-async function getRandomCategoryProducts(categoryId: string, limit: number = 8) {
-  const subcategories = await prisma.category.findMany({
-    where: { 
-      parentId: categoryId,
-      isActive: true 
-    },
-    select: { id: true }
-  });
   
-  const categoryIds = [categoryId, ...subcategories.map(sub => sub.id)];
-  
-  const allProducts = await prisma.product.findMany({
-    where: { 
-      categoryId: { in: categoryIds },
-      image: { not: null }
-    },
+  const products = await prisma.product.findMany({
+    where: whereClause,
     include: {
-      category: true
-    }
+      category: true,
+      images: {
+        orderBy: { order: 'asc' }
+      },
+      variants: {
+        where: { isActive: true }
+      }
+    },
+    orderBy,
+    skip,
+    take: perPage
   });
   
-  const shuffled = allProducts.sort(() => 0.5 - Math.random());
-  const randomProducts = shuffled.slice(0, limit);
-  
-  return randomProducts.map(product => ({
+  return products.map(product => ({
     ...product,
     price: Number(product.price),
-    regularPrice: product.regularPrice ? Number(product.regularPrice) : null
+    regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
+    averageRating: product.averageRating ? Number(product.averageRating) : undefined,
+    totalRatings: product.totalRatings || 0,
+    isActive: true,
+    slug: product.slug || product.id,
+    categoryId: product.categoryId || categoryId,
+    availability: product.availability || 'in_stock',
+    variants: product.variants?.map(v => ({
+      id: v.id,
+      colorName: v.colorName || '',
+      colorCode: v.colorCode,
+      stock: v.stock
+    })) || []
   }));
 }
+
+// Cached sidebar products
+const getCachedSidebarProducts = unstable_cache(
+  async (categoryId: string, limit: number = 8) => {
+    const subcategories = await prisma.category.findMany({
+      where: { 
+        parentId: categoryId,
+        isActive: true 
+      },
+      select: { id: true }
+    });
+    
+    const categoryIds = [categoryId, ...subcategories.map(sub => sub.id)];
+    
+    const allProducts = await prisma.product.findMany({
+      where: { 
+        categoryId: { in: categoryIds },
+        image: { not: null }
+      },
+      include: {
+        category: true,
+        images: true,
+        variants: {
+          where: { isActive: true }
+        }
+      },
+      take: limit * 3 // Get more to randomize
+    });
+    
+    const shuffled = allProducts.sort(() => 0.5 - Math.random());
+    const randomProducts = shuffled.slice(0, limit);
+    
+    return randomProducts.map(product => ({
+      ...product,
+      price: Number(product.price),
+      regularPrice: product.regularPrice ? Number(product.regularPrice) : null,
+      isActive: true,
+      slug: product.slug || product.id,
+      categoryId: product.categoryId || categoryId,
+      availability: product.availability || 'in_stock',
+      averageRating: product.averageRating ? Number(product.averageRating) : undefined,
+      totalRatings: product.totalRatings || 0,
+      variants: product.variants?.map(v => ({
+        id: v.id,
+        colorName: v.colorName || '',
+        colorCode: v.colorCode,
+        stock: v.stock
+      })) || []
+    }));
+  },
+  ['category-sidebar-products'],
+  { revalidate: 600 } // 10 minutes
+);
 
 export async function generateMetadata({ 
   params,
@@ -180,7 +202,7 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const { page } = await searchParams;
-  const category = await getCategory(slug);
+  const category = await getCachedCategory(slug);
   
   if (!category) {
     return {
@@ -211,7 +233,7 @@ export default async function CategoryPage({
 }) {
   const { slug } = await params;
   const { page, sort } = await searchParams;
-  const category = await getCategory(slug);
+  const category = await getCachedCategory(slug);
 
   if (!category) {
     notFound();
@@ -219,8 +241,13 @@ export default async function CategoryPage({
 
   const currentPage = page ? parseInt(page) : 1;
   const currentSort = sort || 'recommended';
+  
+  // Simple mobile detection based on viewport
+  const isMobile = false; // This will be handled on client side
+  const perPage = PRODUCTS_PER_PAGE;
+  
   const totalProducts = await getCategoryProductsCount(category.id);
-  const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
+  const totalPages = Math.ceil(totalProducts / perPage);
   
   // Redirect if page is out of bounds
   if (currentPage < 1 || (currentPage > totalPages && totalPages > 0)) {
@@ -233,41 +260,48 @@ export default async function CategoryPage({
     notFound();
   }
 
-  const products = await getSortedCategoryProducts(category.id, currentPage, currentSort);
-  const randomProducts = await getRandomCategoryProducts(category.id, 8);
-  const popularProduct = await getRandomCategoryProducts(category.id, 1);
+  const products = await getSortedCategoryProducts(category.id, currentPage, currentSort, true, perPage);
+  
+  // Load sidebar products
+  const [randomProducts, popularProduct] = await Promise.all([
+    getCachedSidebarProducts(category.id, 8),
+    getCachedSidebarProducts(category.id, 1)
+  ]);
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="max-w-screen-2xl mx-auto px-6 py-8">
+      <div className="max-w-screen-2xl mx-auto px-4 md:px-6 py-4 md:py-8">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm flex items-center">
-          <Link href="/" className="text-gray-600 hover:text-blue-600">
-            <Home size={16} />
+        <nav className="mb-4 md:mb-6 text-xs md:text-sm flex items-center flex-wrap">
+          <Link href="/" className="text-gray-600 hover:text-blue-600 p-1">
+            <Home size={14} className="md:w-4 md:h-4" />
           </Link>
           {category.parent && (
             <>
-              <span className="mx-2 text-gray-400">/</span>
-              <Link href={`/category/${category.parent.slug}`} className="text-gray-600 hover:text-blue-600">
+              <span className="mx-1 md:mx-2 text-gray-400">/</span>
+              <Link 
+                href={`/category/${category.parent.slug}`} 
+                className="text-gray-600 hover:text-blue-600 p-1"
+              >
                 {category.parent.name}
               </Link>
             </>
           )}
-          <span className="mx-2 text-gray-400">/</span>
+          <span className="mx-1 md:mx-2 text-gray-400">/</span>
           <span className="text-gray-900">{category.name}</span>
         </nav>
 
         {/* Category Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black mb-2">{category.name}</h1>
+        <div className="mb-4 md:mb-8">
+          <h1 className="text-xl md:text-3xl font-bold text-black mb-1 md:mb-2">{category.name}</h1>
           {category.description && (
-            <p className="text-gray-600">{category.description}</p>
+            <p className="text-sm md:text-base text-gray-600">{category.description}</p>
           )}
         </div>
 
-        {/* Main Layout with Sidebar */}
-        <div className="flex gap-8" style={{ overflow: "visible" }}>
-          {/* Left Sidebar - Najnowsze zamówienia */}
+        {/* Main Layout */}
+        <div className="flex gap-4 md:gap-8">
+          {/* Left Sidebar - Desktop only */}
           <aside className="w-64 flex-shrink-0 hidden lg:block space-y-6">
             {/* Najnowsze zamówienia section */}
             <div className="bg-gray-50 rounded-lg p-4">
@@ -276,7 +310,7 @@ export default async function CategoryPage({
                 {randomProducts.map((product) => (
                   <Link 
                     key={product.id}
-                    href={`/${product.category?.slug || 'products'}/${product.slug}`}
+                    href={`/${product.category?.slug || 'products'}/${product.slug || product.id}`}
                     className="block hover:bg-white rounded-lg p-2 transition-colors"
                   >
                     <div className="flex gap-3">
@@ -286,6 +320,7 @@ export default async function CategoryPage({
                             src={product.image}
                             alt={product.name}
                             className="w-full h-full object-cover rounded"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center text-gray-400">
@@ -316,7 +351,7 @@ export default async function CategoryPage({
                 <div className="hover:bg-white rounded-lg p-3 transition-colors">
                   <div className="space-y-3">
                     <Link 
-                      href={`/${popularProduct[0].category?.slug || 'products'}/${popularProduct[0].slug}`}
+                      href={`/${popularProduct[0].category?.slug || 'products'}/${popularProduct[0].slug || popularProduct[0].id}`}
                       className="block"
                     >
                       <div className="relative w-full pb-[100%]">
@@ -325,6 +360,7 @@ export default async function CategoryPage({
                             src={popularProduct[0].image}
                             alt={popularProduct[0].name}
                             className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="absolute inset-0 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400">
@@ -359,7 +395,7 @@ export default async function CategoryPage({
                         </span>
                       )}
                       <Link 
-                        href={`/${popularProduct[0].category?.slug || 'products'}/${popularProduct[0].slug}`}
+                        href={`/${popularProduct[0].category?.slug || 'products'}/${popularProduct[0].slug || popularProduct[0].id}`}
                         className="inline-block px-3 py-1.5 bg-[#6da306] text-white text-xs font-medium rounded-lg hover:bg-[#5d8c05] transition-colors"
                       >
                         Zobacz
@@ -372,32 +408,35 @@ export default async function CategoryPage({
           </aside>
 
           {/* Main Content */}
-          <div className="flex-1 relative" style={{ overflow: "visible" }}>
-            {/* Subcategories - Only show on first page */}
+          <div className="flex-1">
+            {/* Subcategories */}
             {currentPage === 1 && category.children && category.children.length > 0 && (
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-4 text-black">Podkategorie</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="mb-4 md:mb-8">
+                <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4 text-black">Podkategorie</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
                   {category.children.map((subcategory) => (
                     <Link
                       key={subcategory.id}
                       href={`/category/${subcategory.slug}`}
-                      className="bg-white rounded-lg shadow hover:shadow-md transition p-4 flex items-center gap-3"
+                      className="bg-white rounded-lg shadow hover:shadow-md transition p-3 md:p-4 flex items-center gap-2 md:gap-3"
                     >
-                      <div className="relative w-12 h-12 flex-shrink-0">
+                      <div className="relative w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
                         {subcategory.image ? (
                           <img
                             src={subcategory.image}
                             alt={subcategory.name}
                             className="w-full h-full object-cover rounded"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-full h-full bg-gray-100 rounded flex items-center justify-center">
-                            <FolderOpen className="text-blue-600" size={24} />
+                            <FolderOpen className="text-blue-600 w-5 h-5 md:w-6 md:h-6" />
                           </div>
                         )}
                       </div>
-                      <span className="font-medium text-gray-900">{subcategory.name}</span>
+                      <span className="font-medium text-xs md:text-sm text-gray-900 line-clamp-2">
+                        {subcategory.name}
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -406,18 +445,7 @@ export default async function CategoryPage({
 
             {/* Products Grid with Filter */}
             <CategoryProductsClient 
-              products={products.map(p => ({
-                ...p, 
-                isActive: true, 
-                slug: p.slug || p.id, 
-                categoryId: p.categoryId || p.category?.id || "",
-                variants: p.variants?.map(v => ({
-                  id: v.id,
-                  colorName: v.colorName || "",
-                  colorCode: v.colorCode,
-                  stock: v.stock
-                }))
-              }))}
+              products={products}
               currentPage={currentPage}
               totalPages={totalPages}
               totalProducts={totalProducts}
