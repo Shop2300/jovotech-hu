@@ -1,16 +1,46 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Toaster } from 'react-hot-toast';
+import dynamic from 'next/dynamic';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
-import { ConditionalFooter } from '@/components/ConditionalFooter';
-import { SideBadges } from '@/components/SideBadges';
-import { GoogleTagManager } from '@/components/GoogleTagManager';
+
+// Dynamically import non-critical components
+const ConditionalFooter = dynamic(
+  () => import('@/components/ConditionalFooter').then(mod => ({ default: mod.ConditionalFooter })),
+  { 
+    loading: () => null 
+  }
+);
+
+const SideBadges = dynamic(
+  () => import('@/components/SideBadges').then(mod => ({ default: mod.SideBadges })),
+  { 
+    loading: () => null 
+  }
+);
+
+const GoogleTagManager = dynamic(
+  () => import('@/components/GoogleTagManager').then(mod => ({ default: mod.GoogleTagManager })),
+  { 
+    loading: () => null 
+  }
+);
+
+// Lazy load the toaster to reduce initial bundle
+const Toaster = dynamic(
+  () => import('react-hot-toast').then(mod => ({ default: mod.Toaster })),
+  { 
+    loading: () => null 
+  }
+);
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  // Removed maximumScale to allow users to zoom in for accessibility
+  minimumScale: 1,
+  userScalable: true, // Allow zooming for accessibility
+  themeColor: '#ffffff',
+  colorScheme: 'light', // Force light mode
 }
 
 export const metadata: Metadata = {
@@ -78,6 +108,12 @@ export const metadata: Metadata = {
   verification: {
     google: "rM73bzskVZTTR0tmKXijqULs5zrCBTgi1EY-th_ce3k",
   },
+  // Performance hints
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+  }
 };
 
 export default function RootLayout({
@@ -86,20 +122,43 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl">
-      <body>
+    <html lang="pl" suppressHydrationWarning>
+      <head>
+        {/* Preconnect to critical domains */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        
+        {/* Optimize mobile rendering */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            html {
+              -webkit-text-size-adjust: 100%;
+              text-size-adjust: 100%;
+              -webkit-tap-highlight-color: transparent;
+            }
+            body {
+              -webkit-font-smoothing: antialiased;
+              -moz-osx-font-smoothing: grayscale;
+            }
+          `
+        }} />
+      </head>
+      <body suppressHydrationWarning>
         <LayoutWrapper />
         {children}
         <ConditionalFooter />
         <SideBadges />
         <GoogleTagManager />
         <Toaster
-          position="bottom-right"
+          position="bottom-center"
           toastOptions={{
             duration: 3000,
             style: {
               background: '#333',
               color: '#fff',
+              fontSize: '14px',
+              padding: '12px 16px',
+              maxWidth: '90vw',
             },
             success: {
               style: {
@@ -111,6 +170,9 @@ export default function RootLayout({
                 background: '#ef4444',
               },
             },
+          }}
+          containerStyle={{
+            bottom: 20,
           }}
         />
       </body>

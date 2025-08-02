@@ -2,54 +2,57 @@
 import { prisma } from '@/lib/prisma';
 import dynamic from 'next/dynamic';
 import { unstable_cache } from 'next/cache';
+import { Suspense } from 'react';
 
 // Critical above-the-fold components - loaded immediately
-import { ProductCard } from '@/components/ProductCard';
 import { BannerSlider } from '@/components/BannerSlider';
 
-// Below-the-fold components - loaded dynamically
+// Lazy load ProductCard for better performance
+const ProductCard = dynamic(
+  () => import('@/components/ProductCard').then(mod => ({ default: mod.ProductCard })),
+  { 
+    loading: () => <div className="bg-gray-100 rounded-lg h-80 animate-pulse" />
+  }
+);
+
+// Below-the-fold components - loaded dynamically with smaller chunks
 const ProductsSlider = dynamic(
   () => import('@/components/ProductsSlider').then(mod => ({ default: mod.ProductsSlider })),
   { 
-    ssr: true,
-    loading: () => <div className="h-96" /> 
+    loading: () => <div className="h-64 md:h-96" /> 
   }
 );
 
 const CategoryProductBoxes = dynamic(
   () => import('@/components/CategoryProductBoxes').then(mod => ({ default: mod.CategoryProductBoxes })),
   { 
-    ssr: true,
-    loading: () => <div className="h-96" />
+    loading: () => <div className="h-64 md:h-96" />
   }
 );
 
 const FavoriteCategories = dynamic(
   () => import('@/components/FavoriteCategories').then(mod => ({ default: mod.FavoriteCategories })),
   { 
-    ssr: true,
-    loading: () => <div className="h-64" />
+    loading: () => <div className="h-48 md:h-64" />
   }
 );
 
 const RecentReviews = dynamic(
   () => import('@/components/RecentReviews').then(mod => ({ default: mod.RecentReviews })),
   { 
-    ssr: true,
-    loading: () => <div className="h-64" />
+    loading: () => <div className="h-48 md:h-64" />
   }
 );
 
 const ProductVideos = dynamic(
   () => import('@/components/ProductVideos').then(mod => ({ default: mod.ProductVideos })),
   { 
-    ssr: true,
-    loading: () => <div className="h-96" />
+    loading: () => <div className="h-64 md:h-96" />
   }
 );
 
 // Static generation with ISR for better performance
-export const revalidate = 3600; // Revalidate every hour instead of 5 minutes
+export const revalidate = 3600; // Revalidate every hour
 
 // Helper function to shuffle array
 function shuffleArray<T>(array: T[]): T[] {
@@ -61,8 +64,8 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-// Optimized product selection to reduce payload
-const productSelect = {
+// Optimized product selection for mobile - reduce data transfer
+const productSelectMobile = {
   id: true,
   name: true,
   slug: true,
@@ -79,6 +82,7 @@ const productSelect = {
       slug: true
     }
   },
+  // Only get first image for mobile to reduce payload
   images: {
     orderBy: { order: 'asc' as const },
     take: 1,
@@ -86,9 +90,10 @@ const productSelect = {
       url: true
     }
   },
+  // Reduce variants for mobile
   variants: {
     where: { isActive: true },
-    take: 5,
+    take: 3, // Reduced from 5
     select: {
       id: true,
       colorName: true,
@@ -110,23 +115,23 @@ const getCachedBanners = unstable_cache(
   { revalidate: 3600, tags: ['banners'] }
 );
 
-// Cached random products fetch
-const getCachedRandomProducts = unstable_cache(
+// Cached products with reduced payload for mobile
+const getCachedProductsMobile = unstable_cache(
   async () => {
     return prisma.product.findMany({
-      select: productSelect,
-      take: 50,
+      select: productSelectMobile,
+      take: 30, // Reduced from 50 for mobile
       orderBy: {
         updatedAt: 'desc'
       }
     });
   },
-  ['home-random-products'],
+  ['home-products-mobile'],
   { revalidate: 3600, tags: ['products'] }
 );
 
-// Cached category products fetch
-const getCachedCategoryProducts = unstable_cache(
+// Cached category products with mobile optimization
+const getCachedCategoryProductsMobile = unstable_cache(
   async (categorySlug: string) => {
     return prisma.product.findMany({
       where: {
@@ -134,19 +139,19 @@ const getCachedCategoryProducts = unstable_cache(
           slug: categorySlug
         }
       },
-      select: productSelect,
-      take: 20,
+      select: productSelectMobile,
+      take: 6, // Reduced from 20 for mobile
       orderBy: {
         createdAt: 'desc'
       }
     });
   },
-  ['home-category-products'],
+  ['home-category-products-mobile'],
   { revalidate: 3600, tags: ['products'] }
 );
 
 export default async function HomePage() {
-  // Run ALL queries in parallel but with caching
+  // Run queries in parallel with mobile optimization
   const [
     banners,
     randomProducts,
@@ -155,23 +160,18 @@ export default async function HomePage() {
     autoMotoProducts
   ] = await Promise.all([
     getCachedBanners(),
-    getCachedRandomProducts(),
-    getCachedCategoryProducts('sprzet-czyszczacy'),
-    getCachedCategoryProducts('malarstwo'),
-    getCachedCategoryProducts('auto-moto')
+    getCachedProductsMobile(),
+    getCachedCategoryProductsMobile('sprzet-czyszczacy'),
+    getCachedCategoryProductsMobile('malarstwo'),
+    getCachedCategoryProductsMobile('auto-moto')
   ]);
 
-  // Shuffle products for randomness
+  // Shuffle and slice products
   const shuffledProducts = shuffleArray(randomProducts);
   const featuredProducts = shuffledProducts.slice(0, 8);
   const newProducts = shuffledProducts.slice(8, 16);
 
-  // Shuffle category products and take only 6
-  const shuffledCleaningProducts = shuffleArray(cleaningProducts).slice(0, 6);
-  const shuffledPaintingProducts = shuffleArray(paintingProducts).slice(0, 6);
-  const shuffledAutoMotoProducts = shuffleArray(autoMotoProducts).slice(0, 6);
-
-  // Serialize products for client components
+  // Serialize products with mobile optimizations
   const serializeProduct = (product: any) => ({
     ...product,
     price: Number(product.price),
@@ -188,39 +188,58 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Banner Slider - Full width edge to edge */}
+      {/* Banner Slider - Critical, loads immediately */}
       <BannerSlider banners={banners} />
       
-      {/* Category Product Boxes */}
-      <CategoryProductBoxes 
-        cleaningProducts={shuffledCleaningProducts.map(serializeProduct)}
-        paintingProducts={shuffledPaintingProducts.map(serializeProduct)}
-        autoMotoProducts={shuffledAutoMotoProducts.map(serializeProduct)}
-      />
+      {/* Category Product Boxes - Load after banner */}
+      <Suspense fallback={<div className="h-64 md:h-96" />}>
+        <CategoryProductBoxes 
+          cleaningProducts={cleaningProducts.map(serializeProduct)}
+          paintingProducts={paintingProducts.map(serializeProduct)}
+          autoMotoProducts={autoMotoProducts.map(serializeProduct)}
+        />
+      </Suspense>
       
       {/* Featured Products */}
-      <section className="pt-4 pb-12">
-        <div className="max-w-screen-2xl mx-auto px-6">
-          <h2 className="text-2xl font-bold mb-8 text-center text-black">Polecane produkty</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <section className="pt-4 pb-8 md:pb-12">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-6">
+          <h2 className="text-xl md:text-2xl font-bold mb-6 md:mb-8 text-center text-black">
+            Polecane produkty
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
             {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={serializeProduct(product)} />
+              <Suspense 
+                key={product.id} 
+                fallback={<div className="bg-gray-100 rounded-lg h-64 md:h-80 animate-pulse" />}
+              >
+                <ProductCard 
+                  product={serializeProduct(product)} 
+                />
+              </Suspense>
             ))}
           </div>
         </div>
       </section>
       
-      {/* Favorite Categories Section */}
-      <FavoriteCategories />
+      {/* Lazy load below-the-fold content */}
+      <Suspense fallback={<div className="h-48 md:h-64" />}>
+        <FavoriteCategories />
+      </Suspense>
       
-      {/* New Products (Nowości) - Horizontal Slider */}
-      <ProductsSlider products={newProducts.map(serializeProduct)} title="Nowości" />
+      {/* New Products Slider */}
+      <Suspense fallback={<div className="h-64 md:h-96" />}>
+        <ProductsSlider products={newProducts.map(serializeProduct)} title="Nowości" />
+      </Suspense>
       
-      {/* Product Videos Section */}
-      <ProductVideos />
+      {/* Product Videos - Lowest priority */}
+      <Suspense fallback={<div className="h-64 md:h-96" />}>
+        <ProductVideos />
+      </Suspense>
       
-      {/* Recent Reviews Section */}
-      <RecentReviews />
+      {/* Recent Reviews - Lowest priority */}
+      <Suspense fallback={<div className="h-48 md:h-64" />}>
+        <RecentReviews />
+      </Suspense>
     </main>
   );
 }
