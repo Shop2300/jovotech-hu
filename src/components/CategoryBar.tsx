@@ -1,11 +1,10 @@
-// src/components/CategoryBar.tsx
 'use client';
 
 import Link from 'next/link';
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import ReactDOM from 'react-dom';
 const { createPortal } = ReactDOM;
-import { ChevronDown, FolderOpen, Menu, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, FolderOpen, Menu, X, Grid3X3 } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -275,52 +274,84 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
     <div className="fixed inset-0 z-50 md:hidden">
       <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
       <div className="fixed left-0 top-0 h-full w-[85%] max-w-sm bg-white shadow-xl overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold">Kategorie</h2>
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="p-2 rounded-lg hover:bg-gray-100 touch-manipulation"
-            style={{ minWidth: '44px', minHeight: '44px' }}
-          >
-            <X size={24} />
-          </button>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#8bc34a] to-[#7cb342] text-white p-4 sticky top-0 z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Grid3X3 size={24} />
+              <h2 className="text-lg font-bold">Kategorie</h2>
+            </div>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2 rounded-lg hover:bg-white/20 transition-colors touch-manipulation"
+              style={{ minWidth: '44px', minHeight: '44px' }}
+            >
+              <X size={24} />
+            </button>
+          </div>
         </div>
         
-        <nav className="py-4">
+        {/* Categories List */}
+        <nav className="py-2">
           {categories.map((category) => (
-            <div key={category.id} className="border-b last:border-b-0">
+            <div key={category.id} className="border-b border-gray-100 last:border-b-0">
               {category.children && category.children.length > 0 ? (
                 <>
                   <button
                     onClick={() => toggleDropdown(category.id)}
-                    className="w-full flex items-center justify-between px-4 py-4 text-left font-medium touch-manipulation"
-                    style={{ minHeight: '48px' }}
+                    className="w-full flex items-center justify-between px-4 py-4 text-left font-medium hover:bg-gray-50 transition-colors touch-manipulation"
+                    style={{ minHeight: '52px' }}
                   >
-                    <span>{category.name}</span>
+                    <div className="flex items-center gap-3">
+                      {category.image ? (
+                        <img 
+                          src={category.image} 
+                          alt={category.name}
+                          className="w-8 h-8 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <FolderOpen size={16} className="text-gray-400" />
+                        </div>
+                      )}
+                      <span className="text-[#131921]">{category.name}</span>
+                    </div>
                     <ChevronDown 
-                      className={`w-5 h-5 transition-transform ${
+                      className={`w-5 h-5 text-gray-400 transition-transform ${
                         openDropdown === category.id ? 'rotate-180' : ''
                       }`} 
                     />
                   </button>
                   
                   {openDropdown === category.id && (
-                    <div className="bg-gray-50 py-2">
+                    <div className="bg-gray-50 py-2 px-4">
                       <Link
                         href={`/category/${category.slug}`}
-                        className="block px-6 py-3 text-sm text-gray-700 hover:bg-gray-100 touch-manipulation"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#8bc34a] font-medium hover:bg-white rounded-lg transition-colors touch-manipulation"
                         onClick={() => setMobileMenuOpen(false)}
                       >
+                        <ChevronRight size={16} />
                         Pokaż wszystko
                       </Link>
                       {category.children.map((subcat) => (
                         <Link
                           key={subcat.id}
                           href={`/category/${subcat.slug}`}
-                          className="block px-6 py-3 text-sm hover:bg-gray-100 touch-manipulation"
+                          className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-white rounded-lg transition-colors touch-manipulation"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          {subcat.name}
+                          {subcat.image ? (
+                            <img 
+                              src={subcat.image} 
+                              alt={subcat.name}
+                              className="w-6 h-6 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
+                              <div className="w-2 h-2 bg-gray-400 rounded-full" />
+                            </div>
+                          )}
+                          <span>{subcat.name}</span>
                         </Link>
                       ))}
                     </div>
@@ -329,16 +360,34 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
               ) : (
                 <Link
                   href={`/category/${category.slug}`}
-                  className="block px-4 py-4 font-medium hover:bg-gray-50 touch-manipulation"
+                  className="flex items-center gap-3 px-4 py-4 font-medium hover:bg-gray-50 transition-colors touch-manipulation"
                   onClick={() => setMobileMenuOpen(false)}
-                  style={{ minHeight: '48px' }}
+                  style={{ minHeight: '52px' }}
                 >
-                  {category.name}
+                  {category.image ? (
+                    <img 
+                      src={category.image} 
+                      alt={category.name}
+                      className="w-8 h-8 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <FolderOpen size={16} className="text-gray-400" />
+                    </div>
+                  )}
+                  <span className="text-[#131921]">{category.name}</span>
                 </Link>
               )}
             </div>
           ))}
         </nav>
+        
+        {/* Footer */}
+        <div className="p-4 mt-4 border-t border-gray-100">
+          <p className="text-xs text-gray-500 text-center">
+            {categories.length} {categories.length === 1 ? 'kategoria' : categories.length < 5 ? 'kategorie' : 'kategorii'}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -435,15 +484,18 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
   if (isMobile) {
     return (
       <>
-        <div className="bg-white border-b border-gray-100">
-          <div className="max-w-screen-2xl mx-auto px-4 py-2">
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-screen-2xl mx-auto px-4 py-3">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="flex items-center gap-2 px-4 py-3 text-sm font-bold text-[#131921] hover:bg-gray-100 rounded-lg touch-manipulation w-full"
+              className="flex items-center justify-between px-4 py-3 text-sm font-medium bg-[#8bc34a] text-white hover:bg-[#7cb342] rounded-lg transition-colors touch-manipulation w-full group"
               style={{ minHeight: '48px' }}
             >
-              <Menu size={20} />
-              <span>Kategorie</span>
+              <div className="flex items-center gap-3">
+                <Grid3X3 size={20} />
+                <span>Przeglądaj kategorie</span>
+              </div>
+              <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
