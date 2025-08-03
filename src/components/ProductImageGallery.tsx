@@ -247,10 +247,10 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                   e.stopPropagation();
                   goToPrevious();
                 }}
-                className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 md:p-2 hover:bg-gray-100 transition touch-manipulation ${
-                  isMobile ? 'opacity-90' : 'opacity-0 group-hover:opacity-100'
+                className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full hover:bg-gray-100 transition touch-manipulation flex items-center justify-center ${
+                  isMobile ? 'opacity-90 border border-gray-300' : 'opacity-0 group-hover:opacity-100 p-2'
                 }`}
-                style={isMobile ? { minWidth: '44px', minHeight: '44px' } : {}}
+                style={isMobile ? { width: '44px', height: '44px' } : {}}
                 aria-label="Poprzednie zdjęcie"
               >
                 <ChevronLeft size={isMobile ? 20 : 24} className="text-gray-700" />
@@ -260,10 +260,10 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                   e.stopPropagation();
                   goToNext();
                 }}
-                className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 md:p-2 hover:bg-gray-100 transition touch-manipulation ${
-                  isMobile ? 'opacity-90' : 'opacity-0 group-hover:opacity-100'
+                className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full hover:bg-gray-100 transition touch-manipulation flex items-center justify-center ${
+                  isMobile ? 'opacity-90 border border-gray-300' : 'opacity-0 group-hover:opacity-100 p-2'
                 }`}
-                style={isMobile ? { minWidth: '44px', minHeight: '44px' } : {}}
+                style={isMobile ? { width: '44px', height: '44px' } : {}}
                 aria-label="Następne zdjęcie"
               >
                 <ChevronRight size={isMobile ? 20 : 24} className="text-gray-700" />

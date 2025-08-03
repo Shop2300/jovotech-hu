@@ -1,4 +1,3 @@
-// src/components/CategoryProductsClient.tsx
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -144,7 +143,7 @@ export function CategoryProductsClient({
         endProduct={endProduct}
       />
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
         {sortedProducts.map((product) => (
           <ProductCard key={product.id} product={{...product, stock: product.stock || 0}} />
         ))}
@@ -152,7 +151,7 @@ export function CategoryProductsClient({
       
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-12">
+        <div className="mt-8 md:mt-12">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
