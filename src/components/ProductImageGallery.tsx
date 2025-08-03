@@ -126,9 +126,10 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
     <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
       <button
         onClick={() => setShowFullscreen(false)}
-        className="absolute top-4 right-4 z-10 bg-white/10 backdrop-blur text-white rounded-full p-3 hover:bg-white/20 transition touch-manipulation"
+        className="absolute top-4 right-4 z-10 bg-white shadow-lg rounded-full hover:bg-gray-100 transition touch-manipulation flex items-center justify-center opacity-90 border border-gray-300"
+        style={{ width: '44px', height: '44px' }}
       >
-        <X size={24} />
+        <X size={20} className="text-gray-700" />
       </button>
       
       <div className="relative w-full h-full flex items-center justify-center p-4">
@@ -143,15 +144,17 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur text-white rounded-full p-3 hover:bg-white/20 transition touch-manipulation"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-full hover:bg-gray-100 transition touch-manipulation flex items-center justify-center opacity-90 border border-gray-300"
+              style={{ width: '44px', height: '44px' }}
             >
-              <ChevronLeft size={24} />
+              <ChevronLeft size={20} className="text-gray-700" />
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur text-white rounded-full p-3 hover:bg-white/20 transition touch-manipulation"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-full hover:bg-gray-100 transition touch-manipulation flex items-center justify-center opacity-90 border border-gray-300"
+              style={{ width: '44px', height: '44px' }}
             >
-              <ChevronRight size={24} />
+              <ChevronRight size={20} className="text-gray-700" />
             </button>
           </>
         )}
