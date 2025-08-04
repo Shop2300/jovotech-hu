@@ -322,7 +322,7 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-[#131921]">Dane kontaktowe</h2>
                 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
                       <span>Email</span>
