@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, Package, Copy, ArrowRight, CreditCard, Truck } from 'lucide-react';
 import toast from 'react-hot-toast';
+import BankTransferQR from '@/components/BankTransferQR';
 
 const BANK_DETAILS = {
   accountNumber: '21291000062469800208837403',
@@ -225,8 +226,18 @@ function OrderSuccessContent() {
           )}
         </div>
 
+        {/* Bank Transfer QR Code - Show only for bank transfer payments */}
+        {showBankDetails && (
+          <BankTransferQR
+            orderNumber={orderNumber}
+            amount={orderDetails.total}
+            recipientAccount={BANK_DETAILS.accountNumber}
+            iban={BANK_DETAILS.iban}
+          />
+        )}
+
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-8 md:mb-12">
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-8 md:mb-12 mt-6">
           <Link
             href="/"
             className="flex-1 bg-gray-200 text-gray-800 text-center py-3 px-4 md:px-6 rounded-lg hover:bg-gray-300 transition touch-manipulation min-h-[48px] flex items-center justify-center"

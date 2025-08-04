@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SatisfactionRating } from '@/components/SatisfactionRating';
 import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
+import SimpleQRDisplay from '@/components/SimpleQRDisplay';
 
 // Helper function to format dates in the correct format with timezone adjustment
 const formatDateWithTimezone = (dateString: string, includeTime: boolean = true) => {
@@ -188,24 +189,38 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
           {/* Payment Status Alert - Only for bank transfers */}
           {order.paymentMethod === 'bank' && order.paymentStatus === 'unpaid' && (
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="text-amber-600 mt-0.5" size={20} />
+              <div className="flex gap-4">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-amber-900 mb-2">Czekamy na płatność</h3>
-                  <p className="text-sm text-amber-800 mb-3">
-                    Aby sfinalizować zamówienie, prosimy o wpłatę kwoty <strong>{formatPrice(order.total)}</strong> na nasze konto bankowe:
-                  </p>
-                  <div className="bg-white rounded-md p-3 space-y-1 text-sm">
-                    <p><strong>Numer konta:</strong> {BANK_DETAILS.accountNumber}</p>
-                    <p><strong>IBAN:</strong> <span className="font-mono">{BANK_DETAILS.iban}</span></p>
-                    <p><strong>SWIFT/BIC:</strong> {BANK_DETAILS.swift}</p>
-                    <p><strong>Bank:</strong> {BANK_DETAILS.bankName}</p>
-                    <p className="text-xs">{BANK_DETAILS.bankAddress}</p>
-                    <p><strong>Tytuł przelewu:</strong> {order.orderNumber.replace('-', '')}</p>
-                    <p className="text-xs text-gray-600 mt-2">
-                      Zamówienie wyślemy natychmiast po zaksięgowaniu wpłaty na naszym koncie.
-                    </p>
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="text-amber-600 mt-0.5" size={20} />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-amber-900 mb-2">Czekamy na płatność</h3>
+                      <p className="text-sm text-amber-800 mb-3">
+                        Aby sfinalizować zamówienie, prosimy o wpłatę kwoty <strong>{formatPrice(order.total)}</strong> na nasze konto bankowe:
+                      </p>
+                      <div className="bg-white rounded-md p-3 space-y-1 text-sm">
+                        <p><strong>Numer konta:</strong> {BANK_DETAILS.accountNumber}</p>
+                        <p><strong>IBAN:</strong> <span className="font-mono">{BANK_DETAILS.iban}</span></p>
+                        <p><strong>SWIFT/BIC:</strong> {BANK_DETAILS.swift}</p>
+                        <p><strong>Bank:</strong> {BANK_DETAILS.bankName}</p>
+                        <p className="text-xs">{BANK_DETAILS.bankAddress}</p>
+                        <p><strong>Tytuł przelewu:</strong> {order.orderNumber.replace('-', '')}</p>
+                        <p className="text-xs text-gray-600 mt-2">
+                          Zamówienie wyślemy natychmiast po zaksięgowaniu wpłaty na naszym koncie.
+                        </p>
+                      </div>
+                    </div>
                   </div>
+                </div>
+                
+                {/* QR Code on the right */}
+                <div className="hidden md:block w-48 flex-shrink-0">
+                  <SimpleQRDisplay
+                    orderNumber={order.orderNumber}
+                    amount={order.total}
+                    recipientAccount={BANK_DETAILS.accountNumber}
+                    iban={BANK_DETAILS.iban}
+                  />
                 </div>
               </div>
             </div>
@@ -552,35 +567,43 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             {/* Bank Details (only for unpaid bank transfer) */}
             {order.paymentMethod === 'bank' && order.paymentStatus === 'unpaid' && (
               <div className="bg-amber-50 rounded-lg p-6">
-              <h3 className="font-semibold mb-3 text-amber-900">Dane do przelewu</h3>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <p className="text-gray-600">Numer konta:</p>
-                  <p className="font-mono font-medium">{BANK_DETAILS.accountNumber}</p>
+                <h3 className="font-semibold mb-3 text-amber-900">Dane do przelewu</h3>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <p className="text-gray-600">Numer konta:</p>
+                    <p className="font-mono font-medium">{BANK_DETAILS.accountNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">IBAN:</p>
+                    <p className="font-mono font-medium">{BANK_DETAILS.iban}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">SWIFT/BIC:</p>
+                    <p className="font-mono font-medium">{BANK_DETAILS.swift}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Bank:</p>
+                    <p className="font-medium">{BANK_DETAILS.bankName}</p>
+                    <p className="text-xs text-gray-500">{BANK_DETAILS.bankAddress}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Tytuł przelewu:</p>
+                    <p className="font-mono font-medium">{order.orderNumber.replace('-', '')}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Kwota:</p>
+                    <p className="font-bold text-lg">{formatPrice(order.total)}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-gray-600">IBAN:</p>
-                  <p className="font-mono font-medium">{BANK_DETAILS.iban}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">SWIFT/BIC:</p>
-                  <p className="font-mono font-medium">{BANK_DETAILS.swift}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Bank:</p>
-                  <p className="font-medium">{BANK_DETAILS.bankName}</p>
-                  <p className="text-xs text-gray-500">{BANK_DETAILS.bankAddress}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Tytuł przelewu:</p>
-                  <p className="font-mono font-medium">{order.orderNumber.replace('-', '')}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Kwota:</p>
-                  <p className="font-bold text-lg">{formatPrice(order.total)}</p>
-                </div>
+                
+                {/* Simple QR Code Display */}
+                <SimpleQRDisplay
+                  orderNumber={order.orderNumber}
+                  amount={order.total}
+                  recipientAccount={BANK_DETAILS.accountNumber}
+                  iban={BANK_DETAILS.iban}
+                />
               </div>
-            </div>
             )}
 
             {/* Cash on Delivery Reminder */}
