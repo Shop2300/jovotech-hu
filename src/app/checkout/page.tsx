@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeft, Package, Truck, CreditCard, Banknote, Copy, Building2, ShoppingCart, CheckCircle } from 'lucide-react';
 import { DELIVERY_METHODS, PAYMENT_METHODS, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
+import QRPreview from '@/components/QRPreview';
 
 interface CheckoutForm {
   email: string;
@@ -814,51 +815,60 @@ export default function CheckoutPage() {
                 {/* Bank Details - shown when bank transfer is selected */}
                 {paymentMethod === 'bank' && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <h3 className="font-semibold text-[#131921] mb-2">Dane do przelewu:</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                        <span className="text-gray-700">Numer konta:</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.accountNumber}</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Numer konta')}
-                            className="text-blue-600 hover:text-blue-800 p-2 -mr-2 touch-manipulation"
-                          >
-                            <Copy size={16} />
-                          </button>
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-[#131921] mb-2">Dane do przelewu:</h3>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <span className="text-gray-700">Numer konta:</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.accountNumber}</span>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Numer konta')}
+                                className="text-blue-600 hover:text-blue-800 p-2 -mr-2 touch-manipulation"
+                              >
+                                <Copy size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <span className="text-gray-700">IBAN:</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.iban}</span>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(BANK_DETAILS.iban, 'IBAN')}
+                                className="text-blue-600 hover:text-blue-800 p-2 -mr-2 touch-manipulation"
+                              >
+                                <Copy size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <span className="text-gray-700">BIC/SWIFT:</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.swift}</span>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(BANK_DETAILS.swift, 'BIC/SWIFT')}
+                                className="text-blue-600 hover:text-blue-800 p-2 -mr-2 touch-manipulation"
+                              >
+                                <Copy size={16} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
+                        <p className="text-xs text-gray-600 mt-3">
+                          * Jako tytuł przelewu proszę wpisać numer zamówienia, który otrzymają Państwo po finalizacji.
+                        </p>
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                        <span className="text-gray-700">IBAN:</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.iban}</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(BANK_DETAILS.iban, 'IBAN')}
-                            className="text-blue-600 hover:text-blue-800 p-2 -mr-2 touch-manipulation"
-                          >
-                            <Copy size={16} />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                        <span className="text-gray-700">BIC/SWIFT:</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.swift}</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(BANK_DETAILS.swift, 'BIC/SWIFT')}
-                            className="text-blue-600 hover:text-blue-800 p-2 -mr-2 touch-manipulation"
-                          >
-                            <Copy size={16} />
-                          </button>
-                        </div>
+                      
+                      {/* QR Preview - hidden on mobile */}
+                      <div className="hidden md:flex items-center justify-center pl-4 border-l border-blue-200">
+                        <QRPreview amount={totalPrice} />
                       </div>
                     </div>
-                    <p className="text-xs text-gray-600 mt-3">
-                      * Jako tytuł przelewu proszę wpisać numer zamówienia, który otrzymają Państwo po finalizacji.
-                    </p>
                   </div>
                 )}
               </div>
