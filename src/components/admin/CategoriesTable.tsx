@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, Eye, EyeOff, MoveUp, MoveDown, Package, ChevronRight, ChevronDown } from 'lucide-react';
+import { Edit, Trash2, Eye, EyeOff, MoveUp, MoveDown, Package, ChevronRight, ChevronDown, MoreVertical, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -39,7 +39,35 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
+  const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Close action menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.action-menu-container')) {
+        setOpenActionMenu(null);
+      }
+    };
+
+    if (openActionMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openActionMenu]);
 
   // Function to get admin token from localStorage or cookie
   const getAdminToken = () => {
@@ -241,7 +269,171 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
     }
   };
 
-  const renderCategory = (category: CategoryWithChildren, level: number = 0): React.ReactNode => {
+  // Mobile Card Renderer
+  const renderCategoryCard = (category: CategoryWithChildren, level: number = 0): React.ReactNode => {
+    const hasChildren = category.childCategories && category.childCategories.length > 0;
+    const isExpanded = expandedCategories.has(category.id);
+
+    // Filter by search term
+    if (searchTerm) {
+      const matches = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                     category.slug.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      if (!matches && hasChildren) {
+        // Check if any children match
+        const childrenMatch = category.childCategories?.some(child => 
+          child.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          child.slug.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        if (!childrenMatch) return null;
+      } else if (!matches) {
+        return null;
+      }
+    }
+
+    // Get sibling categories for up/down button visibility
+    const siblings = categories.filter(c => c.parentId === category.parentId);
+    siblings.sort((a, b) => a.order - b.order);
+    const isFirst = siblings[0]?.id === category.id;
+    const isLast = siblings[siblings.length - 1]?.id === category.id;
+
+    return (
+      <React.Fragment key={category.id}>
+        <div 
+          className={`bg-white rounded-lg border p-4 mb-3 ${level > 0 ? 'ml-4 border-l-4 border-l-blue-200' : ''}`}
+        >
+          {/* Header Row */}
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3 flex-1">
+              {hasChildren && (
+                <button
+                  onClick={() => toggleExpanded(category.id)}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg min-w-[32px] min-h-[32px] flex items-center justify-center"
+                >
+                  {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                </button>
+              )}
+              
+              {category.image ? (
+                <img 
+                  src={category.image} 
+                  alt={category.name}
+                  className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Package size={20} className="text-gray-500" />
+                </div>
+              )}
+              
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 truncate">{category.name}</h3>
+                <code className="text-xs text-gray-500">{category.slug}</code>
+              </div>
+            </div>
+
+            {/* Action Menu */}
+            <div className="relative action-menu-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenActionMenu(openActionMenu === category.id ? null : category.id);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg min-w-[40px] min-h-[40px] flex items-center justify-center"
+              >
+                <MoreVertical size={20} />
+              </button>
+              
+              {openActionMenu === category.id && (
+                <div className="absolute right-0 top-10 bg-white border rounded-lg shadow-lg z-10 min-w-[160px]">
+                  <button
+                    onClick={() => {
+                      router.push(`/admin/categories/${category.id}/edit`);
+                      setOpenActionMenu(null);
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 text-sm"
+                  >
+                    <Edit size={16} />
+                    Upravit
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleDelete(category.id, category.name, category._count.products, category._count.children);
+                      setOpenActionMenu(null);
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 text-sm text-red-600"
+                  >
+                    <Trash2 size={16} />
+                    Smazat
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Info Row */}
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <button
+              onClick={() => toggleActive(category)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium min-h-[32px] ${
+                category.isActive
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-gray-100 text-gray-800'
+              }`}
+            >
+              {category.isActive ? 'Aktivní' : 'Neaktivní'}
+            </button>
+            
+            <span className="text-gray-600">
+              {category._count.products} produktů
+            </span>
+            
+            {category._count.children > 0 && (
+              <span className="text-gray-500">
+                {category._count.children} podkat.
+              </span>
+            )}
+
+            {/* Order Controls */}
+            <div className="flex items-center gap-1 ml-auto">
+              <span className="text-gray-500 text-xs mr-1">#{category.order}</span>
+              <button
+                onClick={() => moveCategory(category, 'up')}
+                disabled={isFirst || isUpdatingOrder}
+                className={`p-1.5 rounded-lg min-w-[32px] min-h-[32px] flex items-center justify-center ${
+                  isFirst || isUpdatingOrder
+                    ? 'text-gray-300 cursor-not-allowed' 
+                    : 'text-gray-600 hover:bg-gray-100 active:bg-gray-200'
+                }`}
+              >
+                <MoveUp size={16} />
+              </button>
+              <button
+                onClick={() => moveCategory(category, 'down')}
+                disabled={isLast || isUpdatingOrder}
+                className={`p-1.5 rounded-lg min-w-[32px] min-h-[32px] flex items-center justify-center ${
+                  isLast || isUpdatingOrder
+                    ? 'text-gray-300 cursor-not-allowed' 
+                    : 'text-gray-600 hover:bg-gray-100 active:bg-gray-200'
+                }`}
+              >
+                <MoveDown size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {isExpanded && hasChildren && (
+          <div className="mb-2">
+            {category.childCategories?.map(child => renderCategoryCard(child, level + 1))}
+          </div>
+        )}
+      </React.Fragment>
+    );
+  };
+
+  // Desktop Table Renderer (original)
+  const renderCategoryRow = (category: CategoryWithChildren, level: number = 0): React.ReactNode => {
     const hasChildren = category.childCategories && category.childCategories.length > 0;
     const isExpanded = expandedCategories.has(category.id);
 
@@ -371,24 +563,40 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
             </div>
           </td>
         </tr>
-        {isExpanded && hasChildren && (category.childCategories?.map(child => renderCategory(child, level + 1)) || null)}
+        {isExpanded && hasChildren && (category.childCategories?.map(child => renderCategoryRow(child, level + 1)) || null)}
       </React.Fragment>
     );
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md">
-      <div className="p-6 border-b">
-        <input
-          type="text"
-          placeholder="Hledat kategorie..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full max-w-md px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+      {/* Search Header */}
+      <div className="p-4 sm:p-6 border-b">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Hledat kategorie..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full max-w-full sm:max-w-md px-4 py-2.5 sm:py-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile View - Cards */}
+      <div className="md:hidden p-4">
+        {hierarchicalCategories.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            Žádné kategorie nenalezeny
+          </div>
+        ) : (
+          hierarchicalCategories.map(category => renderCategoryCard(category))
+        )}
+      </div>
+
+      {/* Desktop View - Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b bg-gray-50">
@@ -408,7 +616,7 @@ export function CategoriesTable({ categories: initialCategories }: { categories:
                 </td>
               </tr>
             ) : (
-              hierarchicalCategories.map(category => renderCategory(category))
+              hierarchicalCategories.map(category => renderCategoryRow(category))
             )}
           </tbody>
         </table>

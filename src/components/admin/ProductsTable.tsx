@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
-import { Edit, Trash, Image, Copy, Download, Upload, CheckSquare, Square, FolderOpen, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Edit, Trash, Image, Copy, Download, Upload, CheckSquare, Square, FolderOpen, Trash2, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ProductImportModal } from './ProductImportModal';
 
@@ -42,6 +42,168 @@ interface ProductsTableProps {
   itemsPerPage: number;
 }
 
+// Mobile Product Card Component
+const ProductCard = ({ 
+  product, 
+  isSelected, 
+  onToggleSelect,
+  onEdit,
+  onDuplicate,
+  onDelete,
+  isDuplicating,
+  isDeleting,
+  getAvailabilityText,
+  getAvailabilityColor
+}: {
+  product: Product;
+  isSelected: boolean;
+  onToggleSelect: () => void;
+  onEdit: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+  isDuplicating: boolean;
+  isDeleting: boolean;
+  getAvailabilityText: (product: Product) => string;
+  getAvailabilityColor: (product: Product) => string;
+}) => {
+  const [showActions, setShowActions] = useState(false);
+
+  return (
+    <div className="bg-white rounded-lg border p-4 mb-3">
+      <div className="flex items-start gap-3">
+        {/* Checkbox */}
+        <button
+          onClick={onToggleSelect}
+          className="mt-1 text-gray-600 hover:text-gray-900 min-w-[24px] min-h-[24px] flex items-center justify-center"
+        >
+          {isSelected ? (
+            <CheckSquare size={20} />
+          ) : (
+            <Square size={20} />
+          )}
+        </button>
+
+        {/* Product Image */}
+        <button
+          onClick={onEdit}
+          className="flex-shrink-0"
+        >
+          {product.image ? (
+            <img 
+              src={product.image} 
+              alt={product.name}
+              className="h-16 w-16 object-cover rounded"
+            />
+          ) : (
+            <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center">
+              <Image className="text-gray-400" size={24} />
+            </div>
+          )}
+        </button>
+
+        {/* Product Details */}
+        <div className="flex-1 min-w-0">
+          <button
+            onClick={onEdit}
+            className="text-left w-full"
+          >
+            <h3 className="font-medium text-gray-900 text-sm truncate pr-2">{product.name}</h3>
+            {product._count && product._count.variants > 0 && (
+              <p className="text-xs text-gray-500">
+                {product._count.variants} variant
+              </p>
+            )}
+          </button>
+          
+          <div className="mt-2 space-y-1">
+            {product.code && (
+              <p className="text-xs text-gray-600">
+                <span className="font-medium">Kód:</span> <span className="font-mono">{product.code}</span>
+              </p>
+            )}
+            {product.brand && (
+              <p className="text-xs text-gray-600">
+                <span className="font-medium">Značka:</span> {product.brand}
+              </p>
+            )}
+            {product.category && (
+              <p className="text-xs text-gray-600">
+                <span className="font-medium">Kategorie:</span> {product.category.name}
+              </p>
+            )}
+            <p className="text-sm font-semibold text-gray-900">
+              {formatPrice(product.price)}
+            </p>
+          </div>
+
+          {/* Stock Status */}
+          <div className="mt-2 flex items-center gap-2">
+            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getAvailabilityColor(product)}`}>
+              {product.stock} ks
+            </span>
+            <span className="text-xs text-gray-600">
+              {getAvailabilityText(product)}
+            </span>
+          </div>
+        </div>
+
+        {/* Actions Menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowActions(!showActions)}
+            className="p-2 hover:bg-gray-100 rounded-lg min-w-[40px] min-h-[40px] flex items-center justify-center"
+          >
+            <MoreVertical size={20} />
+          </button>
+          
+          {showActions && (
+            <>
+              <div 
+                className="fixed inset-0 z-10" 
+                onClick={() => setShowActions(false)}
+              />
+              <div className="absolute right-0 top-10 bg-white border rounded-lg shadow-lg z-20 min-w-[160px]">
+                <button
+                  onClick={() => {
+                    onEdit();
+                    setShowActions(false);
+                  }}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 text-sm flex items-center gap-2"
+                >
+                  <Edit size={16} />
+                  Upravit
+                </button>
+                <button
+                  onClick={() => {
+                    onDuplicate();
+                    setShowActions(false);
+                  }}
+                  disabled={isDuplicating}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 text-sm flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Copy size={16} />
+                  Duplikovat
+                </button>
+                <button
+                  onClick={() => {
+                    onDelete();
+                    setShowActions(false);
+                  }}
+                  disabled={isDeleting}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 text-sm text-red-600 flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Trash size={16} />
+                  Smazat
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export function ProductsTable({ products: initialProducts, totalCount, currentPage, itemsPerPage }: ProductsTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -51,9 +213,11 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Bulk operations state
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [selectAllAcrossPages, setSelectAllAcrossPages] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [isBulkMoving, setIsBulkMoving] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -65,12 +229,30 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalCount);
 
+  // Check if all products on current page are selected
+  const areAllCurrentPageSelected = selectedProducts.size === products.length && products.length > 0;
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Update products when props change
   useEffect(() => {
     setProducts(initialProducts);
-    // Clear selection when products change
-    setSelectedProducts(new Set());
-  }, [initialProducts]);
+    // If selecting all across pages, automatically select all products on the new page
+    if (selectAllAcrossPages) {
+      setSelectedProducts(new Set(initialProducts.map(p => p.id)));
+    } else {
+      setSelectedProducts(new Set());
+    }
+  }, [initialProducts, selectAllAcrossPages]);
 
   // Load categories when needed
   useEffect(() => {
@@ -107,6 +289,10 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
 
   const handlePageChange = (page: number) => {
     updateSearchParams({ page: page.toString() });
+    // Don't clear selectAllAcrossPages when changing pages
+    if (!selectAllAcrossPages) {
+      setSelectedProducts(new Set());
+    }
   };
 
   const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -114,14 +300,33 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
       limit: e.target.value,
       page: '1' // Reset to first page when changing items per page
     });
+    // Clear selection when changing items per page
+    setSelectedProducts(new Set());
+    setSelectAllAcrossPages(false);
   };
 
   const handleSelectAll = () => {
-    if (selectedProducts.size === products.length) {
+    if (areAllCurrentPageSelected && !selectAllAcrossPages) {
+      // All products on current page are selected, deselect all
       setSelectedProducts(new Set());
+      setSelectAllAcrossPages(false);
     } else {
+      // Select all products on current page
       setSelectedProducts(new Set(products.map(p => p.id)));
+      setSelectAllAcrossPages(false);
     }
+  };
+
+  const handleSelectAllAcrossPages = () => {
+    setSelectAllAcrossPages(true);
+    // When selecting all across pages, we'll use a flag rather than storing all IDs
+    // This is more efficient for large datasets
+    setSelectedProducts(new Set(products.map(p => p.id))); // Still show current page as selected
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedProducts(new Set());
+    setSelectAllAcrossPages(false);
   };
 
   const handleSelectProduct = (productId: string) => {
@@ -132,24 +337,36 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
       newSelection.add(productId);
     }
     setSelectedProducts(newSelection);
+    // If we were selecting all across pages, cancel that when individually selecting/deselecting
+    setSelectAllAcrossPages(false);
   };
 
   const handleBulkDelete = async () => {
-    if (selectedProducts.size === 0) return;
+    if (selectedProducts.size === 0 && !selectAllAcrossPages) return;
     
-    const confirmMessage = `Opravdu chcete smazat ${selectedProducts.size} vybraných produktů? Tato akce je nevratná.`;
+    const count = selectAllAcrossPages ? totalCount : selectedProducts.size;
+    const confirmMessage = `Opravdu chcete smazat ${count} vybraných produktů? Tato akce je nevratná.`;
     if (!confirm(confirmMessage)) return;
 
     setIsBulkDeleting(true);
     try {
+      // If selecting all across pages, we need to send filter parameters
+      const requestBody = selectAllAcrossPages 
+        ? {
+            selectAll: true,
+            category: searchParams.get('category'),
+            search: searchParams.get('search')
+          }
+        : {
+            productIds: Array.from(selectedProducts)
+          };
+
       const response = await fetch('/api/admin/products/bulk-delete', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          productIds: Array.from(selectedProducts)
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) throw new Error('Failed to delete products');
@@ -157,8 +374,11 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
       const result = await response.json();
       
       // Remove deleted products from the list
-      setProducts(products.filter(p => !selectedProducts.has(p.id)));
+      if (!selectAllAcrossPages) {
+        setProducts(products.filter(p => !selectedProducts.has(p.id)));
+      }
       setSelectedProducts(new Set());
+      setSelectAllAcrossPages(false);
       
       toast.success(`${result.deletedCount} produktů bylo úspěšně smazáno`);
       router.refresh();
@@ -170,41 +390,54 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
   };
 
   const handleBulkMove = async () => {
-    if (selectedProducts.size === 0 || !selectedCategoryId) return;
+    if ((selectedProducts.size === 0 && !selectAllAcrossPages) || !selectedCategoryId) return;
 
     setIsBulkMoving(true);
     try {
+      // If selecting all across pages, we need to send filter parameters
+      const requestBody = selectAllAcrossPages 
+        ? {
+            selectAll: true,
+            categoryId: selectedCategoryId === 'null' ? null : selectedCategoryId,
+            currentCategory: searchParams.get('category'),
+            search: searchParams.get('search')
+          }
+        : {
+            productIds: Array.from(selectedProducts),
+            categoryId: selectedCategoryId === 'null' ? null : selectedCategoryId
+          };
+
       const response = await fetch('/api/admin/products/bulk-move', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          productIds: Array.from(selectedProducts),
-          categoryId: selectedCategoryId === 'null' ? null : selectedCategoryId
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) throw new Error('Failed to move products');
 
       const result = await response.json();
       
-      // Update products in the list
-      const selectedCategory = categories.find(c => c.id === selectedCategoryId);
-      setProducts(products.map(p => {
-        if (selectedProducts.has(p.id)) {
-          return {
-            ...p,
-            category: selectedCategoryId === 'null' ? null : {
-              id: selectedCategoryId,
-              name: selectedCategory?.name || ''
-            }
-          };
-        }
-        return p;
-      }));
+      // Update products in the list (only if not selecting all across pages)
+      if (!selectAllAcrossPages) {
+        const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+        setProducts(products.map(p => {
+          if (selectedProducts.has(p.id)) {
+            return {
+              ...p,
+              category: selectedCategoryId === 'null' ? null : {
+                id: selectedCategoryId,
+                name: selectedCategory?.name || ''
+              }
+            };
+          }
+          return p;
+        }));
+      }
       
       setSelectedProducts(new Set());
+      setSelectAllAcrossPages(false);
       setShowCategoryModal(false);
       setSelectedCategoryId('');
       
@@ -300,6 +533,8 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
 
   const handleImportComplete = () => {
     setIsImportModalOpen(false);
+    setSelectedProducts(new Set());
+    setSelectAllAcrossPages(false);
     router.refresh();
   };
 
@@ -389,57 +624,90 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
   return (
     <div>
       {/* Bulk actions bar */}
-      {selectedProducts.size > 0 && (
-        <div className="mb-4 p-4 bg-blue-50 rounded-lg flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-blue-900">
-              Vybráno: {selectedProducts.size} produktů
-            </span>
-            <button
-              onClick={() => setSelectedProducts(new Set())}
-              className="text-sm text-blue-600 hover:text-blue-800"
-            >
-              Zrušit výběr
-            </button>
-          </div>
+      {(selectedProducts.size > 0 || selectAllAcrossPages) && (
+        <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+          {/* Show select all across pages option when all on current page are selected */}
+          {areAllCurrentPageSelected && products.length < totalCount && !selectAllAcrossPages && (
+            <div className="mb-3 p-3 bg-blue-100 rounded-lg">
+              <p className="text-sm text-blue-900">
+                Všech {products.length} produktů na této stránce je vybráno.
+                <button
+                  onClick={handleSelectAllAcrossPages}
+                  className="ml-2 text-blue-700 hover:text-blue-900 font-medium underline"
+                >
+                  Vybrat všech {totalCount} produktů odpovídajících filtru
+                </button>
+              </p>
+            </div>
+          )}
           
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowCategoryModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
-            >
-              <FolderOpen size={18} />
-              Přesunout do kategorie
-            </button>
-            <button
-              onClick={handleBulkDelete}
-              disabled={isBulkDeleting}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition flex items-center gap-2 disabled:opacity-50"
-            >
-              <Trash2 size={18} />
-              {isBulkDeleting ? 'Mazání...' : 'Smazat vybrané'}
-            </button>
+          {/* Show message when all across pages are selected */}
+          {selectAllAcrossPages && (
+            <div className="mb-3 p-3 bg-blue-100 rounded-lg">
+              <p className="text-sm text-blue-900">
+                Všech {totalCount} produktů odpovídajících filtru je vybráno.
+                <button
+                  onClick={handleDeselectAll}
+                  className="ml-2 text-blue-700 hover:text-blue-900 font-medium underline"
+                >
+                  Zrušit výběr
+                </button>
+              </p>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-blue-900">
+                Vybráno: {selectAllAcrossPages ? totalCount : selectedProducts.size} produktů
+              </span>
+              <button
+                onClick={handleDeselectAll}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Zrušit výběr
+              </button>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={() => setShowCategoryModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 text-sm min-h-[40px]"
+              >
+                <FolderOpen size={16} />
+                <span className="sm:inline">Přesunout</span>
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulkDeleting}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2 disabled:opacity-50 text-sm min-h-[40px]"
+              >
+                <Trash2 size={16} />
+                <span className="sm:inline">{isBulkDeleting ? 'Mazání...' : 'Smazat'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Export, Import, and Items per page */}
-      <div className="mb-4 flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <div className="mb-4 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <span className="text-sm text-gray-600">
             Zobrazeno {startItem}-{endItem} z {totalCount} produktů
           </span>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Produktů na stránku:</label>
+            <label className="text-sm text-gray-600">Na stránku:</label>
             <select
               value={itemsPerPage}
               onChange={handleItemsPerPageChange}
-              className="px-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="25">25</option>
               <option value="50">50</option>
               <option value="100">100</option>
               <option value="250">250</option>
+              <option value="500">500</option>
             </select>
           </div>
         </div>
@@ -447,23 +715,67 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
         <div className="flex gap-2">
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+            className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 text-sm min-h-[40px] flex-1 sm:flex-initial"
           >
-            <Upload size={20} />
-            Importovat produkty
+            <Upload size={18} />
+            <span className="sm:inline">Import</span>
           </button>
           <button
             onClick={handleExport}
             disabled={isExporting || products.length === 0}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[40px] flex-1 sm:flex-initial"
           >
-            <Download size={20} />
-            {isExporting ? 'Exportování...' : `Exportovat (${totalCount} produktů)`}
+            <Download size={18} />
+            <span className="sm:inline">{isExporting ? 'Export...' : `Export (${totalCount})`}</span>
           </button>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile View - Cards */}
+      <div className="lg:hidden">
+        {/* Select All Card */}
+        {products.length > 0 && (
+          <div className="bg-white rounded-lg border p-3 mb-3">
+            <button
+              onClick={handleSelectAll}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700"
+            >
+              {(areAllCurrentPageSelected || selectAllAcrossPages) ? (
+                <CheckSquare size={20} />
+              ) : (
+                <Square size={20} />
+              )}
+              Vybrat vše na této stránce
+            </button>
+          </div>
+        )}
+
+        {/* Product Cards */}
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            isSelected={selectedProducts.has(product.id)}
+            onToggleSelect={() => handleSelectProduct(product.id)}
+            onEdit={() => router.push(`/admin/products/${product.id}/edit`)}
+            onDuplicate={() => handleDuplicate(product.id)}
+            onDelete={() => handleDelete(product.id)}
+            isDuplicating={duplicatingId === product.id}
+            isDeleting={deletingId === product.id}
+            getAvailabilityText={getAvailabilityText}
+            getAvailabilityColor={getAvailabilityColor}
+          />
+        ))}
+        
+        {products.length === 0 && (
+          <div className="text-center py-8 text-gray-500 bg-white rounded-lg">
+            Žádné produkty nenalezeny
+          </div>
+        )}
+      </div>
+
+      {/* Desktop View - Table */}
+      <div className="hidden lg:block overflow-x-auto">
         <table className="min-w-full bg-white">
           <thead className="bg-gray-100">
             <tr>
@@ -472,7 +784,7 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
                   onClick={handleSelectAll}
                   className="text-gray-600 hover:text-gray-900"
                 >
-                  {selectedProducts.size === products.length ? (
+                  {(areAllCurrentPageSelected || selectAllAcrossPages) ? (
                     <CheckSquare size={20} />
                   ) : (
                     <Square size={20} />
@@ -628,48 +940,76 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Mobile Pagination */}
+          <div className="flex lg:hidden items-center justify-between w-full">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-sm min-h-[40px]"
             >
               <ChevronLeft size={16} />
               Předchozí
             </button>
             
-            <div className="flex items-center gap-1">
-              {getPageNumbers().map((page, index) => (
-                <button
-                  key={index}
-                  onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
-                  disabled={page === '...'}
-                  className={`px-3 py-2 rounded-lg ${
-                    page === currentPage
-                      ? 'bg-blue-600 text-white'
-                      : page === '...'
-                      ? 'cursor-default'
-                      : 'border hover:bg-gray-50'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
+            <span className="text-sm text-gray-600">
+              {currentPage} / {totalPages}
+            </span>
             
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-sm min-h-[40px]"
             >
               Další
               <ChevronRight size={16} />
             </button>
           </div>
-          
-          <div className="text-sm text-gray-600">
-            Stránka {currentPage} z {totalPages}
+
+          {/* Desktop Pagination */}
+          <div className="hidden lg:flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                <ChevronLeft size={16} />
+                Předchozí
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {getPageNumbers().map((page, index) => (
+                  <button
+                    key={index}
+                    onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
+                    disabled={page === '...'}
+                    className={`px-3 py-2 rounded-lg ${
+                      page === currentPage
+                        ? 'bg-blue-600 text-white'
+                        : page === '...'
+                        ? 'cursor-default'
+                        : 'border hover:bg-gray-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                Další
+                <ChevronRight size={16} />
+              </button>
+            </div>
+            
+            <div className="text-sm text-gray-600">
+              Stránka {currentPage} z {totalPages}
+            </div>
           </div>
         </div>
       )}
@@ -683,7 +1023,7 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
 
       {/* Category Selection Modal */}
       {showCategoryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-bold mb-4">Přesunout produkty do kategorie</h3>
             
@@ -701,7 +1041,7 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
             </div>
             
             <div className="text-sm text-gray-600 mb-4">
-              Přesunout {selectedProducts.size} vybraných produktů
+              Přesunout {selectAllAcrossPages ? totalCount : selectedProducts.size} vybraných produktů
             </div>
             
             <div className="flex gap-2 justify-end">
@@ -710,14 +1050,14 @@ export function ProductsTable({ products: initialProducts, totalCount, currentPa
                   setShowCategoryModal(false);
                   setSelectedCategoryId('');
                 }}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border rounded-lg hover:bg-gray-50 min-h-[40px]"
               >
                 Zrušit
               </button>
               <button
                 onClick={handleBulkMove}
                 disabled={!selectedCategoryId || isBulkMoving}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 min-h-[40px]"
               >
                 {isBulkMoving ? 'Přesouvám...' : 'Přesunout'}
               </button>

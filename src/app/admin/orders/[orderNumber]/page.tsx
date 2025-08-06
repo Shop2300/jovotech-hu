@@ -6,7 +6,7 @@ import { enUS } from 'date-fns/locale';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle, Package, Banknote } from 'lucide-react';
+import { ArrowLeft, FileText, Truck, CreditCard, CheckCircle, Package, Banknote, Maximize2, ExternalLink } from 'lucide-react';
 import { OrderActions } from './OrderActions';
 import { CustomerInfoEdit } from './CustomerInfoEdit';
 import { AddressEdit } from './AddressEdit';
@@ -204,22 +204,58 @@ const StatusBadge = ({ status }: { status: string }) => {
   const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
 
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium ${config.className}`}>
+    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${config.className}`}>
       {config.label}
     </span>
+  );
+};
+
+// Mobile-friendly Image Preview Component
+const ProductImagePreview = ({ src, alt, index }: { src: string; alt: string; index: number }) => {
+  return (
+    <div className="flex-shrink-0 relative">
+      <div className="relative w-12 h-12 sm:w-16 sm:h-16 overflow-hidden rounded-lg">
+        <Image 
+          src={src} 
+          alt={alt}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 48px, 64px"
+          priority={index < 3}
+        />
+      </div>
+      {/* Mobile: Tap indicator for full view */}
+      <div className="absolute -top-1 -right-1 sm:hidden bg-blue-500 text-white rounded-full p-0.5">
+        <Maximize2 size={10} />
+      </div>
+      {/* Desktop: Hover preview - 6x size */}
+      <div className="hidden sm:block absolute top-0 left-20 opacity-0 invisible hover:opacity-100 hover:visible transition-all duration-200 z-[100] pointer-events-none sm:pointer-events-auto">
+        <div className="relative w-96 h-96 bg-white rounded-lg shadow-2xl border-2 border-gray-300 overflow-hidden">
+          <Image 
+            src={src} 
+            alt={alt}
+            fill
+            className="object-contain"
+            sizes="384px"
+            quality={100}
+            unoptimized
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 
 // Loading skeleton for order items
 function OrderItemsSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-4 text-black">Order Items</h2>
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+      <h2 className="text-lg sm:text-xl font-semibold mb-4 text-black">Order Items</h2>
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
           <div key={i} className="animate-pulse">
             <div className="flex gap-3">
-              <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded-lg"></div>
               <div className="flex-1">
                 <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                 <div className="h-3 bg-gray-200 rounded w-1/2"></div>
@@ -245,8 +281,8 @@ async function OrderItems({ order }: { order: Awaited<ReturnType<typeof getOrder
   const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 overflow-visible">
-      <h2 className="text-xl font-semibold mb-4 text-black">Order Items</h2>
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 overflow-visible">
+      <h2 className="text-lg sm:text-xl font-semibold mb-4 text-black">Order Items</h2>
       <div className="space-y-4 overflow-visible">
         {/* Product Items */}
         {order.items.map((item, index) => {
@@ -254,97 +290,67 @@ async function OrderItems({ order }: { order: Awaited<ReturnType<typeof getOrder
           const productEditUrl = canLinkToProduct ? `/admin/products/${item.product.id}/edit` : '#';
 
           return (
-            <div key={index} className="flex justify-between items-center pb-4 border-b relative">
-              <div className="flex items-start gap-3">
+            <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-start pb-4 border-b relative space-y-3 sm:space-y-0">
+              <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
                 {/* Product Image */}
                 {item.image ? (
                   canLinkToProduct ? (
-                    <div className="flex-shrink-0 relative">
-                      <Link 
-                        href={productEditUrl}
-                        className="relative group block"
-                      >
-                        <div className="relative w-16 h-16 overflow-hidden rounded-lg">
-                          <Image 
-                            src={item.image} 
-                            alt={item.product.name}
-                            fill
-                            className="object-cover"
-                            sizes="64px"
-                            priority={index < 3}
-                          />
-                        </div>
-                        {/* Large preview on hover - 6x size */}
-                        <div className="absolute top-0 left-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100]">
-                          <div className="relative w-96 h-96 bg-white rounded-lg shadow-2xl border-2 border-gray-300 overflow-hidden">
-                            <Image 
-                              src={item.image} 
-                              alt={item.product.name}
-                              fill
-                              className="object-contain"
-                              sizes="384px"
-                              quality={100}
-                              unoptimized
-                            />
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
+                    <Link 
+                      href={productEditUrl}
+                      className="relative group block"
+                    >
+                      <ProductImagePreview src={item.image} alt={item.product.name} index={index} />
+                    </Link>
                   ) : (
-                    <div className="relative group flex-shrink-0">
-                      <div className="relative w-16 h-16 overflow-hidden rounded-lg">
-                        <Image 
-                          src={item.image} 
-                          alt={item.product.name}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                          priority={index < 3}
-                        />
-                        {/* Large preview on hover - 6x size */}
-                        <div className="absolute top-0 left-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100]">
-                          <div className="relative w-96 h-96 bg-white rounded-lg shadow-2xl border-2 border-gray-300 overflow-hidden">
-                            <Image 
-                              src={item.image} 
-                              alt={item.product.name}
-                              fill
-                              className="object-contain"
-                              sizes="384px"
-                              quality={100}
-                              unoptimized
-                            />
-                          </div>
-                        </div>
-                      </div>
+                    <div className="relative group">
+                      <ProductImagePreview src={item.image} alt={item.product.name} index={index} />
                     </div>
                   )
                 ) : (
-                  <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Package size={24} className="text-gray-400" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Package size={20} className="text-gray-400" />
                   </div>
                 )}
                 
                 {/* Product Details */}
-                <div>
-                  <div className="flex items-center gap-2">
-                    {canLinkToProduct ? (
-                      <>
-                        <Link 
-                          href={productEditUrl}
-                          className="font-medium text-black hover:text-blue-600 transition-colors"
-                        >
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      {canLinkToProduct ? (
+                        <>
+                          <Link 
+                            href={productEditUrl}
+                            className="font-medium text-black hover:text-blue-600 transition-colors text-sm sm:text-base truncate max-w-[300px] lg:max-w-[400px]"
+                            title={item.product.name}
+                          >
+                            {item.product.name}
+                          </Link>
+                          <span className="text-xs text-gray-400 sm:whitespace-nowrap">
+                            (ID: {item.product.id})
+                          </span>
+                        </>
+                      ) : (
+                        <h3 className="font-medium text-black text-sm sm:text-base truncate max-w-[300px] lg:max-w-[400px]" title={item.product.name}>
                           {item.product.name}
+                        </h3>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 sm:ml-2">
+                      <CopyButton text={item.product.name} />
+                      {canLinkToProduct && (
+                        <Link
+                          href={`/products/${item.product.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                          title="Open product page in new tab"
+                        >
+                          <ExternalLink size={16} />
                         </Link>
-                        <span className="text-xs text-gray-400">
-                          (ID: {item.product.id})
-                        </span>
-                      </>
-                    ) : (
-                      <h3 className="font-medium text-black">{item.product.name}</h3>
-                    )}
-                    <CopyButton text={item.product.name} />
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
                     {item.quantity}x {formatPrice(item.price)}
                   </p>
                   {/* Variant Information */}
@@ -361,7 +367,7 @@ async function OrderItems({ order }: { order: Awaited<ReturnType<typeof getOrder
                   )}
                 </div>
               </div>
-              <p className="font-medium text-black">
+              <p className="font-medium text-black text-sm sm:text-base self-end sm:self-start ml-14 sm:ml-4 flex-shrink-0">
                 {formatPrice(item.price * item.quantity)}
               </p>
             </div>
@@ -370,19 +376,19 @@ async function OrderItems({ order }: { order: Awaited<ReturnType<typeof getOrder
 
         {/* Delivery Method */}
         {deliveryMethod && (
-          <div className="flex justify-between items-center pb-4 border-b">
-            <div className="flex items-start gap-3">
-              <Truck size={20} className="text-blue-600 mt-0.5" />
-              <div>
-                <h3 className="font-medium text-black">{deliveryMethod.labelPl}</h3>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start pb-4 border-b space-y-2 sm:space-y-0">
+            <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+              <Truck size={18} className="text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium text-black text-sm sm:text-base">{deliveryMethod.labelPl}</h3>
                 {deliveryMethod.descriptionPl && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
                     {deliveryMethod.descriptionPl}
                   </p>
                 )}
               </div>
             </div>
-            <p className="font-medium text-black">
+            <p className="font-medium text-black text-sm sm:text-base ml-6 sm:ml-4 flex-shrink-0">
               {deliveryMethod.price > 0 ? formatPrice(deliveryMethod.price) : 'Free'}
             </p>
           </div>
@@ -390,23 +396,23 @@ async function OrderItems({ order }: { order: Awaited<ReturnType<typeof getOrder
 
         {/* Payment Method */}
         {paymentMethod && (
-          <div className="flex justify-between items-center pb-4 border-b last:border-0">
-            <div className="flex items-start gap-3">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start pb-4 border-b last:border-0 space-y-2 sm:space-y-0">
+            <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
               {paymentMethod.value === 'bank' ? (
-                <CreditCard size={20} className="text-green-600 mt-0.5" />
+                <CreditCard size={18} className="text-green-600 mt-0.5 flex-shrink-0" />
               ) : (
-                <Banknote size={20} className="text-green-600 mt-0.5" />
+                <Banknote size={18} className="text-green-600 mt-0.5 flex-shrink-0" />
               )}
-              <div>
-                <h3 className="font-medium text-black">{paymentMethod.labelPl}</h3>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium text-black text-sm sm:text-base">{paymentMethod.labelPl}</h3>
                 {paymentMethod.descriptionPl && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
                     {paymentMethod.descriptionPl}
                   </p>
                 )}
               </div>
             </div>
-            <p className="font-medium text-black">
+            <p className="font-medium text-black text-sm sm:text-base ml-6 sm:ml-4 flex-shrink-0">
               {paymentMethod.price > 0 ? formatPrice(paymentMethod.price) : 'Free'}
             </p>
           </div>
@@ -414,24 +420,24 @@ async function OrderItems({ order }: { order: Awaited<ReturnType<typeof getOrder
       </div>
 
       {/* Order Summary */}
-      <div className="mt-6 pt-4 border-t space-y-2">
-        <div className="flex justify-between text-gray-600">
+      <div className="mt-4 sm:mt-6 pt-4 border-t space-y-2">
+        <div className="flex justify-between text-xs sm:text-sm text-gray-600">
           <span>Subtotal (products)</span>
           <span>{formatPrice(subtotal)}</span>
         </div>
         {deliveryMethod && deliveryMethod.price > 0 && (
-          <div className="flex justify-between text-gray-600">
+          <div className="flex justify-between text-xs sm:text-sm text-gray-600">
             <span>Shipping</span>
             <span>{formatPrice(deliveryMethod.price)}</span>
           </div>
         )}
         {paymentMethod && paymentMethod.price > 0 && (
-          <div className="flex justify-between text-gray-600">
+          <div className="flex justify-between text-xs sm:text-sm text-gray-600">
             <span>Payment fee</span>
             <span>{formatPrice(paymentMethod.price)}</span>
           </div>
         )}
-        <div className="flex justify-between font-bold text-lg pt-2 border-t">
+        <div className="flex justify-between font-bold text-base sm:text-lg pt-2 border-t">
           <span>Total</span>
           <span>{formatPrice(order.total)}</span>
         </div>
@@ -456,26 +462,95 @@ export default async function OrderDetailPage({
   const formattedDate = formatDateWithTimezone(order.createdAt);
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Link 
-            href="/admin/orders" 
-            className="text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft size={24} />
-          </Link>
-          <h1 className="text-3xl font-bold text-black">
-            Order #{order.orderNumber}
-          </h1>
-          <StatusBadge status={order.status} />
+    <div className="p-3 sm:p-6 max-w-7xl mx-auto">
+      {/* Header - Mobile Optimized */}
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link 
+              href="/admin/orders" 
+              className="text-gray-600 hover:text-gray-900 p-2 -ml-2 sm:ml-0 sm:p-0"
+            >
+              <ArrowLeft size={20} className="sm:w-6 sm:h-6" />
+            </Link>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+              <h1 className={`text-xl sm:text-3xl font-bold ${
+                order.status === 'cancelled' ? 'text-red-600' : 'text-black'
+              }`}>
+                Order #{order.orderNumber}
+              </h1>
+              <StatusBadge status={order.status} />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Mobile: Order Information at top */}
+      <div className="lg:hidden mb-6">
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <h2 className="text-lg font-semibold mb-3 text-black">Order Information</h2>
+          <div className="space-y-2 text-sm">
+            <p className="text-black">
+              <strong>Created:</strong><br />
+              <span className="text-xs">{formattedDate}</span>
+            </p>
+            
+            <div className="pt-2">
+              <p className="text-black mb-1">
+                <strong>Payment status:</strong>
+              </p>
+              <span className={`inline-flex items-center gap-1 font-semibold text-sm ${
+                order.paymentStatus === 'paid' ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {order.paymentStatus === 'paid' ? (
+                  <>
+                    <CheckCircle size={14} />
+                    Paid
+                  </>
+                ) : (
+                  <>
+                    <CreditCard size={14} />
+                    Unpaid
+                  </>
+                )}
+              </span>
+            </div>
+
+            {order.trackingNumber && (
+              <div className="pt-2">
+                <p className="text-black">
+                  <strong>Tracking:</strong><br />
+                  <span className="text-blue-600 text-xs break-all">{order.trackingNumber}</span>
+                </p>
+              </div>
+            )}
+            
+            {order.note && (
+              <div className="pt-2">
+                <p className="text-black">
+                  <strong>Customer note:</strong><br />
+                  <span className="text-xs">{order.note}</span>
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: Order Actions at top */}
+      <div className="lg:hidden mb-6">
+        <OrderActions 
+          orderId={order.id}
+          orderNumber={order.orderNumber}
+          currentStatus={order.status}
+          currentTrackingNumber={order.trackingNumber || ''}
+          currentPaymentStatus={order.paymentStatus}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Column - Order Details */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Order Items with Suspense */}
           <Suspense fallback={<OrderItemsSkeleton />}>
             <OrderItems order={order} />
@@ -529,8 +604,8 @@ export default async function OrderDetailPage({
           }))} />
         </div>
 
-        {/* Right Column - Sidebar */}
-        <div className="space-y-6">
+        {/* Right Column - Sidebar (Desktop Only) */}
+        <div className="hidden lg:block space-y-6">
           {/* Order Information */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4 text-black">Order Information</h2>

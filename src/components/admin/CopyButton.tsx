@@ -3,7 +3,6 @@
 
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 interface CopyButtonProps {
   text: string;
@@ -11,36 +10,36 @@ interface CopyButtonProps {
 }
 
 export function CopyButton({ text, className = '' }: CopyButtonProps) {
-  const [copied, setCopied] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
-  const handleCopy = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      toast.success('Copied to clipboard!');
+      setIsCopied(true);
       
-      // Reset after 2 seconds
+      // Reset the icon after 2 seconds
       setTimeout(() => {
-        setCopied(false);
+        setIsCopied(false);
       }, 2000);
+      
+      // REMOVED: toast.success('Copied to clipboard');
+      // No confirmation message as requested
     } catch (err) {
-      toast.error('Failed to copy');
+      console.error('Failed to copy text: ', err);
     }
   };
 
   return (
     <button
       onClick={handleCopy}
-      className={`inline-flex items-center justify-center p-1 text-gray-400 hover:text-gray-600 transition-colors ${className}`}
+      className={`p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors ${className}`}
       title="Copy to clipboard"
+      type="button"
     >
-      {copied ? (
-        <Check size={14} className="text-green-600" />
+      {isCopied ? (
+        <Check size={16} className="text-green-600" />
       ) : (
-        <Copy size={14} />
+        <Copy size={16} />
       )}
     </button>
   );
