@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --no-lint",
+    "build": "prisma generate && next build --no-lint",
     "start": "next start",
     "lint": "next lint",
     "setup": "node setup.js",
     "db:push": "prisma db push",
     "db:seed": "node seed-admin.js",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
