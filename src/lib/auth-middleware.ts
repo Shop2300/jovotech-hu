@@ -6,8 +6,8 @@ export async function checkAuth(request: NextRequest) {
   const galaxyCookie = request.cookies.get('galaxy-admin-session')?.value;
   const adminTokenCookie = request.cookies.get('adminToken')?.value;
   
-  // Get the expected token from environment or hardcoded
-  const expectedToken = process.env.ADMIN_TOKEN || 'd3a165840e65153fc24bf57c1228c1d927e16f2ff5122e72e2612b073d9749e2';
+  // Get the expected token from environment or hardcoded (UPDATED TOKEN)
+  const expectedToken = process.env.ADMIN_TOKEN || '9b47e7c473fa31d73d795a598b8417ec220c14cbc89295a6d68e1d15e79b9733';
   
   // Check if either cookie matches
   if (galaxyCookie === expectedToken || adminTokenCookie === expectedToken) {
