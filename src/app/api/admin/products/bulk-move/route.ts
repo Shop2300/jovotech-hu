@@ -5,8 +5,59 @@ import { NextResponse } from 'next/server';
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { productIds, categoryId } = body;
+    const { productIds, categoryId, selectAll, currentCategory, search } = body;
 
+    // Handle "select all matching filter" case
+    if (selectAll) {
+      // Build the same where conditions as in the products page
+      const whereConditions: any = {};
+      
+      // Apply category filter if present
+      if (currentCategory && currentCategory !== 'all') {
+        whereConditions.categoryId = currentCategory;
+      }
+      
+      // Apply search filter if present
+      if (search) {
+        whereConditions.OR = [
+          { name: { contains: search } },
+          { description: { contains: search } },
+          { code: { contains: search } }
+        ];
+      }
+
+      // Validate that target category exists if categoryId is provided (not null)
+      if (categoryId !== null && categoryId !== undefined) {
+        const categoryExists = await prisma.category.findUnique({
+          where: { id: categoryId }
+        });
+
+        if (!categoryExists) {
+          return NextResponse.json(
+            { error: 'Selected category does not exist' },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Update all products matching the filter
+      const updateResult = await prisma.product.updateMany({
+        where: Object.keys(whereConditions).length > 0 ? whereConditions : {},
+        data: {
+          categoryId: categoryId === null ? null : categoryId
+        }
+      });
+
+      console.log(`Moved ${updateResult.count} filtered products to category: ${categoryId || 'no category'}`);
+
+      return NextResponse.json({
+        success: true,
+        movedCount: updateResult.count,
+        message: `Successfully moved ${updateResult.count} products`
+      });
+    }
+
+    // Handle specific product IDs case (existing functionality)
     if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
       return NextResponse.json(
         { error: 'No product IDs provided' },

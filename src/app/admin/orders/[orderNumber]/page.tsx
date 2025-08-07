@@ -210,10 +210,10 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// Mobile-friendly Image Preview Component
+// FIXED: Mobile-friendly Image Preview Component with working hover
 const ProductImagePreview = ({ src, alt, index }: { src: string; alt: string; index: number }) => {
   return (
-    <div className="flex-shrink-0 relative">
+    <div className="flex-shrink-0 relative group">
       <div className="relative w-12 h-12 sm:w-16 sm:h-16 overflow-hidden rounded-lg">
         <Image 
           src={src} 
@@ -228,14 +228,14 @@ const ProductImagePreview = ({ src, alt, index }: { src: string; alt: string; in
       <div className="absolute -top-1 -right-1 sm:hidden bg-blue-500 text-white rounded-full p-0.5">
         <Maximize2 size={10} />
       </div>
-      {/* Desktop: Hover preview - 6x size */}
-      <div className="hidden sm:block absolute top-0 left-20 opacity-0 invisible hover:opacity-100 hover:visible transition-all duration-200 z-[100] pointer-events-none sm:pointer-events-auto">
+      {/* FIXED: Desktop Hover preview - triggers on parent hover */}
+      <div className="hidden sm:block absolute top-0 left-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100]">
         <div className="relative w-96 h-96 bg-white rounded-lg shadow-2xl border-2 border-gray-300 overflow-hidden">
           <Image 
             src={src} 
             alt={alt}
             fill
-            className="object-contain"
+            className="object-contain p-4"
             sizes="384px"
             quality={100}
             unoptimized
@@ -292,17 +292,17 @@ async function OrderItems({ order }: { order: Awaited<ReturnType<typeof getOrder
           return (
             <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-start pb-4 border-b relative space-y-3 sm:space-y-0">
               <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
-                {/* Product Image */}
+                {/* Product Image - FIXED: Wrapped in a container that maintains group hover */}
                 {item.image ? (
                   canLinkToProduct ? (
                     <Link 
                       href={productEditUrl}
-                      className="relative group block"
+                      className="relative block"
                     >
                       <ProductImagePreview src={item.image} alt={item.product.name} index={index} />
                     </Link>
                   ) : (
-                    <div className="relative group">
+                    <div className="relative">
                       <ProductImagePreview src={item.image} alt={item.product.name} index={index} />
                     </div>
                   )
@@ -380,10 +380,10 @@ async function OrderItems({ order }: { order: Awaited<ReturnType<typeof getOrder
             <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
               <Truck size={18} className="text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-black text-sm sm:text-base">{deliveryMethod.labelPl}</h3>
-                {deliveryMethod.descriptionPl && (
+                <h3 className="font-medium text-black text-sm sm:text-base">{deliveryMethod.label}</h3>
+                {deliveryMethod.description && (
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {deliveryMethod.descriptionPl}
+                    {deliveryMethod.description}
                   </p>
                 )}
               </div>
@@ -404,10 +404,10 @@ async function OrderItems({ order }: { order: Awaited<ReturnType<typeof getOrder
                 <Banknote size={18} className="text-green-600 mt-0.5 flex-shrink-0" />
               )}
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-black text-sm sm:text-base">{paymentMethod.labelPl}</h3>
-                {paymentMethod.descriptionPl && (
+                <h3 className="font-medium text-black text-sm sm:text-base">{paymentMethod.label}</h3>
+                {paymentMethod.description && (
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {paymentMethod.descriptionPl}
+                    {paymentMethod.description}
                   </p>
                 )}
               </div>
