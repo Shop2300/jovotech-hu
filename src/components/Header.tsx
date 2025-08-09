@@ -43,7 +43,7 @@ export const Header = memo(function Header() {
             prefetch={false}
           >
             <Image
-              src="/images/galaxyskleplogo.png"
+              src="/images/jovotechlogovevor.png"
               alt="Jovotech - Ruházat - hobbi - elektronika"
               width={isMobile ? 180 : 250}
               height={isMobile ? 58 : 80}

@@ -269,7 +269,7 @@ export function SideBadges() {
         {/* Verified Badge - links to review page */}
         <div 
           className="verified-badge" 
-          onClick={() => window.location.href = '/ocena-sklepu'}
+          onClick={() => window.location.href = '/bolt-ertekeles'}
         >
           <div className="badge-content">
             <img 
@@ -331,15 +331,15 @@ export function SideBadges() {
           </div>
           
           <div className="footer-links">
-            <a href="/regulamin" className="info-link">
+            <a href="/aszf" className="info-link">
               Szabályzat
             </a>
             |
-            <a href="/zwroty-i-reklamacje" className="info-link">
+            <a href="/visszaru-es-reklamacio" className="info-link">
               Visszaküldések és reklamációk
             </a>
             |
-            <a href="/ocena-sklepu" className="info-link">
+            <a href="/bolt-ertekeles" className="info-link">
               Bolt értékelése
             </a>
           </div>

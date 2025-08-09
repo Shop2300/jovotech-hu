@@ -534,8 +534,8 @@ export default function VasarloiVelemenyekPage() {
   });
 
   const ratingDistribution = [
-    { stars: 5, count: 447, percentage: 73 },
-    { stars: 4, count: 338, percentage: 19 },
+    { stars: 5, count: 1177, percentage: 73 },
+    { stars: 4, count: 238, percentage: 19 },
     { stars: 3, count: 10, percentage: 5 },
     { stars: 2, count: 4, percentage: 2 },
     { stars: 1, count: 2, percentage: 1 },

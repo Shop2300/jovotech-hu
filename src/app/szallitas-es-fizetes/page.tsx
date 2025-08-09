@@ -389,7 +389,7 @@ export default function DostawaIPlatnoscPage() {
                 </li>
               </ul>
               <Link
-                href="/zwroty-i-reklamacje"
+                href="/visszaru-es-reklamacio"
                 className="inline-flex items-center text-blue-600 hover:text-blue-800 mt-4 text-sm font-medium"
               >
                 Tudjon meg többet a visszaküldésről

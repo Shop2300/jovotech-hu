@@ -1009,11 +1009,11 @@ export default function CheckoutPage() {
               
               <p className="text-xs text-gray-400 text-center mt-6">
                 A rendelés leadásával elfogadja az{' '}
-                <Link href="/regulamin" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">
+                <Link href="/aszf" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">
                   ÁSZF-et
                 </Link>
                 {' '}és az{' '}
-                <Link href="/polityka-prywatnosci" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">
+                <Link href="/adatvedelmi-szabalyzat" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">
                   adatvédelmi szabályzatot
                 </Link>
                 .
@@ -1067,9 +1067,9 @@ export default function CheckoutPage() {
           
           <p className="text-xs text-gray-400 text-center">
             A rendelés leadásával elfogadja az{' '}
-            <Link href="/regulamin" className="underline">ÁSZF-et</Link>
+            <Link href="/aszf" className="underline">ÁSZF-et</Link>
             {' '}és az{' '}
-            <Link href="/polityka-prywatnosci" className="underline">adatvédelmi szabályzatot</Link>
+            <Link href="/adatvedelmi-szabalyzat" className="underline">adatvédelmi szabályzatot</Link>
           </p>
         </div>
       </div>

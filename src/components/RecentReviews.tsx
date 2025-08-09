@@ -69,7 +69,7 @@ export function RecentReviews() {
     <section className="py-12 pb-20 bg-white">
       <div className="max-w-screen-2xl mx-auto px-6">
         <h2 className="text-2xl font-bold text-center mb-8">
-          <Link href="/ocena-sklepu" className="text-black hover:text-blue-600 transition-colors">
+          <Link href="/bolt-ertekeles" className="text-black hover:text-blue-600 transition-colors">
             Legutóbbi vásárlói vélemények →
           </Link>
         </h2>
@@ -136,7 +136,7 @@ export function RecentReviews() {
                 
                 {/* Read more link */}
                 <Link 
-                  href="/ocena-sklepu" 
+                  href="/bolt-ertekeles" 
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center"
                 >
                   Tovább olvasom →

@@ -12,32 +12,32 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4" style={{ fontSize: '16px' }}>Információk</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/regulamin" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/aszf" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Általános Szerződési Feltételek
                 </Link>
               </li>
               <li>
-                <Link href="/polityka-prywatnosci" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/adatvedelmi-szabalyzat" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Adatvédelmi irányelvek
                 </Link>
               </li>
               <li>
-                <Link href="/ocena-sklepu" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/bolt-ertekeles" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Üzlet értékelése
                 </Link>
               </li>
               <li>
-                <Link href="/regulamin" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/aszf" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Letölthető űrlapok
                 </Link>
               </li>
               <li>
-                <Link href="/szkoly-i-instytucje-publiczne" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/iskolak-es-kozintezmenyek" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Iskolák és közintézmények
                 </Link>
               </li>
               <li>
-                <Link href="/gwarancja-najnizszej-ceny" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/legalacsonyabb-ar-garancia" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Legalacsonyabb ár garancia
                 </Link>
               </li>
@@ -49,17 +49,17 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4" style={{ fontSize: '16px' }}>Ügyfélszolgálat</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/dostawa-i-platnosc" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/szallitas-es-fizetes" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Szállítás és fizetés
                 </Link>
               </li>
               <li>
-                <Link href="/zwroty-i-reklamacje" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/visszaru-es-reklamacio" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Visszaküldés és reklamáció
                 </Link>
               </li>
               <li>
-                <Link href="/informacje-o-dostawie" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/szallitasi-informaciok" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Szállítási információk
                 </Link>
               </li>
@@ -69,7 +69,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/kontakt" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/kapcsolat" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Írjon nekünk
                 </Link>
               </li>
@@ -81,27 +81,27 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4" style={{ fontSize: '16px' }}>Rólunk</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/gwarancja-najnizszej-ceny" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/legalacsonyabb-ar-garancia" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Legalacsonyabb ár garancia
                 </Link>
               </li>
               <li>
-                <Link href="/dla-firm" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/cegeknek" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Cégeknek +
                 </Link>
               </li>
               <li>
-                <Link href="/o-nas" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/rolunk" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   A cégről
                 </Link>
               </li>
               <li>
-                <Link href="/kontakt" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/kapcsolat" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Kapcsolat
                 </Link>
               </li>
               <li>
-                <Link href="/ocena-sklepu" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/bolt-ertekeles" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Vásárlói vélemények
                 </Link>
               </li>
@@ -273,10 +273,10 @@ export function Footer() {
       <div className="py-4 relative" style={{ backgroundColor: '#131a22' }}>
         <div className="max-w-screen-2xl mx-auto px-6 text-center text-sm">
           <p>&copy; 2012 Jovotech. Minden jog fenntartva. | 
-            <Link href="/regulamin" className="hover:text-white ml-1">
+            <Link href="/aszf" className="hover:text-white ml-1">
               ÁSZF
             </Link> | 
-            <Link href="/polityka-prywatnosci" className="hover:text-white ml-1">
+            <Link href="/adatvedelmi-szabalyzat" className="hover:text-white ml-1">
               Adatvédelem
             </Link> | 
             <span className="ml-1">20 éves évfordulónkat ünnepeljük 🎉</span>
