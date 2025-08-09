@@ -1,18 +1,18 @@
-// src/app/ocena-sklepu/layout.tsx
+// src/app/vasarloi-velemenyek/layout.tsx
 import type { Metadata } from 'next';
 import React from 'react';
 
 export const metadata: Metadata = {
-  title: 'Ocena sklepu - Opinie klientów | Galaxysklep.pl',
-  description: 'Zobacz co mówią nasi klienci o Galaxysklep.pl. Przeczytaj opinie, sprawdź naszą ocenę i podziel się swoim doświadczeniem zakupowym.',
+  title: 'Vásárlói vélemények - Értékelések | Jovotech.hu',
+  description: 'Olvassa el, mit mondanak vásárlóink a Jovotech.hu-ról. Tekintse meg a véleményeket, ellenőrizze értékelésünket és ossza meg vásárlási tapasztalatait.',
   openGraph: {
-    title: 'Ocena sklepu - Opinie klientów | Galaxysklep.pl',
-    description: 'Zobacz co mówią nasi klienci o Galaxysklep.pl. Przeczytaj opinie, sprawdź naszą ocenę i podziel się swoim doświadczeniem zakupowym.',
+    title: 'Vásárlói vélemények - Értékelések | Jovotech.hu',
+    description: 'Olvassa el, mit mondanak vásárlóink a Jovotech.hu-ról. Tekintse meg a véleményeket, ellenőrizze értékelésünket és ossza meg vásárlási tapasztalatait.',
     type: 'website',
   },
 };
 
-export default function OcenaSklepuLayout({
+export default function VasarloiVelemenyekLayout({
   children,
 }: {
   children: React.ReactNode;

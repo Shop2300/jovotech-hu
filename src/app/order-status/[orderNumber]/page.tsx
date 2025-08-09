@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { formatPrice } from '@/lib/utils';
 import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { hu } from 'date-fns/locale';
 import { 
   Package, 
   CheckCircle, 
@@ -33,9 +33,9 @@ const formatDateWithTimezone = (dateString: string, includeTime: boolean = true)
    date.setHours(date.getHours() + 2);
   
   if (includeTime) {
-    return format(date, 'dd.MM.yyyy, HH:mm', { locale: pl });
+    return format(date, 'yyyy.MM.dd, HH:mm', { locale: hu });
   } else {
-    return format(date, 'dd.MM.yyyy', { locale: pl });
+    return format(date, 'yyyy.MM.dd', { locale: hu });
   }
 };
 
@@ -97,11 +97,11 @@ async function getOrderStatus(orderNumber: string): Promise<OrderStatusData | nu
 }
 
 const BANK_DETAILS = {
-  accountNumber: '21291000062469800208837403',
-  iban: 'PL21 2910 0006 2469 8002 0883 7403',
-  swift: 'BMPBPLPP',
-  bankName: 'Aion S.A. Spolka Akcyjna Oddzial w Polsce',
-  bankAddress: 'Dobra 40, 00-344, Warszawa, Poland'
+  accountNumber: '12600016-10426947-95638648',
+  iban: 'HU86126000161042694795638648',
+  swift: 'TRWIBEBBXXX',
+  bankName: 'WISE EUROPE S.A.',
+  bankAddress: 'Rue du Trône 100, 1050 Brussels'
 };
 
 export default async function OrderStatusPage({ params }: { params: Promise<{ orderNumber: string }> }) {
@@ -116,21 +116,21 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
   const statusSteps = [
     { 
       key: 'pending', 
-      label: 'Przyjęte', 
+      label: 'Fogadva', 
       icon: CheckCircle,
-      description: 'Zamówienie zostało przyjęte'
+      description: 'A megrendelés beérkezett'
     },
     { 
       key: 'processing', 
-      label: 'W realizacji', 
+      label: 'Feldolgozás alatt', 
       icon: Package,
-      description: 'Przygotowujemy Twoje zamówienie'
+      description: 'Készítjük a megrendelését'
     },
     { 
       key: 'shipped', 
-      label: 'Wysłane', 
+      label: 'Feladva', 
       icon: Truck,
-      description: 'Zamówienie jest w drodze'
+      description: 'A megrendelés úton van'
     },
   ];
 
@@ -148,7 +148,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 transition-colors"
           >
             <ArrowLeft size={18} className="mr-1.5" />
-            Powrót do strony głównej
+            Vissza a főoldalra
           </Link>
           
           {/* Invoice Download Button */}
@@ -159,13 +159,13 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
             >
               <FileText size={16} />
-              <span>Pobierz fakturę</span>
+              <span>Számla letöltése</span>
               <Download size={14} />
             </a>
           ) : (
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-gray-100 text-gray-500 rounded-md cursor-not-allowed">
               <FileText size={16} />
-              <span>Faktura niedostępna</span>
+              <span>Számla nem elérhető</span>
             </div>
           )}
         </div>
@@ -175,10 +175,10 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Zamówienie #{order.orderNumber}
+                Megrendelés #{order.orderNumber}
               </h1>
               <p className="text-gray-600">
-                Utworzone: {formatDateWithTimezone(order.createdAt)}
+                Létrehozva: {formatDateWithTimezone(order.createdAt)}
               </p>
             </div>
             <div className="mt-4 sm:mt-0">
@@ -194,19 +194,19 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <div className="flex items-start gap-3">
                     <AlertCircle className="text-amber-600 mt-0.5" size={20} />
                     <div className="flex-1">
-                      <h3 className="font-semibold text-amber-900 mb-2">Czekamy na płatność</h3>
+                      <h3 className="font-semibold text-amber-900 mb-2">Fizetésre várunk</h3>
                       <p className="text-sm text-amber-800 mb-3">
-                        Aby sfinalizować zamówienie, prosimy o wpłatę kwoty <strong>{formatPrice(order.total)}</strong> na nasze konto bankowe:
+                        A megrendelés véglegesítéséhez kérjük, utalja át a <strong>{formatPrice(order.total)}</strong> összeget bankszámlánkra:
                       </p>
                       <div className="bg-white rounded-md p-3 space-y-1 text-sm">
-                        <p><strong>Numer konta:</strong> {BANK_DETAILS.accountNumber}</p>
+                        <p><strong>Számlaszám:</strong> {BANK_DETAILS.accountNumber}</p>
                         <p><strong>IBAN:</strong> <span className="font-mono">{BANK_DETAILS.iban}</span></p>
                         <p><strong>SWIFT/BIC:</strong> {BANK_DETAILS.swift}</p>
                         <p><strong>Bank:</strong> {BANK_DETAILS.bankName}</p>
                         <p className="text-xs">{BANK_DETAILS.bankAddress}</p>
-                        <p><strong>Tytuł przelewu:</strong> {order.orderNumber.replace('-', '')}</p>
+                        <p><strong>Közlemény:</strong> {order.orderNumber.replace('-', '')}</p>
                         <p className="text-xs text-gray-600 mt-2">
-                          Zamówienie wyślemy natychmiast po zaksięgowaniu wpłaty na naszym koncie.
+                          A megrendelést azonnal feladjuk, amint a befizetés megérkezik számlánkra.
                         </p>
                       </div>
                     </div>
@@ -232,9 +232,9 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
               <div className="flex items-start gap-3">
                 <Truck className="text-blue-600 mt-0.5" size={20} />
                 <div className="flex-1">
-                  <h3 className="font-semibold text-blue-900 mb-2">Płatność przy odbiorze</h3>
+                  <h3 className="font-semibold text-blue-900 mb-2">Utánvétes fizetés</h3>
                   <p className="text-sm text-blue-800">
-                    Przygotuj kwotę <strong>{formatPrice(order.total)}</strong> do zapłaty kurierowi przy odbiorze przesyłki.
+                    Készítse elő a <strong>{formatPrice(order.total)}</strong> összeget a futárnak történő fizetéshez a csomag átvételekor.
                   </p>
                 </div>
               </div>
@@ -246,7 +246,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="text-green-600" size={20} />
-                <p className="text-green-800 font-medium">Płatność została pomyślnie przyjęta</p>
+                <p className="text-green-800 font-medium">A fizetés sikeresen megtörtént</p>
               </div>
             </div>
           )}
@@ -313,7 +313,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             </div>
           ) : (
             <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 font-medium">Zamówienie zostało anulowane</p>
+              <p className="text-red-800 font-medium">A megrendelés törölve lett</p>
             </div>
           )}
         </div>
@@ -328,21 +328,21 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <Truck className="text-green-600" size={20} />
-                      <h3 className="font-semibold text-green-900">Śledzenie przesyłki</h3>
+                      <h3 className="font-semibold text-green-900">Csomag követése</h3>
                     </div>
                     <p className="text-sm text-green-800 mb-1">
-                      Numer śledzenia: <span className="font-mono font-semibold">{order.trackingNumber}</span>
+                      Nyomkövetési szám: <span className="font-mono font-semibold">{order.trackingNumber}</span>
                     </p>
                     <p className="text-sm text-green-700">
-                      Przewoźnik: {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+                      Futárszolgálat: {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
                     </p>
                   </div>
                   {order.trackingNumber && (
                     <Link
-                      href="/informacje-o-dostawie"
+                      href="/szallitasi-informaciok"
                       className="flex items-center gap-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                     >
-                      Śledź online
+                      Követés online
                       <ExternalLink size={16} />
                     </Link>
                   )}
@@ -352,7 +352,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
 
             {/* Order Items */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-4">Pozycje zamówienia</h2>
+              <h2 className="text-lg font-semibold mb-4">Megrendelt termékek</h2>
               <div className="space-y-4">
                 {order.items.map((item, index) => (
                   <div key={index} className="flex gap-4 pb-4 border-b border-gray-200 last:border-0">
@@ -419,7 +419,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   </div>
                   <div className="flex-1 flex items-center">
                     <div>
-                      <h3 className="font-medium">Dostawa</h3>
+                      <h3 className="font-medium">Szállítás</h3>
                       <p className="text-sm text-gray-600">
                         {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
                       </p>
@@ -441,7 +441,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   </div>
                   <div className="flex-1 flex items-center">
                     <div>
-                      <h3 className="font-medium">Płatność</h3>
+                      <h3 className="font-medium">Fizetés</h3>
                       <p className="text-sm text-gray-600">
                         {getPaymentMethodLabel(order.paymentMethod, 'pl')}
                       </p>
@@ -459,19 +459,19 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>Suma częściowa</span>
+                    <span>Részösszeg</span>
                     <span>{formatPrice(order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0))}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>Dostawa</span>
+                    <span>Szállítás</span>
                     <span>{formatPrice(getDeliveryMethod(order.deliveryMethod)?.price || 0)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>Płatność</span>
+                    <span>Fizetés</span>
                     <span>{formatPrice(getPaymentMethod(order.paymentMethod)?.price || 0)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
-                    <span>Razem</span>
+                    <span>Összesen</span>
                     <span>{formatPrice(order.total)}</span>
                   </div>
                 </div>
@@ -481,13 +481,13 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             {/* Invoice Section - Only if invoice exists */}
             {order.invoice && (
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-base font-medium mb-3 text-gray-700">Faktura</h3>
+                <h3 className="text-base font-medium mb-3 text-gray-700">Számla</h3>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-gray-500">Numer faktury:</p>
+                    <p className="text-xs text-gray-500">Számlaszám:</p>
                     <p className="text-sm font-medium text-gray-900">{order.invoice.invoiceNumber}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Wystawiono: {formatDateWithTimezone(order.invoice.issuedAt, false)}
+                      Kiállítva: {formatDateWithTimezone(order.invoice.issuedAt, false)}
                     </p>
                   </div>
                   {order.invoice.pdfUrl ? (
@@ -497,11 +497,11 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
                     >
                       <Download size={16} />
-                      Pobierz PDF
+                      PDF letöltése
                     </a>
                   ) : (
                     <div className="px-3 py-1.5 text-sm bg-gray-200 text-gray-500 rounded-md">
-                      PDF niedostępny
+                      PDF nem elérhető
                     </div>
                   )}
                 </div>
@@ -513,13 +513,13 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
           <div className="space-y-6">
             {/* Delivery Info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-4">Informacje o dostawie</h2>
+              <h2 className="text-lg font-semibold mb-4">Szállítási információk</h2>
               
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <MapPin className="text-gray-400 mt-0.5" size={16} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Adres dostawy</p>
+                    <p className="text-sm font-medium text-gray-900">Szállítási cím</p>
                     <div className="text-sm text-gray-600">
                       {order.deliveryAddress.street && (
                         <p>{order.deliveryAddress.street}</p>
@@ -532,7 +532,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                 <div className="flex items-start gap-3">
                   <Truck className="text-gray-400 mt-0.5" size={16} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Sposób dostawy</p>
+                    <p className="text-sm font-medium text-gray-900">Szállítási mód</p>
                     <p className="text-sm text-gray-600">
                       {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
                     </p>
@@ -542,7 +542,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                 <div className="flex items-start gap-3">
                   <CreditCard className="text-gray-400 mt-0.5" size={16} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Sposób płatności</p>
+                    <p className="text-sm font-medium text-gray-900">Fizetési mód</p>
                     <p className="text-sm text-gray-600">
                       {getPaymentMethodLabel(order.paymentMethod, 'pl')}
                     </p>
@@ -551,12 +551,12 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                       <p className={`text-sm font-medium mt-1 ${
                         order.paymentStatus === 'paid' ? 'text-green-600' : 'text-amber-600'
                       }`}>
-                        {order.paymentStatus === 'paid' ? '✓ Opłacone' : '⏳ Oczekuje na płatność'}
+                        {order.paymentStatus === 'paid' ? '✓ Fizetve' : '⏳ Fizetésre vár'}
                       </p>
                     )}
                     {order.paymentMethod === 'cash' && (
                       <p className="text-sm font-medium mt-1 text-blue-600">
-                        💵 Płatność przy odbiorze
+                        💵 Utánvét
                       </p>
                     )}
                   </div>
@@ -567,10 +567,10 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             {/* Bank Details (only for unpaid bank transfer) */}
             {order.paymentMethod === 'bank' && order.paymentStatus === 'unpaid' && (
               <div className="bg-amber-50 rounded-lg p-6">
-                <h3 className="font-semibold mb-3 text-amber-900">Dane do przelewu</h3>
+                <h3 className="font-semibold mb-3 text-amber-900">Utalási adatok</h3>
                 <div className="space-y-2 text-sm">
                   <div>
-                    <p className="text-gray-600">Numer konta:</p>
+                    <p className="text-gray-600">Számlaszám:</p>
                     <p className="font-mono font-medium">{BANK_DETAILS.accountNumber}</p>
                   </div>
                   <div>
@@ -587,11 +587,11 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <p className="text-xs text-gray-500">{BANK_DETAILS.bankAddress}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Tytuł przelewu:</p>
+                    <p className="text-gray-600">Közlemény:</p>
                     <p className="font-mono font-medium">{order.orderNumber.replace('-', '')}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Kwota:</p>
+                    <p className="text-gray-600">Összeg:</p>
                     <p className="font-bold text-lg">{formatPrice(order.total)}</p>
                   </div>
                 </div>
@@ -609,25 +609,25 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
             {/* Cash on Delivery Reminder */}
             {order.paymentMethod === 'cash' && order.paymentStatus === 'unpaid' && order.status === 'shipped' && (
               <div className="bg-blue-50 rounded-lg p-6">
-                <h3 className="font-semibold mb-3 text-blue-900">Przygotuj płatność</h3>
+                <h3 className="font-semibold mb-3 text-blue-900">Készítse elő a fizetést</h3>
                 <p className="text-sm text-blue-800">
-                  Twoje zamówienie jest w drodze. Przygotuj kwotę <strong>{formatPrice(order.total)}</strong> do zapłaty kurierowi.
+                  A megrendelése úton van. Készítse elő a <strong>{formatPrice(order.total)}</strong> összeget a futárnak történő fizetéshez.
                 </p>
               </div>
             )}
 
             {/* Help Section */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-semibold mb-3">Potrzebujesz pomocy?</h3>
+              <h3 className="font-semibold mb-3">Segítségre van szüksége?</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Jeśli masz jakiekolwiek pytania dotyczące Twojego zamówienia, skontaktuj się z nami.
+                Ha bármilyen kérdése van a megrendelésével kapcsolatban, lépjen kapcsolatba velünk.
               </p>
               <div className="space-y-2">
                 <a 
-                  href="mailto:support@galaxysklep.pl" 
+                  href="mailto:support@jovotech.hu" 
                   className="block text-sm text-blue-600 hover:text-blue-700"
                 >
-                  support@galaxysklep.pl
+                  support@jovotech.hu
                 </a>
               </div>
             </div>

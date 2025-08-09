@@ -126,21 +126,21 @@ export const ProductCard = memo(function ProductCard({ product }: { product: Pro
         productSlug: product.slug || undefined
       });
       
-      toast.success(`${product.name} dodany do koszyka`);
+      toast.success(`${product.name} hozzáadva a kosárhoz`);
     }
   }, [hasVariants, inStock, router, productUrl, addItem, product]);
 
   // Determine availability text based on stock and availability field
   const availabilityText = useMemo(() => {
     if (!inStock) {
-      return 'Wyprodáno';
+      return 'Elfogyott';
     }
     
     if (product.availability === 'in_stock_supplier') {
-      return 'W magazynie u dostawcy';
+      return 'Beszállítónál raktáron';
     }
     
-    return 'Na stanie';
+    return 'Raktáron';
   }, [inStock, product.availability]);
 
   // San Francisco font family
@@ -175,12 +175,12 @@ export const ProductCard = memo(function ProductCard({ product }: { product: Pro
               </>
             ) : (
               <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-600 text-sm" style={{ fontFamily: sfFontFamily }}>Obrázek produktu</span>
+                <span className="text-gray-600 text-sm" style={{ fontFamily: sfFontFamily }}>Termék kép</span>
               </div>
             )}
             {!inStock && (
               <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <span className="text-white font-bold text-base md:text-lg" style={{ fontFamily: sfFontFamily }}>Wyprodáno</span>
+                <span className="text-white font-bold text-base md:text-lg" style={{ fontFamily: sfFontFamily }}>Elfogyott</span>
               </div>
             )}
             {bestDiscount > 0 && inStock && (
@@ -217,7 +217,7 @@ export const ProductCard = memo(function ProductCard({ product }: { product: Pro
                 </span>
                 {hasVariants && displayPrice !== product.price && (
                   <span className="text-xs text-gray-600 block mt-0.5 md:mt-1" style={{ fontFamily: sfFontFamily }}>
-                    od
+                    -tól
                   </span>
                 )}
               </div>
@@ -228,7 +228,7 @@ export const ProductCard = memo(function ProductCard({ product }: { product: Pro
                 </span>
                 {hasVariants && product.variants?.some(v => v.price && v.price !== product.price && v.stock > 0) && (
                   <span className="text-xs text-gray-600 block mt-0.5 md:mt-1" style={{ fontFamily: sfFontFamily }}>
-                    od
+                    -tól
                   </span>
                 )}
               </div>
@@ -252,7 +252,7 @@ export const ProductCard = memo(function ProductCard({ product }: { product: Pro
             >
               <ShoppingCart size={16} className="shrink-0" />
               <span className="truncate">
-                {hasVariants ? 'Vybrat variantu' : 'Do koszyka'}
+                {hasVariants ? 'Változat kiválasztása' : 'Kosárba'}
               </span>
             </button>
           </div>

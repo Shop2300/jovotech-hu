@@ -46,54 +46,54 @@ export default function PublicInstitutionsPage() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-[#131921] mb-6">
-            Oferta dla szkół i instytucji publicznych
+            Ajánlat iskolák és közintézmények számára
           </h1>
           <p className="text-lg text-gray-600 max-w-4xl mx-auto">
-            Witamy na stronie przeznaczonej dla <strong>instytucji publicznych, szkół, urzędów, organizacji pozarządowych</strong> 
-            i innych podmiotów publicznych. Jako dostawca wysokiej jakości produktów rozumiemy specyficzne potrzeby 
-            i wymagania instytucji publicznych przy zakupach online. Na tej stronie znajdą Państwo informacje 
-            o tym, jak możemy ułatwić proces zakupowy i jakie korzyści oferujemy.
+            Üdvözöljük a <strong>közintézmények, iskolák, hivatalok, civil szervezetek</strong> 
+            és más állami szervek számára készült oldalunkon. Mint minőségi termékek szállítója, megértjük 
+            a közintézmények speciális igényeit és követelményeit az online vásárlás során. Ezen az oldalon 
+            információkat talál arról, hogyan könnyíthetjük meg a beszerzési folyamatot és milyen előnyöket kínálunk.
           </p>
         </div>
 
         {/* Benefits Section */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold text-[#131921] mb-8">
-            Korzyści współpracy z Galaxy Sklep dla instytucji publicznych
+            A Jovotech.hu-val való együttműködés előnyei közintézmények számára
           </h2>
           <div className="bg-gray-50 rounded-lg p-8">
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-                <span><strong>Płatność na fakturę</strong> z terminem płatności 14 do 30 dni, bez konieczności płatności z góry.</span>
+                <span><strong>Számlás fizetés</strong> 14-30 napos fizetési határidővel, előzetes fizetés nélkül.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-                <span><strong>Szybka dostawa</strong> - większość produktów na magazynie z wysyłką tego samego dnia przy zamówieniu do godz. 14:00.</span>
+                <span><strong>Gyors szállítás</strong> - a legtöbb termék raktáron, aznapi kiszállítással 14:00 óráig leadott rendelés esetén.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-                <span><strong>Indywidualne oferty cenowe</strong> dla większych zamówień i możliwość rabatów ilościowych.</span>
+                <span><strong>Egyedi árajánlatok</strong> nagyobb megrendelésekhez és mennyiségi kedvezmények lehetősége.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-                <span><strong>Fachowe doradztwo</strong> i wsparcie techniczne przy wyborze produktów.</span>
+                <span><strong>Szakértői tanácsadás</strong> és technikai támogatás a termékválasztáshoz.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-                <span><strong>Możliwość zawarcia umowy ramowej</strong> dla długoterminowej współpracy.</span>
+                <span><strong>Keretszerződés kötésének lehetősége</strong> hosszú távú együttműködéshez.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-                <span><strong>Standardowa gwarancja 24 miesiące</strong> również dla organizacji z NIP.</span>
+                <span><strong>Standard 24 hónapos garancia</strong> adószámos szervezetek számára is.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-                <span><strong>Certyfikowane produkty</strong> z polską dokumentacją.</span>
+                <span><strong>Tanúsítvánnyal rendelkező termékek</strong> magyar dokumentációval.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-                <span><strong>Serwis i wsparcie</strong> w języku polskim, w tym rozpatrywanie reklamacji.</span>
+                <span><strong>Szerviz és támogatás</strong> magyar nyelven, beleértve a reklamációk kezelését is.</span>
               </li>
             </ul>
           </div>
@@ -102,7 +102,7 @@ export default function PublicInstitutionsPage() {
         {/* Process Steps */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold text-[#131921] mb-8">
-            Jak przebiega proces zakupowy dla instytucji publicznych
+            Hogyan zajlik a beszerzési folyamat közintézmények számára
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
@@ -110,12 +110,12 @@ export default function PublicInstitutionsPage() {
                 <div className="w-10 h-10 bg-[#6da306] text-white rounded-full flex items-center justify-center font-bold">
                   1
                 </div>
-                <h3 className="text-lg font-semibold text-[#131921]">Zapytanie i oferta cenowa</h3>
+                <h3 className="text-lg font-semibold text-[#131921]">Ajánlatkérés és árajánlat</h3>
               </div>
               <p className="text-gray-600">
-                Wyślij nam niewiążące zapytanie e-mailem lub za pomocą formularza na stronie. 
-                Chętnie przygotujemy indywidualną ofertę cenową dostosowaną do Państwa wymagań, 
-                którą można wykorzystać w wewnętrznym procesie zatwierdzania w Państwa instytucji.
+                Küldjön nekünk kötelezettség nélküli ajánlatkérést e-mailben vagy az oldalon található űrlapon keresztül. 
+                Szívesen készítünk egyedi árajánlatot az Önök igényeinek megfelelően, 
+                amelyet felhasználhatnak intézményük belső jóváhagyási folyamatában.
               </p>
             </div>
 
@@ -124,12 +124,12 @@ export default function PublicInstitutionsPage() {
                 <div className="w-10 h-10 bg-[#6da306] text-white rounded-full flex items-center justify-center font-bold">
                   2
                 </div>
-                <h3 className="text-lg font-semibold text-[#131921]">Zamówienie</h3>
+                <h3 className="text-lg font-semibold text-[#131921]">Megrendelés</h3>
               </div>
               <p className="text-gray-600">
-                Po zatwierdzeniu oferty prosimy o przesłanie oficjalnego zamówienia z numerem, 
-                pieczątką i podpisem osoby odpowiedzialnej e-mailem. Potwierdzimy zamówienie 
-                i zapewnimy wysyłkę towaru.
+                Az ajánlat jóváhagyása után kérjük, küldje el a hivatalos megrendelést számmal, 
+                bélyegzővel és a felelős személy aláírásával e-mailben. Visszaigazoljuk a megrendelést 
+                és gondoskodunk az áru kiszállításáról.
               </p>
             </div>
 
@@ -138,12 +138,12 @@ export default function PublicInstitutionsPage() {
                 <div className="w-10 h-10 bg-[#6da306] text-white rounded-full flex items-center justify-center font-bold">
                   3
                 </div>
-                <h3 className="text-lg font-semibold text-[#131921]">Dostawa i fakturowanie</h3>
+                <h3 className="text-lg font-semibold text-[#131921]">Szállítás és számlázás</h3>
               </div>
               <p className="text-gray-600">
-                Towar dostarczymy pod wskazany przez Państwa adres. Po dostawie wystawimy 
-                fakturę z terminem płatności 14 dni (na życzenie do 30 dni) z podaniem 
-                numeru Państwa zamówienia dla łatwego dopasowania w księgowości.
+                Az árut az Önök által megadott címre szállítjuk. A kiszállítás után számlát állítunk ki 
+                14 napos fizetési határidővel (kérésre 30 napig), feltüntetve 
+                az Önök megrendelési számát a könnyű könyvelési egyeztetés érdekében.
               </p>
             </div>
 
@@ -152,12 +152,12 @@ export default function PublicInstitutionsPage() {
                 <div className="w-10 h-10 bg-[#6da306] text-white rounded-full flex items-center justify-center font-bold">
                   4
                 </div>
-                <h3 className="text-lg font-semibold text-[#131921]">Serwis i wsparcie</h3>
+                <h3 className="text-lg font-semibold text-[#131921]">Szerviz és támogatás</h3>
               </div>
               <p className="text-gray-600">
-                Również po zakupie zapewniamy pełne wsparcie, instrukcje w języku polskim 
-                i w razie potrzeby priorytetowo rozpatrujemy reklamacje. Na wszystkie 
-                produkty udzielamy standardowej gwarancji 24 miesięcy.
+                A vásárlás után is teljes támogatást nyújtunk, magyar nyelvű útmutatókat biztosítunk 
+                és szükség esetén prioritással kezeljük a reklamációkat. Minden 
+                termékre standard 24 hónapos garanciát vállalunk.
               </p>
             </div>
           </div>
@@ -166,57 +166,57 @@ export default function PublicInstitutionsPage() {
         {/* Information Grid */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold text-[#131921] mb-8">
-            Proces zamówienia i fakturowania dla instytucji publicznych
+            Megrendelési és számlázási folyamat közintézmények számára
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-[#131921] mb-4 flex items-center gap-2">
                 <FileCheck className="text-[#6da306]" size={24} />
-                Sposoby zamówienia
+                Megrendelési módok
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Bezpośrednie zamówienie przez e-sklep (z uwagą o płatności na fakturę)</li>
-                <li>• E-mailem z oficjalnym zamówieniem Państwa instytucji</li>
-                <li>• Telefonicznie z późniejszym potwierdzeniem e-mailem</li>
+                <li>• Közvetlen megrendelés a webáruházon keresztül (számlás fizetés megjegyzéssel)</li>
+                <li>• E-mailben az intézmény hivatalos megrendelésével</li>
+                <li>• Telefonon, későbbi e-mailes megerősítéssel</li>
               </ul>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-[#131921] mb-4 flex items-center gap-2">
                 <Package className="text-[#6da306]" size={24} />
-                Warunki płatności
+                Fizetési feltételek
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Płatność na fakturę z terminem płatności 14 dni (standardowo)</li>
-                <li>• Możliwość wydłużonego terminu płatności do 30 dni (na życzenie)</li>
-                <li>• Bez wymogu zaliczki z góry dla standardowych produktów</li>
-                <li>• Możliwość indywidualnych warunków płatności dla stałych klientów</li>
+                <li>• Számlás fizetés 14 napos fizetési határidővel (alapértelmezett)</li>
+                <li>• Meghosszabbított fizetési határidő lehetősége 30 napig (kérésre)</li>
+                <li>• Nincs előleg követelmény standard termékek esetén</li>
+                <li>• Egyedi fizetési feltételek lehetősége állandó ügyfelek számára</li>
               </ul>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-[#131921] mb-4 flex items-center gap-2">
                 <FileCheck className="text-[#6da306]" size={24} />
-                Wymagania fakturowania
+                Számlázási követelmények
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Faktura zawiera numer Państwa zamówienia dla łatwiejszego parowania</li>
-                <li>• Prawidłowo podane dane fakturowe instytucji (NIP, adres)</li>
-                <li>• Możliwość różnych danych dostawy i fakturowania</li>
-                <li>• Wszystkie wymagania dokumentu podatkowego</li>
+                <li>• A számla tartalmazza az Önök megrendelési számát a könnyebb párosításhoz</li>
+                <li>• Helyesen megadott intézményi számlázási adatok (adószám, cím)</li>
+                <li>• Különböző szállítási és számlázási adatok lehetősége</li>
+                <li>• Minden adóügyi dokumentum követelménye</li>
               </ul>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-[#131921] mb-4 flex items-center gap-2">
                 <Clock className="text-[#6da306]" size={24} />
-                Transport i dostawa
+                Szállítás és kézbesítés
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Wysyłka towaru z magazynu tego samego dnia (przy zamówieniu do 14:00)</li>
-                <li>• Dostawa w całej Polsce w 1-2 dni robocze</li>
-                <li>• Informacje o wysyłce i śledzenie przesyłki e-mailem</li>
-                <li>• Możliwość specyficznych wymagań dostawy (termin, czas)</li>
+                <li>• Aznapi kiszállítás raktárról (14:00 óráig leadott rendelés esetén)</li>
+                <li>• Kézbesítés egész Magyarországon 1-2 munkanapon belül</li>
+                <li>• Szállítási információk és csomagkövetés e-mailben</li>
+                <li>• Speciális szállítási igények lehetősége (dátum, időpont)</li>
               </ul>
             </div>
           </div>
@@ -225,28 +225,28 @@ export default function PublicInstitutionsPage() {
         {/* Public Procurement Section */}
         <div className="mb-16 bg-gray-50 rounded-lg p-8">
           <h2 className="text-2xl font-bold text-[#131921] mb-6">
-            Zamówienia publiczne i zakupy powyżej 130 000 zł
+            Közbeszerzések és 18 millió Ft feletti beszerzések
           </h2>
           <p className="text-gray-700 mb-6">
-            Rozumiemy wymagania instytucji publicznych przy realizacji zamówień publicznych 
-            o małej wartości oraz większych zamówień. Dla zamówień powyżej 130 000 zł netto oferujemy:
+            Megértjük a közintézmények követelményeit a kis értékű közbeszerzések 
+            és nagyobb beszerzések megvalósítása során. A nettó 18 millió Ft feletti beszerzésekhez kínálunk:
           </p>
           <ul className="space-y-3">
             <li className="flex items-start gap-3">
               <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-              <span>Dostarczenie wszystkich niezbędnych dokumentów do postępowania przetargowego (dokumenty kwalifikacyjne, certyfikaty produktów)</span>
+              <span>A pályázati eljáráshoz szükséges összes dokumentum biztosítása (minősítési dokumentumok, terméktanúsítványok)</span>
             </li>
             <li className="flex items-start gap-3">
               <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-              <span>Możliwość zawarcia pisemnej umowy kupna zgodnie z Państwa wewnętrznymi przepisami</span>
+              <span>Írásos adásvételi szerződés megkötésének lehetősége az Önök belső szabályozásának megfelelően</span>
             </li>
             <li className="flex items-start gap-3">
               <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-              <span>Przygotowanie szczegółowej oferty cenowej spełniającej warunki przetargu</span>
+              <span>A pályázati feltételeknek megfelelő részletes árajánlat elkészítése</span>
             </li>
             <li className="flex items-start gap-3">
               <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
-              <span>Indywidualne podejście do dużych projektów, w tym możliwość osobistej konsultacji</span>
+              <span>Egyedi megközelítés nagy projektekhez, beleértve a személyes konzultáció lehetőségét</span>
             </li>
           </ul>
         </div>
@@ -254,61 +254,61 @@ export default function PublicInstitutionsPage() {
         {/* Products for Institutions */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold text-[#131921] mb-8">
-            Produkty odpowiednie dla instytucji publicznych
+            Közintézmények számára megfelelő termékek
           </h2>
           <p className="text-gray-700 mb-8">
-            Oferujemy szeroką gamę wysokiej jakości produktów odpowiednich dla różnych typów instytucji publicznych:
+            Különböző típusú közintézmények számára megfelelő, kiváló minőségű termékek széles választékát kínáljuk:
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <School className="text-[#6da306] mb-4" size={32} />
               <h3 className="text-lg font-semibold text-[#131921] mb-3">
-                Dla szkół i placówek edukacyjnych
+                Iskolák és oktatási intézmények számára
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Wyposażenie warsztatowe i narzędzia</li>
-                <li>• Sprzęt laboratoryjny</li>
-                <li>• Wyposażenie gastronomiczne dla stołówek szkolnych</li>
-                <li>• Pomoce techniczne do nauki</li>
+                <li>• Műhelyfelszerelés és szerszámok</li>
+                <li>• Laboratóriumi eszközök</li>
+                <li>• Konyhai felszerelés iskolai menzák számára</li>
+                <li>• Oktatástechnikai eszközök</li>
               </ul>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <Building2 className="text-[#6da306] mb-4" size={32} />
               <h3 className="text-lg font-semibold text-[#131921] mb-3">
-                Dla urzędów i budynków administracyjnych
+                Hivatalok és közigazgatási épületek számára
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Wyposażenie biurowe i magazynowe</li>
-                <li>• Sprzęt techniczny do konserwacji</li>
-                <li>• Systemy klimatyzacji i ogrzewania</li>
-                <li>• Meble i wyposażenie</li>
+                <li>• Irodai és raktári felszerelés</li>
+                <li>• Karbantartási műszaki eszközök</li>
+                <li>• Légkondicionáló és fűtési rendszerek</li>
+                <li>• Bútorok és berendezések</li>
               </ul>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <Trophy className="text-[#6da306] mb-4" size={32} />
               <h3 className="text-lg font-semibold text-[#131921] mb-3">
-                Dla obiektów sportowych i kulturalnych
+                Sport- és kulturális létesítmények számára
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Sprzęt sportowy i akcesoria</li>
-                <li>• Zaplecze techniczne do wydarzeń</li>
-                <li>• Meble i wyposażenie pomieszczeń</li>
-                <li>• Systemy nagłośnienia</li>
+                <li>• Sporteszközök és kiegészítők</li>
+                <li>• Rendezvények műszaki háttere</li>
+                <li>• Helyiségek bútorai és felszerelése</li>
+                <li>• Hangosítási rendszerek</li>
               </ul>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <Heart className="text-[#6da306] mb-4" size={32} />
               <h3 className="text-lg font-semibold text-[#131921] mb-3">
-                Dla placówek socjalnych i medycznych
+                Szociális és egészségügyi intézmények számára
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Wyposażenie gastronomiczne i akcesoria</li>
-                <li>• Pomoce techniczne do obsługi</li>
-                <li>• Wyposażenie specjalistyczne</li>
-                <li>• Meble i wyposażenie</li>
+                <li>• Konyhai felszerelés és kiegészítők</li>
+                <li>• Ápolási technikai segédeszközök</li>
+                <li>• Speciális felszerelések</li>
+                <li>• Bútorok és berendezések</li>
               </ul>
             </div>
           </div>
@@ -317,17 +317,17 @@ export default function PublicInstitutionsPage() {
         {/* Trust Section */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold text-[#131921] mb-8">
-            Zaufali nam
+            Akik már megbíznak bennünk
           </h2>
           <p className="text-gray-700 mb-8">
-            Współpracujemy z wieloma zadowolonymi firmami i organizacjami z różnych branż.
+            Számos elégedett vállalattal és szervezettel működünk együtt különböző iparágakból.
           </p>
           <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-6 items-center">
             {companyLogos.map((logo, index) => (
               <div key={index} className="flex items-center justify-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <Image
                   src={logo}
-                  alt={`Logo firmy ${index + 1}`}
+                  alt={`Cég logó ${index + 1}`}
                   width={100}
                   height={60}
                   className="w-full h-auto object-contain filter grayscale hover:grayscale-0 transition-all"
@@ -340,57 +340,57 @@ export default function PublicInstitutionsPage() {
         {/* FAQ Section */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold text-[#131921] mb-8">
-            Często zadawane pytania
+            Gyakran ismételt kérdések
           </h2>
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-[#131921] mb-2">
-                Czy można otrzymać próbki produktów przed większym zakupem?
+                Kaphatunk-e termékmintákat nagyobb vásárlás előtt?
               </h3>
               <p className="text-gray-700">
-                Tak, dla wybranych produktów oferujemy możliwość prezentacji lub wypożyczenia próbek. 
-                Skontaktuj się z nami pod adresem support@galaxysklep.pl po więcej informacji.
+                Igen, kiválasztott termékekhez kínálunk bemutatási vagy mintakölcsönzési lehetőséget. 
+                További információkért vegye fel velünk a kapcsolatot a support@jovotech.hu címen.
               </p>
             </div>
 
             <div>
               <h3 className="text-lg font-semibold text-[#131921] mb-2">
-                Jakie dokumenty są potrzebne do zamówienia na fakturę?
+                Milyen dokumentumok szükségesek a számlás rendeléshez?
               </h3>
               <p className="text-gray-700">
-                Przy pierwszym zamówieniu na fakturę potrzebujemy oficjalne zamówienie z NIP, 
-                adresem do faktury, adresem dostawy, osobą kontaktową i podpisem osoby odpowiedzialnej.
+                Az első számlás rendeléshez szükségünk van hivatalos megrendelésre adószámmal, 
+                számlázási címmel, szállítási címmel, kapcsolattartó személlyel és a felelős személy aláírásával.
               </p>
             </div>
 
             <div>
               <h3 className="text-lg font-semibold text-[#131921] mb-2">
-                Czy można wydłużyć termin płatności faktury ponad 14 dni?
+                Meghosszabbítható-e a számla fizetési határideje 14 napon túl?
               </h3>
               <p className="text-gray-700">
-                Tak, na życzenie możemy zapewnić termin płatności do 30 dni, szczególnie 
-                w przypadku większych zamówień lub stałych klientów.
+                Igen, kérésre akár 30 napos fizetési határidőt is biztosíthatunk, különösen 
+                nagyobb megrendelések vagy állandó ügyfelek esetében.
               </p>
             </div>
 
             <div>
               <h3 className="text-lg font-semibold text-[#131921] mb-2">
-                Czy produkty spełniają europejskie normy i certyfikaty?
+                A termékek megfelelnek-e az európai szabványoknak és tanúsítványoknak?
               </h3>
               <p className="text-gray-700">
-                Tak, wszystkie produkty posiadają certyfikat CE i spełniają odpowiednie normy europejskie. 
-                Na życzenie dostarczamy niezbędne certyfikaty i dokumentację techniczną.
+                Igen, minden termék CE tanúsítvánnyal rendelkezik és megfelel a vonatkozó európai szabványoknak. 
+                Kérésre biztosítjuk a szükséges tanúsítványokat és műszaki dokumentációt.
               </p>
             </div>
 
             <div>
               <h3 className="text-lg font-semibold text-[#131921] mb-2">
-                Co jeśli potrzebujemy produktów, których obecnie nie ma na stronie?
+                Mi a teendő, ha olyan termékekre van szükségünk, amelyek jelenleg nincsenek az oldalon?
               </h3>
               <p className="text-gray-700">
-                Mamy dostęp do szerokiego portfolio produktów. Skontaktuj się z nami z zapytaniem 
-                pod adresem support@galaxysklep.pl, a sprawdzimy dostępność również produktów, 
-                których aktualnie nie ma w ofercie e-sklepu.
+                Széles termékportfólióhoz van hozzáférésünk. Vegye fel velünk a kapcsolatot ajánlatkéréssel 
+                a support@jovotech.hu címen, és ellenőrizzük olyan termékek elérhetőségét is, 
+                amelyek jelenleg nem szerepelnek a webáruház kínálatában.
               </p>
             </div>
           </div>
@@ -399,18 +399,18 @@ export default function PublicInstitutionsPage() {
         {/* Contact Section */}
         <div className="bg-green-50 border-l-4 border-[#6da306] rounded-lg p-8">
           <h2 className="text-2xl font-bold text-[#131921] mb-6">
-            Skontaktuj się z nami po indywidualną ofertę
+            Vegye fel velünk a kapcsolatot egyedi ajánlatért
           </h2>
           <p className="text-gray-700 mb-6">
-            Jeśli są Państwo zainteresowani indywidualną ofertą cenową dla swojej instytucji 
-            lub mają jakiekolwiek pytania dotyczące produktów, prosimy o kontakt. Nasz zespół 
-            jest gotowy zapewnić kompleksowe wsparcie i doradztwo.
+            Ha érdekli intézményük számára egy egyedi árajánlat 
+            vagy bármilyen kérdése van a termékekkel kapcsolatban, kérjük, vegye fel velünk a kapcsolatot. Csapatunk 
+            készen áll a teljes körű támogatásra és tanácsadásra.
           </p>
           
           <div className="mb-8">
             <p className="font-semibold text-[#131921] flex items-center gap-2">
               <Mail className="text-[#6da306]" size={20} />
-              E-mail: <a href="mailto:support@galaxysklep.pl" className="text-[#6da306] underline">support@galaxysklep.pl</a>
+              E-mail: <a href="mailto:support@jovotech.hu" className="text-[#6da306] underline">support@jovotech.hu</a>
             </p>
           </div>
 
@@ -419,7 +419,7 @@ export default function PublicInstitutionsPage() {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Imię i nazwisko *
+                  Név *
                 </label>
                 <input
                   type="text"
@@ -465,7 +465,7 @@ export default function PublicInstitutionsPage() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nazwa instytucji *
+                  Intézmény neve *
                 </label>
                 <input
                   type="text"
@@ -481,7 +481,7 @@ export default function PublicInstitutionsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Wiadomość *
+                Üzenet *
               </label>
               <textarea
                 name="message"
@@ -490,7 +490,7 @@ export default function PublicInstitutionsPage() {
                 value={formData.message}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6da306]"
-                placeholder="Proszę opisać swoje potrzeby..."
+                placeholder="Kérjük, írja le igényeit..."
                 style={{ '--field-index': 4 } as React.CSSProperties}
               />
             </div>
@@ -499,7 +499,7 @@ export default function PublicInstitutionsPage() {
               type="submit"
               className="bg-[#6da306] text-white px-6 py-3 rounded-md font-semibold hover:bg-[#5d8f05] transition-colors"
             >
-              Wyślij zapytanie
+              Ajánlatkérés küldése
             </button>
           </form>
         </div>

@@ -1,7 +1,7 @@
 // src/lib/invoice-pdf-generator.ts
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { hu } from 'date-fns/locale';
 import { getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 
 interface InvoiceData {
@@ -34,23 +34,23 @@ interface InvoiceData {
   notes?: string;
 }
 
-// Helper function to handle Polish characters
-function polishToAscii(text: string): string {
+// Helper function to handle Hungarian and Czech characters
+function hungarianToAscii(text: string): string {
   const charMap: { [key: string]: string } = {
-    'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n', 'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
-    'Ą': 'A', 'Ć': 'C', 'Ę': 'E', 'Ł': 'L', 'Ń': 'N', 'Ó': 'O', 'Ś': 'S', 'Ź': 'Z', 'Ż': 'Z',
-    'á': 'a', 'č': 'c', 'ď': 'd', 'é': 'e', 'ě': 'e', 'í': 'i', 'ň': 'n',
-    'ř': 'r', 'š': 's', 'ť': 't', 'ú': 'u', 'ů': 'u', 'ý': 'y', 'ž': 'z',
-    'Á': 'A', 'Č': 'C', 'Ď': 'D', 'É': 'E', 'Ě': 'E', 'Í': 'I', 'Ň': 'N',
-    'Ř': 'R', 'Š': 'S', 'Ť': 'T', 'Ú': 'U', 'Ů': 'U', 'Ý': 'Y', 'Ž': 'Z'
+    'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ö': 'o', 'ő': 'o', 'ú': 'u', 'ü': 'u', 'ű': 'u',
+    'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ö': 'O', 'Ő': 'O', 'Ú': 'U', 'Ü': 'U', 'Ű': 'U',
+    'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n', 'ś': 's', 'ź': 'z', 'ż': 'z',
+    'Ą': 'A', 'Ć': 'C', 'Ę': 'E', 'Ł': 'L', 'Ń': 'N', 'Ś': 'S', 'Ź': 'Z', 'Ż': 'Z',
+    'č': 'c', 'ď': 'd', 'ě': 'e', 'ň': 'n', 'ř': 'r', 'š': 's', 'ť': 't', 'ů': 'u', 'ý': 'y', 'ž': 'z',
+    'Č': 'C', 'Ď': 'D', 'Ě': 'E', 'Ň': 'N', 'Ř': 'R', 'Š': 'S', 'Ť': 'T', 'Ů': 'U', 'Ý': 'Y', 'Ž': 'Z'
   };
   
-  return text.replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻáčďéěíňřšťúůýžÁČĎÉĚÍŇŘŠŤÚŮÝŽ]/g, char => charMap[char] || char);
+  return text.replace(/[áéíóöőúüűÁÉÍÓÖŐÚÜŰąćęłńśźżĄĆĘŁŃŚŹŻčďěňřšťůýžČĎĚŇŘŠŤŮÝŽ]/g, char => charMap[char] || char);
 }
 
-// Format currency for PLN
+// Format currency for HUF
 function formatCurrency(amount: number): string {
-  return `${amount.toFixed(2)} zl`;
+  return `${amount.toFixed(0)} Ft`;
 }
 
 export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
@@ -78,16 +78,16 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   // Fallback delivery names if not in configuration
   const fallbackDeliveryNames: { [key: string]: string } = {
     'paczkomat': 'Paczkomat InPost',
-    'kurier': 'Kurier DPD',
-    'courier': 'Kurier DPD',
-    'dpd': 'Kurier DPD',
-    'zasilkovna': 'Najwygodniejsza dostawa',
-    'odbior-osobisty': 'Odbiór osobisty',
-    'personal': 'Odbiór osobisty'
+    'kurier': 'Futárszolgálat DPD',
+    'courier': 'Futárszolgálat DPD',
+    'dpd': 'Futárszolgálat DPD',
+    'zasilkovna': 'Legkényelmesebb szállítás',
+    'odbior-osobisty': 'Személyes átvétel',
+    'personal': 'Személyes átvétel'
   };
   
-  const deliveryName = deliveryMethod?.labelPl || fallbackDeliveryNames[invoiceData.deliveryMethod] || invoiceData.deliveryMethod || 'Dostawa';
-  const paymentName = paymentMethod?.labelPl || invoiceData.paymentMethod || 'Przelew bankowy';
+  const deliveryName = deliveryMethod?.labelPl || fallbackDeliveryNames[invoiceData.deliveryMethod] || invoiceData.deliveryMethod || 'Szállítás';
+  const paymentName = paymentMethod?.labelPl || invoiceData.paymentMethod || 'Banki átutalás';
 
   // Page setup - reduced margins for more space
   const pageWidth = 210;
@@ -100,10 +100,10 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   // Header - Invoice Title with barcode
   doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
-  doc.text('FAKTURA', leftMargin, yPosition);
+  doc.text('SZÁMLA', leftMargin, yPosition);
   
-  // Draw barcode next to FAKTURA
-  const barcodeX = leftMargin + 45;
+  // Draw barcode next to SZÁMLA
+  const barcodeX = leftMargin + 40;
   const barcodeY = yPosition - 7;
   const barcodeHeight = 8;
   
@@ -142,13 +142,13 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii(`Numer zamówienia: ${invoiceData.orderNumber}`), rightMargin, yPosition + 1.5, { align: 'right' });
+  doc.text(hungarianToAscii(`Rendelési szám: ${invoiceData.orderNumber}`), rightMargin, yPosition + 1.5, { align: 'right' });
   
   // Add sale date with closer spacing
   doc.setFontSize(8);
-  doc.text(polishToAscii(`Data sprzedaży:`), rightMargin - 17, yPosition + 5, { align: 'right' });
+  doc.text(hungarianToAscii(`Teljesítés dátuma:`), rightMargin - 20, yPosition + 5, { align: 'right' });
   doc.setFont('helvetica', 'bold');
-  doc.text(format(saleDate, 'dd.MM.yyyy'), rightMargin, yPosition + 5, { align: 'right' });
+  doc.text(format(saleDate, 'yyyy.MM.dd'), rightMargin, yPosition + 5, { align: 'right' });
   doc.setFont('helvetica', 'normal');
 
   yPosition += 16;
@@ -165,27 +165,27 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   // Seller section with bank info
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('SPRZEDAWCA:', leftMargin, yPosition);
+  doc.text('ELADÓ:', leftMargin, yPosition);
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   let sellerY = yPosition + 5;
   
   doc.setFont('helvetica', 'bold');
-  doc.text('Galaxy Sklep', leftMargin, sellerY);
+  doc.text('Jovotech.hu', leftMargin, sellerY);
   doc.setFont('helvetica', 'normal');
   sellerY += 4; // Adjusted for bigger font
-  doc.text(polishToAscii('1. máje 535/50'), leftMargin, sellerY);
+  doc.text(hungarianToAscii('1. máje 535/50'), leftMargin, sellerY);
   sellerY += 3.5;
-  doc.text('46007 Liberec, Republika Czeska', leftMargin, sellerY);
+  doc.text('46007 Liberec III-Jerab, Cseh Köztársaság', leftMargin, sellerY);
   sellerY += 3.5;
-  doc.text('NIP: 04688465', leftMargin, sellerY);
+  doc.text('Adószám: 04688465', leftMargin, sellerY);
   sellerY += 3.5;
-  doc.text('Email: support@galaxysklep.pl', leftMargin, sellerY);
+  doc.text('Email: support@jovotech.hu', leftMargin, sellerY);
   sellerY += 3.5;
   doc.setFontSize(7);
   doc.setTextColor(100, 100, 100);
-  doc.text(polishToAscii('Sprzedawca nie jest płatnikiem VAT'), leftMargin, sellerY);
+  doc.text(hungarianToAscii('Az eladó nem ÁFA-fizető'), leftMargin, sellerY);
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(8);
   
@@ -193,38 +193,38 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   sellerY += 5;
   doc.setFontSize(9); // Bigger font for the headline
   doc.setFont('helvetica', 'bold');
-  doc.text('Konto bankowe:', leftMargin, sellerY);
+  doc.text('Bankszámla:', leftMargin, sellerY);
   sellerY += 4;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.text('Numer konta: ', leftMargin, sellerY);
+  doc.text('Számlaszám: ', leftMargin, sellerY);
   doc.setFontSize(9); // Bigger font for account number
   doc.setFont('helvetica', 'bold');
-  doc.text('21291000062469800208837403', leftMargin + 20, sellerY);
+  doc.text('12600016-10426947-95638648', leftMargin + 22, sellerY);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   sellerY += 4;
   doc.text('IBAN: ', leftMargin, sellerY);
   doc.setFontSize(9); // Bigger font for IBAN
   doc.setFont('helvetica', 'bold');
-  doc.text('PL21 2910 0006 2469 8002 0883 7403', leftMargin + 10, sellerY);
+  doc.text('HU86 1260 0016 1042 6947 9563 8648', leftMargin + 10, sellerY);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   sellerY += 4;
   doc.text('SWIFT: ', leftMargin, sellerY);
   doc.setFontSize(9); // Bigger font for SWIFT
   doc.setFont('helvetica', 'bold');
-  doc.text('BMPBPLPP', leftMargin + 12, sellerY);
+  doc.text('TRWIBEBBXXX', leftMargin + 12, sellerY);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   sellerY += 3.5;
-  doc.text('Aion S.A. Spolka Akcyjna Oddzial w Polsce', leftMargin, sellerY);
+  doc.text('WISE EUROPE S.A., Rue du Trone 100, 1050 Brussels', leftMargin, sellerY);
 
   // Buyer section
   const buyerX = leftMargin + columnWidth + 10;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('NABYWCA:', buyerX, yPosition);
+  doc.text('VEVŐ:', buyerX, yPosition);
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
@@ -233,24 +233,24 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   // Company name if exists
   if (invoiceData.billingCompany) {
     doc.setFont('helvetica', 'bold');
-    doc.text(polishToAscii(invoiceData.billingCompany), buyerX, buyerY);
+    doc.text(hungarianToAscii(invoiceData.billingCompany), buyerX, buyerY);
     doc.setFont('helvetica', 'normal');
     buyerY += 3.5;
     if (invoiceData.billingNip) {
-      doc.text(`NIP: ${invoiceData.billingNip}`, buyerX, buyerY);
+      doc.text(`Adószám: ${invoiceData.billingNip}`, buyerX, buyerY);
       buyerY += 3.5;
     }
   }
   
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(`${invoiceData.billingFirstName} ${invoiceData.billingLastName}`), buyerX, buyerY);
+  doc.text(hungarianToAscii(`${invoiceData.billingFirstName} ${invoiceData.billingLastName}`), buyerX, buyerY);
   doc.setFont('helvetica', 'normal');
   buyerY += 3.5;
-  doc.text(polishToAscii(invoiceData.billingAddress), buyerX, buyerY);
+  doc.text(hungarianToAscii(invoiceData.billingAddress), buyerX, buyerY);
   buyerY += 3.5;
-  doc.text(polishToAscii(`${invoiceData.billingPostalCode} ${invoiceData.billingCity}`), buyerX, buyerY);
+  doc.text(hungarianToAscii(`${invoiceData.billingPostalCode} ${invoiceData.billingCity}`), buyerX, buyerY);
   buyerY += 3.5;
-  doc.text(polishToAscii(invoiceData.billingCountry || 'Polska'), buyerX, buyerY);
+  doc.text(hungarianToAscii(invoiceData.billingCountry || 'Magyarország'), buyerX, buyerY);
   buyerY += 3.5;
   doc.text(`Email: ${invoiceData.customerEmail}`, buyerX, buyerY);
   buyerY += 3.5;
@@ -267,30 +267,30 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   doc.setFontSize(8);
   // First row - dates
-  doc.text('Data wystawienia: ', leftMargin + 3, dateY);
+  doc.text('Kiállítás dátuma: ', leftMargin + 3, dateY);
   doc.setFont('helvetica', 'bold');
-  doc.text(format(issueDate, 'dd.MM.yyyy'), leftMargin + 30, dateY);
+  doc.text(format(issueDate, 'yyyy.MM.dd'), leftMargin + 30, dateY);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii('Data sprzedaży: '), leftMargin + 65, dateY);
+  doc.text(hungarianToAscii('Teljesítés dátuma: '), leftMargin + 65, dateY);
   doc.setFont('helvetica', 'bold');
-  doc.text(format(saleDate, 'dd.MM.yyyy'), leftMargin + 90, dateY);
+  doc.text(format(saleDate, 'yyyy.MM.dd'), leftMargin + 93, dateY);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii('Termin płatności: '), leftMargin + 125, dateY);
+  doc.text(hungarianToAscii('Fizetési határidő: '), leftMargin + 125, dateY);
   doc.setFont('helvetica', 'bold');
-  doc.text(format(dueDate, 'dd.MM.yyyy'), leftMargin + 150, dateY);
+  doc.text(format(dueDate, 'yyyy.MM.dd'), leftMargin + 152, dateY);
   
   // Second row - payment info
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii('Sposób płatności: '), leftMargin + 3, dateY + 5);
+  doc.text(hungarianToAscii('Fizetési mód: '), leftMargin + 3, dateY + 5);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(paymentName), leftMargin + 30, dateY + 5);
+  doc.text(hungarianToAscii(paymentName), leftMargin + 25, dateY + 5);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii('Tytuł przelewu: '), leftMargin + 90, dateY + 5);
+  doc.text(hungarianToAscii('Átutalás közlemény: '), leftMargin + 90, dateY + 5);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(orderNumberWithoutDash), leftMargin + 115, dateY + 5);
+  doc.text(hungarianToAscii(orderNumberWithoutDash), leftMargin + 120, dateY + 5);
   
   doc.setFont('helvetica', 'normal');
   yPosition += 18;
@@ -302,11 +302,11 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('Lp.', leftMargin + 2, yPosition);
-  doc.text(polishToAscii('Nazwa towaru/usługi'), leftMargin + 10, yPosition);
-  doc.text(polishToAscii('Ilość'), leftMargin + 130, yPosition, { align: 'center' });
-  doc.text('Cena jedn.', leftMargin + 150, yPosition, { align: 'right' });
-  doc.text(polishToAscii('Wartość'), rightMargin - 2, yPosition, { align: 'right' });
+  doc.text('Ssz.', leftMargin + 2, yPosition);
+  doc.text(hungarianToAscii('Termék/szolgáltatás megnevezése'), leftMargin + 10, yPosition);
+  doc.text(hungarianToAscii('Menny.'), leftMargin + 130, yPosition, { align: 'center' });
+  doc.text('Egységár', leftMargin + 150, yPosition, { align: 'right' });
+  doc.text(hungarianToAscii('Érték'), rightMargin - 2, yPosition, { align: 'right' });
   
   doc.setTextColor(0, 0, 0);
   yPosition += 7;
@@ -327,7 +327,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
     
     // Truncate long product names
     const maxNameLength = 75;
-    const itemName = polishToAscii(item.name || 'Produkt');
+    const itemName = hungarianToAscii(item.name || 'Termék');
     const displayName = itemName.length > maxNameLength ? 
       itemName.substring(0, maxNameLength) + '...' : itemName;
     
@@ -342,7 +342,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
 
   // Delivery - Always show delivery line
   doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
-  doc.text(polishToAscii(`Dostawa - ${deliveryName}`), leftMargin + 10, yPosition);
+  doc.text(hungarianToAscii(`Szállítás - ${deliveryName}`), leftMargin + 10, yPosition);
   doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
   doc.text(formatCurrency(deliveryPrice), leftMargin + 150, yPosition, { align: 'right' });
   doc.text(formatCurrency(deliveryPrice), rightMargin - 2, yPosition, { align: 'right' });
@@ -353,7 +353,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   // Payment method - Always show
   doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
-  doc.text(polishToAscii(`Płatność - ${paymentName}`), leftMargin + 10, yPosition);
+  doc.text(hungarianToAscii(`Fizetés - ${paymentName}`), leftMargin + 10, yPosition);
   doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
   doc.text(formatCurrency(paymentFee), leftMargin + 150, yPosition, { align: 'right' });
   doc.text(formatCurrency(paymentFee), rightMargin - 2, yPosition, { align: 'right' });
@@ -369,7 +369,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   // Total
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii('RAZEM DO ZAPŁATY:'), leftMargin + 95, yPosition);
+  doc.text(hungarianToAscii('FIZETENDŐ ÖSSZESEN:'), leftMargin + 90, yPosition);
   doc.setFontSize(14);
   doc.text(formatCurrency(invoiceData.total), rightMargin - 2, yPosition, { align: 'right' });
   
@@ -378,8 +378,8 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   // Amount in words
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  const amountInWords = polishToAscii(numberToPolishWords(invoiceData.total));
-  doc.text(polishToAscii(`Słownie: ${amountInWords}`), leftMargin, yPosition);
+  const amountInWords = hungarianToAscii(numberToHungarianWords(invoiceData.total));
+  doc.text(hungarianToAscii(`Azaz: ${amountInWords}`), leftMargin, yPosition);
 
   // Payment details section - compact
   yPosition += 10;
@@ -389,28 +389,28 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii('DANE DO PŁATNOŚCI:'), leftMargin + 3, yPosition);
+  doc.text(hungarianToAscii('FIZETÉSI ADATOK:'), leftMargin + 3, yPosition);
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   yPosition += 5;
   
   // Payment info in columns
-  doc.text(polishToAscii('Sposób płatności: '), leftMargin + 3, yPosition);
+  doc.text(hungarianToAscii('Fizetési mód: '), leftMargin + 3, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(paymentName), leftMargin + 28, yPosition);
+  doc.text(hungarianToAscii(paymentName), leftMargin + 25, yPosition);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(polishToAscii('Tytuł przelewu: '), leftMargin + 100, yPosition);
+  doc.text(hungarianToAscii('Átutalás közlemény: '), leftMargin + 100, yPosition);
   doc.setFont('helvetica', 'bold');
-  doc.text(polishToAscii(orderNumberWithoutDash), leftMargin + 125, yPosition);
+  doc.text(hungarianToAscii(orderNumberWithoutDash), leftMargin + 130, yPosition);
   
   doc.setFont('helvetica', 'normal');
   yPosition += 5;
-  doc.text('Numer konta: ', leftMargin + 3, yPosition);
+  doc.text('Számlaszám: ', leftMargin + 3, yPosition);
   doc.setFontSize(9); // Bigger font for account number
   doc.setFont('helvetica', 'bold');
-  doc.text('21291000062469800208837403', leftMargin + 25, yPosition);
+  doc.text('12600016-10426947-95638648', leftMargin + 25, yPosition);
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
@@ -418,19 +418,19 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.text('IBAN: ', leftMargin + 3, yPosition);
   doc.setFontSize(9); // Bigger font for IBAN
   doc.setFont('helvetica', 'bold');
-  doc.text('PL21 2910 0006 2469 8002 0883 7403', leftMargin + 13, yPosition);
+  doc.text('HU86 1260 0016 1042 6947 9563 8648', leftMargin + 13, yPosition);
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.text('SWIFT/BIC: ', leftMargin + 100, yPosition);
   doc.setFontSize(9); // Bigger font for SWIFT
   doc.setFont('helvetica', 'bold');
-  doc.text('BMPBPLPP', leftMargin + 120, yPosition);
+  doc.text('TRWIBEBBXXX', leftMargin + 120, yPosition);
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   yPosition += 5;
-  doc.text('Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce, Dobra 40, 00-344 Warszawa, Poland', leftMargin + 3, yPosition);
+  doc.text('Bank: WISE EUROPE S.A., Rue du Trone 100, 1050 Brussels', leftMargin + 3, yPosition);
 
   yPosition += 12;
 
@@ -454,19 +454,19 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
       
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text('ADRES DOSTAWY:', leftMargin + 3, boxY + 4);
+      doc.text('SZÁLLÍTÁSI CÍM:', leftMargin + 3, boxY + 4);
       
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
       let shippingY = boxY + 8;
-      doc.text(polishToAscii(`${invoiceData.shippingFirstName || invoiceData.billingFirstName} ${invoiceData.shippingLastName || invoiceData.billingLastName}`), leftMargin + 3, shippingY);
+      doc.text(hungarianToAscii(`${invoiceData.shippingFirstName || invoiceData.billingFirstName} ${invoiceData.shippingLastName || invoiceData.billingLastName}`), leftMargin + 3, shippingY);
       shippingY += 3.5;
       if (invoiceData.shippingAddress) {
-        doc.text(polishToAscii(invoiceData.shippingAddress), leftMargin + 3, shippingY);
+        doc.text(hungarianToAscii(invoiceData.shippingAddress), leftMargin + 3, shippingY);
         shippingY += 3.5;
       }
       if (invoiceData.shippingPostalCode || invoiceData.shippingCity) {
-        doc.text(polishToAscii(`${invoiceData.shippingPostalCode || ''} ${invoiceData.shippingCity || ''}`), leftMargin + 3, shippingY);
+        doc.text(hungarianToAscii(`${invoiceData.shippingPostalCode || ''} ${invoiceData.shippingCity || ''}`), leftMargin + 3, shippingY);
       }
     }
     
@@ -481,12 +481,12 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
       
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text('UWAGI:', notesX + 3, boxY + 4);
+      doc.text('MEGJEGYZÉSEK:', notesX + 3, boxY + 4);
       
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
       
-      const noteLines = doc.splitTextToSize(polishToAscii(invoiceData.notes || ''), notesWidth - 6);
+      const noteLines = doc.splitTextToSize(hungarianToAscii(invoiceData.notes || ''), notesWidth - 6);
       let noteY = boxY + 8;
       noteLines.slice(0, 3).forEach((line: string) => {
         doc.text(line, notesX + 3, noteY);
@@ -510,11 +510,11 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   doc.line(leftMargin, footerY, leftMargin + 60, footerY);
   doc.line(rightMargin - 60, footerY, rightMargin, footerY);
   
-  doc.text(polishToAscii('Podpis osoby upoważnionej'), leftMargin + 30, footerY + 4, { align: 'center' });
-  doc.text(polishToAscii('do wystawienia faktury'), leftMargin + 30, footerY + 7, { align: 'center' });
+  doc.text(hungarianToAscii('A számla kiállítására'), leftMargin + 30, footerY + 4, { align: 'center' });
+  doc.text(hungarianToAscii('jogosult személy aláírása'), leftMargin + 30, footerY + 7, { align: 'center' });
   
-  doc.text(polishToAscii('Podpis osoby upoważnionej'), rightMargin - 30, footerY + 4, { align: 'center' });
-  doc.text(polishToAscii('do odbioru faktury'), rightMargin - 30, footerY + 7, { align: 'center' });
+  doc.text(hungarianToAscii('A számla átvételére'), rightMargin - 30, footerY + 4, { align: 'center' });
+  doc.text(hungarianToAscii('jogosult személy aláírása'), rightMargin - 30, footerY + 7, { align: 'center' });
 
   // Bottom line
   doc.setTextColor(0, 0, 0);
@@ -528,7 +528,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   // All info in one line
   doc.text(
-    polishToAscii('Galaxy Sklep • 1. máje 535/50, 46007 Liberec, Republika Czeska • NIP: 04688465 • Email: support@galaxysklep.pl • www.galaxysklep.pl'),
+    hungarianToAscii('Jovotech.hu • 1. máje 535/50, 46007 Liberec III-Jeřáb • Adószám: 04688465 • Email: support@jovotech.hu • www.jovotech.hu'),
     pageWidth / 2,
     pageHeight - 21,
     { align: 'center', maxWidth: 180 }
@@ -536,8 +536,8 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   doc.setFontSize(6);
   // Wider text by adjusting maxWidth parameter
-  const footerText1 = polishToAscii('Przedsiębiorca zagraniczny prowadzący sprzedaż na terytorium RP. Podmiot zwolniony z obowiązku ewidencjonowania przy zastosowaniu kas rejestrujących.');
-  const footerText2 = polishToAscii('Faktura wystawiona zgodnie z art. 106e ustawy z dnia 11 marca 2004 r. o podatku od towarów i usług.');
+  const footerText1 = hungarianToAscii('Külföldi vállalkozó magyarországi értékesítéssel. Pénztárgép használatának kötelezettsége alól mentesített tevékenység.');
+  const footerText2 = hungarianToAscii('A számla a 2007. évi CXXVII. törvény az általános forgalmi adóról szóló jogszabály alapján került kiállításra.');
   
   doc.text(
     footerText1,
@@ -554,21 +554,20 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
   
   // Page number
   doc.setFontSize(6);
-  doc.text('Strona 1 z 1', pageWidth / 2, pageHeight - 10, { align: 'center' });
+  doc.text('Oldal 1 / 1', pageWidth / 2, pageHeight - 10, { align: 'center' });
 
   return doc;
 }
 
-// Helper function to convert numbers to Polish words
-function numberToPolishWords(amount: number): string {
-  const zloty = Math.floor(amount);
-  const groszy = Math.round((amount - zloty) * 100);
+// Helper function to convert numbers to Hungarian words
+function numberToHungarianWords(amount: number): string {
+  const forint = Math.floor(amount);
   
   // Basic conversion for common amounts
-  const ones = ['', 'jeden', 'dwa', 'trzy', 'cztery', 'pięć', 'sześć', 'siedem', 'osiem', 'dziewięć'];
-  const teens = ['dziesięć', 'jedenaście', 'dwanaście', 'trzynaście', 'czternaście', 'piętnaście', 'szesnaście', 'siedemnaście', 'osiemnaście', 'dziewiętnaście'];
-  const tens = ['', '', 'dwadzieścia', 'trzydzieści', 'czterdzieści', 'pięćdziesiąt', 'sześćdziesiąt', 'siedemdziesiąt', 'osiemdziesiąt', 'dziewięćdziesiąt'];
-  const hundreds = ['', 'sto', 'dwieście', 'trzysta', 'czterysta', 'pięćset', 'sześćset', 'siedemset', 'osiemset', 'dziewięćset'];
+  const ones = ['', 'egy', 'kettő', 'három', 'négy', 'öt', 'hat', 'hét', 'nyolc', 'kilenc'];
+  const teens = ['tíz', 'tizenegy', 'tizenkettő', 'tizenhárom', 'tizennégy', 'tizenöt', 'tizenhat', 'tizenhét', 'tizennyolc', 'tizenkilenc'];
+  const tens = ['', '', 'húsz', 'harminc', 'negyven', 'ötven', 'hatvan', 'hetven', 'nyolcvan', 'kilencven'];
+  const hundreds = ['', 'száz', 'kétszáz', 'háromszáz', 'négyszáz', 'ötszáz', 'hatszáz', 'hétszáz', 'nyolcszáz', 'kilencszáz'];
   
   function convertHundreds(n: number): string {
     if (n === 0) return '';
@@ -577,41 +576,39 @@ function numberToPolishWords(amount: number): string {
     if (n < 100) {
       const t = Math.floor(n / 10);
       const o = n % 10;
-      return tens[t] + (o > 0 ? ' ' + ones[o] : '');
+      return tens[t] + (o > 0 ? ones[o] : '');
     }
     const h = Math.floor(n / 100);
     const r = n % 100;
-    return hundreds[h] + (r > 0 ? ' ' + convertHundreds(r) : '');
+    return hundreds[h] + (r > 0 ? convertHundreds(r) : '');
   }
   
-  // For simplicity, handle amounts up to 9999
-  if (zloty >= 10000) {
-    return `${zloty} złotych ${groszy}/100`;
+  // For simplicity, handle amounts up to 999999
+  if (forint >= 1000000) {
+    return `${forint} forint`;
   }
   
   let words = '';
-  if (zloty === 0) {
-    words = 'zero złotych';
-  } else if (zloty === 1) {
-    words = 'jeden złoty';
-  } else if (zloty < 1000) {
-    words = convertHundreds(zloty) + ' złotych';
+  if (forint === 0) {
+    words = 'nulla forint';
+  } else if (forint < 1000) {
+    words = convertHundreds(forint) + ' forint';
   } else {
-    const thousands = Math.floor(zloty / 1000);
-    const remainder = zloty % 1000;
+    const thousands = Math.floor(forint / 1000);
+    const remainder = forint % 1000;
     if (thousands === 1) {
-      words = 'tysiąc';
-    } else if (thousands < 5) {
-      words = ones[thousands] + ' tysiące';
+      words = 'ezer';
+    } else if (thousands < 10) {
+      words = ones[thousands] + 'ezer';
     } else {
-      words = ones[thousands] + ' tysięcy';
+      words = convertHundreds(thousands) + 'ezer';
     }
     if (remainder > 0) {
-      words += ' ' + convertHundreds(remainder) + ' złotych';
+      words += convertHundreds(remainder) + ' forint';
     } else {
-      words += ' złotych';
+      words += ' forint';
     }
   }
   
-  return words + ` ${groszy}/100`;
+  return words;
 }

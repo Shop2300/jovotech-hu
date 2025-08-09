@@ -14,33 +14,33 @@ interface VideoData {
 const productVideos: VideoData[] = [
   {
     id: '1',
-    title: 'Router CNC - Prezentacja działania',
+    title: 'CNC marógép - Működés bemutatása',
     youtubeId: '6aLMNgElA6Q'
   },
   {
     id: '2',
-    title: 'Laser grawerujący - Test materiałów',
+    title: 'Gravírozó lézer - Anyagteszt',
     youtubeId: 'QH4L_qYfavw'
   },
   {
     id: '3',
-    title: 'Prasa termotransferowa - Instrukcja',
+    title: 'Hőprés - Használati útmutató',
     youtubeId: 'HqAqr5g76Zg'
   },
   {
     id: '4',
-    title: 'Ultradźwięki - Czyszczenie części',
+    title: 'Ultrahang - Alkatrészek tisztítása',
     youtubeId: 'uxWO4eM4nAM'
   },
   {
     id: '5',
-    title: 'CNC 3040 - Pierwsze uruchomienie',
+    title: 'CNC 3040 - Első üzembe helyezés',
     youtubeId: 'DYdiWyO6Ct8'
   },
   {
     id: '6',
-    title: 'Laser CO2 - Grawerowanie drewna',
-    youtubeId: 'gaeh1sTsl70'  // Fixed typo: was 'gaeh1sTsI70' (capital I instead of lowercase l)
+    title: 'CO2 lézer - Fa gravírozás',
+    youtubeId: 'gaeh1sTsl70' // Fixed typo: was 'gaeh1sTsI70' (capital I instead of lowercase l)
   }
 ];
 
@@ -71,7 +71,7 @@ function VideoThumbnail({ video }: VideoThumbnailProps) {
   const thumbnailUrl = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
 
   return (
-    <div 
+    <div
       className="relative w-full h-full cursor-pointer group overflow-hidden bg-gray-900"
       onClick={() => setIsLoaded(true)}
     >
@@ -128,18 +128,18 @@ export function ProductVideos() {
     <section className="py-12 bg-white">
       <div className="max-w-screen-2xl mx-auto px-6">
         <h2 className="text-2xl font-bold mb-3 text-center text-black">
-          Odkryj nasze filmy produktowe
+          Fedezze fel termékvideóinkat
         </h2>
         <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
-          Odkryj zalety naszych produktów, dowiedz się jak działają i zainspiruj się do ich używania.
+          Fedezze fel termékeink előnyeit, ismerje meg működésüket és inspirálódjon használatukhoz.
         </p>
-        
+
         <div className="relative">
           {/* Left Arrow */}
           <button
             onClick={() => scroll('left')}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow duration-200 hidden md:block"
-            aria-label="Przewiń w lewo"
+            aria-label="Görgetés balra"
           >
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
@@ -148,20 +148,20 @@ export function ProductVideos() {
           <button
             onClick={() => scroll('right')}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow duration-200 hidden md:block"
-            aria-label="Przewiń w prawo"
+            aria-label="Görgetés jobbra"
           >
             <ChevronRight className="w-6 h-6 text-gray-600" />
           </button>
 
           {/* Videos Container */}
-          <div 
+          <div
             ref={scrollContainerRef}
             className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {productVideos.map((video) => (
-              <div 
-                key={video.id} 
+              <div
+                key={video.id}
                 className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
               >
                 <div className="rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-100">

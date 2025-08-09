@@ -49,55 +49,35 @@ interface OrderConfirmationEmailProps {
 }
 
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('pl-PL', {
+  return new Intl.NumberFormat('hu-HU', {
     style: 'currency',
-    currency: 'PLN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    currency: 'HUF',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(price);
 };
 
 const formatDate = (date: Date | string | undefined | null) => {
-  if (!date) {
-    return new Intl.DateTimeFormat('pl-PL', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Europe/Warsaw'
-    }).format(new Date());
-  }
-  
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
-  if (isNaN(dateObj.getTime())) {
-    return new Intl.DateTimeFormat('pl-PL', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Europe/Warsaw'
-    }).format(new Date());
-  }
-  
-  return new Intl.DateTimeFormat('pl-PL', {
+  const fmt = new Intl.DateTimeFormat('hu-HU', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Europe/Warsaw'
-  }).format(dateObj);
+    timeZone: 'Europe/Budapest',
+  });
+  if (!date) return fmt.format(new Date());
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return fmt.format(new Date());
+  return fmt.format(dateObj);
 };
 
 const BANK_DETAILS = {
-  accountNumber: '21291000062469800208837403',
-  iban: 'PL21 2910 0006 2469 8002 0883 7403',
-  swift: 'BMPBPLPP',
-  bankName: 'Aion S.A. Spolka Akcyjna Oddzial w Polsce',
-  bankAddress: 'Dobra 40, 00-344, Warszawa, Poland'
+  accountNumber: '12600016-10426947-95638648', // Számlaszám
+  iban: 'HU86126000161042694795638648',
+  swift: 'TRWIBEBBXXX',
+  bankName: 'WISE EUROPE S.A.',
+  bankAddress: 'Rue du Trône 100, 1050 Brussels, Belgium',
 };
 
 export const OrderConfirmationEmail = ({
@@ -115,20 +95,20 @@ export const OrderConfirmationEmail = ({
   billingAddress,
   orderDate,
 }: OrderConfirmationEmailProps) => {
-  const previewText = `Potwierdzenie zamówienia #${orderNumber} - Galaxysklep.pl`;
+  const previewText = `Rendelés visszaigazolása #${orderNumber} - Jovotech.hu`;
 
   const deliveryMethodInfo = deliveryMethod ? getDeliveryMethod(deliveryMethod) : null;
   const paymentMethodInfo = paymentMethod ? getPaymentMethod(paymentMethod) : null;
-  
-  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryFee = deliveryMethodInfo?.price || 0;
   const paymentFee = paymentMethodInfo?.price || 0;
 
-  const isDifferentAddress = billingAddress && (
-    billingAddress.street !== deliveryAddress.street ||
-    billingAddress.city !== deliveryAddress.city ||
-    billingAddress.postalCode !== deliveryAddress.postalCode
-  );
+  const isDifferentAddress =
+    billingAddress &&
+    (billingAddress.street !== deliveryAddress.street ||
+      billingAddress.city !== deliveryAddress.city ||
+      billingAddress.postalCode !== deliveryAddress.postalCode);
 
   return (
     <Html>
@@ -140,17 +120,15 @@ export const OrderConfirmationEmail = ({
           <Section style={header}>
             <Row>
               <Column style={headerLeft}>
-                <Img 
-                  src="https://galaxysklep.pl/images/galaxyskleplogo.png" 
-                  alt="Galaxysklep.pl" 
-                  height="32" 
+                <Img
+                  src="https://galaxysklep.pl/images/galaxyskleplogo.png"
+                  alt="Jovotech.hu"
+                  height="32"
                   style={logo}
                 />
               </Column>
               <Column style={headerRight}>
-                <Text style={headerText}>
-                  ZAMÓWIENIE #{orderNumber}
-                </Text>
+                <Text style={headerText}>RENDELÉS #{orderNumber}</Text>
               </Column>
             </Row>
           </Section>
@@ -160,7 +138,7 @@ export const OrderConfirmationEmail = ({
             <Section style={titleSection}>
               <Text style={confirmationTitle}>
                 <span style={checkmarkStyle}>✓</span>
-                POTWIERDZENIE ZAMÓWIENIA
+                RENDELÉS VISSZAIGAZOLÁSA
               </Text>
             </Section>
 
@@ -168,27 +146,45 @@ export const OrderConfirmationEmail = ({
             <Section style={infoBlock}>
               <Row>
                 <Column style={infoColumn}>
-                  <Text style={infoLabel}>DANE KLIENTA</Text>
+                  <Text style={infoLabel}>VÁSÁRLÓ ADATAI</Text>
                   <Text style={infoText}>
                     {customerName}
-                    {customerEmail && <><br />{customerEmail}</>}
-                    {customerPhone && <><br />Tel: {customerPhone}</>}
+                    {customerEmail && (
+                      <>
+                        <br />
+                        {customerEmail}
+                      </>
+                    )}
+                    {customerPhone && (
+                      <>
+                        <br />
+                        Tel.: {customerPhone}
+                      </>
+                    )}
                   </Text>
                   {(companyName || companyNip) && (
                     <Text style={infoText}>
-                      {companyName && <><br /><strong>{companyName}</strong></>}
-                      {companyNip && <><br />NIP: {companyNip}</>}
+                      {companyName && (
+                        <>
+                          <br />
+                          <strong>{companyName}</strong>
+                        </>
+                      )}
+                      {companyNip && (
+                        <>
+                          <br />
+                          Adószám: {companyNip}
+                        </>
+                      )}
                     </Text>
                   )}
                 </Column>
                 <Column style={infoColumn}>
-                  <Text style={infoLabel}>DATA ZAMÓWIENIA</Text>
+                  <Text style={infoLabel}>RENDELÉS DÁTUMA</Text>
+                  <Text style={infoText}>{formatDate(orderDate)}</Text>
+                  <Text style={{ ...infoLabel, marginTop: '12px' }}>ÁLLAPOT</Text>
                   <Text style={infoText}>
-                    {formatDate(orderDate)}
-                  </Text>
-                  <Text style={{ ...infoLabel, marginTop: '12px' }}>STATUS</Text>
-                  <Text style={infoText}>
-                    {paymentMethod === 'bank' ? 'Oczekuje na płatność' : 'W realizacji'}
+                    {paymentMethod === 'bank' ? 'Fizetésre vár' : 'Feldolgozás alatt'}
                   </Text>
                 </Column>
               </Row>
@@ -196,11 +192,8 @@ export const OrderConfirmationEmail = ({
 
             {/* Track Order Button after Customer Info */}
             <Section style={{ textAlign: 'center' as const, marginBottom: '24px' }}>
-              <Button
-                style={trackButton}
-                href={`https://www.galaxysklep.pl/order-status/${orderNumber}`}
-              >
-                ŚLEDŹ ZAMÓWIENIE
+              <Button style={trackButton} href={`https://jovotech.hu/order-status/${orderNumber}`}>
+                RENDELÉS KÖVETÉSE
               </Button>
             </Section>
 
@@ -208,32 +201,31 @@ export const OrderConfirmationEmail = ({
             <Section style={addressSection}>
               <Row>
                 <Column style={addressColumn}>
-                  <Text style={addressLabel}>ADRES ROZLICZENIOWY</Text>
+                  <Text style={addressLabel}>SZÁMLÁZÁSI CÍM</Text>
                   <Text style={addressText}>
                     {billingAddress ? (
                       <>
-                        {billingAddress.street}<br />
+                        {billingAddress.street}
+                        <br />
                         {billingAddress.postalCode} {billingAddress.city}
                       </>
                     ) : (
                       <>
-                        {deliveryAddress.street}<br />
+                        {deliveryAddress.street}
+                        <br />
                         {deliveryAddress.postalCode} {deliveryAddress.city}
                       </>
                     )}
                   </Text>
                 </Column>
                 <Column style={addressColumn}>
-                  <Text style={addressLabel}>ADRES DOSTAWY</Text>
+                  <Text style={addressLabel}>SZÁLLÍTÁSI CÍM</Text>
                   <Text style={addressText}>
-                    {deliveryAddress.street}<br />
+                    {deliveryAddress.street}
+                    <br />
                     {deliveryAddress.postalCode} {deliveryAddress.city}
                   </Text>
-                  {isDifferentAddress && (
-                    <Text style={addressNote}>
-                      (inny niż rozliczeniowy)
-                    </Text>
-                  )}
+                  {isDifferentAddress && <Text style={addressNote}>(eltér a számlázási címtől)</Text>}
                 </Column>
               </Row>
             </Section>
@@ -243,9 +235,9 @@ export const OrderConfirmationEmail = ({
               <table style={itemsTable}>
                 <thead>
                   <tr>
-                    <th style={tableHeaderLeft}>PRODUKT</th>
-                    <th style={tableHeaderCenter}>ILOŚĆ</th>
-                    <th style={tableHeaderRight}>CENA</th>
+                    <th style={tableHeaderLeft}>TERMÉK</th>
+                    <th style={tableHeaderCenter}>MENNYISÉG</th>
+                    <th style={tableHeaderRight}>ÁR</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -256,12 +248,12 @@ export const OrderConfirmationEmail = ({
                           {item.image && (
                             <Column style={{ width: '40px', paddingRight: '10px' }}>
                               {item.productSlug && item.categorySlug ? (
-                                <Link 
-                                  href={`https://www.galaxysklep.pl/${item.categorySlug}/${item.productSlug}`}
+                                <Link
+                                  href={`https://jovotech.hu/${item.categorySlug}/${item.productSlug}`}
                                   style={{ textDecoration: 'none' }}
                                 >
-                                  <Img 
-                                    src={item.image} 
+                                  <Img
+                                    src={item.image}
                                     alt={item.name}
                                     width="40"
                                     height="40"
@@ -269,8 +261,8 @@ export const OrderConfirmationEmail = ({
                                   />
                                 </Link>
                               ) : (
-                                <Img 
-                                  src={item.image} 
+                                <Img
+                                  src={item.image}
                                   alt={item.name}
                                   width="40"
                                   height="40"
@@ -281,8 +273,8 @@ export const OrderConfirmationEmail = ({
                           )}
                           <Column>
                             {item.productSlug && item.categorySlug ? (
-                              <Link 
-                                href={`https://www.galaxysklep.pl/${item.categorySlug}/${item.productSlug}`}
+                              <Link
+                                href={`https://jovotech.hu/${item.categorySlug}/${item.productSlug}`}
                                 style={productNameLink}
                               >
                                 {item.name}
@@ -297,42 +289,42 @@ export const OrderConfirmationEmail = ({
                       <td style={tableCellRight}>{formatPrice(item.price * item.quantity)}</td>
                     </tr>
                   ))}
-                  
+
                   <tr>
                     <td colSpan={3} style={separatorCell}>
                       <Hr style={tableSeparator} />
                     </td>
                   </tr>
-                  
+
                   {/* Delivery */}
                   <tr>
                     <td style={methodCell} colSpan={2}>
-                      🚚 Dostawa: {deliveryMethodInfo ? deliveryMethodInfo.labelPl : deliveryMethod}
+                      🚚 Szállítás: {deliveryMethodInfo ? deliveryMethodInfo.labelPl : deliveryMethod}
                     </td>
                     <td style={deliveryFee > 0 ? tableCellRight : tableCellRightFree}>
-                      {deliveryFee > 0 ? formatPrice(deliveryFee) : 'Gratis'}
+                      {deliveryFee > 0 ? formatPrice(deliveryFee) : 'Ingyenes'}
                     </td>
                   </tr>
-                  
+
                   {/* Payment */}
                   <tr>
                     <td style={methodCell} colSpan={2}>
-                      💳 Płatność: {paymentMethodInfo ? paymentMethodInfo.labelPl : paymentMethod}
+                      💳 Fizetés: {paymentMethodInfo ? paymentMethodInfo.labelPl : paymentMethod}
                     </td>
                     <td style={paymentFee > 0 ? tableCellRight : tableCellRightFree}>
-                      {paymentFee > 0 ? formatPrice(paymentFee) : 'Gratis'}
+                      {paymentFee > 0 ? formatPrice(paymentFee) : 'Ingyenes'}
                     </td>
                   </tr>
-                  
+
                   <tr>
                     <td colSpan={3} style={separatorCell}>
                       <Hr style={tableSeparator} />
                     </td>
                   </tr>
-                  
+
                   <tr>
                     <td style={totalCell} colSpan={2}>
-                      <strong>RAZEM</strong>
+                      <strong>ÖSSZESEN</strong>
                     </td>
                     <td style={totalAmountCell}>
                       <strong>{formatPrice(total)}</strong>
@@ -345,28 +337,30 @@ export const OrderConfirmationEmail = ({
             {/* Bank Payment Instructions and Details - Combined */}
             {paymentMethod === 'bank' && (
               <Section style={bankSection}>
-                <Text style={bankTitle}>INSTRUKCJE PŁATNOŚCI I DANE DO PRZELEWU</Text>
+                <Text style={bankTitle}>FIZETÉSI ÚTMUTATÓ ÉS BANKI ADATOK</Text>
                 <Text style={bankText}>
-                  Aby sfinalizować zamówienie, prosimy o wpłatę kwoty <strong>{formatPrice(total)}</strong> na nasze konto bankowe.
+                  A rendelés véglegesítéséhez kérjük, utalja át a(z) <strong>{formatPrice(total)}</strong>{' '}
+                  összeget a bankszámlánkra.
                 </Text>
                 <Section style={bankHighlight}>
                   <Text style={bankDetailRow}>
-                    <strong>Kwota do zapłaty:</strong> {formatPrice(total)}
+                    <strong>Fizetendő összeg:</strong> {formatPrice(total)}
                   </Text>
                   <Text style={bankDetailRow}>
-                    <strong>Tytuł przelewu:</strong> <span style={highlightText}>{orderNumber.replace('-', '')}</span>
+                    <strong>Közlemény:</strong>{' '}
+                    <span style={highlightText}>{orderNumber.replace('-', '')}</span>
                   </Text>
                 </Section>
-                
+
                 {/* Bank Details Table */}
                 <table style={bankDetailsTable}>
                   <tbody>
                     <tr>
-                      <td style={bankLabel}>Nazwa odbiorcy:</td>
-                      <td style={bankValue}>Galaxysklep.pl</td>
+                      <td style={bankLabel}>Kedvezményezett neve:</td>
+                      <td style={bankValue}>Jovotech.hu</td>
                     </tr>
                     <tr>
-                      <td style={bankLabel}>Numer konta:</td>
+                      <td style={bankLabel}>Számlaszám:</td>
                       <td style={bankValue}>{BANK_DETAILS.accountNumber}</td>
                     </tr>
                     <tr>
@@ -383,35 +377,30 @@ export const OrderConfirmationEmail = ({
                     </tr>
                   </tbody>
                 </table>
-                
-                <Text style={bankNote}>
-                  ⏱️ Twoje zamówienie zostanie wysłane natychmiast po zaksięgowaniu wpłaty na naszym koncie.
-                </Text>
+
+                <Text style={bankNote}>⏱️ A rendelést a befizetés beérkezése után azonnal feladjuk.</Text>
               </Section>
             )}
 
             {/* Track Order Button */}
             <Section style={buttonSection}>
-              <Button
-                style={trackButton}
-                href={`https://www.galaxysklep.pl/order-status/${orderNumber}`}
-              >
-                ŚLEDŹ ZAMÓWIENIE
+              <Button style={trackButton} href={`https://jovotech.hu/order-status/${orderNumber}`}>
+                RENDELÉS KÖVETÉSE
               </Button>
             </Section>
 
             {/* Bank Details - Only for non-bank payment methods */}
             {paymentMethod !== 'bank' && (
               <Section style={bankDetailsAlways}>
-                <Text style={bankDetailsTitle}>DANE DO PRZELEWU</Text>
+                <Text style={bankDetailsTitle}>BANKI ADATOK</Text>
                 <table style={bankTable}>
                   <tbody>
                     <tr>
-                      <td style={bankLabel}>Nazwa odbiorcy:</td>
-                      <td style={bankValue}>Galaxysklep.pl</td>
+                      <td style={bankLabel}>Kedvezményezett neve:</td>
+                      <td style={bankValue}>Jovotech.hu</td>
                     </tr>
                     <tr>
-                      <td style={bankLabel}>Numer konta:</td>
+                      <td style={bankLabel}>Számlaszám:</td>
                       <td style={bankValue}>{BANK_DETAILS.accountNumber}</td>
                     </tr>
                     <tr>
@@ -433,23 +422,30 @@ export const OrderConfirmationEmail = ({
 
             {/* Contact */}
             <Text style={contactText}>
-              Pytania? Skontaktuj się z nami:<br />
-              <Link href="mailto:support@galaxysklep.pl" style={contactLink}>support@galaxysklep.pl</Link>
+              Kérdése van? Lépjen kapcsolatba velünk:
+              <br />
+              <Link href="mailto:support@jovotech.hu" style={contactLink}>
+                support@jovotech.hu
+              </Link>
             </Text>
 
             {/* Footer */}
             <Hr style={footerDivider} />
-            
+
             {/* Combined Company Info and Footer */}
             <Section style={companyInfo}>
               <Text style={companyText}>
-                Dziękujemy za zaufanie i zakupy w Galaxysklep.pl!<br />
-                Z pozdrowieniami,<br />
-                <strong>Zespół Galaxysklep.pl</strong>
-                <br /><br />
-                <strong>Galaxysklep.pl</strong><br />
-                <Link href="https://galaxysklep.pl" style={companyLink}>
-                  www.galaxysklep.pl
+                Köszönjük a bizalmát és a vásárlást a Jovotech.hu-n!
+                <br />
+                Üdvözlettel,
+                <br />
+                <strong>A Jovotech.hu csapata</strong>
+                <br />
+                <br />
+                <strong>Jovotech.hu</strong>
+                <br />
+                <Link href="https://jovotech.hu" style={companyLink}>
+                  www.jovotech.hu
                 </Link>
               </Text>
             </Section>
@@ -457,16 +453,17 @@ export const OrderConfirmationEmail = ({
             {/* Legal */}
             <Section style={legalSection}>
               <Text style={legalText}>
-                W przypadku uszkodzenia przesyłki podczas transportu, należy niezwłocznie poinformować dostawcę i upewnić się, 
-                że fakt ten zostanie odpowiednio odnotowany w protokole przewozowym. Zalecamy zachowanie wszystkich materiałów 
-                opakowaniowych i niezwłoczny kontakt z nami pod adresem e-mail support@galaxysklep.pl. Faktury za zamówienie 
-                są wysyłane wyłącznie elektronicznie na adres e-mail podany przy składaniu zamówienia. Prosimy o sprawdzenie 
-                poprawności podanego adresu e-mail i zachowanie kopii faktur dla własnych potrzeb. Przetwarzamy Państwa dane 
-                osobowe zgodnie z obowiązującymi przepisami o ochronie danych osobowych oraz naszą Polityką Prywatności. 
-                Dane osobowe nie są przekazywane osobom trzecim bez Państwa wyraźnej zgody, z wyjątkiem podmiotów przetwarzających 
-                niezbędnych do realizacji dostawy przesyłki. Szczegółowe informacje znajdują się na naszej stronie internetowej 
-                w sekcji Polityka Prywatności. W przypadku jakichkolwiek pytań lub opinii prosimy o kontakt pod adresem 
-                support@galaxysklep.pl. Szczegóły dotyczące warunków zakupu znajdują się w sekcji Regulamin.
+                Amennyiben a csomag szállítás közben megsérült, kérjük, azonnal jelezze a fuvarozónak,
+                és győződjön meg róla, hogy az eset rögzítésre kerül a jegyzőkönyvben. Kérjük, őrizze meg
+                az összes csomagolóanyagot, és vegye fel velünk a kapcsolatot a support@jovotech.hu címen.
+                A rendeléshez tartozó számlákat kizárólag elektronikusan küldjük ki a megrendelésnél megadott
+                e-mail címre. Kérjük, ellenőrizze az e-mail cím helyességét, és őrizze meg a számlák
+                másolatát. Személyes adatait az irányadó adatvédelmi jogszabályoknak és az Adatkezelési
+                tájékoztatónknak megfelelően kezeljük. Az adatokat harmadik félnek nem adjuk át az Ön
+                kifejezett hozzájárulása nélkül, kivéve a szállításhoz szükséges adatfeldolgozókat.
+                Részletek a weboldalunkon az Adatkezelési tájékoztatóban találhatók. Kérdés vagy észrevétel
+                esetén keressen minket a support@jovotech.hu címen. A vásárlás feltételeire vonatkozó
+                részletek az Általános Szerződési Feltételek (ÁSZF) menüpontban érhetők el.
               </Text>
             </Section>
           </Section>
@@ -544,7 +541,7 @@ const confirmationTitle = {
 
 const infoBlock = {
   backgroundColor: '#fafafa',
-  border: '1px solid #e0e0e0',
+  border: '1px solid #e0e0e0', // fixed
   borderRadius: '4px',
   padding: '16px',
   marginBottom: '20px',
@@ -669,7 +666,7 @@ const tableCellRight = {
 };
 
 const tableCellRightFree = {
-  borderBottom: '1px solid #f0f0f0',
+  borderBottom: '1px solid #f0f0f0', // fixed
   color: '#4caf50',
   fontSize: '13px',
   fontWeight: '600' as const,
@@ -826,7 +823,7 @@ const bankDetailsTable = {
   backgroundColor: '#ffffff',
   borderRadius: '4px',
   padding: '12px',
-  border: '1px solid #e5e7eb',
+  border: '1px solid #e5e7eb', // fixed
 };
 
 const bankLabel = {

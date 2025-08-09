@@ -277,7 +277,7 @@ export function SideBadges() {
               alt="Verified" 
               className="verified-icon"
             />
-            <div className="vertical-text">Oceniony przez klientów</div>
+            <div className="vertical-text">Vásárlók által értékelt</div>
           </div>
         </div>
         
@@ -303,19 +303,19 @@ export function SideBadges() {
         </div>
         
         <div className="popup-content">
-          <div className="company-name">Galaxy Sklep</div>
-          <div className="company-address">1. máje 535/50, 46007 Liberec</div>
-          <div>NIP: 04688465</div>
-          <div>Forma prawna: Działalność gospodarcza</div>
-          <div className="company-note">(Siedziba firmy - korespondencja prosimy wysyłać na e-mail)</div>
-          <div>E-mail: support@galaxysklep.pl</div>
+          <div className="company-name">Jovotech.hu</div>
+          <div className="company-address">1. máje 535/50, 46007 Liberec III-Jeřáb</div>
+          <div>Adószám: 04688465</div>
+          <div>Jogi forma: Gazdasági tevékenység</div>
+          <div className="company-note">(Cég székhelye - levelezést kérjük e-mailben küldeni)</div>
+          <div>E-mail: support@jovotech.hu</div>
           
-          <div className="bank-details">Dane bankowe</div>
-          <div>Numer konta: 21291000062469800208837403</div>
-          <div>IBAN: PL21 2910 0006 2469 8002 0883 7403</div>
-          <div>BIC/SWIFT: BMPBPLPP</div>
-          <div>Bank: Aion S.A. Spolka Akcyjna Oddzial w Polsce</div>
-          <div>Adres banku: Dobra 40, 00-344, Warszawa, Poland</div>
+          <div className="bank-details">Banki adatok</div>
+          <div>Számlaszám: 12600016-10426947-95638648</div>
+          <div>IBAN: HU86126000161042694795638648</div>
+          <div>BIC/SWIFT: TRWIBEBBXXX</div>
+          <div>Bank: WISE EUROPE S.A.</div>
+          <div>Bank címe: Rue du Trône 100, 1050 Brussels</div>
           
           <div className="google-map">
             <iframe 
@@ -332,15 +332,15 @@ export function SideBadges() {
           
           <div className="footer-links">
             <a href="/regulamin" className="info-link">
-              Regulamin
+              Szabályzat
             </a>
             |
             <a href="/zwroty-i-reklamacje" className="info-link">
-              Zwroty i reklamacje
+              Visszaküldések és reklamációk
             </a>
             |
             <a href="/ocena-sklepu" className="info-link">
-              Ocena sklepu
+              Bolt értékelése
             </a>
           </div>
         </div>

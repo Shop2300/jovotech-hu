@@ -53,15 +53,15 @@ function getNextDeliveryDate(): string {
 
 function formatStockDisplay(stock: number, availability: string = 'in_stock'): string {
   if (stock === 0) {
-    return 'Wyprzedane';
+    return 'Elfogyott';
   } else if (stock > 5) {
     return availability === 'in_stock_supplier' 
-      ? 'W magazynie u dostawcy: >5 SZT'
-      : 'Na stanie: >5 SZT';
+      ? 'Beszállítói raktáron: >5 DB'
+      : 'Raktáron: >5 DB';
   } else {
     return availability === 'in_stock_supplier'
-      ? `W magazynie u dostawcy: ${stock} szt`
-      : `Na stanie: ${stock} szt`;
+      ? `Beszállítói raktáron: ${stock} db`
+      : `Raktáron: ${stock} db`;
   }
 }
 
@@ -176,7 +176,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
   // Memoized handlers
   const handleStarClick = useCallback(async (selectedRating: number) => {
     if (hasRated) {
-      toast.error('Už oceniłeś ten produkt');
+      toast.error('Már értékelted ezt a terméket');
       return;
     }
 
@@ -189,7 +189,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
         body: JSON.stringify({
           rating: selectedRating,
           comment: '',
-          authorName: 'Anonym',
+          authorName: 'Anonim',
           authorEmail: `anon${Date.now()}@example.com`
         }),
       });
@@ -204,11 +204,11 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
         });
         setHasRated(true);
         localStorage.setItem(`rated_${product.id}`, 'true');
-        toast.success('Dziękujemy za ocenę!');
+        toast.success('Köszönjük az értékelést!');
       }
     } catch (error) {
       console.error('Error submitting rating:', error);
-      toast.error('Nie udało się zapisać oceny');
+      toast.error('Nem sikerült elmenteni az értékelést');
     }
   }, [hasRated, product.id, rating]);
 
@@ -346,22 +346,22 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
 
   const handleAddToCart = useCallback(() => {
     if (effectiveStock === 0) {
-      toast.error('Produkt niedostępny');
+      toast.error('A termék nem elérhető');
       return;
     }
   
     if ((hasColors || hasRandomVariants) && !selectedColor) {
-      toast.error(hasRandomVariants ? 'Proszę wybrać wariant' : 'Proszę wybrać kolor');
+      toast.error(hasRandomVariants ? 'Kérjük, válassz változatot' : 'Kérjük, válassz színt');
       return;
     }
   
     if (hasSizes && !selectedSize) {
-      toast.error('Proszę wybrać rozmiar');
+      toast.error('Kérjük, válassz méretet');
       return;
     }
 
     if (hasColors && hasSizes && selectedColor && selectedSize && !selectedVariant) {
-      toast.error('Wybrana kombinacja nie jest dostępna');
+      toast.error('A kiválasztott kombináció nem elérhető');
       return;
     }
   
@@ -421,14 +421,14 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
       });
 
       if (response.ok) {
-        toast.success('Twoja wiadomość została wysłana! Odpowiemy najszybciej jak to możliwe.');
+        toast.success('Az üzeneted elküldtük! A lehető leghamarabb válaszolunk.');
         setShowContactForm(false);
       } else {
         throw new Error('Failed to send email');
       }
     } catch (error) {
       console.error('Error sending contact form:', error);
-      toast.error('Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.');
+      toast.error('Hiba történt az üzenet küldése során. Próbáld újra.');
     } finally {
       setIsSubmittingContact(false);
     }
@@ -451,7 +451,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
         {/* Breadcrumbs */}
         <Breadcrumbs 
           items={[
-            { label: 'Strona główna', href: '/', isHome: true },
+            { label: 'Főoldal', href: '/', isHome: true },
             ...(product.category ? [{ 
               label: product.category.name, 
               href: `/category/${product.category.slug}` 
@@ -471,8 +471,8 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
               <details className="mt-6 md:mt-8 border-t border-gray-200 pt-4 md:pt-6">
                 <summary className="text-base md:text-lg font-bold mb-3 md:mb-4 text-[#131921] cursor-pointer touch-manipulation md:cursor-default list-none">
                   <span className="flex items-center justify-between">
-                    Szczegółowy opis
-                    <span className="md:hidden text-sm font-normal text-gray-500">Kliknij aby rozwinąć</span>
+                    Részletes leírás
+                    <span className="md:hidden text-sm font-normal text-gray-500">Kattints a kibontáshoz</span>
                   </span>
                 </summary>
                 <div 
@@ -493,11 +493,11 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
               <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600 mb-2">
                 {product.brand && (
                   <>
-                    <span>Marka: {product.brand}</span>
+                    <span>Márka: {product.brand}</span>
                     <span className="text-gray-400">•</span>
                   </>
                 )}
-                <span>Kod: {product.code || product.id}</span>
+                <span>Kód: {product.code || product.id}</span>
               </div>
               
               {/* Rating - Mobile optimized */}
@@ -522,7 +522,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                           hasRated ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:scale-110 active:scale-125'
                         }`}
                         disabled={hasRated}
-                        title={hasRated ? 'Już oceniłeś ten produkt' : `Oceń ${star} ${star === 1 ? 'gwiazdkę' : star < 5 ? 'gwiazdki' : 'gwiazdek'}`}
+                        title={hasRated ? 'Már értékelted ezt a terméket' : `Értékelj ${star} csillagot`}
                         style={{ minWidth: '32px', minHeight: '32px' }}
                       >
                         <span className={`${isFilled ? 'text-yellow-400' : 'text-gray-300'} transition-colors duration-200`}>
@@ -541,7 +541,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                 )}
                 
                 {rating.total === 0 && !hasRated && (
-                  <span className="text-gray-500 text-xs md:text-sm">Oceń!</span>
+                  <span className="text-gray-500 text-xs md:text-sm">Értékeld!</span>
                 )}
                 
                 {hasRated && (
@@ -574,7 +574,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                     </span>
                   </div>
                   <p className="text-[#6da306] font-medium text-xs md:text-sm">
-                    Oszczędzasz {formatPrice(Number(effectiveRegularPrice) - Number(effectivePrice))}
+                    Megtakarítasz {formatPrice(Number(effectiveRegularPrice) - Number(effectivePrice))}
                   </p>
                 </>
               ) : (
@@ -587,7 +587,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
             {/* Variant Selection - Mobile optimized */}
             {hasRandomVariants && (
               <div>
-                <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3 text-black">Wariant</h3>
+                <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3 text-black">Változat</h3>
                 <div className="flex flex-wrap gap-2">
                   {colors.map((variantName) => {
                     const variant = product.variants?.find(v => v.colorName === variantName);
@@ -606,7 +606,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                       >
                         <span className="text-sm md:text-base text-black">{variantName}</span>
                         {!hasStock && (
-                          <span className="text-xs text-red-500 ml-1 block md:inline">(niedostępne)</span>
+                          <span className="text-xs text-red-500 ml-1 block md:inline">(nem elérhető)</span>
                         )}
                       </button>
                     );
@@ -618,7 +618,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
             {/* Color Selection */}
             {hasColors && !hasRandomVariants && (
               <div>
-                <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3 text-black">Kolor</h3>
+                <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3 text-black">Szín</h3>
                 <div className="flex flex-wrap gap-2">
                   {colors.map((color) => {
                     const colorVariant = product.variants?.find(v => v.colorName === color);
@@ -647,7 +647,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                         )}
                         <span className="text-sm md:text-base text-black">{color}</span>
                         {!isAvailable && (
-                          <span className="text-xs text-red-500 hidden md:inline">(niedostępne)</span>
+                          <span className="text-xs text-red-500 hidden md:inline">(nem elérhető)</span>
                         )}
                       </button>
                     );
@@ -659,7 +659,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
             {/* Size Selection */}
             {hasSizes && (
               <div>
-                <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3 text-black">Rozmiar</h3>
+                <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3 text-black">Méret</h3>
                 <div className="flex flex-wrap gap-2">
                   {sizes.map((size) => {
                     const hasStock = selectedColor
@@ -681,7 +681,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                       >
                         <span className="text-sm md:text-base text-black font-medium">{size}</span>
                         {!isAvailable && (
-                          <span className="text-xs text-red-500 block md:inline">(niedostępne)</span>
+                          <span className="text-xs text-red-500 block md:inline">(nem elérhető)</span>
                         )}
                       </button>
                     );
@@ -694,7 +694,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
             {hasColors && hasSizes && selectedColor && selectedSize && !selectedVariant && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 md:p-3 text-xs md:text-sm">
                 <p className="text-yellow-800">
-                  Kombinacja <strong>{selectedColor} / {selectedSize}</strong> nie jest dostępna.
+                  A(z) <strong>{selectedColor} / {selectedSize}</strong> kombináció nem elérhető.
                 </p>
               </div>
             )}
@@ -708,7 +708,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                 </span>
                 {effectiveStock > 0 && (
                   <p className="text-xs md:text-sm text-gray-600 mt-0.5 md:mt-1">
-                    Dostawa możliwa już <span className="font-semibold">{getNextDeliveryDate()}</span>
+                    Szállítás már <span className="font-semibold">{getNextDeliveryDate()}</span>
                   </p>
                 )}
               </div>
@@ -716,7 +716,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
             
             {/* Quantity Selector - Mobile optimized */}
             <div className="flex items-center gap-3 md:gap-4">
-              <label className="text-sm md:text-base text-black font-medium">Ilość:</label>
+              <label className="text-sm md:text-base text-black font-medium">Mennyiség:</label>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -772,7 +772,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                 }}
               >
                 <ShoppingCart size={20} className="md:w-6 md:h-6" />
-                {effectiveStock === 0 ? 'Wyprzedane' : 'Dodaj do koszyka'}
+                {effectiveStock === 0 ? 'Elfogyott' : 'Kosárba'}
               </button>
             </div>
             
@@ -788,7 +788,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                     height={16}
                     className="inline-block md:w-5 md:h-5"
                   />
-                  <span style={{ color: '#6da306' }} className="underline font-bold">Gwarancja najlepszej ceny</span>
+                  <span style={{ color: '#6da306' }} className="underline font-bold">Legjobb ár garancia</span>
                   <button
                     type="button"
                     className="relative touch-manipulation p-1"
@@ -804,7 +804,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                 {/* Warranty */}
                 {product.warranty && (
                   <p className="text-gray-700">
-                    <span className="text-black">Gwarancja</span> <span>✓ {product.warranty}</span>
+                    <span className="text-black">Garancia</span> <span>✓ {product.warranty}</span>
                   </p>
                 )}
                 
@@ -818,7 +818,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                     style={{ minHeight: '32px' }}
                   >
                     <MessageCircle className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                    <span className="underline">Napisz do nas</span>
+                    <span className="underline">Írj nekünk</span>
                   </button>
                 </div>
               </div>
@@ -828,18 +828,18 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                 <div className={`absolute z-10 mt-2 p-4 md:p-5 bg-white rounded-lg shadow-xl border border-gray-200 ${
                   isMobile ? 'left-0 right-0' : 'max-w-sm'
                 }`}>
-                  <h4 className="font-semibold text-black mb-2 md:mb-3 text-base md:text-lg">Gwarancja najlepszej ceny</h4>
+                  <h4 className="font-semibold text-black mb-2 md:mb-3 text-base md:text-lg">Legjobb ár garancia</h4>
                   <div className="space-y-2 text-xs md:text-sm text-gray-600">
                     <p>
-                      Gwarantujemy najniższą cenę na rynku. Jeśli znajdziesz ten sam produkt u konkurencji taniej, 
-                      natychmiast zwrócimy Ci różnicę.
+                      Garantáljuk a legalacsonyabb árat a piacon. Ha ugyanezt a terméket olcsóbban találod a versenytársaknál, 
+                      azonnal visszatérítjük a különbözetet.
                     </p>
-                    <p className="font-medium text-gray-700">Jak to działa:</p>
+                    <p className="font-medium text-gray-700">Hogyan működik:</p>
                     <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li>Gwarancja obowiązuje 14 dni od zakupu</li>
-                      <li>Produkt musi być identyczny</li>
-                      <li>Oferta konkurencji musi być ważna</li>
-                      <li>Wystarczy przesłać nam link</li>
+                      <li>A garancia a vásárlástól számított 14 napig érvényes</li>
+                      <li>A terméknek azonosnak kell lennie</li>
+                      <li>A versenytárs ajánlatának érvényesnek kell lennie</li>
+                      <li>Csak küldd el nekünk a linket</li>
                     </ul>
                   </div>
                 </div>
@@ -853,24 +853,24 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-100 flex items-center justify-center mb-1 md:mb-2">
                     <Truck className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
                   </div>
-                  <h4 className="text-xs md:text-sm font-semibold text-[#131921] mb-0.5 md:mb-1">Darmowa wysyłka</h4>
-                  <p className="text-[10px] md:text-xs text-gray-600">Od 0 zł</p>
+                  <h4 className="text-xs md:text-sm font-semibold text-[#131921] mb-0.5 md:mb-1">Ingyenes szállítás</h4>
+                  <p className="text-[10px] md:text-xs text-gray-600">0 Ft-tól</p>
                 </div>
                 
                 <div className="flex flex-col items-center text-center">
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-100 flex items-center justify-center mb-1 md:mb-2">
                     <RotateCcw className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
                   </div>
-                  <h4 className="text-xs md:text-sm font-semibold text-[#131921] mb-0.5 md:mb-1">Bezpłatny zwrot</h4>
-                  <p className="text-[10px] md:text-xs text-gray-600">Do 14 dni</p>
+                  <h4 className="text-xs md:text-sm font-semibold text-[#131921] mb-0.5 md:mb-1">Ingyenes visszaküldés</h4>
+                  <p className="text-[10px] md:text-xs text-gray-600">14 napig</p>
                 </div>
                 
                 <div className="flex flex-col items-center text-center">
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-100 flex items-center justify-center mb-1 md:mb-2">
                     <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
                   </div>
-                  <h4 className="text-xs md:text-sm font-semibold text-[#131921] mb-0.5 md:mb-1">Wiarygodny sklep</h4>
-                  <p className="text-[10px] md:text-xs text-gray-600">100% bezpiecznie</p>
+                  <h4 className="text-xs md:text-sm font-semibold text-[#131921] mb-0.5 md:mb-1">Megbízható bolt</h4>
+                  <p className="text-[10px] md:text-xs text-gray-600">100% biztonságos</p>
                 </div>
               </div>
             </div>
@@ -900,7 +900,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
             } overflow-y-auto`}>
               <div className="p-4 md:p-6">
                 <div className="flex justify-between items-center mb-4 md:mb-6">
-                  <h4 className="text-lg md:text-xl font-bold text-black">Napisz do nas</h4>
+                  <h4 className="text-lg md:text-xl font-bold text-black">Írj nekünk</h4>
                   <button
                     type="button"
                     onClick={() => setShowContactForm(false)}
@@ -915,7 +915,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                 <form className="space-y-3 md:space-y-4" onSubmit={handleContactFormSubmit}>
                   <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
-                      Imię i nazwisko
+                      Név
                     </label>
                     <input
                       type="text"
@@ -941,7 +941,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                   </div>
                   <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
-                      Telefon (opcjonalnie)
+                      Telefon (opcionális)
                     </label>
                     <input
                       type="tel"
@@ -953,13 +953,13 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                   </div>
                   <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
-                      Temat wiadomości
+                      Üzenet tárgya
                     </label>
                     <input
                       type="text"
                       name="subject"
                       required
-                      defaultValue={`Pytanie o produkt: ${product.name}`}
+                      defaultValue={`Kérdés a termékről: ${product.name}`}
                       disabled={isSubmittingContact}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-sm md:text-base"
                       style={{ minHeight: '40px' }}
@@ -967,7 +967,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                   </div>
                   <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
-                      Twoja wiadomość
+                      Üzeneted
                     </label>
                     <textarea
                       name="message"
@@ -975,7 +975,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                       rows={4}
                       disabled={isSubmittingContact}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-sm md:text-base"
-                      placeholder="Napisz do nas swoje pytanie..."
+                      placeholder="Írd meg nekünk a kérdésed..."
                     />
                   </div>
                   <div className="flex gap-2 md:gap-3 pt-2 md:pt-4">
@@ -985,7 +985,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                       className="flex-1 bg-blue-600 text-white py-2.5 md:py-2 rounded-md hover:bg-blue-700 transition font-medium disabled:bg-blue-400 disabled:cursor-not-allowed text-sm md:text-base touch-manipulation"
                       style={{ minHeight: '44px' }}
                     >
-                      {isSubmittingContact ? 'Wysyłanie...' : 'Wyślij'}
+                      {isSubmittingContact ? 'Küldés...' : 'Küldés'}
                     </button>
                     <button
                       type="button"
@@ -994,7 +994,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                       className="px-4 md:px-6 py-2.5 md:py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition font-medium disabled:bg-gray-100 disabled:cursor-not-allowed text-sm md:text-base touch-manipulation"
                       style={{ minHeight: '44px' }}
                     >
-                      Zamknij
+                      Bezárás
                     </button>
                   </div>
                 </form>
@@ -1038,8 +1038,8 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                     </div>
                     <h3 className="text-base md:text-xl font-bold text-[#6da306]">
                       {addedQuantity > 1 
-                        ? `${addedQuantity} ${addedQuantity < 5 ? 'produkty' : 'produktów'} ${addedQuantity < 5 ? 'dodane' : 'dodanych'} do koszyka!` 
-                        : 'Produkt dodany do koszyka!'}
+                        ? `${addedQuantity} termék a kosárba került!` 
+                        : 'Termék a kosárba került!'}
                     </h3>
                   </div>
                   <button
@@ -1067,9 +1067,9 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                     <h4 className="font-semibold text-[#131921] text-base md:text-lg">{product.name}</h4>
                     {(selectedColor || selectedSize) && (
                       <p className="text-gray-600 text-xs md:text-sm">
-                        {selectedColor && <span>{hasRandomVariants ? 'Wariant' : 'Kolor'}: {selectedColor}</span>}
+                        {selectedColor && <span>{hasRandomVariants ? 'Változat' : 'Szín'}: {selectedColor}</span>}
                         {selectedColor && selectedSize && <span> • </span>}
-                        {selectedSize && <span>Rozmiar: {selectedSize}</span>}
+                        {selectedSize && <span>Méret: {selectedSize}</span>}
                       </p>
                     )}
                     <div className="mt-1">
@@ -1103,8 +1103,8 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                 <div className="bg-green-50 border border-green-200 rounded-xl p-3 my-4 md:my-6 flex items-center gap-2 md:gap-3">
                   <Truck className="text-[#6da306] w-5 h-5" size={20} />
                   <p className="text-xs md:text-sm">
-                    <span className="font-semibold text-[#6da306]">Darmowa dostawa</span>
-                    <span className="text-[#131921]"> już od 0 zł!</span>
+                    <span className="font-semibold text-[#6da306]">Ingyenes szállítás</span>
+                    <span className="text-[#131921]"> már 0 Ft-tól!</span>
                   </p>
                 </div>
 
@@ -1115,7 +1115,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                     className="flex-1 py-2.5 md:py-3 px-4 md:px-6 bg-white border border-gray-100 rounded-xl font-semibold text-sm md:text-base text-[#131921] hover:bg-gray-50 hover:border-gray-200 transition-all duration-200 touch-manipulation"
                     style={{ minHeight: '44px' }}
                   >
-                    Kontynuuj zakupy
+                    Vásárlás folytatása
                   </button>
                   <Link
                     href="/cart"
@@ -1123,14 +1123,14 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                     onClick={() => setShowCartPopup(false)}
                     style={{ minHeight: '44px' }}
                   >
-                    Przejdź do koszyka
+                    Ugrás a kosárhoz
                   </Link>
                 </div>
 
                 {/* Related Products - Hidden on mobile */}
                 {!isMobile && relatedProducts.length > 0 && (
                   <div className="mt-8">
-                    <h4 className="text-lg font-semibold text-[#131921] mb-4 text-center">Może Cię również zainteresować</h4>
+                    <h4 className="text-lg font-semibold text-[#131921] mb-4 text-center">Érdekelhet még</h4>
                     <div className="grid grid-cols-4 gap-4">
                       {relatedProducts.map((relatedProduct) => (
                         <Link
@@ -1169,7 +1169,7 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
                                 )}
                               </div>
                               <button className="py-1.5 px-3 bg-[#6da306] text-white text-xs font-medium rounded-lg hover:bg-[#5d8f05] transition-colors whitespace-nowrap">
-                                Zobacz
+                                Megnézem
                               </button>
                             </div>
                           </div>

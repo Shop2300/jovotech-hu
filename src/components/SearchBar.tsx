@@ -73,7 +73,7 @@ export function SearchBar() {
     } catch (error) {
       console.error('Error fetching random products:', error);
       // Fallback to some default searches if fetch fails
-      setPopularSearches(['router CNC', 'ultradźwięki', 'prasy', 'lasery', 'elektronika']);
+      setPopularSearches(['CNC maró', 'ultrahang', 'prések', 'lézerek', 'elektronika']);
     }
   };
 
@@ -217,9 +217,9 @@ export function SearchBar() {
           onChange={handleInputChange}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Czego szukasz? Np. router CNC, ultradźwięki, prasy termotransferowe..."
+          placeholder="Mit keres? Pl. CNC maró, ultrahang, hőprés..."
           className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#131921] focus:border-[#131921] text-black bg-white placeholder:text-sm placeholder:text-gray-400"
-          aria-label="Pole wyszukiwania produktów"
+          aria-label="Termék keresőmező"
         />
         
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 h-full py-1">
@@ -228,7 +228,7 @@ export function SearchBar() {
               type="button"
               onClick={clearSearch}
               className="text-gray-400 hover:text-gray-600 transition-colors p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="Wyczyść wyszukiwanie"
+              aria-label="Keresés törlése"
             >
               <X size={20} />
             </button>
@@ -237,7 +237,7 @@ export function SearchBar() {
           <button
             type="submit"
             className="text-gray-600 hover:text-gray-900 transition-colors p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label={loading ? "Wyszukiwanie w toku" : "Szukaj"}
+            aria-label={loading ? "Keresés folyamatban" : "Keresés"}
           >
             {loading ? <Loader2 size={22} className="animate-spin" /> : <Search size={22} />}
           </button>
@@ -260,7 +260,7 @@ export function SearchBar() {
               {categories.length > 0 && (
                 <div className="border-b border-gray-100 bg-white">
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
-                    Kategorie
+                    Kategóriák
                   </div>
                   {categories.map((category, index) => (
                     <Link
@@ -289,7 +289,7 @@ export function SearchBar() {
               {results.length > 0 && (
                 <div className="border-b border-gray-100 bg-white">
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
-                    Produkty
+                    Termékek
                   </div>
                   {results.map((product, index) => {
                     const actualIndex = categories.length + index;
@@ -352,7 +352,7 @@ export function SearchBar() {
                                 </span>
                               )}
                               {product.stock === 0 && (
-                                <span className="text-xs text-red-500">Wyprzedane</span>
+                                <span className="text-xs text-red-500">Elfogyott</span>
                               )}
                             </div>
                           </div>
@@ -370,7 +370,7 @@ export function SearchBar() {
                   onClick={() => setIsOpen(false)}
                   className="block px-4 py-3 text-center text-sm text-[#131921] hover:bg-gray-50 transition-colors"
                 >
-                  Zobacz wszystkie wyniki ({totalResults})
+                  Összes találat megtekintése ({totalResults})
                 </Link>
               )}
 
@@ -379,7 +379,7 @@ export function SearchBar() {
                 <div className="px-4 py-8 text-center bg-white">
                   <Search size={40} className="mx-auto text-gray-300 mb-3" />
                   <p className="text-sm text-gray-500">
-                    Nie znaleźliśmy żadnych wyników dla "{query}"
+                    Nem találtunk eredményt a következőre: "{query}"
                   </p>
                 </div>
               )}
@@ -392,7 +392,7 @@ export function SearchBar() {
                     <div className="border-b border-gray-100 bg-white">
                       <div className="px-4 py-2 flex items-center justify-between">
                         <span className="text-xs font-semibold text-gray-500 uppercase">
-                          Ostatnie wyszukiwania
+                          Legutóbbi keresések
                         </span>
                         <button
                           onClick={() => {
@@ -400,9 +400,9 @@ export function SearchBar() {
                             setRecentSearches([]);
                           }}
                           className="text-xs text-gray-400 hover:text-gray-600 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                          aria-label="Wyczyść historię wyszukiwania"
+                          aria-label="Keresési előzmények törlése"
                         >
-                          Wyczyść
+                          Törlés
                         </button>
                       </div>
                       {recentSearches.map((search, index) => (
@@ -422,7 +422,7 @@ export function SearchBar() {
                   {popularSearches.length > 0 && (
                     <div className="bg-white">
                       <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
-                        Popularne wyszukiwania
+                        Népszerű keresések
                       </div>
                       {popularSearches.map((search, index) => (
                         <button

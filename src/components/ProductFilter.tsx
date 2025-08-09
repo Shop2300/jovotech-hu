@@ -99,8 +99,8 @@ const DropdownPortal = memo(function DropdownPortal({ children, isOpen, targetRe
 
   return createPortal(
     <>
-      <div 
-        className="fixed inset-0 product-filter-overlay bg-black/20 md:bg-transparent" 
+      <div
+        className="fixed inset-0 product-filter-overlay bg-black/20 md:bg-transparent"
         onClick={onClose}
       />
       <div
@@ -121,23 +121,23 @@ const DropdownPortal = memo(function DropdownPortal({ children, isOpen, targetRe
 });
 
 const sortOptions = [
-  { value: 'recommended' as SortOption, label: 'Polecane', icon: Star },
-  { value: 'bestselling' as SortOption, label: 'Najczęściej kupowane', icon: TrendingUp },
-  { value: 'cheapest' as SortOption, label: 'Najtańsze', icon: Tag },
-  { value: 'expensive' as SortOption, label: 'Najdroższe', icon: Gem },
-  { value: 'alphabetical' as SortOption, label: 'Alfabetycznie', icon: SortAsc },
+  { value: 'recommended' as SortOption, label: 'Ajánlott', icon: Star },
+  { value: 'bestselling' as SortOption, label: 'Legnépszerűbb', icon: TrendingUp },
+  { value: 'cheapest' as SortOption, label: 'Legolcsóbb', icon: Tag },
+  { value: 'expensive' as SortOption, label: 'Legdrágább', icon: Gem },
+  { value: 'alphabetical' as SortOption, label: 'ABC sorrendben', icon: SortAsc },
 ];
 
 export const ProductFilter = memo(function ProductFilter({ 
   onSortChange, 
-  currentSort, 
+  currentSort,
   productCount,
   startProduct,
-  endProduct 
+  endProduct
 }: ProductFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
-
+  
   const currentOption = sortOptions.find(opt => opt.value === currentSort) || sortOptions[0];
   const currentLabel = currentOption.label;
   const CurrentIcon = currentOption.icon;
@@ -162,7 +162,7 @@ export const ProductFilter = memo(function ProductFilter({
         setIsOpen(false);
       }
     };
-    
+
     if (isOpen) {
       document.addEventListener('keydown', handleEsc);
       return () => document.removeEventListener('keydown', handleEsc);
@@ -174,7 +174,7 @@ export const ProductFilter = memo(function ProductFilter({
       {/* Product count - Mobile responsive */}
       <div className="flex items-baseline gap-1 md:gap-3">
         <span className="text-xs md:text-sm font-medium text-gray-700">
-          Produkty
+          Termékek
         </span>
         <span className="text-xs md:text-sm text-gray-700 font-bold">
           {productCount}
@@ -183,12 +183,12 @@ export const ProductFilter = memo(function ProductFilter({
           <>
             <span className="text-gray-500 mx-1 hidden md:inline">-</span>
             <span className="text-xs md:text-sm text-gray-700 hidden md:inline">
-              Pokazano <span className="font-bold">{startProduct}–{endProduct}</span>
+              Megjelenítve <span className="font-bold">{startProduct}–{endProduct}</span>
             </span>
           </>
         )}
       </div>
-      
+
       {/* Sort dropdown - Mobile optimized */}
       <div ref={buttonRef} className="relative">
         <button
@@ -206,9 +206,9 @@ export const ProductFilter = memo(function ProductFilter({
             isOpen ? 'rotate-180' : ''
           }`} />
         </button>
-        
-        <DropdownPortal 
-          isOpen={isOpen} 
+
+        <DropdownPortal
+          isOpen={isOpen}
           targetRef={buttonRef}
           onClose={closeDropdown}
         >
@@ -222,8 +222,8 @@ export const ProductFilter = memo(function ProductFilter({
               }}
               className={`
                 block w-full text-left px-3 md:px-4 py-3 md:py-2.5 text-xs md:text-sm transition-all duration-150 flex items-center gap-2 touch-manipulation
-                ${currentSort === option.value 
-                  ? 'font-medium text-blue-600 bg-blue-50' 
+                ${currentSort === option.value
+                  ? 'font-medium text-blue-600 bg-blue-50'
                   : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
                 }
                 ${index === 0 ? 'rounded-t-lg' : ''}

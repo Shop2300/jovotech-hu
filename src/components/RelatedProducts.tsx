@@ -167,7 +167,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
   if (loading) {
     return (
       <div className="py-6 md:py-8">
-        <h2 className="text-xl md:text-2xl font-bold text-black mb-6 md:mb-10 text-center px-4">Powiązane produkty</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-black mb-6 md:mb-10 text-center px-4">Kapcsolódó termékek</h2>
         <div className="flex space-x-4 overflow-hidden px-4 md:px-12">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="w-64 md:w-72 h-80 md:h-96 bg-gray-200 animate-pulse rounded-lg flex-shrink-0" />
@@ -186,7 +186,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
 
   return (
     <div className="py-6 md:py-8">
-      <h2 className="text-xl md:text-2xl font-bold text-black mb-6 md:mb-10 text-center px-4">Powiązane produkty</h2>
+      <h2 className="text-xl md:text-2xl font-bold text-black mb-6 md:mb-10 text-center px-4">Kapcsolódó termékek</h2>
       
       <div className="relative mx-auto" style={{ maxWidth: isMobile ? '100%' : '1400px' }}>
         {/* Desktop Left Arrow */}
@@ -207,7 +207,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
               justifyContent: 'center',
               zIndex: 50
             }}
-            aria-label="Poprzednie produkty"
+            aria-label="Előző termékek"
           >
             <ChevronLeft size={24} className="text-gray-700" />
           </button>
@@ -231,7 +231,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
               justifyContent: 'center',
               zIndex: 50
             }}
-            aria-label="Następne produkty"
+            aria-label="Következő termékek"
           >
             <ChevronRight size={24} className="text-gray-700" />
           </button>
@@ -249,7 +249,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
                   : 'opacity-30'
               }`}
               style={{ width: '40px', height: '40px', zIndex: 50 }}
-              aria-label="Poprzednie produkty"
+              aria-label="Előző termékek"
             >
               <ChevronLeft size={20} className="text-gray-700" />
             </button>
@@ -263,7 +263,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
                   : 'opacity-30'
               }`}
               style={{ width: '40px', height: '40px', zIndex: 50 }}
-              aria-label="Następne produkty"
+              aria-label="Következő termékek"
             >
               <ChevronRight size={20} className="text-gray-700" />
             </button>
@@ -315,7 +315,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
                     ? 'w-6 h-2 bg-[#8bc34a]' 
                     : 'w-2 h-2 bg-gray-300'
                 } rounded-full`}
-                aria-label={`Przejdź do produktu ${index + 1}`}
+                aria-label={`Ugrás a ${index + 1}. termékhez`}
               />
             ))}
           </div>

@@ -47,11 +47,11 @@ interface FeatureIcon {
 }
 
 const BANK_DETAILS = {
-  accountNumber: '21291000062469800208837403',
-  iban: 'PL21 2910 0006 2469 8002 0883 7403',
-  swift: 'BMPBPLPP',
-  bankName: 'Aion S.A. Spolka Akcyjna Oddzial w Polsce',
-  bankAddress: 'Dobra 40, 00-344, Warszawa, Poland'
+  accountNumber: '12600016-10426947-95638648',
+  iban: 'HU86 1260 0016 1042 6947 9563 8648',
+  swift: 'TRWIBEBBXXX',
+  bankName: 'WISE EUROPE S.A.',
+  bankAddress: 'Rue du Trône 100, 1050 Brussels'
 };
 
 export default function CheckoutPage() {
@@ -127,7 +127,7 @@ export default function CheckoutPage() {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast.success(`${label} skopiowano do schowka`);
+    toast.success(`${label} másolva a vágólapra`);
   };
 
   const validateNIP = (nip: string | undefined) => {
@@ -141,7 +141,7 @@ export default function CheckoutPage() {
     
     // NIP must be 10 digits
     if (cleanNIP.length !== 10) {
-      return 'NIP musi zawierać 10 cyfr';
+      return 'Az adószámnak 10 számjegyből kell állnia';
     }
     
     // NIP validation algorithm
@@ -156,7 +156,7 @@ export default function CheckoutPage() {
     const lastDigit = parseInt(cleanNIP[9]);
     
     if (checksum !== lastDigit) {
-      return 'Nieprawidłowy numer NIP';
+      return 'Érvénytelen adószám';
     }
     
     return true;
@@ -225,7 +225,7 @@ export default function CheckoutPage() {
         throw new Error(responseData.error || 'Failed to create order');
       }
 
-      toast.success('Zamówienie zostało pomyślnie utworzone!');
+      toast.success('A rendelés sikeresen létrehozva!');
       router.push(`/order-success?orderNumber=${responseData.orderNumber}`);
       
       setTimeout(() => {
@@ -234,7 +234,7 @@ export default function CheckoutPage() {
       
     } catch (error) {
       console.error('Order submission error:', error);
-      toast.error(error instanceof Error ? error.message : 'Błąd podczas tworzenia zamówienia');
+      toast.error(error instanceof Error ? error.message : 'Hiba történt a rendelés létrehozása során');
       setIsSubmitting(false);
       setIsProcessingOrder(false);
     }
@@ -256,7 +256,7 @@ export default function CheckoutPage() {
               className="inline-flex items-center text-gray-600 hover:text-gray-800 text-sm touch-manipulation p-2 -ml-2"
             >
               <ArrowLeft size={20} className="mr-1" />
-              <span>Koszyk</span>
+              <span>Kosár</span>
             </Link>
           </div>
           
@@ -267,7 +267,7 @@ export default function CheckoutPage() {
               className="inline-flex items-center text-gray-400 hover:text-gray-600 text-sm"
             >
               <ArrowLeft size={16} className="mr-1" />
-              Powrót do koszyka
+              Vissza a kosárhoz
             </Link>
             
             <div className="flex items-center flex-1 max-w-3xl mx-auto">
@@ -277,7 +277,7 @@ export default function CheckoutPage() {
                   <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white">
                     <ShoppingCart size={20} strokeWidth={2} />
                   </div>
-                  <span className="ml-3 text-sm font-medium text-[#131921]">Koszyk</span>
+                  <span className="ml-3 text-sm font-medium text-[#131921]">Kosár</span>
                 </div>
                 <div className="flex-1 mx-4">
                   <div className="h-1 bg-gray-300 rounded">
@@ -292,7 +292,7 @@ export default function CheckoutPage() {
                   <div className="w-10 h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white">
                     <CreditCard size={20} strokeWidth={2} />
                   </div>
-                  <span className="ml-3 text-sm font-medium text-[#131921]">Dostawa i płatność</span>
+                  <span className="ml-3 text-sm font-medium text-[#131921]">Szállítás és fizetés</span>
                 </div>
                 <div className="flex-1 mx-4">
                   <div className="h-1 bg-gray-300 rounded">
@@ -306,7 +306,7 @@ export default function CheckoutPage() {
                 <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
                   <CheckCircle size={20} strokeWidth={2} />
                 </div>
-                <span className="ml-3 text-sm font-medium text-gray-500">Potwierdzenie</span>
+                <span className="ml-3 text-sm font-medium text-gray-500">Megerősítés</span>
               </div>
             </div>
             
@@ -321,12 +321,12 @@ export default function CheckoutPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
               {/* Contact Information */}
               <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Dane kontaktowe</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Kapcsolati adatok</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                      <span>Email</span>
+                      <span>E-mail</span>
                       {isFieldValid('email') ? (
                         <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -337,10 +337,10 @@ export default function CheckoutPage() {
                     </label>
                     <input
                       {...register('email', { 
-                        required: 'Email jest wymagany',
+                        required: 'Az e-mail cím megadása kötelező',
                         pattern: {
                           value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: 'Nieprawidłowy email'
+                          message: 'Érvénytelen e-mail cím'
                         }
                       })}
                       type="email"
@@ -365,7 +365,7 @@ export default function CheckoutPage() {
                       )}
                     </label>
                     <input
-                      {...register('phone', { required: 'Telefon jest wymagany' })}
+                      {...register('phone', { required: 'A telefonszám megadása kötelező' })}
                       type="tel"
                       inputMode="tel"
                       autoComplete="tel"
@@ -387,7 +387,7 @@ export default function CheckoutPage() {
                     />
                     <div className="flex items-center gap-2">
                       <Building2 size={20} className="text-gray-600" />
-                      <span className="text-sm font-medium text-[#131921]">Kupuję jako firma</span>
+                      <span className="text-sm font-medium text-[#131921]">Cégként vásárolok</span>
                     </div>
                   </label>
                 </div>
@@ -397,7 +397,7 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>
                       <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                        <span>Nazwa firmy</span>
+                        <span>Cégnév</span>
                         {isCompany && isFieldValid('companyName') ? (
                           <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -408,11 +408,11 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         {...register('companyName', { 
-                          required: isCompany ? 'Nazwa firmy jest wymagana' : false 
+                          required: isCompany ? 'A cégnév megadása kötelező' : false 
                         })}
                         autoComplete="organization"
                         className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                        placeholder="Nazwa Twojej firmy"
+                        placeholder="Cég neve"
                       />
                       {errors.companyName && (
                         <p className="text-red-500 text-sm mt-1">{errors.companyName.message}</p>
@@ -421,7 +421,7 @@ export default function CheckoutPage() {
                     
                     <div>
                       <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                        <span>NIP</span>
+                        <span>Adószám</span>
                         {isCompany && isFieldValid('companyNip') ? (
                           <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -432,7 +432,7 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         {...register('companyNip', { 
-                          required: isCompany ? 'NIP jest wymagany' : false,
+                          required: isCompany ? 'Az adószám megadása kötelező' : false,
                           validate: isCompany ? validateNIP : undefined
                         })}
                         inputMode="numeric"
@@ -451,14 +451,14 @@ export default function CheckoutPage() {
               {/* Billing Address */}
               <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-[#131921]">
-                  {isCompany ? 'Adres firmy (rozliczeniowy)' : 'Adres rozliczeniowy'}
+                  {isCompany ? 'Cég címe (számlázási)' : 'Számlázási cím'}
                 </h2>
                 
                 <div className="grid grid-cols-1 gap-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                        <span>Imię</span>
+                        <span>Vezetéknév</span>
                         {isFieldValid('billingFirstName') ? (
                           <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -468,7 +468,7 @@ export default function CheckoutPage() {
                         )}
                       </label>
                       <input
-                        {...register('billingFirstName', { required: 'Imię jest wymagane' })}
+                        {...register('billingFirstName', { required: 'A vezetéknév megadása kötelező' })}
                         autoComplete="given-name"
                         className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                       />
@@ -479,7 +479,7 @@ export default function CheckoutPage() {
                     
                     <div>
                       <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                        <span>Nazwisko</span>
+                        <span>Keresztnév</span>
                         {isFieldValid('billingLastName') ? (
                           <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -489,7 +489,7 @@ export default function CheckoutPage() {
                         )}
                       </label>
                       <input
-                        {...register('billingLastName', { required: 'Nazwisko jest wymagane' })}
+                        {...register('billingLastName', { required: 'A keresztnév megadása kötelező' })}
                         autoComplete="family-name"
                         className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                       />
@@ -501,7 +501,7 @@ export default function CheckoutPage() {
                   
                   <div>
                     <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                      <span>Ulica i numer domu</span>
+                      <span>Utca és házszám</span>
                       {isFieldValid('billingAddress') ? (
                         <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -511,7 +511,7 @@ export default function CheckoutPage() {
                       )}
                     </label>
                     <input
-                      {...register('billingAddress', { required: 'Adres jest wymagany' })}
+                      {...register('billingAddress', { required: 'A cím megadása kötelező' })}
                       autoComplete="street-address"
                       className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                     />
@@ -523,7 +523,7 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                        <span>Miasto</span>
+                        <span>Város</span>
                         {isFieldValid('billingCity') ? (
                           <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -533,7 +533,7 @@ export default function CheckoutPage() {
                         )}
                       </label>
                       <input
-                        {...register('billingCity', { required: 'Miasto jest wymagane' })}
+                        {...register('billingCity', { required: 'A város megadása kötelező' })}
                         autoComplete="address-level2"
                         className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                       />
@@ -544,7 +544,7 @@ export default function CheckoutPage() {
                     
                     <div>
                       <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                        <span>Kod pocztowy</span>
+                        <span>Irányítószám</span>
                         {isFieldValid('billingPostalCode') ? (
                           <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -554,7 +554,7 @@ export default function CheckoutPage() {
                         )}
                       </label>
                       <input
-                        {...register('billingPostalCode', { required: 'Kod pocztowy jest wymagany' })}
+                        {...register('billingPostalCode', { required: 'Az irányítószám megadása kötelező' })}
                         autoComplete="postal-code"
                         className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                       />
@@ -569,28 +569,28 @@ export default function CheckoutPage() {
               {/* Delivery Address */}
               <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-[#131921]">Adres dostawy</h2>
+                  <h2 className="text-xl font-semibold text-[#131921]">Szállítási cím</h2>
                   <label className="flex items-center gap-2 cursor-pointer touch-manipulation">
                     <input
                       {...register('useDifferentDelivery')}
                       type="checkbox"
                       className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <span className="text-sm text-gray-700">Inny niż rozliczeniowy</span>
+                    <span className="text-sm text-gray-700">Eltér a számlázásitól</span>
                   </label>
                 </div>
                 
                 {!useDifferentDelivery ? (
                   <div className="text-gray-600 text-sm flex items-center gap-2">
                     <Copy size={16} />
-                    <span>Będzie użyty adres {isCompany ? 'firmy' : 'rozliczeniowy'}</span>
+                    <span>A {isCompany ? 'cég címe' : 'számlázási cím'} lesz használva</span>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                          <span>Imię</span>
+                          <span>Vezetéknév</span>
                           {useDifferentDelivery && isFieldValid('deliveryFirstName') ? (
                             <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -601,7 +601,7 @@ export default function CheckoutPage() {
                         </label>
                         <input
                           {...register('deliveryFirstName', { 
-                            required: useDifferentDelivery ? 'Imię jest wymagane' : false 
+                            required: useDifferentDelivery ? 'A vezetéknév megadása kötelező' : false 
                           })}
                           autoComplete="given-name"
                           className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -613,7 +613,7 @@ export default function CheckoutPage() {
                       
                       <div>
                         <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                          <span>Nazwisko</span>
+                          <span>Keresztnév</span>
                           {useDifferentDelivery && isFieldValid('deliveryLastName') ? (
                             <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -624,7 +624,7 @@ export default function CheckoutPage() {
                         </label>
                         <input
                           {...register('deliveryLastName', { 
-                            required: useDifferentDelivery ? 'Nazwisko jest wymagane' : false 
+                            required: useDifferentDelivery ? 'A keresztnév megadása kötelező' : false 
                           })}
                           autoComplete="family-name"
                           className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -637,7 +637,7 @@ export default function CheckoutPage() {
                     
                     <div>
                       <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                        <span>Ulica i numer domu</span>
+                        <span>Utca és házszám</span>
                         {useDifferentDelivery && isFieldValid('deliveryAddress') ? (
                           <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -648,7 +648,7 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         {...register('deliveryAddress', { 
-                          required: useDifferentDelivery ? 'Adres jest wymagany' : false 
+                          required: useDifferentDelivery ? 'A cím megadása kötelező' : false 
                         })}
                         autoComplete="street-address"
                         className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -661,7 +661,7 @@ export default function CheckoutPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                          <span>Miasto</span>
+                          <span>Város</span>
                           {useDifferentDelivery && isFieldValid('deliveryCity') ? (
                             <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -672,7 +672,7 @@ export default function CheckoutPage() {
                         </label>
                         <input
                           {...register('deliveryCity', { 
-                            required: useDifferentDelivery ? 'Miasto jest wymagane' : false 
+                            required: useDifferentDelivery ? 'A város megadása kötelező' : false 
                           })}
                           autoComplete="address-level2"
                           className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -684,7 +684,7 @@ export default function CheckoutPage() {
                       
                       <div>
                         <label className="block text-sm font-medium mb-2 text-[#131921] flex items-center">
-                          <span>Kod pocztowy</span>
+                          <span>Irányítószám</span>
                           {useDifferentDelivery && isFieldValid('deliveryPostalCode') ? (
                             <svg className="w-4 h-4 text-[#8bc34a] ml-1" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -695,7 +695,7 @@ export default function CheckoutPage() {
                         </label>
                         <input
                           {...register('deliveryPostalCode', { 
-                            required: useDifferentDelivery ? 'Kod pocztowy jest wymagane' : false 
+                            required: useDifferentDelivery ? 'Az irányítószám megadása kötelező' : false 
                           })}
                           autoComplete="postal-code"
                           className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -711,7 +711,7 @@ export default function CheckoutPage() {
 
               {/* Delivery Method */}
               <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Sposób dostawy</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Szállítási mód</h2>
                 
                 <div className="space-y-3">
                   {DELIVERY_METHODS.map((method) => {
@@ -749,7 +749,7 @@ export default function CheckoutPage() {
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
-                            <span className="hidden sm:inline">Gratis</span>
+                            <span className="hidden sm:inline">Ingyenes</span>
                           </span>
                         ) : (
                           <span className="font-medium text-[#131921] text-sm">
@@ -764,7 +764,7 @@ export default function CheckoutPage() {
 
               {/* Payment Method */}
               <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Sposób płatności</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Fizetési mód</h2>
                 
                 <div className="space-y-3">
                   {PAYMENT_METHODS.map((method) => {
@@ -800,7 +800,7 @@ export default function CheckoutPage() {
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
-                            <span className="hidden sm:inline">Gratis</span>
+                            <span className="hidden sm:inline">Ingyenes</span>
                           </span>
                         ) : (
                           <span className="font-medium text-[#131921] text-sm">
@@ -817,15 +817,15 @@ export default function CheckoutPage() {
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                     <div className="flex gap-4">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-[#131921] mb-2">Dane do przelewu:</h3>
+                        <h3 className="font-semibold text-[#131921] mb-2">Banki átutalás adatai:</h3>
                         <div className="space-y-2 text-sm">
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                            <span className="text-gray-700">Numer konta:</span>
+                            <span className="text-gray-700">Számlaszám:</span>
                             <div className="flex items-center gap-2">
                               <span className="font-mono font-medium text-[#131921]">{BANK_DETAILS.accountNumber}</span>
                               <button
                                 type="button"
-                                onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Numer konta')}
+                                onClick={() => copyToClipboard(BANK_DETAILS.accountNumber, 'Számlaszám')}
                                 className="text-blue-600 hover:text-blue-800 p-2 -mr-2 touch-manipulation"
                               >
                                 <Copy size={16} />
@@ -860,7 +860,7 @@ export default function CheckoutPage() {
                           </div>
                         </div>
                         <p className="text-xs text-gray-600 mt-3">
-                          * Jako tytuł przelewu proszę wpisać numer zamówienia, który otrzymają Państwo po finalizacji.
+                          * Kérjük, az átutalás közleményébe írja be a rendelési számot, amelyet a véglegesítés után fog megkapni.
                         </p>
                       </div>
                       
@@ -875,12 +875,12 @@ export default function CheckoutPage() {
 
               {/* Note */}
               <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-100 md:border-gray-200">
-                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Uwagi do zamówienia</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#131921]">Megjegyzések a rendeléshez</h2>
                 <textarea
                   {...register('note')}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                  placeholder="Tutaj mogą Państwo wpisać uwagi do zamówienia..."
+                  placeholder="Itt írhat megjegyzéseket a rendeléshez..."
                 />
               </div>
             </form>
@@ -889,7 +889,7 @@ export default function CheckoutPage() {
           {/* Order Summary - Desktop: Sticky sidebar */}
           <div className="lg:col-span-1 hidden lg:block">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
-              <h2 className="text-xl font-semibold mb-4 text-[#131921]">Podsumowanie zamówienia</h2>
+              <h2 className="text-xl font-semibold mb-4 text-[#131921]">Rendelés összegzése</h2>
               
               <div className="space-y-3 mb-4">
                 {items.map((item) => (
@@ -952,23 +952,23 @@ export default function CheckoutPage() {
               
               <div className="border-t border-gray-200 pt-4 space-y-2">
                 <div className="flex justify-between text-[#131921]">
-                  <span>Suma częściowa</span>
+                  <span>Részösszeg</span>
                   <span>{formatPrice(getTotalPrice())}</span>
                 </div>
                 {totalSavings > 0 && (
                   <div className="flex justify-between text-[#6da306] font-medium">
-                    <span>Zaoszczędzono</span>
+                    <span>Megtakarítás</span>
                     <span>-{formatPrice(totalSavings)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-[#131921]">
-                  <span>Dostawa</span>
+                  <span>Szállítás</span>
                   {deliveryPrice === 0 ? (
                     <span className="text-[#8bc34a] font-semibold flex items-center gap-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
-                      Gratis
+                      Ingyenes
                     </span>
                   ) : (
                     <span>{formatPrice(deliveryPrice)}</span>
@@ -976,12 +976,12 @@ export default function CheckoutPage() {
                 </div>
                 {paymentPrice > 0 && (
                   <div className="flex justify-between text-[#131921]">
-                    <span>Opłata za płatność</span>
+                    <span>Fizetési költség</span>
                     <span>{formatPrice(paymentPrice)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-semibold text-xl border-t border-gray-200 pt-2">
-                  <span className="text-[#131921]">Razem</span>
+                  <span className="text-[#131921]">Összesen</span>
                   <span className="text-[#8bc34a]">{formatPrice(totalPrice)}</span>
                 </div>
               </div>
@@ -996,7 +996,7 @@ export default function CheckoutPage() {
                 }`}
               >
                 <span className="flex items-center justify-center h-full">
-                  <span className="font-normal">{isSubmitting ? 'Przetwarzanie...' : 'Złóż zamówienie'}</span>
+                  <span className="font-normal">{isSubmitting ? 'Feldolgozás...' : 'Rendelés leadása'}</span>
                   {!isSubmitting && (
                     <span className="ml-3 flex items-center transition-transform group-hover:translate-x-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -1008,13 +1008,13 @@ export default function CheckoutPage() {
               </button>
               
               <p className="text-xs text-gray-400 text-center mt-6">
-                Składając zamówienie, akceptujesz{' '}
+                A rendelés leadásával elfogadja az{' '}
                 <Link href="/regulamin" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">
-                  regulamin
+                  ÁSZF-et
                 </Link>
-                {' '}i{' '}
+                {' '}és az{' '}
                 <Link href="/polityka-prywatnosci" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">
-                  politykę prywatności
+                  adatvédelmi szabályzatot
                 </Link>
                 .
               </p>
@@ -1029,16 +1029,16 @@ export default function CheckoutPage() {
           {/* Total and Payment Info */}
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-xs text-gray-500">Razem</p>
+              <p className="text-xs text-gray-500">Összesen</p>
               <p className="text-xl font-semibold text-[#131921]">{formatPrice(totalPrice)}</p>
               {deliveryPrice > 0 && (
-                <p className="text-xs text-gray-500">Zawiera dostawę: {formatPrice(deliveryPrice)}</p>
+                <p className="text-xs text-gray-500">Szállítást tartalmaz: {formatPrice(deliveryPrice)}</p>
               )}
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-500">Dostawa</p>
+              <p className="text-xs text-gray-500">Szállítás</p>
               <p className="text-sm text-[#8bc34a] font-semibold">
-                {deliveryPrice === 0 ? 'Gratis' : formatPrice(deliveryPrice)}
+                {deliveryPrice === 0 ? 'Ingyenes' : formatPrice(deliveryPrice)}
               </p>
             </div>
           </div>
@@ -1054,7 +1054,7 @@ export default function CheckoutPage() {
             }`}
           >
             <span className="flex items-center justify-center h-full">
-              <span className="font-medium text-base">{isSubmitting ? 'Przetwarzanie...' : 'Złóż zamówienie'}</span>
+              <span className="font-medium text-base">{isSubmitting ? 'Feldolgozás...' : 'Rendelés leadása'}</span>
               {!isSubmitting && (
                 <span className="ml-3 flex items-center">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -1066,10 +1066,10 @@ export default function CheckoutPage() {
           </button>
           
           <p className="text-xs text-gray-400 text-center">
-            Składając zamówienie, akceptujesz{' '}
-            <Link href="/regulamin" className="underline">regulamin</Link>
-            {' '}i{' '}
-            <Link href="/polityka-prywatnosci" className="underline">politykę prywatności</Link>
+            A rendelés leadásával elfogadja az{' '}
+            <Link href="/regulamin" className="underline">ÁSZF-et</Link>
+            {' '}és az{' '}
+            <Link href="/polityka-prywatnosci" className="underline">adatvédelmi szabályzatot</Link>
           </p>
         </div>
       </div>

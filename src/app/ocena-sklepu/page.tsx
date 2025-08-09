@@ -1,4 +1,4 @@
-// src/app/ocena-sklepu/page.tsx
+// src/app/vasarloi-velemenyek/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,8 +8,8 @@ import toast from 'react-hot-toast';
 
 // Remove metadata from client component - we'll handle it differently
 // export const metadata: Metadata = {
-//   title: 'Ocena sklepu - Opinie klientów | Galaxysklep.pl',
-//   description: 'Zobacz co mówią nasi klienci o Galaxysklep.pl. Przeczytaj opinie, sprawdź naszą ocenę i podziel się swoim doświadczeniem zakupowym.',
+//   title: 'Vásárlói vélemények - Értékelések | Jovotech.hu',
+//   description: 'Olvassa el, mit mondanak vásárlóink a Jovotech.hu-ról. Tekintse meg a véleményeket, ellenőrizze értékelésünket és ossza meg vásárlási tapasztalatait.',
 // };
 
 interface Review {
@@ -32,491 +32,491 @@ const getDateFromDaysAgo = (daysAgo: number): string => {
   return date.toISOString().split('T')[0];
 };
 
-export default function OcenaSklepuPage() {
+export default function VasarloiVelemenyekPage() {
   // Set page title
   useEffect(() => {
-    document.title = 'Ocena sklepu - Opinie klientów | Galaxysklep.pl';
+    document.title = 'Vásárlói vélemények - Értékelések | Jovotech.hu';
   }, []);
 
   // Initial review data with dynamic dates (40 reviews)
   const [reviews, setReviews] = useState<Review[]>([
     {
       id: 1,
-      author: 'Katarzyna M.',
+      author: 'Kovács Katalin',
       rating: 5,
       daysAgo: 0, // Today
       verified: true,
-      product: 'Router CNC 3040',
-      title: 'Świetny sklep, polecam!',
-      content: 'Zamówiłam router CNC i jestem bardzo zadowolona. Szybka dostawa, produkt zgodny z opisem, a obsługa klienta na najwyższym poziomie. Dodatkowo otrzymałam rabat jako stały klient!',
+      product: 'CNC Router 3040',
+      title: 'Kiváló bolt, ajánlom!',
+      content: 'CNC routert rendeltem és nagyon elégedett vagyok. Gyors szállítás, a termék megfelel a leírásnak, az ügyfélszolgálat a legmagasabb szinten. Ráadásul törzsvasárlóként kedvezményt is kaptam!',
       helpful: 24,
       images: []
     },
     {
       id: 2,
-      author: 'Piotr K.',
+      author: 'Kiss Péter',
       rating: 5,
       daysAgo: 1, // Yesterday
       verified: true,
-      product: 'Ultradźwięki 40kHz',
-      title: 'Profesjonalna obsługa',
-      content: 'Kupiłem ultradźwięki do warsztatu. Przed zakupem miałem wiele pytań - obsługa cierpliwie wszystko wyjaśniła. Przesyłka dotarła następnego dnia, świetnie zapakowana.',
+      product: 'Ultrahangos tisztító 40kHz',
+      title: 'Professzionális kiszolgálás',
+      content: 'Ultrahangos tisztítót vettem a műhelyembe. Vásárlás előtt sok kérdésem volt - az ügyfélszolgálat türelmesen mindent elmagyarázott. A csomag másnap megérkezett, kiválóan csomagolva.',
       helpful: 18,
       images: []
     },
     {
       id: 3,
-      author: 'Anna W.',
+      author: 'Varga Anna',
       rating: 4,
       daysAgo: 2,
       verified: true,
-      product: 'Prasa termotransferowa 38x38',
-      title: 'Dobry produkt, szybka wysyłka',
-      content: 'Prasa działa bez zarzutu. Jedyny minus to brak polskiej instrukcji, ale support szybko przesłał mi tłumaczenie. Ogólnie jestem zadowolona z zakupu.',
+      product: 'Hőprés 38x38',
+      title: 'Jó termék, gyors szállítás',
+      content: 'A prés kifogástalanul működik. Egyetlen mínusz, hogy nincs magyar nyelvű útmutató, de a support gyorsan küldött fordítást. Összességében elégedett vagyok a vásárlással.',
       helpful: 15,
       images: []
     },
     {
       id: 4,
-      author: 'Marek J.',
+      author: 'Juhász Márk',
       rating: 5,
       daysAgo: 3,
       verified: true,
-      product: 'Laser grawerujący 80W',
-      title: 'Najlepsza cena na rynku',
-      content: 'Długo szukałem lasera w dobrej cenie. Galaxy Sklep miał najlepszą ofertę, a do tego darmową dostawę. Urządzenie działa idealnie, polecam!',
+      product: 'Lézergravírozó 80W',
+      title: 'Legjobb ár a piacon',
+      content: 'Sokáig kerestem jó árú lézert. A Jovotech-nél volt a legjobb ajánlat, ráadásul ingyenes szállítással. A berendezés tökéletesen működik, ajánlom!',
       helpful: 31,
       images: []
     },
     {
       id: 5,
-      author: 'Ewa S.',
+      author: 'Szabó Éva',
       rating: 5,
       daysAgo: 4,
       verified: true,
-      product: 'Akcesoria do routera CNC',
-      title: 'Szeroki wybór akcesoriów',
-      content: 'Super sklep z ogromnym wyborem akcesoriów do maszyn CNC. Wszystko w jednym miejscu, konkurencyjne ceny i błyskawiczna realizacja zamówienia.',
+      product: 'CNC router tartozékok',
+      title: 'Széles tartozék választék',
+      content: 'Szuper bolt hatalmas CNC gép tartozék választékkal. Minden egy helyen, versenyképes árak és villámgyors rendelés teljesítés.',
       helpful: 12,
       images: []
     },
     {
       id: 6,
-      author: 'Tomasz B.',
+      author: 'Balogh Tamás',
       rating: 5,
       daysAgo: 5,
       verified: true,
-      product: 'Router CNC 6090',
-      title: 'Profesjonalne urządzenie',
-      content: 'Router CNC 6090 spełnił wszystkie moje oczekiwania. Precyzja obróbki jest niesamowita. Wsparcie techniczne pomogło w konfiguracji.',
+      product: 'CNC Router 6090',
+      title: 'Professzionális eszköz',
+      content: 'A CNC Router 6090 minden elvárásomnak megfelelt. A megmunkálási pontosság hihetetlen. A technikai támogatás segített a beállításban.',
       helpful: 28,
       images: []
     },
     {
       id: 7,
-      author: 'Magdalena K.',
+      author: 'Kocsis Magdolna',
       rating: 5,
       daysAgo: 6,
       verified: true,
-      product: 'Prasa termotransferowa 5w1',
-      title: 'Idealna do małej firmy',
-      content: 'Prowadzę małą firmę z nadrukami. Ta prasa to strzał w dziesiątkę! Możliwość druku na różnych powierzchniach to ogromny plus.',
+      product: 'Hőprés 5in1',
+      title: 'Ideális kis vállalkozáshoz',
+      content: 'Kis nyomdai vállalkozást vezetek. Ez a prés telitalálat! A különböző felületekre való nyomtatás lehetősége óriási előny.',
       helpful: 19,
       images: []
     },
     {
       id: 8,
-      author: 'Robert S.',
+      author: 'Simon Róbert',
       rating: 4,
       daysAgo: 7,
       verified: false,
-      product: 'Ultradźwięki 15L',
-      title: 'Solidne wykonanie',
-      content: 'Myjka ultradźwiękowa działa świetnie. Minus za głośną pracę, ale efekty czyszczenia rekompensują ten mankament.',
+      product: 'Ultrahangos tisztító 15L',
+      title: 'Masszív kivitelezés',
+      content: 'Az ultrahangos mosó kiválóan működik. Mínusz pont a hangos működés, de a tisztítási eredmények kárpótolnak ezért a hiányosságért.',
       helpful: 14,
       images: []
     },
     {
       id: 9,
-      author: 'Agnieszka W.',
+      author: 'Vincze Ágnes',
       rating: 5,
       daysAgo: 8,
       verified: true,
-      product: 'Laser CO2 40W',
-      title: 'Łatwa obsługa',
-      content: 'Pierwszy raz kupiłam laser i obawiałam się obsługi. Niepotrzebnie! Wszystko jest intuicyjne, a instrukcja bardzo pomocna.',
+      product: 'CO2 lézer 40W',
+      title: 'Egyszerű kezelés',
+      content: 'Először vettem lézert és féltem a kezelésétől. Feleslegesen! Minden intuitív, az útmutató nagyon hasznos.',
       helpful: 22,
       images: []
     },
     {
       id: 10,
-      author: 'Krzysztof M.',
+      author: 'Molnár Krisztián',
       rating: 5,
       daysAgo: 9,
       verified: true,
-      product: 'Frezy do CNC - zestaw',
-      title: 'Świetna jakość frezów',
-      content: 'Zamówiłem zestaw frezów do mojego routera. Jakość wykonania na najwyższym poziomie, ostrza trzymają długo.',
+      product: 'CNC marók - készlet',
+      title: 'Kiváló minőségű marók',
+      content: 'Maró készletet rendeltem a routeremhez. A kivitelezés minősége a legmagasabb szinten, a vágóélek sokáig tartanak.',
       helpful: 16,
       images: []
     },
     {
       id: 11,
-      author: 'Beata L.',
+      author: 'Lukács Beáta',
       rating: 5,
       daysAgo: 10,
       verified: true,
-      product: 'Prasa do kubków',
-      title: 'Rewelacja!',
-      content: 'Prasa do kubków działa perfekcyjnie. Nadruki wychodzą ostre i trwałe. Dostawa była ekspresowa!',
+      product: 'Bögre prés',
+      title: 'Fantasztikus!',
+      content: 'A bögre prés tökéletesen működik. A nyomatok élesek és tartósak. A szállítás expressz volt!',
       helpful: 25,
       images: []
     },
     {
       id: 12,
-      author: 'Paweł D.',
+      author: 'Papp Dávid',
       rating: 4,
       daysAgo: 11,
       verified: false,
-      product: 'Router CNC 3018',
-      title: 'Dobry na początek',
-      content: 'Jako pierwszy router CNC sprawdza się dobrze. Wymaga trochę doświadczenia w konfiguracji, ale efekty są zadowalające.',
+      product: 'CNC Router 3018',
+      title: 'Jó kezdőknek',
+      content: 'Első CNC routerként jól teljesít. Kicsit tapasztalat kell a beállításhoz, de az eredmények kielégítőek.',
       helpful: 11,
       images: []
     },
     {
       id: 13,
-      author: 'Joanna P.',
+      author: 'Pintér Johanna',
       rating: 5,
       daysAgo: 12,
       verified: true,
-      product: 'Ultradźwięki 30L',
-      title: 'Niezbędne w warsztacie',
-      content: 'Używam do czyszczenia części samochodowych. Efekty są spektakularne! Polecam każdemu mechanikowi.',
+      product: 'Ultrahangos tisztító 30L',
+      title: 'Nélkülözhetetlen a műhelyben',
+      content: 'Autóalkatrészek tisztítására használom. Az eredmények látványosak! Minden szerelőnek ajánlom.',
       helpful: 33,
       images: []
     },
     {
       id: 14,
-      author: 'Michał R.',
+      author: 'Rácz Mihály',
       rating: 5,
       daysAgo: 13,
       verified: true,
-      product: 'Laser grawerujący 100W',
-      title: 'Moc i precyzja',
-      content: 'Laser 100W to bestia! Graweruję nim drewno, skórę i metal. Każdy materiał wychodzi idealnie.',
+      product: 'Lézergravírozó 100W',
+      title: 'Erő és pontosság',
+      content: 'A 100W-os lézer egy vadállat! Fát, bőrt és fémet gravírozok vele. Minden anyag tökéletesen sikerül.',
       helpful: 27,
       images: []
     },
     {
       id: 15,
-      author: 'Alicja G.',
+      author: 'Gál Alíz',
       rating: 5,
       daysAgo: 14,
       verified: true,
-      product: 'Akcesoria do pras termotransferowych',
-      title: 'Wszystko czego potrzeba',
-      content: 'Szeroki wybór akcesoriów w jednym miejscu. Nie muszę szukać po różnych sklepach. Ceny bardzo konkurencyjne.',
+      product: 'Hőprés tartozékok',
+      title: 'Minden ami kell',
+      content: 'Széles tartozék választék egy helyen. Nem kell különböző boltokban keresgélni. Az árak nagyon versenyképesek.',
       helpful: 9,
       images: []
     },
     {
       id: 16,
-      author: 'Dariusz K.',
+      author: 'Kertész Dániel',
       rating: 4,
       daysAgo: 15,
       verified: false,
-      product: 'Router CNC 4030',
-      title: 'Solidna konstrukcja',
-      content: 'Router jest bardzo solidny. Jedynie software mógłby być bardziej intuicyjny, ale po czasie się przyzwyczaiłem.',
+      product: 'CNC Router 4030',
+      title: 'Stabil konstrukció',
+      content: 'A router nagyon stabil. Csak a szoftver lehetne intuitívabb, de idővel hozzászoktam.',
       helpful: 13,
       images: []
     },
     {
       id: 17,
-      author: 'Natalia B.',
+      author: 'Bognár Natália',
       rating: 5,
       daysAgo: 16,
       verified: true,
-      product: 'Prasa do czapek',
-      title: 'Idealna do haftu',
-      content: 'Kupowałam specjalnie do transferu na czapki z daszkiem. Działa bez zarzutu, nadruki są trwałe.',
+      product: 'Sapka prés',
+      title: 'Ideális hímzéshez',
+      content: 'Kifejezetten baseball sapkákra való transzferhez vettem. Kifogástalanul működik, a nyomatok tartósak.',
       helpful: 17,
       images: []
     },
     {
       id: 18,
-      author: 'Wojciech T.',
+      author: 'Török Vilmos',
       rating: 5,
       daysAgo: 17,
       verified: true,
-      product: 'Ultradźwięki 6L',
-      title: 'Kompaktowe i wydajne',
-      content: 'Małe ultradźwięki do domowego warsztatu. Mimo niewielkich rozmiarów radzi sobie z każdym brudem.',
+      product: 'Ultrahangos tisztító 6L',
+      title: 'Kompakt és hatékony',
+      content: 'Kis ultrahangos tisztító otthoni műhelyhez. A kis méret ellenére minden szennyeződéssel megbirkózik.',
       helpful: 20,
       images: []
     },
     {
       id: 19,
-      author: 'Monika S.',
+      author: 'Sándor Mónika',
       rating: 5,
       daysAgo: 18,
       verified: true,
-      product: 'Laser CO2 60W',
-      title: 'Spełnia oczekiwania',
-      content: 'Laser działa dokładnie tak jak opisano. Wsparcie techniczne bardzo pomocne przy pierwszym uruchomieniu.',
+      product: 'CO2 lézer 60W',
+      title: 'Megfelel az elvárásoknak',
+      content: 'A lézer pontosan úgy működik, ahogy leírták. A technikai támogatás nagyon segítőkész volt az első indításkor.',
       helpful: 24,
       images: []
     },
     {
       id: 20,
-      author: 'Adam W.',
+      author: 'Vajda Ádám',
       rating: 4,
       daysAgo: 19,
       verified: false,
-      product: 'Chłodzenie do lasera',
-      title: 'Niezbędny dodatek',
-      content: 'System chłodzenia działa dobrze, choć jest dość głośny. Temperatura lasera utrzymuje się na stabilnym poziomie.',
+      product: 'Lézer hűtőrendszer',
+      title: 'Szükséges kiegészítő',
+      content: 'A hűtőrendszer jól működik, bár elég hangos. A lézer hőmérséklete stabil szinten marad.',
       helpful: 8,
       images: []
     },
     {
       id: 21,
-      author: 'Karolina M.',
+      author: 'Mészáros Karolina',
       rating: 5,
       daysAgo: 20,
       verified: true,
-      product: 'Prasa termotransferowa 40x50',
-      title: 'Duża powierzchnia robocza',
-      content: 'Prasa z dużą powierzchnią roboczą - idealna do koszulek XXL. Równomierne nagrzewanie na całej powierzchni.',
+      product: 'Hőprés 40x50',
+      title: 'Nagy munkafelület',
+      content: 'Nagy felületű prés - ideális XXL pólókhoz. Egyenletes melegítés az egész felületen.',
       helpful: 31,
       images: []
     },
     {
       id: 22,
-      author: 'Łukasz J.',
+      author: 'Jakab Lukács',
       rating: 5,
       daysAgo: 21,
       verified: true,
-      product: 'Router CNC 1610',
-      title: 'Świetny do PCB',
-      content: 'Używam do frezowania płytek PCB. Precyzja jest wystarczająca nawet do bardzo cienkich ścieżek.',
+      product: 'CNC Router 1610',
+      title: 'Kiváló NYÁK-hoz',
+      content: 'NYÁK lemezek marásához használom. A pontosság elegendő még nagyon vékony vezetékekhez is.',
       helpful: 15,
       images: []
     },
     {
       id: 23,
-      author: 'Ewa K.',
+      author: 'Kozma Éva',
       rating: 5,
       daysAgo: 22,
       verified: true,
-      product: 'Ultradźwięki 2L',
-      title: 'Do biżuterii idealnie',
-      content: 'Małe ultradźwięki do czyszczenia biżuterii. Efekt jak nowa! Polecam każdej kobiecie.',
+      product: 'Ultrahangos tisztító 2L',
+      title: 'Ékszerekhez ideális',
+      content: 'Kis ultrahangos tisztító ékszerek tisztításához. Az eredmény mint új! Minden nőnek ajánlom.',
       helpful: 26,
       images: []
     },
     {
       id: 24,
-      author: 'Marcin P.',
+      author: 'Pásztor Marcell',
       rating: 4,
       daysAgo: 23,
       verified: false,
-      product: 'Wrzeciono do CNC 500W',
-      title: 'Dobre wrzeciono',
-      content: 'Wrzeciono pracuje cicho i płynnie. Moc wystarczająca do drewna i plastiku. Do metalu bym wziął mocniejsze.',
+      product: 'CNC orsó 500W',
+      title: 'Jó orsó',
+      content: 'Az orsó csendesen és simán működik. A teljesítmény elegendő fához és műanyaghoz. Fémhez erősebbet vennék.',
       helpful: 12,
       images: []
     },
     {
       id: 25,
-      author: 'Patrycja A.',
+      author: 'Antal Patrícia',
       rating: 5,
       daysAgo: 24,
       verified: true,
-      product: 'Prasa do puzzli',
-      title: 'Świetna do sublimacji',
-      content: 'Specjalna prasa do puzzli - nareszcie mogę robić personalizowane puzzle! Jakość transferu rewelacyjna.',
+      product: 'Puzzle prés',
+      title: 'Kiváló szublimációhoz',
+      content: 'Speciális puzzle prés - végre tudok személyre szabott kirakókat készíteni! A transzfer minősége fantasztikus.',
       helpful: 18,
       images: []
     },
     {
       id: 26,
-      author: 'Grzegorz N.',
+      author: 'Nemes Gergely',
       rating: 5,
       daysAgo: 25,
       verified: true,
-      product: 'Laser grawerujący 50W',
-      title: 'Uniwersalne urządzenie',
-      content: 'Laser 50W to złoty środek - wystarcza do większości zastosowań hobbystycznych i małego biznesu.',
+      product: 'Lézergravírozó 50W',
+      title: 'Univerzális eszköz',
+      content: 'Az 50W-os lézer az arany középút - elegendő a legtöbb hobbi és kisvállalkozási alkalmazáshoz.',
       helpful: 29,
       images: []
     },
     {
       id: 27,
-      author: 'Sylwia R.',
+      author: 'Rózsa Szilvia',
       rating: 5,
       daysAgo: 26,
       verified: true,
-      product: 'Ultradźwięki 10L z podgrzewaniem',
-      title: 'Podgrzewanie robi różnicę',
-      content: 'Wersja z podgrzewaniem to zupełnie inna liga. Czyszczenie jest dużo skuteczniejsze. Warto dopłacić!',
+      product: 'Ultrahangos tisztító 10L fűtéssel',
+      title: 'A fűtés különbséget jelent',
+      content: 'A fűtéses verzió teljesen más liga. A tisztítás sokkal hatékonyabb. Megéri a felár!',
       helpful: 35,
       images: []
     },
     {
       id: 28,
-      author: 'Bartosz L.',
+      author: 'Lengyel Balázs',
       rating: 4,
       daysAgo: 27,
       verified: false,
-      product: 'Router CNC 3040 z 4 osią',
-      title: 'Czwarta oś przydatna',
-      content: 'Router z 4 osią daje więcej możliwości. Konfiguracja była trudniejsza niż myślałem, ale było warto.',
+      product: 'CNC Router 3040 4 tengellyel',
+      title: 'Negyedik tengely hasznos',
+      content: 'A 4 tengelyes router több lehetőséget ad. A konfiguráció nehezebb volt, mint gondoltam, de megérte.',
       helpful: 10,
       images: []
     },
     {
       id: 29,
-      author: 'Aleksandra C.',
+      author: 'Csaba Alexandra',
       rating: 5,
       daysAgo: 28,
       verified: true,
-      product: 'Prasa do talerzy',
-      title: 'Do ceramiki idealna',
-      content: 'Robię personalizowane talerze i kubki. Ta prasa jest do tego idealna! Równomierne dociskanie.',
+      product: 'Tányér prés',
+      title: 'Kerámiához ideális',
+      content: 'Személyre szabott tányérokat és bögréket készítek. Ez a prés erre ideális! Egyenletes nyomás.',
       helpful: 21,
       images: []
     },
     {
       id: 30,
-      author: 'Rafał B.',
+      author: 'Budai Rafael',
       rating: 5,
       daysAgo: 29,
       verified: true,
-      product: 'Laser CO2 80W',
-      title: 'Mocny i szybki',
-      content: 'Laser 80W tnie grube materiały bez problemu. Prędkość pracy znacznie większa niż w słabszych modelach.',
+      product: 'CO2 lézer 80W',
+      title: 'Erős és gyors',
+      content: 'A 80W-os lézer gond nélkül vágja a vastag anyagokat. A munkasebesség jelentősen nagyobb, mint a gyengébb modelleknél.',
       helpful: 23,
       images: []
     },
     {
       id: 31,
-      author: 'Marta D.',
+      author: 'Dudás Márta',
       rating: 5,
       daysAgo: 30,
       verified: true,
-      product: 'Akcesoria do ultradźwięków',
-      title: 'Przydatne kosze i uchwyty',
-      content: 'Dokupowałam akcesoria do mojej myjki. Kosze na drobne elementy bardzo ułatwiają pracę.',
+      product: 'Ultrahangos tisztító tartozékok',
+      title: 'Hasznos kosarak és tartók',
+      content: 'Kiegészítőket vásároltam a mosómhoz. A kis alkatrészekhez való kosarak nagyon megkönnyítik a munkát.',
       helpful: 7,
       images: []
     },
     {
       id: 32,
-      author: 'Kamil W.',
+      author: 'Virág Kamil',
       rating: 4,
       daysAgo: 31,
       verified: false,
-      product: 'Router CNC 6040',
-      title: 'Wart swojej ceny',
-      content: 'Dobry stosunek jakości do ceny. Nie jest to sprzęt profesjonalny, ale do warsztatu w sam raz.',
+      product: 'CNC Router 6040',
+      title: 'Megéri az árát',
+      content: 'Jó ár-érték arány. Nem profi eszköz, de műhelybe pont megfelelő.',
       helpful: 16,
       images: []
     },
     {
       id: 33,
-      author: 'Izabela T.',
+      author: 'Takács Izabella',
       rating: 5,
       daysAgo: 32,
       verified: true,
-      product: 'Prasa próżniowa 3D',
-      title: 'Do przedmiotów 3D super',
-      content: 'Prasa próżniowa świetnie sprawdza się przy nietypowych kształtach. Transfer na butelkach wychodzi idealnie.',
+      product: 'Vákuumos prés 3D',
+      title: '3D tárgyakhoz szuper',
+      content: 'A vákuumos prés kiválóan alkalmas szokatlan formákhoz. A palackokon való transzfer tökéletesen sikerül.',
       helpful: 30,
       images: []
     },
     {
       id: 34,
-      author: 'Piotr Z.',
+      author: 'Zsolt Péter',
       rating: 5,
       daysAgo: 33,
       verified: true,
-      product: 'Ultradźwięki 20L',
-      title: 'Duża pojemność',
-      content: 'Potrzebowałem dużej myjki do części motocyklowych. 20L to idealna pojemność, wszystko się mieści.',
+      product: 'Ultrahangos tisztító 20L',
+      title: 'Nagy kapacitás',
+      content: 'Nagy mosóra volt szükségem motorkerékpár alkatrészekhez. A 20L ideális kapacitás, minden belefér.',
       helpful: 25,
       images: []
     },
     {
       id: 35,
-      author: 'Justyna M.',
+      author: 'Major Judit',
       rating: 5,
       daysAgo: 34,
       verified: true,
-      product: 'Laser grawerujący 30W',
-      title: 'Do grawerowania wystarczy',
-      content: 'Do grawerowania 30W w zupełności wystarcza. Drewno, skóra, plastik - wszystko wychodzi pięknie.',
+      product: 'Lézergravírozó 30W',
+      title: 'Gravírozáshoz elegendő',
+      content: 'Gravírozáshoz a 30W teljesen elegendő. Fa, bőr, műanyag - minden gyönyörűen sikerül.',
       helpful: 19,
       images: []
     },
     {
       id: 36,
-      author: 'Dawid K.',
+      author: 'Deák Dávid',
       rating: 4,
       daysAgo: 35,
       verified: false,
-      product: 'Sterownik do CNC',
-      title: 'Dobry zamiennik',
-      content: 'Wymieniłem stary sterownik na ten. Działa lepiej, choć dokumentacja mogłaby być bardziej szczegółowa.',
+      product: 'CNC vezérlő',
+      title: 'Jó helyettesítő',
+      content: 'A régi vezérlőt cseréltem erre. Jobban működik, bár a dokumentáció részletesebb lehetne.',
       helpful: 6,
       images: []
     },
     {
       id: 37,
-      author: 'Paulina S.',
+      author: 'Sári Paulina',
       rating: 5,
       daysAgo: 36,
       verified: true,
-      product: 'Prasa do długopisów',
-      title: 'Niszowy, ale potrzebny sprzęt',
-      content: 'Trudno znaleźć dobrą prasę do długopisów. Ta działa świetnie, transfer jest trwały i ostry.',
+      product: 'Toll prés',
+      title: 'Ritka, de szükséges eszköz',
+      content: 'Nehéz jó toll prést találni. Ez kiválóan működik, a transzfer tartós és éles.',
       helpful: 14,
       images: []
     },
     {
       id: 38,
-      author: 'Sebastian R.',
+      author: 'Rónai Sebestyén',
       rating: 5,
       daysAgo: 37,
       verified: true,
-      product: 'Router CNC 1325',
-      title: 'Profesjonalna maszyna',
-      content: 'Duży router do profesjonalnych zastosowań. Pracuje non-stop w mojej firmie. Zero problemów!',
+      product: 'CNC Router 1325',
+      title: 'Professzionális gép',
+      content: 'Nagy router professzionális használatra. Non-stop dolgozik a cégemnél. Nulla probléma!',
       helpful: 37,
       images: []
     },
     {
       id: 39,
-      author: 'Aneta B.',
+      author: 'Balog Anett',
       rating: 5,
       daysAgo: 38,
       verified: true,
-      product: 'Ultradźwięki 3L',
-      title: 'Małe, ale skuteczne',
-      content: 'Do okularów i małej biżuterii idealnie. Zajmuje mało miejsca, a efekty czyszczenia super.',
+      product: 'Ultrahangos tisztító 3L',
+      title: 'Kicsi, de hatékony',
+      content: 'Szemüveghez és kis ékszerekhez ideális. Kevés helyet foglal, a tisztítási eredmények szuperek.',
       helpful: 22,
       images: []
     },
     {
       id: 40,
-      author: 'Mariusz L.',
+      author: 'László Mariusz',
       rating: 4,
       daysAgo: 39,
       verified: false,
-      product: 'Odsysacz do lasera',
-      title: 'Konieczność przy laserze',
-      content: 'Odsysacz dobrze filtruje powietrze. Trochę głośny, ale bezpieczeństwo przede wszystkim.',
+      product: 'Lézer elszívó',
+      title: 'Szükséges lézernél',
+      content: 'Az elszívó jól szűri a levegőt. Kicsit hangos, de a biztonság mindenekelőtt.',
       helpful: 11,
       images: []
     }
@@ -548,7 +548,7 @@ export default function OcenaSklepuPage() {
 
   const handleHelpful = (reviewId: number) => {
     if (helpfulClicked.has(reviewId)) {
-      toast.error('Już oznaczyłeś tę opinię jako pomocną');
+      toast.error('Már megjelölte ezt a véleményt hasznosnak');
       return;
     }
 
@@ -560,18 +560,18 @@ export default function OcenaSklepuPage() {
       )
     );
     setHelpfulClicked(prev => new Set(prev).add(reviewId));
-    toast.success('Dziękujemy za oznaczenie opinii jako pomocnej');
+    toast.success('Köszönjük, hogy hasznosnak jelölte a véleményt');
   };
 
   const handleReport = (reviewId: number) => {
-    toast.success('Dziękujemy za zgłoszenie. Sprawdzimy tę opinię.');
+    toast.success('Köszönjük a jelentést. Ellenőrizni fogjuk a véleményt.');
   };
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newReview.author || !newReview.email || !newReview.title || !newReview.content) {
-      toast.error('Wypełnij wszystkie wymagane pola');
+      toast.error('Töltse ki az összes kötelező mezőt');
       return;
     }
 
@@ -598,7 +598,7 @@ export default function OcenaSklepuPage() {
       title: '',
       content: ''
     });
-    toast.success('Dziękujemy za dodanie opinii! Zostanie ona opublikowana po weryfikacji.');
+    toast.success('Köszönjük véleményét! Ellenőrzés után publikáljuk.');
   };
 
   return (
@@ -607,10 +607,10 @@ export default function OcenaSklepuPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Ocena sklepu Galaxysklep.pl
+            Jovotech.hu értékelések
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Zobacz, co mówią o nas nasi klienci. Twoja opinia jest dla nas bardzo ważna!
+            Nézze meg, mit mondanak rólunk vásárlóink. Az Ön véleménye nagyon fontos számunkra!
           </p>
         </div>
 
@@ -632,7 +632,7 @@ export default function OcenaSklepuPage() {
                   />
                 ))}
               </div>
-              <p className="text-gray-600">na podstawie {totalReviews} opinii</p>
+              <p className="text-gray-600">{totalReviews} vélemény alapján</p>
             </div>
 
             {/* Rating Distribution */}
@@ -659,22 +659,22 @@ export default function OcenaSklepuPage() {
               <div className="flex items-center gap-3">
                 <Shield className="w-8 h-8 text-green-600" />
                 <div>
-                  <div className="font-semibold">Bezpieczne zakupy</div>
-                  <div className="text-sm text-gray-600">Szyfrowanie SSL</div>
+                  <div className="font-semibold">Biztonságos vásárlás</div>
+                  <div className="text-sm text-gray-600">SSL titkosítás</div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Award className="w-8 h-8 text-blue-600" />
                 <div>
-                  <div className="font-semibold">Gwarancja jakości</div>
-                  <div className="text-sm text-gray-600">100% oryginalne produkty</div>
+                  <div className="font-semibold">Minőségi garancia</div>
+                  <div className="text-sm text-gray-600">100% eredeti termékek</div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Users className="w-8 h-8 text-purple-600" />
                 <div>
-                  <div className="font-semibold">20 lat doświadczenia</div>
-                  <div className="text-sm text-gray-600">Zaufało nam 50,000+ klientów</div>
+                  <div className="font-semibold">20 év tapasztalat</div>
+                  <div className="text-sm text-gray-600">50,000+ elégedett vásárló</div>
                 </div>
               </div>
             </div>
@@ -686,34 +686,34 @@ export default function OcenaSklepuPage() {
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">98%</div>
-            <div className="text-sm text-gray-600">Zadowolonych klientów</div>
+            <div className="text-sm text-gray-600">Elégedett vásárló</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <Calendar className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">24h</div>
-            <div className="text-sm text-gray-600">Średni czas wysyłki</div>
+            <div className="text-2xl font-bold text-gray-900">24ó</div>
+            <div className="text-sm text-gray-600">Átlagos szállítási idő</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <MessageSquare className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">2,4h</div>
-            <div className="text-sm text-gray-600">support@galaxysklep.pl</div>
+            <div className="text-2xl font-bold text-gray-900">2,4ó</div>
+            <div className="text-sm text-gray-600">support@jovotech.hu</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <CheckCircle className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">14 dni</div>
-            <div className="text-sm text-gray-600">Na zwrot towaru</div>
+            <div className="text-2xl font-bold text-gray-900">14 nap</div>
+            <div className="text-sm text-gray-600">Elállási jog</div>
           </div>
         </div>
 
         {/* Reviews Section */}
         <div className="bg-gray-50 rounded-xl p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Najnowsze opinie</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Legújabb vélemények</h2>
             <button 
               onClick={() => setShowReviewModal(true)}
               className="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition"
             >
-              Dodaj opinię
+              Vélemény írása
             </button>
           </div>
 
@@ -733,7 +733,7 @@ export default function OcenaSklepuPage() {
                         {review.verified && (
                           <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
                             <CheckCircle className="w-3 h-3" />
-                            Zweryfikowany zakup
+                            Ellenőrzött vásárlás
                           </span>
                         )}
                       </div>
@@ -750,7 +750,7 @@ export default function OcenaSklepuPage() {
                             />
                           ))}
                         </div>
-                        <span>{new Date(reviewDate).toLocaleDateString('pl-PL')}</span>
+                        <span>{new Date(reviewDate).toLocaleDateString('hu-HU')}</span>
                         {review.product && (
                           <>
                             <span>•</span>
@@ -774,13 +774,13 @@ export default function OcenaSklepuPage() {
                       }`}
                     >
                       <ThumbsUp className="w-4 h-4" />
-                      Pomocne ({review.helpful})
+                      Hasznos ({review.helpful})
                     </button>
                     <button 
                       onClick={() => handleReport(review.id)}
                       className="text-sm text-gray-600 hover:text-gray-900"
                     >
-                      Zgłoś
+                      Jelentés
                     </button>
                   </div>
                 </div>
@@ -791,18 +791,18 @@ export default function OcenaSklepuPage() {
           {/* Load More Button */}
           <div className="text-center mt-8">
             <button className="text-blue-600 hover:text-blue-700 font-medium">
-              Zobacz więcej opinii →
+              További vélemények →
             </button>
           </div>
         </div>
 
         {/* External Reviews Section */}
         <div className="mt-12 bg-gray-50 rounded-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Opinie z innych platform</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Vélemények más platformokon</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-gray-900 mb-2">4.8/5</div>
-              <div className="text-gray-600 mb-2">Google Reviews</div>
+              <div className="text-gray-600 mb-2">Google Értékelések</div>
               <div className="flex justify-center">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
@@ -813,7 +813,7 @@ export default function OcenaSklepuPage() {
                   />
                 ))}
               </div>
-              <p className="text-sm text-gray-500 mt-2">na podstawie 89 opinii</p>
+              <p className="text-sm text-gray-500 mt-2">89 vélemény alapján</p>
             </div>
 
             <div className="text-center">
@@ -829,12 +829,12 @@ export default function OcenaSklepuPage() {
                   />
                 ))}
               </div>
-              <p className="text-sm text-gray-500 mt-2">na podstawie 156 opinii</p>
+              <p className="text-sm text-gray-500 mt-2">156 vélemény alapján</p>
             </div>
 
             <div className="text-center">
               <div className="text-3xl font-bold text-gray-900 mb-2">4.9/5</div>
-              <div className="text-gray-600 mb-2">Ceneo</div>
+              <div className="text-gray-600 mb-2">Árukereso</div>
               <div className="flex justify-center">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
@@ -845,7 +845,7 @@ export default function OcenaSklepuPage() {
                   />
                 ))}
               </div>
-              <p className="text-sm text-gray-500 mt-2">na podstawie 67 opinii</p>
+              <p className="text-sm text-gray-500 mt-2">67 vélemény alapján</p>
             </div>
           </div>
         </div>
@@ -856,7 +856,7 @@ export default function OcenaSklepuPage() {
         <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Dodaj opinię</h3>
+              <h3 className="text-xl font-bold text-gray-900">Vélemény írása</h3>
               <button
                 onClick={() => setShowReviewModal(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -869,7 +869,7 @@ export default function OcenaSklepuPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Imię i nazwisko *
+                    Név *
                   </label>
                   <input
                     type="text"
@@ -895,7 +895,7 @@ export default function OcenaSklepuPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ocena *
+                    Értékelés *
                   </label>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -919,7 +919,7 @@ export default function OcenaSklepuPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Produkt (opcjonalnie)
+                    Termék (opcionális)
                   </label>
                   <input
                     type="text"
@@ -931,7 +931,7 @@ export default function OcenaSklepuPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tytuł opinii *
+                    Vélemény címe *
                   </label>
                   <input
                     type="text"
@@ -944,7 +944,7 @@ export default function OcenaSklepuPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Treść opinii *
+                    Vélemény szövege *
                   </label>
                   <textarea
                     value={newReview.content}
@@ -962,13 +962,13 @@ export default function OcenaSklepuPage() {
                   onClick={() => setShowReviewModal(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
                 >
-                  Anuluj
+                  Mégse
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                 >
-                  Dodaj opinię
+                  Vélemény küldése
                 </button>
               </div>
             </form>

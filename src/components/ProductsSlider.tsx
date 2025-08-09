@@ -164,7 +164,7 @@ export function ProductsSlider({ products, title }: ProductsSliderProps) {
                 justifyContent: 'center',
                 zIndex: 50
               }}
-              aria-label="Przedchozí produkty"
+              aria-label="Előző termékek"
             >
               <ChevronLeft size={24} className="text-gray-700" />
             </button>
@@ -188,7 +188,7 @@ export function ProductsSlider({ products, title }: ProductsSliderProps) {
                 justifyContent: 'center',
                 zIndex: 50
               }}
-              aria-label="Další produkty"
+              aria-label="Következő termékek"
             >
               <ChevronRight size={24} className="text-gray-700" />
             </button>
@@ -206,7 +206,7 @@ export function ProductsSlider({ products, title }: ProductsSliderProps) {
                     : 'opacity-30'
                 }`}
                 style={{ width: '40px', height: '40px', zIndex: 50 }}
-                aria-label="Předchozí produkty"
+                aria-label="Előző termékek"
               >
                 <ChevronLeft size={20} className="text-gray-700" />
               </button>
@@ -220,7 +220,7 @@ export function ProductsSlider({ products, title }: ProductsSliderProps) {
                     : 'opacity-30'
                 }`}
                 style={{ width: '40px', height: '40px', zIndex: 50 }}
-                aria-label="Další produkty"
+                aria-label="Következő termékek"
               >
                 <ChevronRight size={20} className="text-gray-700" />
               </button>
@@ -272,7 +272,7 @@ export function ProductsSlider({ products, title }: ProductsSliderProps) {
                       ? 'w-6 h-2 bg-[#8bc34a]' 
                       : 'w-2 h-2 bg-gray-300'
                   } rounded-full`}
-                  aria-label={`Přejít k produktu ${index + 1}`}
+                  aria-label={`Ugrás a ${index + 1}. termékhez`}
                 />
               ))}
             </div>

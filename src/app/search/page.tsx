@@ -96,7 +96,7 @@ function SearchPageContent() {
 
         setProducts(data.products);
       } catch (err) {
-        setError('Coś poszło nie tak podczas wyszukiwania');
+        setError('Valami hiba történt a keresés során');
         console.error('Search error:', err);
       } finally {
         setLoading(false);
@@ -176,14 +176,14 @@ function SearchPageContent() {
         {/* Search Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2 text-gray-900">
-            Wyniki wyszukiwania
+            Keresési eredmények
           </h1>
           {query && (
             <p className="text-gray-700">
-              Szukana fraza: <span className="font-semibold">"{query}"</span>
+              Keresett kifejezés: <span className="font-semibold">"{query}"</span>
               {!loading && (
                 <span className="ml-2 text-gray-500">
-                  ({filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'wynik' : filteredAndSortedProducts.length < 5 ? 'wyniki' : 'wyników'})
+                  ({filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'találat' : 'találat'})
                 </span>
               )}
             </p>
@@ -199,7 +199,7 @@ function SearchPageContent() {
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <Filter size={18} />
-                <span>Filtry</span>
+                <span>Szűrők</span>
                 {hasActiveFilters && (
                   <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
                     {[showInStockOnly, selectedBrands.length > 0, selectedCategories.length > 0].filter(Boolean).length}
@@ -212,7 +212,7 @@ function SearchPageContent() {
                   onClick={clearFilters}
                   className="text-sm text-gray-600 hover:text-gray-900"
                 >
-                  Wyczyść filtry
+                  Szűrők törlése
                 </button>
               )}
             </div>
@@ -224,11 +224,11 @@ function SearchPageContent() {
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="relevance">Trafność</option>
-                <option value="price-asc">Cena: od najniższej</option>
-                <option value="price-desc">Cena: od najwyższej</option>
-                <option value="name-asc">Nazwa: A-Z</option>
-                <option value="rating">Ocena</option>
+                <option value="relevance">Relevancia</option>
+                <option value="price-asc">Ár: növekvő</option>
+                <option value="price-desc">Ár: csökkenő</option>
+                <option value="name-asc">Név: A-Z</option>
+                <option value="rating">Értékelés</option>
               </select>
             </div>
           </div>
@@ -240,7 +240,7 @@ function SearchPageContent() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Stock Filter */}
               <div>
-                <h3 className="font-semibold mb-3 text-gray-900">Dostępność</h3>
+                <h3 className="font-semibold mb-3 text-gray-900">Elérhetőség</h3>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -248,14 +248,14 @@ function SearchPageContent() {
                     onChange={(e) => setShowInStockOnly(e.target.checked)}
                     className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700">Tylko dostępne</span>
+                  <span className="text-sm text-gray-700">Csak raktáron</span>
                 </label>
               </div>
 
               {/* Brand Filter */}
               {availableBrands.length > 0 && (
                 <div>
-                  <h3 className="font-semibold mb-3 text-gray-900">Marka</h3>
+                  <h3 className="font-semibold mb-3 text-gray-900">Márka</h3>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {availableBrands.map(brand => (
                       <label key={brand} className="flex items-center gap-2 cursor-pointer">
@@ -275,7 +275,7 @@ function SearchPageContent() {
               {/* Category Filter */}
               {availableCategories.length > 0 && (
                 <div>
-                  <h3 className="font-semibold mb-3 text-gray-900">Kategoria</h3>
+                  <h3 className="font-semibold mb-3 text-gray-900">Kategória</h3>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {availableCategories.map(category => (
                       <label key={category.id} className="flex items-center gap-2 cursor-pointer">
@@ -300,7 +300,7 @@ function SearchPageContent() {
           <div className="flex justify-center items-center py-16">
             <div className="text-center">
               <Search size={48} className="mx-auto text-gray-400 animate-pulse mb-4" />
-              <p className="text-gray-700">Wyszukuję produkty...</p>
+              <p className="text-gray-700">Termékek keresése...</p>
             </div>
           </div>
         )}
@@ -318,19 +318,19 @@ function SearchPageContent() {
             <Search size={64} className="mx-auto text-gray-300 mb-4" />
             <p className="text-gray-900 text-lg mb-2">
               {hasActiveFilters 
-                ? `Nie znaleźliśmy produktów spełniających twoje kryteria`
-                : `Nie znaleźliśmy produktów pasujących do "${query}"`
+                ? `Nem találtunk a kritériumoknak megfelelő termékeket`
+                : `Nem találtunk a(z) "${query}" kifejezésre illeszkedő termékeket`
               }
             </p>
             <p className="text-gray-600 mb-4">
-              Spróbuj zmienić wyszukiwaną frazę lub dostosuj filtry
+              Próbálja megváltoztatni a keresett kifejezést vagy módosítsa a szűrőket
             </p>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Wyczyść filtry
+                Szűrők törlése
               </button>
             )}
           </div>
@@ -355,7 +355,7 @@ export default function SearchPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Ładowanie wyników...</p>
+          <p>Találatok betöltése...</p>
         </div>
       </div>
     }>

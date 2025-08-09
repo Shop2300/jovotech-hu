@@ -279,7 +279,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Grid3X3 size={24} />
-              <h2 className="text-lg font-bold">Kategorie</h2>
+              <h2 className="text-lg font-bold">Kategóriák</h2>
             </div>
             <button
               onClick={() => setMobileMenuOpen(false)}
@@ -331,7 +331,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <ChevronRight size={16} />
-                        Pokaż wszystko
+                        Összes megjelenítése
                       </Link>
                       {category.children.map((subcat) => (
                         <Link
@@ -385,7 +385,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
         {/* Footer */}
         <div className="p-4 mt-4 border-t border-gray-100">
           <p className="text-xs text-gray-500 text-center">
-            {categories.length} {categories.length === 1 ? 'kategoria' : categories.length < 5 ? 'kategorie' : 'kategorii'}
+            {categories.length} kategória
           </p>
         </div>
       </div>
@@ -429,7 +429,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                   className="inline-block mb-6 px-4 py-2 text-sm font-medium text-[#131921] hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors duration-150"
                   onClick={() => setOpenDropdown(null)}
                 >
-                  <span>Pokaż wszystko w kategorii {category.name} →</span>
+                  <span>Összes megjelenítése: {category.name} →</span>
                 </Link>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6">
@@ -493,7 +493,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
             >
               <div className="flex items-center gap-3">
                 <Grid3X3 size={20} />
-                <span>Przeglądaj kategorie</span>
+                <span>Kategóriák böngészése</span>
               </div>
               <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </button>
@@ -529,7 +529,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                 className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-100 group whitespace-nowrap"
               >
                 <Menu className="w-4 h-4" />
-                Więcej
+                Több
                 <ChevronDown className={`w-4 h-4 transition-transform duration-100 ${openDropdown === 'more-menu' ? 'rotate-180' : ''} group-hover:text-gray-900`} />
               </button>
 

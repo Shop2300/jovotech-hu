@@ -13,12 +13,11 @@ export default function OrderNotFound() {
         </div>
         
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Objednávka nenalezena
+          Megrendelés nem található
         </h1>
-        
         <p className="text-gray-600 mb-8">
-          Omlouváme se, ale objednávku s tímto číslem jsme nenašli. 
-          Zkontrolujte prosím číslo objednávky a zkuste to znovu.
+          Sajnáljuk, de nem találtuk meg a megrendelést ezzel a számmal.
+          Kérjük, ellenőrizze a rendelési számot és próbálja újra.
         </p>
         
         <div className="space-y-4">
@@ -26,13 +25,13 @@ export default function OrderNotFound() {
             href="/"
             className="inline-block w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
-            Zpět na hlavní stránku
+            Vissza a főoldalra
           </Link>
           
           <div className="text-sm text-gray-500">
-            Potřebujete pomoc? Kontaktujte nás na{' '}
-            <a href="mailto:info@czech-eshop.cz" className="text-blue-600 hover:text-blue-700">
-              info@czech-eshop.cz
+            Segítségre van szüksége? Lépjen kapcsolatba velünk:{' '}
+            <a href="mailto:support@jovotech.hu" className="text-blue-600 hover:text-blue-700">
+              support@jovotech.hu
             </a>
           </div>
         </div>

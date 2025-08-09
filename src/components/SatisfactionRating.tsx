@@ -1,6 +1,5 @@
 // src/components/SatisfactionRating.tsx
 'use client';
-
 import { useState } from 'react';
 
 interface SatisfactionRatingProps {
@@ -9,16 +8,16 @@ interface SatisfactionRatingProps {
 
 export function SatisfactionRating({ orderNumber }: SatisfactionRatingProps) {
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
-
+  
   // Rating emojis
   const ratingOptions = [
-    { value: 1, emoji: '😢', label: 'Bardzo niezadowolony' },
-    { value: 2, emoji: '😕', label: 'Niezadowolony' },
-    { value: 3, emoji: '😐', label: 'Neutralny' },
-    { value: 4, emoji: '😊', label: 'Zadowolony' },
-    { value: 5, emoji: '😍', label: 'Bardzo zadowolony' },
+    { value: 1, emoji: '😢', label: 'Nagyon elégedetlen' },
+    { value: 2, emoji: '😕', label: 'Elégedetlen' },
+    { value: 3, emoji: '😐', label: 'Semleges' },
+    { value: 4, emoji: '😊', label: 'Elégedett' },
+    { value: 5, emoji: '😍', label: 'Nagyon elégedett' },
   ];
-
+  
   const handleRating = (rating: number) => {
     setSelectedRating(rating);
     // Here you can add API call to save the rating
@@ -31,10 +30,10 @@ export function SatisfactionRating({ orderNumber }: SatisfactionRatingProps) {
     //   body: JSON.stringify({ rating })
     // });
   };
-
+  
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
-      <h3 className="font-semibold mb-4">Jak oceniasz swoje zamówienie?</h3>
+      <h3 className="font-semibold mb-4">Hogyan értékeli megrendelését?</h3>
       <div className="flex justify-around">
         {ratingOptions.map((option) => (
           <button
@@ -55,7 +54,7 @@ export function SatisfactionRating({ orderNumber }: SatisfactionRatingProps) {
       </div>
       {selectedRating && (
         <p className="text-sm text-green-600 text-center mt-4">
-          Dziękujemy za Twoją opinię!
+          Köszönjük véleményét!
         </p>
       )}
     </div>

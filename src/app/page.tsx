@@ -204,7 +204,7 @@ export default async function HomePage() {
       <section className="pt-4 pb-8 md:pb-12">
         <div className="max-w-screen-2xl mx-auto px-4 md:px-6">
           <h2 className="text-xl md:text-2xl font-bold mb-6 md:mb-8 text-center text-black">
-            Polecane produkty
+            Ajánlott termékek
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
             {featuredProducts.map((product) => (
@@ -228,7 +228,7 @@ export default async function HomePage() {
       
       {/* New Products Slider */}
       <Suspense fallback={<div className="h-64 md:h-96" />}>
-        <ProductsSlider products={newProducts.map(serializeProduct)} title="Nowości" />
+        <ProductsSlider products={newProducts.map(serializeProduct)} title="Újdonságok" />
       </Suspense>
       
       {/* Product Videos - Lowest priority */}

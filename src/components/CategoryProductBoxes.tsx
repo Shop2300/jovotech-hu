@@ -80,7 +80,7 @@ function MiniProductCard({ product, isPriority = false }: { product: Product; is
         productSlug: product.slug || undefined
       });
       
-      toast.success(`${product.name} został dodany do koszyka`);
+      toast.success(`${product.name} hozzáadva a kosárhoz`);
     }
   };
 
@@ -106,12 +106,12 @@ function MiniProductCard({ product, isPriority = false }: { product: Product; is
               />
             ) : (
               <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-600 text-sm" style={{ fontFamily: sfFontFamily }}>Zdjęcie</span>
+                <span className="text-gray-600 text-sm" style={{ fontFamily: sfFontFamily }}>Kép</span>
               </div>
             )}
             {!inStock && (
               <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-                <span className="text-white font-bold text-sm" style={{ fontFamily: sfFontFamily }}>Wyprzedane</span>
+                <span className="text-white font-bold text-sm" style={{ fontFamily: sfFontFamily }}>Elfogyott</span>
               </div>
             )}
             {discount > 0 && inStock && (
@@ -160,7 +160,7 @@ function MiniProductCard({ product, isPriority = false }: { product: Product; is
               style={{ fontFamily: sfFontFamily }}
             >
               <ShoppingCart size={14} />
-              {hasVariants ? 'Wybierz' : 'Do koszyka'}
+              {hasVariants ? 'Választ' : 'Kosárba'}
             </button>
           </div>
         </div>
@@ -287,7 +287,7 @@ function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug, b
               ))
             ) : (
               <div className="w-full text-center py-8 text-gray-500">
-                <p>Brak produktów w tej kategorii</p>
+                <p>Nincs termék ebben a kategóriában</p>
               </div>
             )}
           </div>
@@ -306,7 +306,7 @@ function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug, b
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               border: '1px solid rgba(0,0,0,0.1)',
             }}
-            aria-label="Poprzednie produkty"
+            aria-label="Előző termékek"
           >
             <ChevronLeft size={18} className="text-gray-700" />
           </button>
@@ -325,7 +325,7 @@ function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug, b
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               border: '1px solid rgba(0,0,0,0.1)',
             }}
-            aria-label="Następne produkty"
+            aria-label="Következő termékek"
           >
             <ChevronRight size={18} className="text-gray-700" />
           </button>
@@ -341,8 +341,8 @@ export function CategoryProductBoxes({ cleaningProducts, paintingProducts, autoM
       <div className="max-w-screen-2xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <CategoryBox
-            title="Sprzęt Czyszczący"
-            subtitle="Czysta Perfekcja"
+            title="Tisztítóeszközök"
+            subtitle="Tiszta Tökéletesség"
             icon="🧹"
             products={cleaningProducts}
             bgColor="bg-gray-50/50"
@@ -352,8 +352,8 @@ export function CategoryProductBoxes({ cleaningProducts, paintingProducts, autoM
           />
           
           <CategoryBox
-            title="Malarstwo"
-            subtitle="Sztuka w Kolorze"
+            title="Festészet"
+            subtitle="Művészet Színekben"
             icon="🎨"
             products={paintingProducts}
             bgColor="bg-gray-50/50"
@@ -363,8 +363,8 @@ export function CategoryProductBoxes({ cleaningProducts, paintingProducts, autoM
           />
           
           <CategoryBox
-            title="Auto-Moto"
-            subtitle="Dla Twojego Pojazdu"
+            title="Autó-Motor"
+            subtitle="Járműved Számára"
             icon="🔧"
             products={autoMotoProducts}
             bgColor="bg-gray-50/50"

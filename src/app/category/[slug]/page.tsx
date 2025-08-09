@@ -206,20 +206,20 @@ export async function generateMetadata({
   
   if (!category) {
     return {
-      title: 'Kategorie nenalezena',
+      title: 'Kategória nem található',
     };
   }
 
   const pageNumber = page ? parseInt(page) : 1;
-  const titleSuffix = pageNumber > 1 ? ` - Strana ${pageNumber}` : '';
+  const titleSuffix = pageNumber > 1 ? ` - ${pageNumber}. oldal` : '';
   
   return {
-    title: `${category.name}${titleSuffix} | Galaxysklep.pl`,
-    description: category.description || `Produkty v kategorii ${category.name}`,
+    title: `${category.name}${titleSuffix} | Jovotech.hu`,
+    description: category.description || `Termékek a(z) ${category.name} kategóriában`,
     openGraph: {
       title: `${category.name}${titleSuffix}`,
-      description: category.description || `Produkty v kategorii ${category.name}`,
-      url: `https://www.galaxysklep.pl/category/${category.slug}${pageNumber > 1 ? `?page=${pageNumber}` : ''}`,
+      description: category.description || `Termékek a(z) ${category.name} kategóriában`,
+      url: `https://www.jovotech.hu/category/${category.slug}${pageNumber > 1 ? `?page=${pageNumber}` : ''}`,
     },
   };
 }
@@ -303,9 +303,9 @@ export default async function CategoryPage({
         <div className="flex gap-4 md:gap-8">
           {/* Left Sidebar - Desktop only */}
           <aside className="w-64 flex-shrink-0 hidden lg:block space-y-6">
-            {/* Najnowsze zamówienia section */}
+            {/* Legújabb rendelések section */}
             <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold mb-4 text-black">Najnowsze zamówienia</h3>
+              <h3 className="text-lg font-semibold mb-4 text-black">Legújabb rendelések</h3>
               <div className="space-y-3">
                 {randomProducts.map((product) => (
                   <Link 
@@ -335,7 +335,7 @@ export default async function CategoryPage({
                           {product.name}
                         </p>
                         <p className="text-sm font-semibold text-red-600 mt-1">
-                          {product.price.toLocaleString('pl-PL')} zł
+                          {product.price.toLocaleString('hu-HU')} Ft
                         </p>
                       </div>
                     </div>
@@ -344,10 +344,10 @@ export default async function CategoryPage({
               </div>
             </div>
 
-            {/* Popularny produkt section */}
+            {/* Népszerű termék section */}
             {popularProduct.length > 0 && (
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-4 text-black">Popularny produkt</h3>
+                <h3 className="text-lg font-semibold mb-4 text-black">Népszerű termék</h3>
                 <div className="hover:bg-white rounded-lg p-3 transition-colors">
                   <div className="space-y-3">
                     <Link 
@@ -383,22 +383,22 @@ export default async function CategoryPage({
                       {popularProduct[0].regularPrice && popularProduct[0].regularPrice > popularProduct[0].price ? (
                         <div>
                           <span className="text-xs text-gray-500 line-through block">
-                            {popularProduct[0].regularPrice.toLocaleString('pl-PL')} zł
+                            {popularProduct[0].regularPrice.toLocaleString('hu-HU')} Ft
                           </span>
                           <span className="text-lg font-bold text-red-600">
-                            {popularProduct[0].price.toLocaleString('pl-PL')} zł
+                            {popularProduct[0].price.toLocaleString('hu-HU')} Ft
                           </span>
                         </div>
                       ) : (
                         <span className="text-lg font-bold text-black">
-                          {popularProduct[0].price.toLocaleString('pl-PL')} zł
+                          {popularProduct[0].price.toLocaleString('hu-HU')} Ft
                         </span>
                       )}
                       <Link 
                         href={`/${popularProduct[0].category?.slug || 'products'}/${popularProduct[0].slug || popularProduct[0].id}`}
                         className="inline-block px-3 py-1.5 bg-[#6da306] text-white text-xs font-medium rounded-lg hover:bg-[#5d8c05] transition-colors"
                       >
-                        Zobacz
+                        Megnézem
                       </Link>
                     </div>
                   </div>
@@ -412,7 +412,7 @@ export default async function CategoryPage({
             {/* Subcategories */}
             {currentPage === 1 && category.children && category.children.length > 0 && (
               <div className="mb-4 md:mb-8">
-                <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4 text-black">Podkategorie</h2>
+                <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4 text-black">Alkategóriák</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
                   {category.children.map((subcategory) => (
                     <Link

@@ -24,10 +24,10 @@ export interface PaymentMethod {
 export const DELIVERY_METHODS: DeliveryMethod[] = [
   {
     value: 'zasilkovna',
-    label: 'Doručení kurýrem',
-    labelPl: 'Najwygodniejsza dostawa',
-    description: 'Doručíme balík až k vám domů prostřednictvím přepravní společnosti. Vybíráme mezi DPD, InPost, DHL nebo Českou poštou.',
-    descriptionPl: 'Dostarczymy paczkę do Twojego domu za pośrednictwem firmy spedycyjnej. Wybieramy pomiędzy DPD, InPost, DHL lub Pocztą Polską.',
+    label: 'Futárszolgálat',
+    labelPl: 'Legkényelmesebb szállítás',
+    description: 'A csomagot közvetlenül az Ön otthonába szállítjuk futárszolgálattal. DPD, InPost, DHL vagy Magyar Posta közül választunk.',
+    descriptionPl: 'A csomagot közvetlenül az Ön otthonába szállítjuk futárszolgálattal. DPD, InPost, DHL vagy Magyar Posta közül választunk.',
     icon: Truck,
     price: 0
   }
@@ -36,10 +36,10 @@ export const DELIVERY_METHODS: DeliveryMethod[] = [
 export const PAYMENT_METHODS: PaymentMethod[] = [
   {
     value: 'bank',
-    label: 'Bankovní převod',
-    labelPl: 'Przelew bankowy',
-    description: 'Platba převodem na účet',
-    descriptionPl: 'Płatność przelewem na konto',
+    label: 'Banki átutalás',
+    labelPl: 'Banki átutalás',
+    description: 'Fizetés banki átutalással',
+    descriptionPl: 'Fizetés banki átutalással',
     icon: Building2,
     price: 0 // Free
   }

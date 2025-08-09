@@ -29,7 +29,7 @@ export default function CartPage() {
                     <div className="w-8 h-8 md:w-10 md:h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white">
                       <ShoppingCart size={16} strokeWidth={2} className="md:w-5 md:h-5" />
                     </div>
-                    <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-[#131921] hidden sm:inline">Koszyk</span>
+                    <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-[#131921] hidden sm:inline">Kosár</span>
                   </div>
                   <div className="flex-1 mx-2 md:mx-4">
                     <div className="h-1 bg-gray-300 rounded">
@@ -44,7 +44,7 @@ export default function CartPage() {
                     <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
                       <CreditCard size={16} strokeWidth={2} className="md:w-5 md:h-5" />
                     </div>
-                    <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-gray-500 hidden sm:inline">Dostawa i płatność</span>
+                    <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-gray-500 hidden sm:inline">Szállítás és fizetés</span>
                   </div>
                   <div className="flex-1 mx-2 md:mx-4">
                     <div className="h-1 bg-gray-300 rounded"></div>
@@ -56,7 +56,7 @@ export default function CartPage() {
                   <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
                     <CheckCircle size={16} strokeWidth={2} className="md:w-5 md:h-5" />
                   </div>
-                  <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-gray-500 hidden sm:inline">Potwierdzenie</span>
+                  <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-gray-500 hidden sm:inline">Megerősítés</span>
                 </div>
               </div>
             </div>
@@ -66,13 +66,13 @@ export default function CartPage() {
         <div className="max-w-screen-2xl mx-auto px-4 md:px-6 py-8 md:py-16">
           <div className="bg-white rounded-lg shadow-md p-6 md:p-8 text-center max-w-2xl mx-auto">
             <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4 md:w-16 md:h-16" />
-            <h1 className="text-xl md:text-2xl font-bold mb-4 text-[#131921]">Twój koszyk jest pusty</h1>
-            <p className="text-[#131921] mb-6 md:mb-8">Dodaj produkty z naszej oferty</p>
+            <h1 className="text-xl md:text-2xl font-bold mb-4 text-[#131921]">A kosarad üres</h1>
+            <p className="text-[#131921] mb-6 md:mb-8">Adj hozzá termékeket a kínálatunkból</p>
             <Link 
               href="/"
               className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition min-h-[44px] touch-manipulation"
             >
-              Wróć do zakupów
+              Vissza a vásárláshoz
             </Link>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function CartPage() {
                   <div className="w-8 h-8 md:w-10 md:h-10 bg-[#8bc34a] rounded-full flex items-center justify-center text-white">
                     <ShoppingCart size={16} strokeWidth={2} className="md:w-5 md:h-5" />
                   </div>
-                  <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-[#131921] hidden sm:inline">Koszyk</span>
+                  <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-[#131921] hidden sm:inline">Kosár</span>
                 </div>
                 <div className="flex-1 mx-2 md:mx-4">
                   <div className="h-1 bg-gray-300 rounded">
@@ -111,7 +111,7 @@ export default function CartPage() {
                   <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
                     <CreditCard size={16} strokeWidth={2} className="md:w-5 md:h-5" />
                   </div>
-                  <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-gray-500 hidden sm:inline">Dostawa i płatność</span>
+                  <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-gray-500 hidden sm:inline">Szállítás és fizetés</span>
                 </div>
                 <div className="flex-1 mx-2 md:mx-4">
                   <div className="h-1 bg-gray-300 rounded"></div>
@@ -123,7 +123,7 @@ export default function CartPage() {
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
                   <CheckCircle size={16} strokeWidth={2} className="md:w-5 md:h-5" />
                 </div>
-                <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-gray-500 hidden sm:inline">Potwierdzenie</span>
+                <span className="ml-2 md:ml-3 text-xs md:text-sm font-medium text-gray-500 hidden sm:inline">Megerősítés</span>
               </div>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function CartPage() {
                       {/* Availability - Hidden on mobile to save space */}
                       <div className="hidden md:flex items-center gap-1 mt-1">
                         <span className="inline-block w-2 h-2 bg-[#8bc34a] rounded-full"></span>
-                        <span className="text-sm text-[#8bc34a]">Na stanie</span>
+                        <span className="text-sm text-[#8bc34a]">Raktáron</span>
                       </div>
                       
                       {/* Quantity Controls - Touch optimized */}
@@ -251,7 +251,7 @@ export default function CartPage() {
                       <button
                         onClick={() => removeItem(item.id, item.variantId)}
                         className="text-gray-400 hover:text-gray-600 p-2 -mr-2 -mb-2 md:p-0 md:mr-0 md:mb-0 transition touch-manipulation"
-                        aria-label="Usuń produkt"
+                        aria-label="Termék eltávolítása"
                       >
                         <Trash2 size={18} className="md:hidden" />
                         <Trash2 size={20} className="hidden md:block" />
@@ -266,7 +266,7 @@ export default function CartPage() {
           {/* Order Summary - Desktop sidebar */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
-              <h2 className="text-xl font-semibold mb-4 text-[#131921]">Podsumowanie zamówienia</h2>
+              <h2 className="text-xl font-semibold mb-4 text-[#131921]">Rendelés összegzése</h2>
               
               <div className="space-y-3 mb-4">
                 {items.map((item) => (
@@ -330,26 +330,26 @@ export default function CartPage() {
               
               <div className="border-t border-gray-200 pt-4 space-y-2">
                 <div className="flex justify-between text-[#131921]">
-                  <span>Suma częściowa</span>
+                  <span>Részösszeg</span>
                   <span>{formatPrice(totalPrice)}</span>
                 </div>
                 {totalSavings > 0 && (
                   <div className="flex justify-between text-[#6da306] font-medium">
-                    <span>Zaoszczędzono</span>
+                    <span>Megtakarítás</span>
                     <span>-{formatPrice(totalSavings)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-[#131921]">
-                  <span>Dostawa</span>
+                  <span>Szállítás</span>
                   <span className="text-[#8bc34a] font-semibold flex items-center gap-1">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    Gratis
+                    Ingyenes
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold text-xl border-t border-gray-200 pt-2">
-                  <span className="text-[#131921]">Razem</span>
+                  <span className="text-[#131921]">Összesen</span>
                   <span className="text-[#8bc34a]">{formatPrice(totalPrice)}</span>
                 </div>
               </div>
@@ -359,7 +359,7 @@ export default function CartPage() {
                 className="block w-full h-[48px] mt-6 rounded hover:bg-[#7cb342] transition relative overflow-hidden group bg-[#8bc34a] text-white touch-manipulation"
               >
                 <span className="flex items-center justify-center h-full">
-                  <span className="font-normal">Przejdź do kasy</span>
+                  <span className="font-normal">Tovább a pénztárhoz</span>
                   <span className="ml-3 flex items-center transition-transform group-hover:translate-x-1">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
@@ -371,15 +371,15 @@ export default function CartPage() {
               {/* Free Shipping Message - No Animation */}
               <div className="flex items-center justify-center gap-2 text-[#8bc34a] mt-4">
                 <Truck size={20} />
-                <span className="font-medium">Masz darmową dostawę!</span>
+                <span className="font-medium">Ingyenes szállítás!</span>
               </div>
               
               {/* Advantages */}
               <div className="mt-6 p-4 bg-gray-100 rounded-lg">
                 <p className="text-sm text-gray-600">
-                  ✓ Darmowa wysyłka przy zakupach powyżej 0 zł<br/>
-                  ✓ 14 dni na zwrot<br/>
-                  ✓ Paczkomaty w całej Polsce
+                  ✓ Ingyenes szállítás 0 Ft felett<br/>
+                  ✓ 14 napos visszaküldés<br/>
+                  ✓ Csomagautomaták országszerte
                 </p>
               </div>
             </div>
@@ -393,15 +393,15 @@ export default function CartPage() {
           {/* Total and Savings */}
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-xs text-gray-500">Razem ({items.length} {items.length === 1 ? 'produkt' : items.length < 5 ? 'produkty' : 'produktów'})</p>
+              <p className="text-xs text-gray-500">Összesen ({items.length} termék)</p>
               <p className="text-xl font-semibold text-[#131921]">{formatPrice(totalPrice)}</p>
               {totalSavings > 0 && (
-                <p className="text-xs text-[#6da306] font-medium">Zaoszczędzono: {formatPrice(totalSavings)}</p>
+                <p className="text-xs text-[#6da306] font-medium">Megtakarítás: {formatPrice(totalSavings)}</p>
               )}
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-500">Dostawa</p>
-              <p className="text-sm text-[#8bc34a] font-semibold">Gratis</p>
+              <p className="text-xs text-gray-500">Szállítás</p>
+              <p className="text-sm text-[#8bc34a] font-semibold">Ingyenes</p>
             </div>
           </div>
           
@@ -411,7 +411,7 @@ export default function CartPage() {
             className="block w-full h-[48px] rounded-xl hover:bg-[#7cb342] transition relative overflow-hidden group bg-[#8bc34a] text-white touch-manipulation"
           >
             <span className="flex items-center justify-center h-full">
-              <span className="font-medium text-base">Przejdź do kasy</span>
+              <span className="font-medium text-base">Tovább a pénztárhoz</span>
               <span className="ml-3 flex items-center transition-transform group-hover:translate-x-1">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>

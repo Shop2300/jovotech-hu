@@ -4,8 +4,8 @@ import { Building2, Users, CreditCard, Package, FileCheck, HeadphonesIcon, Trend
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Dla firm + | Rozwiązania biznesowe - Galaxy Sklep',
-  description: 'Specjalne warunki dla firm. Faktury VAT, odroczone płatności, dedykowany opiekun i rabaty dla stałych klientów.',
+  title: 'Cégeknek | Üzleti megoldások - Jovotech',
+  description: 'Különleges feltételek cégek számára. ÁFA-s számlák, halasztott fizetés, dedikált ügyfélmenedzser és kedvezmények állandó ügyfeleknek.',
 };
 
 export default function BusinessPage() {
@@ -32,11 +32,11 @@ export default function BusinessPage() {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-[#131921] mb-4">
-            Galaxy Sklep dla Twojego biznesu
+            Jovotech az Ön vállalkozásáért
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Dołącz do tysięcy firm, które zaufały nam jako swojemu dostawcy. 
-            Oferujemy specjalne warunki współpracy dostosowane do potrzeb biznesowych.
+            Csatlakozzon a több ezer céghez, amelyek beszállítóként bíznak bennünk. 
+            Az üzleti igényekhez igazított különleges együttműködési feltételeket kínálunk.
           </p>
         </div>
 
@@ -44,33 +44,33 @@ export default function BusinessPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           <div className="bg-gray-50 rounded-lg p-6 text-center hover:shadow-lg transition-shadow">
             <CreditCard className="w-12 h-12 text-[#6da306] mx-auto mb-4" />
-            <h3 className="font-semibold text-[#131921] mb-2">Faktury VAT</h3>
+            <h3 className="font-semibold text-[#131921] mb-2">ÁFA-s számlák</h3>
             <p className="text-sm text-gray-600">
-              Automatyczne wystawianie faktur VAT dla każdego zamówienia
+              Automatikus ÁFA-s számla kiállítás minden rendeléshez
             </p>
           </div>
           
           <div className="bg-gray-50 rounded-lg p-6 text-center hover:shadow-lg transition-shadow">
             <TrendingUp className="w-12 h-12 text-[#6da306] mx-auto mb-4" />
-            <h3 className="font-semibold text-[#131921] mb-2">Rabaty ilościowe</h3>
+            <h3 className="font-semibold text-[#131921] mb-2">Mennyiségi kedvezmények</h3>
             <p className="text-sm text-gray-600">
-              Atrakcyjne rabaty przy większych zamówieniach
+              Vonzó kedvezmények nagyobb rendelések esetén
             </p>
           </div>
           
           <div className="bg-gray-50 rounded-lg p-6 text-center hover:shadow-lg transition-shadow">
             <Users className="w-12 h-12 text-[#6da306] mx-auto mb-4" />
-            <h3 className="font-semibold text-[#131921] mb-2">Dedykowany opiekun</h3>
+            <h3 className="font-semibold text-[#131921] mb-2">Dedikált ügyfélmenedzser</h3>
             <p className="text-sm text-gray-600">
-              Osobisty doradca dla Twojej firmy
+              Személyes tanácsadó az Ön cége számára
             </p>
           </div>
           
           <div className="bg-gray-50 rounded-lg p-6 text-center hover:shadow-lg transition-shadow">
             <Package className="w-12 h-12 text-[#6da306] mx-auto mb-4" />
-            <h3 className="font-semibold text-[#131921] mb-2">Priorytetowa dostawa</h3>
+            <h3 className="font-semibold text-[#131921] mb-2">Elsőbbségi szállítás</h3>
             <p className="text-sm text-gray-600">
-              Szybka realizacja zamówień biznesowych
+              Üzleti megrendelések gyors teljesítése
             </p>
           </div>
         </div>
@@ -78,14 +78,14 @@ export default function BusinessPage() {
         {/* Trust Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-[#131921] text-center mb-8">
-            Zaufali nam
+            Akik megbíztak bennünk
           </h2>
           <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-6 items-center">
             {companyLogos.map((logo, index) => (
               <div key={index} className="flex items-center justify-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <Image
                   src={logo}
-                  alt={`Logo firmy ${index + 1}`}
+                  alt={`Cég logó ${index + 1}`}
                   width={100}
                   height={60}
                   className="w-full h-auto object-contain filter grayscale hover:grayscale-0 transition-all"
@@ -98,16 +98,16 @@ export default function BusinessPage() {
         {/* Services Section */}
         <div className="bg-[#6da306] text-white rounded-2xl p-8 md:p-12 mb-16">
           <h2 className="text-3xl font-bold mb-8 text-center">
-            Co oferujemy firmom?
+            Mit kínálunk cégeknek?
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <FileCheck className="flex-shrink-0 mt-1" size={20} />
                 <div>
-                  <h4 className="font-semibold mb-1">Odroczone płatności</h4>
+                  <h4 className="font-semibold mb-1">Halasztott fizetés</h4>
                   <p className="text-white/90 text-sm">
-                    Możliwość płatności z odroczonym terminem do 30 dni
+                    Fizetési lehetőség 30 napos halasztott határidővel
                   </p>
                 </div>
               </div>
@@ -115,9 +115,9 @@ export default function BusinessPage() {
               <div className="flex items-start gap-3">
                 <Shield className="flex-shrink-0 mt-1" size={20} />
                 <div>
-                  <h4 className="font-semibold mb-1">Gwarancja i wsparcie</h4>
+                  <h4 className="font-semibold mb-1">Garancia és támogatás</h4>
                   <p className="text-white/90 text-sm">
-                    Rozszerzona gwarancja i priorytetowe wsparcie techniczne
+                    Kiterjesztett garancia és elsőbbségi technikai támogatás
                   </p>
                 </div>
               </div>
@@ -125,9 +125,9 @@ export default function BusinessPage() {
               <div className="flex items-start gap-3">
                 <Package className="flex-shrink-0 mt-1" size={20} />
                 <div>
-                  <h4 className="font-semibold mb-1">Darmowa dostawa zawsze</h4>
+                  <h4 className="font-semibold mb-1">Mindig ingyenes szállítás</h4>
                   <p className="text-white/90 text-sm">
-                    Bezpłatna wysyłka niezależnie od wartości zamówienia
+                    Díjmentes kiszállítás a rendelés értékétől függetlenül
                   </p>
                 </div>
               </div>
@@ -137,9 +137,9 @@ export default function BusinessPage() {
               <div className="flex items-start gap-3">
                 <Users className="flex-shrink-0 mt-1" size={20} />
                 <div>
-                  <h4 className="font-semibold mb-1">Program partnerski</h4>
+                  <h4 className="font-semibold mb-1">Partner program</h4>
                   <p className="text-white/90 text-sm">
-                    Dodatkowe korzyści dla stałych partnerów biznesowych
+                    További előnyök állandó üzleti partnereink számára
                   </p>
                 </div>
               </div>
@@ -147,9 +147,9 @@ export default function BusinessPage() {
               <div className="flex items-start gap-3">
                 <HeadphonesIcon className="flex-shrink-0 mt-1" size={20} />
                 <div>
-                  <h4 className="font-semibold mb-1">Priorytetowe wsparcie</h4>
+                  <h4 className="font-semibold mb-1">Elsőbbségi támogatás</h4>
                   <p className="text-white/90 text-sm">
-                    Szybsza obsługa zgłoszeń dla klientów biznesowych
+                    Gyorsabb megkeresés-kezelés üzleti ügyfelek számára
                   </p>
                 </div>
               </div>
@@ -157,9 +157,9 @@ export default function BusinessPage() {
               <div className="flex items-start gap-3">
                 <TrendingUp className="flex-shrink-0 mt-1" size={20} />
                 <div>
-                  <h4 className="font-semibold mb-1">Raporty zakupowe</h4>
+                  <h4 className="font-semibold mb-1">Vásárlási jelentések</h4>
                   <p className="text-white/90 text-sm">
-                    Miesięczne zestawienia wydatków dla Twojej księgowości
+                    Havi költségkimutatások az Ön könyvelése számára
                   </p>
                 </div>
               </div>
@@ -170,25 +170,25 @@ export default function BusinessPage() {
         {/* Industries Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-[#131921] text-center mb-8">
-            Obsługujemy firmy z każdej branży
+            Minden iparágból szolgálunk ki cégeket
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <h3 className="font-semibold text-[#131921] mb-3">Biura i korporacje</h3>
+              <h3 className="font-semibold text-[#131921] mb-3">Irodák és vállalatok</h3>
               <p className="text-gray-600">
-                Kompleksowe wyposażenie biur - od artykułów biurowych po sprzęt elektroniczny
+                Teljes körű irodai felszerelés - irodaszerektől az elektronikai eszközökig
               </p>
             </div>
             <div className="text-center">
-              <h3 className="font-semibold text-[#131921] mb-3">Przemysł i produkcja</h3>
+              <h3 className="font-semibold text-[#131921] mb-3">Ipar és gyártás</h3>
               <p className="text-gray-600">
-                Narzędzia, urządzenia elektryczne i wyposażenie warsztatów
+                Szerszámok, elektromos berendezések és műhelyfelszerelések
               </p>
             </div>
             <div className="text-center">
-              <h3 className="font-semibold text-[#131921] mb-3">Usługi i handel</h3>
+              <h3 className="font-semibold text-[#131921] mb-3">Szolgáltatások és kereskedelem</h3>
               <p className="text-gray-600">
-                Rozwiązania dla sklepów, salonów i punktów usługowych
+                Megoldások üzletek, szalonok és szolgáltató pontok számára
               </p>
             </div>
           </div>
@@ -197,24 +197,24 @@ export default function BusinessPage() {
         {/* CTA Section */}
         <div className="bg-gray-50 rounded-2xl p-8 md:p-12 text-center">
           <h2 className="text-3xl font-bold text-[#131921] mb-4">
-            Zacznij oszczędzać już dziś
+            Kezdje el a megtakarítást még ma
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Skontaktuj się z nami i dowiedz się więcej o specjalnych warunkach dla firm
+            Lépjen kapcsolatba velünk, és tudjon meg többet a cégek számára kínált különleges feltételekről
           </p>
           
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
             <a
-              href="mailto:support@galaxysklep.pl"
+              href="mailto:support@jovotech.hu"
               className="inline-flex items-center gap-2 bg-[#6da306] text-white px-8 py-4 rounded-lg font-semibold hover:bg-[#5d8f05] transition-colors"
             >
               <Building2 size={20} />
-              Napisz do nas: support@galaxysklep.pl
+              Írjon nekünk: support@jovotech.hu
             </a>
           </div>
           
           <p className="text-sm text-gray-500 mt-6">
-            Darmowa dostawa przy każdym zamówieniu biznesowym
+            Ingyenes szállítás minden üzleti megrendeléshez
           </p>
         </div>
       </div>

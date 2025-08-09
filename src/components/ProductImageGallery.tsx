@@ -44,7 +44,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
   if (sortedImages.length === 0) {
     return (
       <div className="aspect-square w-full bg-gray-100 rounded-lg flex items-center justify-center">
-        <p className="text-gray-500">Brak zdjęcia</p>
+        <p className="text-gray-500">Nincs kép</p>
       </div>
     );
   }
@@ -135,7 +135,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
       <div className="relative w-full h-full flex items-center justify-center p-4">
         <img
           src={currentImage.url}
-          alt={currentImage.alt || `${productName} - zdjęcie ${selectedIndex + 1}`}
+          alt={currentImage.alt || `${productName} - kép ${selectedIndex + 1}`}
           className="max-w-full max-h-full object-contain"
         />
         
@@ -187,7 +187,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             <div className="aspect-square w-full relative">
               <img
                 src={currentImage.url}
-                alt={currentImage.alt || `${productName} - zdjęcie ${selectedIndex + 1}`}
+                alt={currentImage.alt || `${productName} - kép ${selectedIndex + 1}`}
                 className="w-full h-full object-contain"
               />
               
@@ -196,7 +196,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                 <button
                   onClick={() => setShowFullscreen(true)}
                   className="absolute top-4 right-4 bg-white rounded-full p-2.5 shadow-md touch-manipulation"
-                  aria-label="Powiększ zdjęcie"
+                  aria-label="Kép nagyítása"
                 >
                   <Maximize2 size={20} className="text-gray-700" />
                 </button>
@@ -254,7 +254,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                   isMobile ? 'opacity-90 border border-gray-300' : 'opacity-0 group-hover:opacity-100 p-2'
                 }`}
                 style={isMobile ? { width: '44px', height: '44px' } : {}}
-                aria-label="Poprzednie zdjęcie"
+                aria-label="Előző kép"
               >
                 <ChevronLeft size={isMobile ? 20 : 24} className="text-gray-700" />
               </button>
@@ -267,7 +267,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                   isMobile ? 'opacity-90 border border-gray-300' : 'opacity-0 group-hover:opacity-100 p-2'
                 }`}
                 style={isMobile ? { width: '44px', height: '44px' } : {}}
-                aria-label="Następne zdjęcie"
+                aria-label="Következő kép"
               >
                 <ChevronRight size={isMobile ? 20 : 24} className="text-gray-700" />
               </button>
@@ -325,7 +325,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
               >
                 <img
                   src={image.url}
-                  alt={image.alt || `${productName} - miniatura ${index + 1}`}
+                  alt={image.alt || `${productName} - előnézeti kép ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
               </button>

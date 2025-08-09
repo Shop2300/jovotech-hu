@@ -14,7 +14,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisible = 7; // Maximum number of page buttons to show
-
+    
     if (totalPages <= maxVisible) {
       // Show all pages if total pages is less than maxVisible
       for (let i = 1; i <= totalPages; i++) {
@@ -23,29 +23,29 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
     } else {
       // Always show first page
       pages.push(1);
-
+      
       if (currentPage > 3) {
         pages.push('...');
       }
-
+      
       // Show pages around current page
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
-
+      
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
-
+      
       if (currentPage < totalPages - 2) {
         pages.push('...');
       }
-
+      
       // Always show last page
       if (totalPages > 1) {
         pages.push(totalPages);
       }
     }
-
+    
     return pages;
   };
 
@@ -59,15 +59,15 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         disabled={currentPage === 1}
         className={`
           px-3 py-2 rounded-lg flex items-center gap-1 font-medium text-sm
-          ${currentPage === 1 
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+          ${currentPage === 1
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
             : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
           }
         `}
-        aria-label="Poprzednia strona"
+        aria-label="Előző oldal"
       >
         <ChevronLeft size={16} />
-        <span className="hidden sm:inline">Poprzedni</span>
+        <span className="hidden sm:inline">Előző</span>
       </button>
 
       {/* Page numbers */}
@@ -75,8 +75,8 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         {pageNumbers.map((page, index) => {
           if (page === '...') {
             return (
-              <span 
-                key={`ellipsis-${index}`} 
+              <span
+                key={`ellipsis-${index}`}
                 className="px-3 py-2 text-gray-500"
               >
                 ···
@@ -93,12 +93,12 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
               onClick={() => onPageChange(pageNumber)}
               className={`
                 px-3 py-2 rounded-lg font-medium text-sm min-w-[40px]
-                ${isActive 
-                  ? 'bg-blue-600 text-white' 
+                ${isActive
+                  ? 'bg-blue-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
                 }
               `}
-              aria-label={`Strana ${pageNumber}`}
+              aria-label={`Oldal ${pageNumber}`}
               aria-current={isActive ? 'page' : undefined}
             >
               {pageNumber}
@@ -113,14 +113,14 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         disabled={currentPage === totalPages}
         className={`
           px-3 py-2 rounded-lg flex items-center gap-1 font-medium text-sm
-          ${currentPage === totalPages 
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+          ${currentPage === totalPages
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
             : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
           }
         `}
-        aria-label="Następna strona"
+        aria-label="Következő oldal"
       >
-        <span className="hidden sm:inline">Dalej</span>
+        <span className="hidden sm:inline">Következő</span>
         <ChevronRight size={16} />
       </button>
     </div>

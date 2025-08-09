@@ -106,7 +106,7 @@ export function CategoryProductsClient({
         return productsCopy.sort((a, b) => b.price - a.price);
       
       case 'alphabetical':
-        return productsCopy.sort((a, b) => a.name.localeCompare(b.name, 'cs'));
+        return productsCopy.sort((a, b) => a.name.localeCompare(b.name, 'hu'));
       
       case 'bestselling':
       case 'recommended':
@@ -128,7 +128,7 @@ export function CategoryProductsClient({
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 text-lg">V této kategorii zatím nejsou žádné produkty.</p>
+        <p className="text-gray-600 text-lg">Ebben a kategóriában még nincsenek termékek.</p>
       </div>
     );
   }

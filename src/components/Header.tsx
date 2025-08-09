@@ -15,18 +15,17 @@ export const Header = memo(function Header() {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
+    
     checkMobile();
-
+    
     // Debounced resize handler for performance
     let timeoutId: NodeJS.Timeout;
     const handleResize = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(checkMobile, 150);
     };
-
-    window.addEventListener('resize', handleResize);
     
+    window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
       clearTimeout(timeoutId);
@@ -38,14 +37,14 @@ export const Header = memo(function Header() {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between py-3">
           {/* Logo */}
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="flex items-center touch-manipulation"
             prefetch={false}
           >
             <Image
               src="/images/galaxyskleplogo.png"
-              alt="Galaxy Sklep - Odzież - hobby - elektronika"
+              alt="Jovotech - Ruházat - hobbi - elektronika"
               width={isMobile ? 180 : 250}
               height={isMobile ? 58 : 80}
               className="h-12 sm:h-16 w-auto"
@@ -63,13 +62,13 @@ export const Header = memo(function Header() {
             </div>
             
             {/* Order Tracking Link */}
-            <Link 
-              href="/order-status" 
+            <Link
+              href="/order-status"
               className="flex text-gray-700 hover:text-gray-900 text-sm font-medium items-center gap-2 whitespace-nowrap transition-colors touch-manipulation"
               prefetch={false}
             >
               <Package size={16} />
-              Śledzenie zamówienia
+              Rendelés követése
             </Link>
           </div>
 

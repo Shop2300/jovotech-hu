@@ -11,8 +11,8 @@ export interface BankTransferData {
 }
 
 /**
- * Generates a Czech SPAYD QR code (works with Czech banks)
- * This format is used by Czech banks like ČSOB, Fio, KB, etc.
+ * Czech SPAYD QR kód generálása (cseh bankokkal működik)
+ * Ezt a formátumot használják a cseh bankok mint ČSOB, Fio, KB, stb.
  */
 export async function generateCzechSPAYDQR(data: BankTransferData): Promise<string> {
   // Czech SPAYD format
@@ -26,7 +26,7 @@ export async function generateCzechSPAYDQR(data: BankTransferData): Promise<stri
     'SPD*1.0',
     `ACC:${accountNumber}`,
     `AM:${amount}`,
-    'CC:PLN', // Currency
+    'CC:HUF', // Currency changed to Hungarian Forint
     `MSG:${data.title}`,
     `RN:${data.recipientName}`
   ].join('*');
@@ -51,10 +51,10 @@ export async function generateCzechSPAYDQR(data: BankTransferData): Promise<stri
 }
 
 /**
- * Generates a Polish bank transfer QR code (format zgodny z polskimi standardami)
+ * Magyar banki átutalási QR kód generálása (kompatibilis a lengyel formátummal)
  */
 export async function generatePolishBankQR(data: BankTransferData): Promise<string> {
-  // Polish QR code standard for bank transfers
+  // Hungarian/Polish QR code standard for bank transfers
   // Format: recipient|account|amount|title|address
   
   const accountNumber = data.recipientAccount.replace(/\s/g, '');
@@ -63,7 +63,7 @@ export async function generatePolishBankQR(data: BankTransferData): Promise<stri
   const qrData = [
     data.recipientName,
     accountNumber,
-    `PLN${formattedAmount}`,
+    `HUF${formattedAmount}`, // Changed to HUF
     data.title,
     data.recipientAddress || ''
   ].join('|');
@@ -88,14 +88,14 @@ export async function generatePolishBankQR(data: BankTransferData): Promise<stri
 }
 
 /**
- * Generates an EPC QR code (European standard - works with many EU banks)
- * This is the most universal format for European banks
+ * EPC QR kód generálása (európai szabvány - működik sok EU bankkal)
+ * Ez a legáltalánosabb formátum európai bankok számára
  */
 export async function generateEPCQRCode(data: BankTransferData): Promise<string> {
   // EPC QR Code format (European Payments Council)
-  // This should work with most European banks including Polish and some Czech banks
+  // Működik a legtöbb európai bankkal, beleértve a magyar és néhány cseh bankot is
   
-  const iban = data.iban || `PL${data.recipientAccount.replace(/\s/g, '')}`;
+  const iban = data.iban || `HU${data.recipientAccount.replace(/\s/g, '')}`;
   
   const epcData = [
     'BCD', // Service tag
@@ -105,7 +105,7 @@ export async function generateEPCQRCode(data: BankTransferData): Promise<string>
     '', // BIC (optional)
     data.recipientName.substring(0, 70), // Beneficiary name (max 70 chars)
     iban, // IBAN
-    `PLN${data.amount.toFixed(2)}`, // Amount in PLN
+    `HUF${data.amount.toFixed(2)}`, // Amount in HUF
     '', // Purpose (optional)
     '', // Structured reference (optional)
     data.title.substring(0, 140), // Unstructured remittance information (max 140 chars)
@@ -132,21 +132,21 @@ export async function generateEPCQRCode(data: BankTransferData): Promise<string>
 }
 
 /**
- * Main function - generates the most appropriate QR code
- * For now, we'll use Polish format as default
+ * Fő funkció - a legmegfelelőbb QR kód generálása
+ * Alapértelmezetten az EPC formátumot használjuk (európai szabvány)
  */
 export async function generateBankTransferQR(data: BankTransferData): Promise<string> {
-  // You can change this to use different formats based on your needs:
-  // - generatePolishBankQR for Polish banks only
-  // - generateCzechSPAYDQR for Czech banks
-  // - generateEPCQRCode for universal European format
+  // Választható formátumok az igényeknek megfelelően:
+  // - generatePolishBankQR magyar/lengyel bankokhoz
+  // - generateCzechSPAYDQR cseh bankokhoz
+  // - generateEPCQRCode univerzális európai formátum
   
-  return generatePolishBankQR(data);
+  return generateEPCQRCode(data); // Changed default to EPC for Hungarian market
 }
 
 /**
- * Generates multiple QR codes for different bank standards
- * Returns an object with different QR code formats
+ * Több QR kód generálása különböző banki szabványokhoz
+ * Egy objektumot ad vissza különböző QR kód formátumokkal
  */
 export async function generateMultipleQRCodes(data: BankTransferData): Promise<{
   polish?: string;

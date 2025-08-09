@@ -16,11 +16,11 @@ export default function QRPreview({ amount = 100 }: QRPreviewProps) {
     const generateQR = async () => {
       try {
         const transferData: BankTransferData = {
-          recipientName: 'Galaxysklep.pl',
-          recipientAccount: '21291000062469800208837403',
+          recipientName: 'Jovotech.hu',
+          recipientAccount: '12600016-10426947-95638648',
           amount,
-          title: 'ZAMOWIENIE',
-          recipientAddress: 'Dobra 40, 00-344 Warszawa'
+          title: 'RENDELES',
+          recipientAddress: '1. máje 535/50, 46007 Liberec'
         };
 
         const qr = await generatePolishBankQR(transferData);
@@ -49,10 +49,10 @@ export default function QRPreview({ amount = 100 }: QRPreviewProps) {
     <div className="flex flex-col items-center">
       <img 
         src={qrCode} 
-        alt="QR kod przykład" 
+        alt="QR kód példa" 
         className="w-20 h-20 opacity-80"
       />
-      <p className="text-xs text-gray-600 mt-1">Płać kodem QR</p>
+      <p className="text-xs text-gray-600 mt-1">Fizessen QR kóddal</p>
     </div>
   );
 }

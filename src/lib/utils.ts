@@ -1,9 +1,9 @@
 export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('pl-PL', {
+  return new Intl.NumberFormat('hu-HU', {
     style: 'currency',
-    currency: 'PLN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    currency: 'HUF',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(price);
 }
 

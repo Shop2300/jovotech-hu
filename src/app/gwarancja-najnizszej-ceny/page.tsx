@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import { Check, ShieldCheck, Mail, Clock } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Gwarancja najniższej ceny - Galaxy Sklep',
-  description: 'Gwarantujemy najniższe ceny na rynku. Znajdziesz taniej? Zwrócimy różnicę!',
+  title: 'Legalacsonyabb ár garancia - Jovotech',
+  description: 'Garantáljuk a legalacsonyabb árakat a piacon. Olcsóbban találta? Visszatérítjük a különbözetet!',
 };
 
 export default function PriceGuaranteePage() {
@@ -19,10 +19,10 @@ export default function PriceGuaranteePage() {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-[#131921] mb-4">
-            Gwarancja najniższej ceny
+            Legalacsonyabb ár garancia
           </h1>
           <p className="text-xl text-gray-600">
-            Znajdziesz taniej? Zwrócimy Ci różnicę!
+            Olcsóbban találta? Visszatérítjük a különbözetet!
           </p>
         </div>
 
@@ -30,12 +30,12 @@ export default function PriceGuaranteePage() {
         <div className="prose prose-lg max-w-none">
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
             <p className="text-lg font-semibold text-[#131921] mb-0">
-              W Galaxy Sklep gwarantujemy najniższe ceny na wszystkie produkty. 
-              Jeśli znajdziesz identyczny produkt taniej u konkurencji, natychmiast zwrócimy Ci różnicę!
+              A Jovotech-nél garantáljuk a legalacsonyabb árakat minden termékre. 
+              Ha ugyanazt a terméket olcsóbban találja a versenytársnál, azonnal visszatérítjük a különbözetet!
             </p>
           </div>
 
-          <h2 className="text-2xl font-bold text-[#131921] mb-6">Jak działa nasza gwarancja?</h2>
+          <h2 className="text-2xl font-bold text-[#131921] mb-6">Hogyan működik a garanciánk?</h2>
           
           <div className="space-y-4 mb-8">
             <div className="flex items-start gap-4">
@@ -45,10 +45,10 @@ export default function PriceGuaranteePage() {
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-[#131921] mb-2">Znajdź niższą cenę</h3>
+                <h3 className="font-semibold text-[#131921] mb-2">Találjon alacsonyabb árat</h3>
                 <p className="text-gray-600">
-                  Jeśli znajdziesz ten sam produkt w innym sklepie internetowym w niższej cenie, 
-                  zapisz link do oferty konkurencji.
+                  Ha ugyanazt a terméket más webáruházban alacsonyabb áron találja, 
+                  mentse el a versenytárs ajánlatának linkjét.
                 </p>
               </div>
             </div>
@@ -60,10 +60,10 @@ export default function PriceGuaranteePage() {
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-[#131921] mb-2">Skontaktuj się z nami</h3>
+                <h3 className="font-semibold text-[#131921] mb-2">Lépjen kapcsolatba velünk</h3>
                 <p className="text-gray-600">
-                  Wyślij nam e-mail na adres <a href="mailto:support@galaxysklep.pl" className="text-[#6da306] underline">support@galaxysklep.pl</a> z 
-                  numerem zamówienia i linkiem do tańszej oferty.
+                  Küldjön e-mailt a <a href="mailto:support@jovotech.hu" className="text-[#6da306] underline">support@jovotech.hu</a> címre 
+                  a rendelési számmal és az olcsóbb ajánlat linkjével.
                 </p>
               </div>
             </div>
@@ -75,62 +75,62 @@ export default function PriceGuaranteePage() {
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-[#131921] mb-2">Otrzymaj zwrot różnicy</h3>
+                <h3 className="font-semibold text-[#131921] mb-2">Kapja meg a különbözetet</h3>
                 <p className="text-gray-600">
-                  Po weryfikacji zgłoszenia, w ciągu 24 godzin zwrócimy Ci różnicę w cenie 
-                  na konto bankowe lub jako kod rabatowy do wykorzystania przy kolejnych zakupach.
+                  A bejelentés ellenőrzése után 24 órán belül visszatérítjük az árkülönbözetet 
+                  bankszámlájára vagy kedvezménykódként a következő vásárlásához.
                 </p>
               </div>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-[#131921] mb-6">Warunki gwarancji</h2>
+          <h2 className="text-2xl font-bold text-[#131921] mb-6">A garancia feltételei</h2>
           
           <div className="bg-gray-50 rounded-lg p-6 mb-8">
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
                 <span className="text-gray-700">
-                  Gwarancja obowiązuje przez <strong>14 dni</strong> od daty zakupu
+                  A garancia a vásárlás dátumától számított <strong>14 napig</strong> érvényes
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
                 <span className="text-gray-700">
-                  Produkt musi być <strong>identyczny</strong> (ten sam model, kolor, rozmiar, stan)
+                  A terméknek <strong>azonosnak</strong> kell lennie (ugyanaz a modell, szín, méret, állapot)
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
                 <span className="text-gray-700">
-                  Oferta konkurencji musi być <strong>aktualnie dostępna</strong> w polskim sklepie internetowym
+                  A versenytárs ajánlatának <strong>jelenleg elérhetőnek</strong> kell lennie magyar webáruházban
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
                 <span className="text-gray-700">
-                  Cena konkurencji musi uwzględniać <strong>koszty dostawy</strong>
+                  A versenytárs árának tartalmaznia kell a <strong>szállítási költséget</strong>
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="text-[#6da306] flex-shrink-0 mt-1" size={20} />
                 <span className="text-gray-700">
-                  Gwarancja nie obejmuje wyprzedaży, promocji typu Black Friday ani ofert limitowanych czasowo
+                  A garancia nem vonatkozik kiárusításokra, Black Friday típusú akciókra vagy időkorlátos ajánlatokra
                 </span>
               </li>
             </ul>
           </div>
 
-          <h2 className="text-2xl font-bold text-[#131921] mb-6">Dlaczego warto?</h2>
+          <h2 className="text-2xl font-bold text-[#131921] mb-6">Miért érdemes?</h2>
           
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-[#6da306] rounded-full flex items-center justify-center mx-auto mb-4">
                 <ShieldCheck className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-semibold text-[#131921] mb-2">Bezpieczeństwo zakupów</h3>
+              <h3 className="font-semibold text-[#131921] mb-2">Biztonságos vásárlás</h3>
               <p className="text-sm text-gray-600">
-                Kupuj z pewnością, że nie przepłacasz
+                Vásároljon azzal a biztonságérzettel, hogy nem fizet túl sokat
               </p>
             </div>
             
@@ -138,9 +138,9 @@ export default function PriceGuaranteePage() {
               <div className="w-16 h-16 bg-[#6da306] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-semibold text-[#131921] mb-2">Szybka weryfikacja</h3>
+              <h3 className="font-semibold text-[#131921] mb-2">Gyors ellenőrzés</h3>
               <p className="text-sm text-gray-600">
-                Odpowiadamy w ciągu 24 godzin
+                24 órán belül válaszolunk
               </p>
             </div>
             
@@ -148,30 +148,30 @@ export default function PriceGuaranteePage() {
               <div className="w-16 h-16 bg-[#6da306] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Mail className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-semibold text-[#131921] mb-2">Prosta procedura</h3>
+              <h3 className="font-semibold text-[#131921] mb-2">Egyszerű eljárás</h3>
               <p className="text-sm text-gray-600">
-                Wystarczy jeden e-mail
+                Elég egyetlen e-mail
               </p>
             </div>
           </div>
 
           {/* Contact CTA */}
           <div className="bg-[#6da306] text-white rounded-lg p-8 text-center">
-            <h3 className="text-2xl font-bold mb-4">Masz pytania?</h3>
+            <h3 className="text-2xl font-bold mb-4">Kérdése van?</h3>
             <p className="mb-6">
-              Skontaktuj się z nami, a nasz zespół chętnie pomoże!
+              Lépjen kapcsolatba velünk, és csapatunk szívesen segít!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a 
-                href="mailto:support@galaxysklep.pl" 
+                href="mailto:support@jovotech.hu" 
                 className="inline-flex items-center justify-center gap-2 bg-white text-[#6da306] px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
               >
                 <Mail size={20} />
-                support@galaxysklep.pl
+                support@jovotech.hu
               </a>
               <div className="inline-flex items-center justify-center gap-2 bg-white/20 px-6 py-3 rounded-lg font-semibold">
                 <Clock size={20} />
-                Pn-Pt: 8:00-18:00
+                H-P: 8:00-18:00
               </div>
             </div>
           </div>

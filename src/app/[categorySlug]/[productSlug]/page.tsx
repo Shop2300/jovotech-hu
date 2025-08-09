@@ -96,6 +96,6 @@ export async function generateMetadata({
   
   return {
     title: `${product.name} - ${category.name}`,
-    description: product.description || `${product.name} z kategorii ${category.name}`,
+    description: product.description || `${product.name} - ${category.name} kategóriából`,
   };
 }

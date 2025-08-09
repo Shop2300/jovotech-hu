@@ -14,7 +14,7 @@ export const PromotionalBar = memo(function PromotionalBar({ showPromo, onClose 
   if (!showPromo) return null;
 
   return (
-    <div 
+    <div
       className="text-white py-2 text-center relative"
       style={{ backgroundColor: '#7db349' }}
     >
@@ -23,15 +23,16 @@ export const PromotionalBar = memo(function PromotionalBar({ showPromo, onClose 
           <Truck size={16} className="inline-block shrink-0" />
           {/* Improved mobile text sizing and line wrapping */}
           <span className="text-xs sm:text-sm">
-            <span className="font-semibold">Darmowa dostawa:</span>
-            <span className="hidden sm:inline"> Przy zakupach powyżej 0 zł dostawa gratis.</span>
-            <span className="sm:hidden"> Powyżej 0 zł gratis!</span>
+            <span className="font-semibold">Ingyenes szállítás:</span>
+            <span className="hidden sm:inline"> 0 Ft feletti vásárlás esetén ingyenes szállítás.</span>
+            <span className="sm:hidden"> 0 Ft felett ingyenes!</span>
           </span>
         </div>
+        
         <button
           onClick={onClose}
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition hover:bg-black/10 touch-manipulation"
-          aria-label="Zamknij powiadomienie"
+          aria-label="Értesítés bezárása"
           // Increased touch target size for mobile (44x44px minimum)
           style={{ minWidth: '44px', minHeight: '44px' }}
         >

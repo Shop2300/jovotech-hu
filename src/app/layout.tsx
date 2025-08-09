@@ -44,41 +44,41 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Galaxysklep.pl - Elektronika, Moda, Akcesoria",
-  description: "Twój sklep z elektroniką, modą i akcesoriami. Router CNC, ultradźwięki, prasy termotransferowe. Najlepsze ceny, darmowa dostawa od 200 zł!",
-  keywords: "elektronika, moda, akcesoria, sklep internetowy, router CNC, ultradźwięki, prasy termotransferowe, lasery, Galaxy Sklep",
-  authors: [{ name: "Galaxy Sklep" }],
-  creator: "Galaxy Sklep",
-  publisher: "Galaxy Sklep",
+  title: "Jovotech.hu - Elektronika, Divat, Kiegészítők",
+  description: "Az Ön webáruháza elektronikával, divattal és kiegészítőkkel. CNC marógép, ultrahang, hőprés. A legjobb árak, ingyenes szállítás 20 000 Ft felett!",
+  keywords: "elektronika, divat, kiegészítők, webáruház, CNC marógép, ultrahang, hőprés, lézerek, Jovotech",
+  authors: [{ name: "Jovotech" }],
+  creator: "Jovotech",
+  publisher: "Jovotech",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://galaxysklep.pl"),
+  metadataBase: new URL("https://jovotech.hu"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Galaxysklep.pl - Elektronika, Moda, Akcesoria",
-    description: "Twój sklep z elektroniką, modą i akcesoriami. Router CNC, ultradźwięki, prasy termotransferowe. Najlepsze ceny!",
-    url: "https://galaxysklep.pl",
-    siteName: "Galaxy Sklep",
-    locale: "pl_PL",
+    title: "Jovotech.hu - Elektronika, Divat, Kiegészítők",
+    description: "Az Ön webáruháza elektronikával, divattal és kiegészítőkkel. CNC marógép, ultrahang, hőprés. A legjobb árak!",
+    url: "https://jovotech.hu",
+    siteName: "Jovotech",
+    locale: "hu_HU",
     type: "website",
     images: [
       {
         url: "/images/galaxyskleplogo.png",
         width: 1200,
         height: 630,
-        alt: "Galaxy Sklep - Twój sklep internetowy",
+        alt: "Jovotech - Az Ön webáruháza",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Galaxysklep.pl - Elektronika, Moda, Akcesoria",
-    description: "Twój sklep z elektroniką, modą i akcesoriami. Najlepsze ceny, szybka dostawa!",
+    title: "Jovotech.hu - Elektronika, Divat, Kiegészítők",
+    description: "Az Ön webáruháza elektronikával, divattal és kiegészítőkkel. A legjobb árak, gyors szállítás!",
     images: ["/images/galaxyskleplogo.png"],
   },
   robots: {
@@ -122,7 +122,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl" suppressHydrationWarning>
+    <html lang="hu" suppressHydrationWarning>
       <head>
         {/* Preconnect to critical domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

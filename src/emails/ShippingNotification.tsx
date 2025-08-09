@@ -46,15 +46,15 @@ export const ShippingNotificationEmail = ({
   deliveryAddress,
   orderDate,
 }: ShippingNotificationEmailProps) => {
-  const previewText = `Zamówienie #${orderNumber} zostało wysłane - Galaxysklep.pl`;
+  const previewText = `A(z) #${orderNumber} rendelést feladtuk – Jovotech.hu`;
 
-  const trackingUrl = `https://www.galaxysklep.pl/order-status/${orderNumber}`;
+  const trackingUrl = `https://jovotech.hu/order-status/${orderNumber}`;
 
-  // Format order date
+  // Format order date (HU locale & Budapest TZ)
   const formatOrderDate = (date: Date | string | undefined) => {
-    if (!date) return new Date().toLocaleDateString('pl-PL');
+    if (!date) return new Date().toLocaleDateString('hu-HU', { timeZone: 'Europe/Budapest' });
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('pl-PL');
+    return dateObj.toLocaleDateString('hu-HU', { timeZone: 'Europe/Budapest' });
   };
 
   return (
@@ -67,17 +67,15 @@ export const ShippingNotificationEmail = ({
           <Section style={header}>
             <Row>
               <Column style={headerLeft}>
-                <Img 
-                  src="https://galaxysklep.pl/images/galaxyskleplogo.png" 
-                  alt="Galaxysklep.pl" 
-                  height="32" 
+                <Img
+                  src="https://galaxysklep.pl/images/galaxyskleplogo.png"
+                  alt="Jovotech.hu"
+                  height="32"
                   style={logo}
                 />
               </Column>
               <Column style={headerRight}>
-                <Text style={headerText}>
-                  ZAMÓWIENIE #{orderNumber}
-                </Text>
+                <Text style={headerText}>RENDELÉS #{orderNumber}</Text>
               </Column>
             </Row>
           </Section>
@@ -87,69 +85,62 @@ export const ShippingNotificationEmail = ({
             <Section style={titleSection}>
               <Text style={confirmationTitle}>
                 <span style={checkmarkStyle}>📦</span>
-                TWOJA PRZESYŁKA JEST W DRODZE
+                CSOMAGJA ÚTON VAN
               </Text>
             </Section>
 
             {/* Order Description */}
             <Text style={orderDescription}>
-              Twoje zamówienie nr {orderNumber} z dnia {formatOrderDate(orderDate)} zostało pomyślnie wysłane! 
-              Przesyłka {trackingNumber} jest już w drodze do Ciebie. Twoje zamówienie może być dostarczone 
-              w kilku przesyłkach, aby zapewnić jak najszybszą dostawę poszczególnych produktów.
+              A(z) {orderNumber} számú rendelése {formatOrderDate(orderDate)} dátummal sikeresen feladásra került.
+              A(z) {trackingNumber} azonosítójú küldemény már úton van Önhöz. Előfordulhat, hogy a rendelést
+              a gyorsabb kiszállítás érdekében több csomagban kézbesítjük.
             </Text>
 
             {/* Tracking Information Box */}
             <Section style={infoBlock}>
               <Row>
                 <Column style={infoColumn}>
-                  <Text style={infoLabel}>NUMER ŚLEDZENIA</Text>
-                  <Text style={trackingNumberText}>
-                    {trackingNumber}
-                  </Text>
-                  <Text style={carrierText}>
-                    {carrier}
-                  </Text>
+                  <Text style={infoLabel}>KÖVETÉSI SZÁM</Text>
+                  <Text style={trackingNumberText}>{trackingNumber}</Text>
+                  <Text style={carrierText}>{carrier}</Text>
                 </Column>
                 <Column style={infoColumn}>
-                  <Text style={infoLabel}>PRZEWIDYWANA DOSTAWA</Text>
-                  <Text style={infoText}>
-                    1 do 3 dni roboczych
-                  </Text>
+                  <Text style={infoLabel}>VÁRHATÓ KÉZBESÍTÉS</Text>
+                  <Text style={infoText}>{estimatedDelivery || '1–3 munkanap'}</Text>
                 </Column>
               </Row>
             </Section>
 
             {/* Track Button */}
             <Section style={buttonSection}>
-              <Button
-                style={trackButton}
-                href={trackingUrl}
-              >
-                ŚLEDŹ PRZESYŁKĘ
+              <Button style={trackButton} href={trackingUrl}>
+                CSOMAG KÖVETÉSE
               </Button>
             </Section>
 
             {/* Delivery Address */}
             <Section style={addressSection}>
-              <Text style={addressLabel}>ADRES DOSTAWY</Text>
+              <Text style={addressLabel}>SZÁLLÍTÁSI CÍM</Text>
               <Text style={addressText}>
-                {customerName}<br />
-                {deliveryAddress.street}<br />
+                {customerName}
+                <br />
+                {deliveryAddress.street}
+                <br />
                 {deliveryAddress.postalCode} {deliveryAddress.city}
               </Text>
             </Section>
 
             {/* Order Items */}
             <Section style={itemsSection}>
-              <Text style={itemsSectionTitle}>TWOJE ZAMÓWIENIE</Text>
+              <Text style={itemsSectionTitle}>RENDELÉS TÉTELEI</Text>
               <table style={itemsTable}>
                 <tbody>
                   {items.map((item, index) => (
                     <tr key={index}>
                       <td style={tableCell}>
                         {item.productSlug && item.categorySlug ? (
-                          <Link 
-                            href={`https://www.galaxysklep.pl/${item.categorySlug}/${item.productSlug}`}
+                          <Link
+                            href={`https://jovotech.hu/${item.categorySlug}/${item.productSlug}`}
                             style={productNameLink}
                           >
                             {item.name}
@@ -167,23 +158,30 @@ export const ShippingNotificationEmail = ({
 
             {/* Contact */}
             <Text style={contactText}>
-              Pytania? Skontaktuj się z nami:<br />
-              <Link href="mailto:support@galaxysklep.pl" style={contactLink}>support@galaxysklep.pl</Link>
+              Kérdése van? Lépjen kapcsolatba velünk:
+              <br />
+              <Link href="mailto:support@jovotech.hu" style={contactLink}>
+                support@jovotech.hu
+              </Link>
             </Text>
 
             {/* Footer - Same as OrderConfirmation */}
             <Hr style={footerDivider} />
-            
+
             {/* Combined Company Info and Footer */}
             <Section style={companyInfo}>
               <Text style={companyText}>
-                Dziękujemy za zakupy w Galaxysklep.pl!<br />
-                Z pozdrowieniami,<br />
-                <strong>Zespół Galaxysklep.pl</strong>
-                <br /><br />
-                <strong>Galaxysklep.pl</strong><br />
-                <Link href="https://galaxysklep.pl" style={companyLink}>
-                  www.galaxysklep.pl
+                Köszönjük a vásárlást a Jovotech.hu-n!
+                <br />
+                Üdvözlettel,
+                <br />
+                <strong>A Jovotech.hu csapata</strong>
+                <br />
+                <br />
+                <strong>Jovotech.hu</strong>
+                <br />
+                <Link href="https://jovotech.hu" style={companyLink}>
+                  www.jovotech.hu
                 </Link>
               </Text>
             </Section>
@@ -191,16 +189,17 @@ export const ShippingNotificationEmail = ({
             {/* Legal Text */}
             <Section style={legalSection}>
               <Text style={legalText}>
-                W przypadku uszkodzenia przesyłki podczas transportu, należy niezwłocznie poinformować dostawcę i upewnić się, 
-                że fakt ten zostanie odpowiednio odnotowany w protokole przewozowym. Zalecamy zachowanie wszystkich materiałów 
-                opakowaniowych i niezwłoczny kontakt z nami pod adresem e-mail support@galaxysklep.pl. Faktury za zamówienie 
-                są wysyłane wyłącznie elektronicznie na adres e-mail podany przy składaniu zamówienia. Prosimy o sprawdzenie 
-                poprawności podanego adresu e-mail i zachowanie kopii faktur dla własnych potrzeb. Przetwarzamy Państwa dane 
-                osobowe zgodnie z obowiązującymi przepisami o ochronie danych osobowych oraz naszą Polityką Prywatności. 
-                Dane osobowe nie są przekazywane osobom trzecim bez Państwa wyraźnej zgody, z wyjątkiem podmiotów przetwarzających 
-                niezbędnych do realizacji dostawy przesyłki. Szczegółowe informacje znajdują się na naszej stronie internetowej 
-                w sekcji Polityka Prywatności. W przypadku jakichkolwiek pytań lub opinii prosimy o kontakt pod adresem 
-                support@galaxysklep.pl. Szczegóły dotyczące warunków zakupu znajdują się w sekcji Regulamin.
+                Amennyiben a csomag szállítás közben megsérült, kérjük, azonnal jelezze a fuvarozónak,
+                és győződjön meg róla, hogy az eset rögzítésre kerül a jegyzőkönyvben. Kérjük, őrizze meg
+                az összes csomagolóanyagot, és vegye fel velünk a kapcsolatot a support@jovotech.hu címen.
+                A rendeléshez tartozó számlákat kizárólag elektronikusan küldjük ki a megrendelésnél megadott
+                e-mail címre. Kérjük, ellenőrizze az e-mail cím helyességét, és őrizze meg a számlák
+                másolatát. Személyes adatait az irányadó adatvédelmi jogszabályoknak és az Adatkezelési
+                tájékoztatónknak megfelelően kezeljük. Az adatokat harmadik félnek nem adjuk át az Ön
+                kifejezett hozzájárulása nélkül, kivéve a szállításhoz szükséges adatfeldolgozókat.
+                Részletek a weboldalunkon az Adatkezelési tájékoztatóban találhatók. Kérdés vagy észrevétel
+                esetén keressen minket a support@jovotech.hu címen. A vásárlás feltételeire vonatkozó
+                részletek az Általános Szerződési Feltételek (ÁSZF) menüpontban érhetők el.
               </Text>
             </Section>
           </Section>
@@ -225,7 +224,7 @@ const container = {
 
 const header = {
   backgroundColor: '#fafafa',
-  borderBottom: '1px solid #e0e0e0',
+  borderBottom: '1px solid #e0e0e0', // ✅ fixed
   padding: '16px 24px',
 };
 

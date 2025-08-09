@@ -24,43 +24,43 @@ const getDateFromDaysAgo = (daysAgo: number): string => {
 const recentReviews: Review[] = [
   {
     id: 1,
-    author: 'Katarzyna M.',
+    author: 'Kovács Katalin',
     rating: 5,
     daysAgo: 2, // 2 days ago
     verified: true,
-    product: 'Router CNC 3040',
-    title: 'Świetny sklep, polecam!',
-    content: 'Zamówiłam router CNC i jestem bardzo zadowolona. Szybka dostawa, produkt zgodny z opisem, a obsługa klienta na najwyższym poziomie. Dodatkowo otrzymałam rabat jako stały klient!'
+    product: 'CNC marógép 3040',
+    title: 'Kiváló webáruház, ajánlom!',
+    content: 'CNC marógépet rendeltem és nagyon elégedett vagyok. Gyors szállítás, a termék megfelel a leírásnak, az ügyfélszolgálat pedig a legmagasabb szinten működik. Ráadásul törzsVásárlóként kedvezményt is kaptam!'
   },
   {
     id: 2,
-    author: 'Piotr K.',
+    author: 'Nagy Péter',
     rating: 5,
     daysAgo: 5, // 5 days ago
     verified: true,
-    product: 'Ultradźwięki 40kHz',
-    title: 'Profesjonalna obsługa',
-    content: 'Kupiłem ultradźwięki do warsztatu. Przed zakupem miałem wiele pytań - obsługa cierpliwie wszystko wyjaśniła. Przesyłka dotarła następnego dnia, świetnie zapakowana.'
+    product: 'Ultrahangos tisztító 40kHz',
+    title: 'Professzionális kiszolgálás',
+    content: 'Ultrahangos tisztítót vásároltam a műhelyembe. Vásárlás előtt sok kérdésem volt - az ügyfélszolgálat türelmesen megválaszolt mindent. A csomag másnap megérkezett, kiválóan becsomagolva.'
   },
   {
     id: 3,
-    author: 'Anna W.',
+    author: 'Szabó Anna',
     rating: 4,
     daysAgo: 7, // 7 days ago
     verified: true,
-    product: 'Prasa termotransferowa 38x38',
-    title: 'Dobry produkt, szybka wysyłka',
-    content: 'Prasa działa bez zarzutu. Jedyny minus to brak polskiej instrukcji, ale support szybko przesłał mi tłumaczenie. Ogólnie jestem zadowolona z zakupu.'
+    product: 'Hőprés 38x38',
+    title: 'Jó termék, gyors szállítás',
+    content: 'A hőprés kifogástalanul működik. Egyetlen mínusz, hogy nem volt magyar nyelvű útmutató, de a support gyorsan elküldött egy fordítást. Összességében elégedett vagyok a vásárlással.'
   },
   {
     id: 4,
-    author: 'Marek J.',
+    author: 'Tóth Márk',
     rating: 5,
     daysAgo: 12, // 12 days ago
     verified: true,
-    product: 'Laser grawerujący 80W',
-    title: 'Najlepsza cena na rynku',
-    content: 'Długo szukałem lasera w dobrej cenie. Galaxy Sklep miał najlepszą ofertę, a do tego darmową dostawę. Urządzenie działa idealnie, polecam!'
+    product: 'Gravírozó lézer 80W',
+    title: 'A legjobb ár a piacon',
+    content: 'Sokáig kerestem jó árú lézert. A Jovotech.hu-nál volt a legjobb ajánlat, ráadásul ingyenes szállítással. A berendezés tökéletesen működik, ajánlom!'
   }
 ];
 
@@ -70,7 +70,7 @@ export function RecentReviews() {
       <div className="max-w-screen-2xl mx-auto px-6">
         <h2 className="text-2xl font-bold text-center mb-8">
           <Link href="/ocena-sklepu" className="text-black hover:text-blue-600 transition-colors">
-            Ostatnie opinie klientów →
+            Legutóbbi vásárlói vélemények →
           </Link>
         </h2>
         
@@ -90,7 +90,7 @@ export function RecentReviews() {
                     {review.verified && (
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" />
-                        Zweryfikowany
+                        Ellenőrzött
                       </span>
                     )}
                   </div>
@@ -110,7 +110,7 @@ export function RecentReviews() {
                       ))}
                     </div>
                     <span className="text-sm text-gray-500">
-                      {new Date(reviewDate).toLocaleDateString('pl-PL', { 
+                      {new Date(reviewDate).toLocaleDateString('hu-HU', { 
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric'
@@ -139,7 +139,7 @@ export function RecentReviews() {
                   href="/ocena-sklepu" 
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center"
                 >
-                  Czytaj więcej →
+                  Tovább olvasom →
                 </Link>
               </div>
             );
@@ -161,11 +161,11 @@ export function RecentReviews() {
                   />
                 ))}
               </div>
-              <span>na podstawie 201 opinii</span>
+              <span>201 vélemény alapján</span>
             </div>
             <div className="hidden md:block h-6 w-px bg-gray-300"></div>
             <div className="hidden md:block">
-              <span className="font-semibold">98%</span> klientów poleca nasz sklep
+              <span className="font-semibold">98%</span> vásárlónk ajánlja webáruházunkat
             </div>
           </div>
         </div>

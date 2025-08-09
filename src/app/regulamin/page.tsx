@@ -1,365 +1,365 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Regulamin - Galaxy Sklep',
-  description: 'Regulamin sklepu internetowego Galaxy Sklep - warunki sprzedaży, zwroty, reklamacje',
+  title: 'Általános Szerződési Feltételek - Jovotech',
+  description: 'A Jovotech online áruház általános szerződési feltételei - értékesítési feltételek, visszaküldés, reklamáció',
 }
 
 export default function TermsPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8 text-center">Regulamin</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center">Általános Szerződési Feltételek</h1>
       
       <div className="prose prose-lg max-w-none">
-        <p className="text-center font-bold mb-4">REGULAMIN SKLEPU INTERNETOWEGO</p>
+        <p className="text-center font-bold mb-4">Adatvédelmi szabályzat</p>
         
         <div className="text-center mb-6">
-          <p><strong>Nazwa firmy:</strong> Galaxy Sklep</p>
-          <p><strong>Adres:</strong> 1. máje 535/50, 46007 Liberec, Czechy</p>
-          <p><strong>NIP:</strong> 04688465</p>
-          <p><strong>Forma prawna:</strong> Działalność gospodarcza</p>
-          <p><strong>Email:</strong> <a href="mailto:support@galaxysklep.pl" className="text-blue-600 hover:underline">support@galaxysklep.pl</a></p>
-          <p className="mt-2 text-sm italic">(Siedziba firmy - korespondencja prosimy wysyłać na e-mail)</p>
+          <p><strong>Cégnév:</strong> Jovotech</p>
+          <p><strong>Cím:</strong> 1. máje 535/50, 46007 Liberec III-Jeřáb, Csehország</p>
+          <p><strong>Adószám:</strong> 04688465</p>
+          <p><strong>Jogi forma:</strong> Vállalkozás</p>
+          <p><strong>Email:</strong> <a href="mailto:support@jovotech.hu" className="text-blue-600 hover:underline">support@jovotech.hu</a></p>
+          <p className="mt-2 text-sm italic">(Székhely - levelezést kérjük e-mailben)</p>
         </div>
 
         <p className="text-center mb-6">
-          dla sprzedaży towarów za pośrednictwem sklepu internetowego dostępnego pod adresem internetowym www.galaxysklep.pl
+          a www.jovotech.hu internetes címen elérhető online áruházon keresztül történő áruértékesítésre vonatkozóan
         </p>
 
         <ol className="list-decimal space-y-6">
           <li>
-            <strong>POSTANOWIENIA WSTĘPNE</strong>
+            <strong>BEVEZETŐ RENDELKEZÉSEK</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Niniejszy regulamin (dalej jako „<strong>regulamin</strong>") Galaxy Sklep z siedzibą przy ul. 1. máje 535/50, 46007 Liberec, Czechy, NIP: 04688465 (dalej jako „<strong>sprzedawca</strong>") reguluje zgodnie z przepisami prawa polskiego wzajemne prawa i obowiązki stron umowy powstałe w związku lub na podstawie umowy sprzedaży (dalej jako „<strong>umowa sprzedaży</strong>") zawieranej między sprzedawcą a inną osobą fizyczną (dalej jako „<strong>kupujący</strong>") za pośrednictwem sklepu internetowego sprzedawcy. Sklep internetowy jest prowadzony przez sprzedawcę na stronie internetowej dostępnej pod adresem www.galaxysklep.pl (dalej jako „<strong>strona internetowa</strong>"), za pośrednictwem interfejsu strony internetowej (dalej jako „<strong>interfejs sklepu internetowego</strong>").
+                Jelen szabályzat (a továbbiakban: „<strong>szabályzat</strong>") a Jovotech, székhelye: 1. máje 535/50, 46007 Liberec III-Jeřáb, Csehország, adószám: 04688465 (a továbbiakban: „<strong>eladó</strong>") a magyar jogszabályoknak megfelelően szabályozza az eladó és más természetes személy (a továbbiakban: „<strong>vevő</strong>") között az eladó online áruházán keresztül létrejött adásvételi szerződés (a továbbiakban: „<strong>adásvételi szerződés</strong>") alapján vagy azzal kapcsolatban létrejött kölcsönös jogokat és kötelezettségeket. Az online áruházat az eladó a www.jovotech.hu címen elérhető weboldalon (a továbbiakban: „<strong>weboldal</strong>") működteti, a weboldal felületén keresztül (a továbbiakban: „<strong>online áruház felülete</strong>").
               </li>
               <li>
-                Regulamin nie ma zastosowania w przypadkach, gdy osoba zamierzająca nabyć towar od sprzedawcy jest osobą prawną lub osobą, która składa zamówienie w ramach swojej działalności gospodarczej lub w ramach samodzielnego wykonywania zawodu.
+                A szabályzat nem alkalmazandó azokban az esetekben, amikor az eladótól árut vásárolni szándékozó személy jogi személy vagy olyan személy, aki üzleti tevékenysége vagy önálló szakmai tevékenysége keretében rendel.
               </li>
               <li>
-                Postanowienia odbiegające od regulaminu mogą zostać uzgodnione w umowie sprzedaży. Odmienne uzgodnienia w umowie sprzedaży mają pierwszeństwo przed postanowieniami regulaminu.
+                A szabályzattól eltérő rendelkezésekben az adásvételi szerződésben lehet megállapodni. Az adásvételi szerződésben szereplő eltérő megállapodások elsőbbséget élveznek a szabályzat rendelkezéseivel szemben.
               </li>
               <li>
-                Postanowienia regulaminu stanowią integralną część umowy sprzedaży. Umowa sprzedaży i regulamin są sporządzone w języku polskim. Umowę sprzedaży można zawrzeć w języku polskim.
+                A szabályzat rendelkezései az adásvételi szerződés szerves részét képezik. Az adásvételi szerződés és a szabályzat magyar nyelven készül. Az adásvételi szerződés magyar nyelven köthető meg.
               </li>
               <li>
-                Treść regulaminu może być zmieniana lub uzupełniana przez sprzedawcę. Niniejsze postanowienie nie narusza praw i obowiązków powstałych w okresie obowiązywania poprzedniej wersji regulaminu.
+                A szabályzat tartalmát az eladó módosíthatja vagy kiegészítheti. Ez a rendelkezés nem érinti a szabályzat korábbi verziójának hatálya alatt keletkezett jogokat és kötelezettségeket.
               </li>
             </ol>
           </li>
 
           <li>
-            <strong>KONTO UŻYTKOWNIKA</strong>
+            <strong>FELHASZNÁLÓI FIÓK</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Na podstawie rejestracji kupującego dokonanej na stronie internetowej, kupujący może uzyskać dostęp do swojego interfejsu użytkownika. Ze swojego interfejsu użytkownika kupujący może składać zamówienia na towary (dalej jako „<strong>konto użytkownika</strong>"). Jeśli interfejs sklepu internetowego to umożliwia, kupujący może składać zamówienia na towary także bez rejestracji bezpośrednio z interfejsu sklepu internetowego.
+                A vevő weboldalon történő regisztrációja alapján a vevő hozzáférhet saját felhasználói felületéhez. Felhasználói felületéről a vevő megrendeléseket adhat le árukra (a továbbiakban: „<strong>felhasználói fiók</strong>"). Ha az online áruház felülete lehetővé teszi, a vevő regisztráció nélkül is leadhat megrendeléseket közvetlenül az online áruház felületéről.
               </li>
               <li>
-                Przy rejestracji na stronie internetowej oraz przy składaniu zamówienia kupujący jest zobowiązany podać poprawnie i zgodnie z prawdą wszystkie dane. Dane podane na koncie użytkownika kupujący jest zobowiązany aktualizować przy każdej ich zmianie. Dane podane przez kupującego na koncie użytkownika i przy składaniu zamówienia są przez sprzedawcę uznawane za prawidłowe.
+                A weboldalon történő regisztráció és a megrendelés leadása során a vevő köteles minden adatot helyesen és a valóságnak megfelelően megadni. A felhasználói fiókban megadott adatokat a vevő köteles minden változás esetén frissíteni. Az eladó a vevő által a felhasználói fiókban és a megrendelés leadásakor megadott adatokat helyesnek tekinti.
               </li>
               <li>
-                Dostęp do konta użytkownika jest zabezpieczony nazwą użytkownika i hasłem. Kupujący jest zobowiązany zachować poufność informacji niezbędnych do uzyskania dostępu do jego konta użytkownika.
+                A felhasználói fiókhoz való hozzáférés felhasználónévvel és jelszóval védett. A vevő köteles megőrizni a felhasználói fiókjához való hozzáféréshez szükséges információk bizalmasságát.
               </li>
               <li>
-                Kupujący nie jest uprawniony do udostępniania korzystania z konta użytkownika osobom trzecim.
+                A vevő nem jogosult harmadik személyek számára engedélyezni a felhasználói fiók használatát.
               </li>
               <li>
-                Sprzedawca może usunąć konto użytkownika, w szczególności w przypadku, gdy kupujący nie korzysta ze swojego konta użytkownika dłużej niż rok lub w przypadku, gdy kupujący naruszy swoje obowiązki wynikające z umowy sprzedaży (w tym regulaminu).
+                Az eladó törölheti a felhasználói fiókot, különösen akkor, ha a vevő több mint egy éve nem használja felhasználói fiókját, vagy ha a vevő megszegi az adásvételi szerződésből (beleértve a szabályzatot) eredő kötelezettségeit.
               </li>
               <li>
-                Kupujący przyjmuje do wiadomości, że konto użytkownika może być niedostępne w sposób ciągły, w szczególności ze względu na niezbędną konserwację sprzętu i oprogramowania sprzedawcy lub niezbędną konserwację sprzętu i oprogramowania osób trzecich.
+                A vevő tudomásul veszi, hogy a felhasználói fiók nem feltétlenül érhető el folyamatosan, különösen az eladó hardverének és szoftverének szükséges karbantartása vagy harmadik felek hardverének és szoftverének szükséges karbantartása miatt.
               </li>
             </ol>
           </li>
 
           <li>
-            <strong>ZAWARCIE UMOWY SPRZEDAŻY</strong>
+            <strong>AZ ADÁSVÉTELI SZERZŐDÉS MEGKÖTÉSE</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Cała prezentacja towarów umieszczona w interfejsie sklepu internetowego ma charakter informacyjny i sprzedawca nie jest zobowiązany do zawarcia umowy sprzedaży dotyczącej tego towaru.
+                Az online áruház felületén elhelyezett áruk teljes bemutatása tájékoztató jellegű, és az eladó nem köteles adásvételi szerződést kötni ezen árukra vonatkozóan.
               </li>
               <li>
-                Interfejs sklepu internetowego zawiera informacje o towarach, w tym podanie cen poszczególnych towarów i kosztów zwrotu towaru, jeśli towar ten ze swojej natury nie może być zwrócony zwykłą drogą pocztową. Ceny towarów są podane z podatkiem od towarów i usług (VAT) oraz wszystkimi powiązanymi opłatami. Ceny towarów pozostają w mocy przez okres, w którym są wyświetlane w interfejsie sklepu internetowego. Niniejsze postanowienie nie ogranicza możliwości sprzedawcy do zawarcia umowy sprzedaży na indywidualnie uzgodnionych warunkach.
+                Az online áruház felülete információkat tartalmaz az árukról, beleértve az egyes áruk árának feltüntetését és az áru visszaküldésének költségeit, ha az áru természeténél fogva nem küldhető vissza szokásos postai úton. Az áruk árai tartalmazzák az általános forgalmi adót (ÁFA) és minden kapcsolódó díjat. Az áruk árai addig érvényesek, amíg az online áruház felületén megjelennek. Ez a rendelkezés nem korlátozza az eladó lehetőségét arra, hogy egyedileg egyeztetett feltételekkel kössön adásvételi szerződést.
               </li>
               <li>
-                Interfejs sklepu internetowego zawiera również informacje o kosztach związanych z pakowaniem i dostawą towarów oraz o sposobie i czasie dostawy towarów. Informacje o kosztach związanych z pakowaniem i dostawą towarów podane w interfejsie sklepu internetowego obowiązują tylko w przypadkach, gdy towar jest dostarczany na terytorium Rzeczypospolitej Polskiej.
+                Az online áruház felülete az áruk csomagolásával és szállításával kapcsolatos költségekről, valamint az áruk szállítási módjáról és idejéről is tartalmaz információkat. Az áruk csomagolásával és szállításával kapcsolatos költségekre vonatkozó információk csak akkor érvényesek, ha az árut Magyarország területén szállítják.
               </li>
               <li>
-                W celu zamówienia towaru kupujący wypełnia formularz zamówienia w interfejsie sklepu internetowego. Formularz zamówienia zawiera w szczególności informacje o:
+                Az áru megrendeléséhez a vevő kitölti a megrendelési űrlapot az online áruház felületén. A megrendelési űrlap különösen a következő információkat tartalmazza:
                 <ul className="list-disc ml-6 mt-2">
-                  <li>zamawianym towarze (zamawiany towar kupujący „umieszcza" w elektronicznym koszyku zakupowym interfejsu sklepu internetowego),</li>
-                  <li>sposobie zapłaty ceny zakupu towaru, dane o wymaganym sposobie dostawy zamawianego towaru oraz</li>
-                  <li>informacje o kosztach związanych z dostawą towaru (dalej łącznie jako „<strong>zamówienie</strong>").</li>
+                  <li>a megrendelt áruról szóló információk (a megrendelt árut a vevő az online áruház felületének elektronikus kosarába „helyezi"),</li>
+                  <li>az áru vételárának fizetési módjáról, a megrendelt áru szükséges szállítási módjáról szóló adatok, valamint</li>
+                  <li>az áru szállításával kapcsolatos költségekről szóló információk (a továbbiakban együtt: „<strong>megrendelés</strong>").</li>
                 </ul>
               </li>
               <li>
-                Przed wysłaniem zamówienia do sprzedawcy kupujący może sprawdzić i zmienić dane wprowadzone do zamówienia, również w odniesieniu do możliwości wykrywania i poprawiania błędów powstałych przy wprowadzaniu danych do zamówienia. Kupujący wysyła zamówienie sprzedawcy poprzez kliknięcie przycisku „Zamów z obowiązkiem zapłaty". Dane podane w zamówieniu są przez sprzedawcę uznawane za prawidłowe. Sprzedawca niezwłocznie po otrzymaniu zamówienia potwierdza jego otrzymanie kupującemu pocztą elektroniczną na adres poczty elektronicznej kupującego podany na koncie użytkownika lub w zamówieniu (dalej jako „<strong>adres elektroniczny kupującego</strong>").
+                A megrendelés eladónak történő elküldése előtt a vevő ellenőrizheti és módosíthatja a megrendelésbe beírt adatokat, beleértve a megrendelésbe való adatbevitel során keletkezett hibák észlelésének és javításának lehetőségét is. A vevő a „Megrendelés fizetési kötelezettséggel" gombra kattintva küldi el a megrendelést az eladónak. A megrendelésben megadott adatokat az eladó helyesnek tekinti. Az eladó a megrendelés beérkezése után haladéktalanul visszaigazolja annak átvételét a vevőnek elektronikus levélben a vevő felhasználói fiókjában vagy a megrendelésben megadott e-mail címre (a továbbiakban: „<strong>vevő elektronikus címe</strong>").
               </li>
               <li>
-                Sprzedawca jest zawsze uprawniony, w zależności od charakteru zamówienia (ilość towaru, wysokość ceny zakupu, przewidywane koszty transportu), poprosić kupującego o dodatkowe potwierdzenie zamówienia (na przykład pisemnie lub telefonicznie).
+                Az eladó mindig jogosult a megrendelés jellegétől függően (áru mennyisége, vételár összege, várható szállítási költségek) további megerősítést kérni a vevőtől a megrendelésről (például írásban vagy telefonon).
               </li>
               <li>
-                Stosunek umowny między sprzedawcą a kupującym powstaje z chwilą doręczenia przyjęcia zamówienia (akceptacji), które jest wysyłane przez sprzedawcę kupującemu pocztą elektroniczną na adres poczty elektronicznej kupującego.
+                Az eladó és a vevő közötti szerződéses viszony a megrendelés elfogadásának (visszaigazolásának) kézbesítésével jön létre, amelyet az eladó elektronikus levélben küld a vevő elektronikus címére.
               </li>
               <li>
-                Kupujący wyraża zgodę na użycie środków komunikacji na odległość przy zawieraniu umowy sprzedaży. Koszty poniesione przez kupującego przy korzystaniu ze środków komunikacji na odległość w związku z zawarciem umowy sprzedaży (koszty połączenia internetowego, koszty rozmów telefonicznych) ponosi sam kupujący, przy czym koszty te nie różnią się od stawki podstawowej.
+                A vevő hozzájárul a távközlési eszközök használatához az adásvételi szerződés megkötése során. A vevő által az adásvételi szerződés megkötésével kapcsolatban a távközlési eszközök használata során felmerült költségeket (internetkapcsolat költségei, telefonhívások költségei) maga a vevő viseli, azzal, hogy ezek a költségek nem térnek el az alapdíjtól.
               </li>
             </ol>
           </li>
 
           <li>
-            <strong>CENA TOWARU I WARUNKI PŁATNOŚCI</strong>
+            <strong>AZ ÁRU ÁRA ÉS FIZETÉSI FELTÉTELEK</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Cenę towaru i ewentualne koszty związane z dostawą towaru zgodnie z umową sprzedaży kupujący może uiścić sprzedawcy w następujący sposób:
+                Az áru árát és az adásvételi szerződés szerinti áru szállításával kapcsolatos esetleges költségeket a vevő az alábbi módon fizetheti meg az eladónak:
                 <ul className="list-disc ml-6 mt-2">
-                  <li>gotówką przy odbiorze w miejscu określonym przez kupującego w zamówieniu;</li>
-                  <li>bezgotówkowo przelewem na rachunek sprzedawcy IBAN: PL21 2910 0006 2469 8002 0883 7403, BIC/SWIFT: BMPBPLPP, prowadzony w Aion S.A. Spolka Akcyjna Oddzial w Polsce, Dobra 40, 00-344, Warszawa, Poland (dalej jako „<strong>rachunek sprzedawcy</strong>");</li>
-                  <li>bezgotówkowo za pośrednictwem systemu płatności;</li>
-                  <li>bezgotówkowo kartą płatniczą;</li>
-                  <li>gotówką lub kartą płatniczą przy odbiorze osobistym w punkcie odbioru;</li>
-                  <li>za pośrednictwem kredytu udzielonego przez osobę trzecią.</li>
+                  <li>készpénzben átvételkor a vevő által a megrendelésben meghatározott helyen;</li>
+                  <li>átutalással az eladó számlájára IBAN: HU86126000161042694795638648, BIC/SWIFT: TRWIBEBBXXX, WISE EUROPE S.A., Rue du Trône 100, 1050 Brussels vezetett számlára (a továbbiakban: „<strong>eladó számlája</strong>");</li>
+                  <li>készpénz nélkül fizetési rendszeren keresztül;</li>
+                  <li>készpénz nélkül bankkártyával;</li>
+                  <li>készpénzben vagy bankkártyával személyes átvételkor az átvételi ponton;</li>
+                  <li>harmadik fél által nyújtott hitelen keresztül.</li>
                 </ul>
               </li>
               <li>
-                Przy wyborze płatności po odbiorze (płatność na fakturę) klient jest zobowiązany zapłacić kwotę wskazaną na fakturze w terminie płatności, który standardowo wynosi <strong>14 dni</strong> od daty wystawienia faktury, chyba że uzgodniono inaczej. W przypadku niedotrzymania tego terminu sprzedawca ma prawo do odsetek za opóźnienie w wysokości ustawowej oraz do kary umownej w wysokości 10% należnej kwoty.
+                Utánvétes fizetés választása esetén (számlára történő fizetés) az ügyfél köteles a számlán feltüntetett összeget a fizetési határidőn belül megfizetni, amely általában a számla kiállításától számított <strong>14 nap</strong>, kivéve, ha másképp állapodtak meg. E határidő be nem tartása esetén az eladónak joga van törvényes késedelmi kamatra, valamint a fizetendő összeg 10%-ának megfelelő kötbérre.
               </li>
               <li>
-                Klient jest ponadto zobowiązany pokryć wszelkie koszty związane z windykacją należnej kwoty, w tym opłaty prawne i opłaty za usługi windykacyjne. Sprzedawca zastrzega sobie prawo do wstrzymania dalszych dostaw towarów lub usług do czasu pełnej spłaty należnej kwoty wraz z odsetkami i karą umowną.
+                Az ügyfél továbbá köteles fedezni a fizetendő összeg behajtásával kapcsolatos minden költséget, beleértve a jogi díjakat és a behajtási szolgáltatások díjait. Az eladó fenntartja a jogot, hogy felfüggessze a további áruszállításokat vagy szolgáltatásokat a fizetendő összeg kamatokkal és kötbérrel együtt történő teljes kifizetéséig.
               </li>
               <li>
-                Wraz z ceną zakupu kupujący jest zobowiązany zapłacić sprzedawcy również koszty związane z pakowaniem i dostawą towaru w uzgodnionej wysokości. O ile nie wskazano wyraźnie inaczej, przez cenę zakupu rozumie się również koszty związane z dostawą towaru.
+                A vételárral együtt a vevő köteles az eladónak megfizetni az áru csomagolásával és szállításával kapcsolatos költségeket is a megállapodott összegben. Hacsak kifejezetten másként nem jelezzük, a vételár magában foglalja az áru szállításával kapcsolatos költségeket is.
               </li>
               <li>
-                Sprzedawca nie wymaga od kupującego zaliczki ani innej podobnej płatności. Nie narusza to postanowień art. 4.6 regulaminu dotyczących obowiązku zapłaty ceny zakupu towaru z góry.
+                Az eladó nem követel meg a vevőtől előleget vagy más hasonló fizetést. Ez nem érinti a szabályzat 4.6. cikkének rendelkezéseit az áru vételárának előre történő megfizetésének kötelezettségéről.
               </li>
               <li>
-                W przypadku płatności gotówką, za pobraniem lub w punkcie odbioru cena zakupu jest płatna przy odbiorze towaru. W przypadku płatności bezgotówkowej cena zakupu jest płatna w ciągu 14 dni od zawarcia umowy sprzedaży.
+                Készpénzes fizetés, utánvét vagy átvételi ponton történő fizetés esetén a vételár az áru átvételekor fizetendő. Készpénz nélküli fizetés esetén a vételár az adásvételi szerződés megkötésétől számított 14 napon belül fizetendő.
               </li>
               <li>
-                W przypadku płatności bezgotówkowej kupujący jest zobowiązany uiścić cenę zakupu towaru wraz z podaniem symbolu zmiennego płatności. W przypadku płatności bezgotówkowej zobowiązanie kupującego do zapłaty ceny zakupu jest spełnione w momencie uznania odpowiedniej kwoty na rachunku sprzedawcy.
+                Készpénz nélküli fizetés esetén a vevő köteles az áru vételárát a változó fizetési szimbólum megadásával együtt megfizetni. Készpénz nélküli fizetés esetén a vevő vételár fizetési kötelezettsége a megfelelő összeg eladó számláján történő jóváírásakor teljesül.
               </li>
               <li>
-                Sprzedawca jest uprawniony, w szczególności w przypadku braku dodatkowego potwierdzenia zamówienia przez kupującego (art. 3.6), żądać zapłaty całej ceny zakupu przed wysłaniem towaru do kupującego.
+                Az eladó jogosult, különösen a vevő által a megrendelés további megerősítésének hiánya esetén (3.6. cikk), a teljes vételár megfizetését kérni az áru vevőnek történő elküldése előtt.
               </li>
               <li>
-                Ewentualne rabaty cenowe udzielone przez sprzedawcę kupującemu nie mogą być łączone.
+                Az eladó által a vevőnek nyújtott esetleges árengedmények nem kombinálhatók.
               </li>
               <li>
-                Jeśli jest to zwyczajowe w obrocie handlowym lub jeśli tak stanowią powszechnie obowiązujące przepisy prawa, sprzedawca wystawi kupującemu dokument podatkowy - fakturę dotyczącą płatności dokonywanych na podstawie umowy sprzedaży. Sprzedawca jest płatnikiem podatku od towarów i usług. Dokument podatkowy - fakturę sprzedawca wystawi kupującemu po zapłaceniu ceny towaru i prześle go w formie elektronicznej na elektroniczny adres kupującego.
+                Ha ez a kereskedelmi forgalomban szokásos, vagy ha az általánosan kötelező érvényű jogszabályok így rendelkeznek, az eladó adóügyi dokumentumot - számlát állít ki a vevőnek az adásvételi szerződés alapján teljesített kifizetésekről. Az eladó ÁFA-fizető. Az adóügyi dokumentumot - számlát az eladó az áru árának kifizetése után állítja ki a vevőnek, és elektronikus formában küldi el a vevő elektronikus címére.
               </li>
             </ol>
           </li>
 
           <li>
-            <strong>ODSTĄPIENIE OD UMOWY SPRZEDAŻY</strong>
+            <strong>ELÁLLÁS AZ ADÁSVÉTELI SZERZŐDÉSTŐL</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Kupujący przyjmuje do wiadomości, że zgodnie z przepisami prawa nie można między innymi odstąpić od umowy sprzedaży:
+                A vevő tudomásul veszi, hogy a jogszabályok szerint többek között nem lehet elállni az adásvételi szerződéstől:
                 <ul className="list-disc ml-6 mt-2">
-                  <li>o dostarczenie towaru wyprodukowanego zgodnie z wymaganiami kupującego lub dostosowanego do jego osobistych potrzeb,</li>
-                  <li>o dostarczenie towaru, który ulega szybkiemu zepsuciu, lub towaru o krótkim terminie przydatności, a także towaru, który po dostawie ze względu na swój charakter został nieodwracalnie zmieszany z innym towarem,</li>
-                  <li>o dostarczenie towaru w zapieczętowanym opakowaniu, którego po naruszeniu plomb nie można zwrócić ze względów ochrony zdrowia lub ze względów higienicznych,</li>
-                  <li>o dostarczenie nagrań dźwiękowych lub wizualnych albo programów komputerowych w zapieczętowanym opakowaniu, jeżeli kupujący naruszył plomby.</li>
+                  <li>a vevő követelményei szerint gyártott vagy személyes igényeihez igazított áru szállításáról,</li>
+                  <li>gyorsan romlandó áru vagy rövid eltarthatósági idejű áru szállításáról, valamint olyan áru szállításáról, amely a szállítás után természeténél fogva visszafordíthatatlanul keveredett más áruval,</li>
+                  <li>lezárt csomagolásban szállított áru szállításáról, amely egészségvédelmi vagy higiéniai okokból a plomba eltávolítása után nem küldhető vissza,</li>
+                  <li>lezárt csomagolásban lévő hang- vagy képfelvételek vagy számítógépes programok szállításáról, ha a vevő eltávolította a plombát.</li>
                 </ul>
               </li>
               <li>
-                Jeśli nie chodzi o przypadek wymieniony w art. 5.1 regulaminu lub o inny przypadek, gdy nie można odstąpić od umowy sprzedaży, kupujący ma prawo odstąpić od umowy sprzedaży w ciągu czternastu (14) dni od dnia, w którym kupujący lub wskazana przez niego osoba trzecia inna niż przewoźnik odbierze towar.
+                Ha nem a szabályzat 5.1. cikkében említett esetről vagy más olyan esetről van szó, amikor nem lehet elállni az adásvételi szerződéstől, a vevőnek joga van elállni az adásvételi szerződéstől attól a naptól számított tizennégy (14) napon belül, amikor a vevő vagy az általa megjelölt, a fuvarozótól eltérő harmadik személy átveszi az árut.
               </li>
               <li>
-                Odstąpienie od umowy sprzedaży musi zostać wysłane sprzedawcy w terminie określonym w art. 5.2 regulaminu. Do odstąpienia od umowy sprzedaży kupujący może wykorzystać wzór formularza dostarczony przez sprzedawcę. Odstąpienie od umowy sprzedaży kupujący może wysłać między innymi na adres siedziby sprzedawcy lub na adres poczty elektronicznej sprzedawcy support@galaxysklep.pl.
+                Az adásvételi szerződéstől való elállást a szabályzat 5.2. cikkében meghatározott határidőn belül kell elküldeni az eladónak. Az adásvételi szerződéstől való elálláshoz a vevő használhatja az eladó által biztosított űrlapmintát. Az adásvételi szerződéstől való elállást a vevő többek között az eladó székhelyének címére vagy az eladó support@jovotech.hu e-mail címére küldheti.
               </li>
               <li>
-                W przypadku odstąpienia od umowy sprzedaży umowa sprzedaży zostaje rozwiązana od początku. Towar kupujący odeśle lub przekaże sprzedawcy z powrotem bez zbędnej zwłoki, najpóźniej w ciągu czternastu (14) dni od odstąpienia od umowy, chyba że sprzedawca zaproponował, że sam odbierze towar. Termin zgodnie z poprzednim zdaniem jest zachowany, jeśli kupujący wyśle towar przed jego upływem. Jeśli kupujący odstąpi od umowy sprzedaży, ponosi koszty związane ze zwrotem towaru sprzedawcy, również w przypadku, gdy towar ze względu na swój charakter nie może być zwrócony zwykłą drogą pocztową.
+                Az adásvételi szerződéstől való elállás esetén az adásvételi szerződés kezdettől fogva megszűnik. Az árut a vevő indokolatlan késedelem nélkül, legkésőbb az elállástól számított tizennégy (14) napon belül visszaküldi vagy átadja az eladónak, kivéve, ha az eladó felajánlotta, hogy maga veszi át az árut. Az előző mondat szerinti határidő betartottnak minősül, ha a vevő a lejárata előtt elküldi az árut. Ha a vevő eláll az adásvételi szerződéstől, viseli az áru eladónak történő visszaküldésével kapcsolatos költségeket, akkor is, ha az áru természeténél fogva nem küldhető vissza szokásos postai úton.
               </li>
               <li>
-                W przypadku odstąpienia od umowy sprzedaży zgodnie z art. 5.2 regulaminu sprzedawca zwróci środki pieniężne otrzymane od kupującego w ciągu czternastu (14) dni od odstąpienia od umowy sprzedaży przez kupującego, w taki sam sposób, w jaki sprzedawca je od kupującego otrzymał. Sprzedawca jest również uprawniony do zwrotu świadczenia udzielonego przez kupującego już przy zwrocie towaru przez kupującego lub w inny sposób, jeśli kupujący wyrazi na to zgodę i nie powstaną przez to kupującemu dodatkowe koszty. Jeśli kupujący odstąpi od umowy sprzedaży, sprzedawca nie jest zobowiązany zwrócić otrzymanych środków pieniężnych kupującemu wcześniej, niż sprzedawca otrzyma towar lub niż kupujący udowodni, że odesłał towar, w zależności od tego, co nastąpi wcześniej.
+                A szabályzat 5.2. cikke szerinti adásvételi szerződéstől való elállás esetén az eladó a vevőtől kapott pénzeszközöket a vevő által az adásvételi szerződéstől való elállástól számított tizennégy (14) napon belül ugyanolyan módon visszatéríti, ahogyan az eladó azokat a vevőtől megkapta. Az eladó jogosult a vevő által nyújtott teljesítményt már az áru vevő általi visszaküldésekor vagy más módon visszatéríteni, ha a vevő ehhez hozzájárul és ez nem jár a vevő számára további költségekkel. Ha a vevő eláll az adásvételi szerződéstől, az eladó nem köteles visszatéríteni a kapott pénzeszközöket a vevőnek korábban, mint amikor az eladó megkapja az árut, vagy amikor a vevő bizonyítja, hogy visszaküldte az árut, attól függően, hogy melyik történik korábban.
               </li>
               <li>
-                Roszczenie o naprawienie szkody powstałej na towarze sprzedawca jest uprawniony jednostronnie potrącić z roszczenia kupującego o zwrot ceny zakupu.
+                Az árun keletkezett kár megtérítésére vonatkozó igényt az eladó jogosult egyoldalúan beszámítani a vevő vételár visszatérítésére vonatkozó igényével szemben.
               </li>
               <li>
-                W przypadkach, gdy kupujący ma prawo odstąpić od umowy sprzedaży, sprzedawca jest również uprawniony odstąpić od umowy sprzedaży w dowolnym momencie, aż do czasu odbioru towaru przez kupującego. W takim przypadku sprzedawca zwróci kupującemu cenę zakupu bez zbędnej zwłoki, bezgotówkowo na rachunek wskazany przez kupującego.
+                Azokban az esetekben, amikor a vevőnek joga van elállni az adásvételi szerződéstől, az eladó is jogosult bármikor elállni az adásvételi szerződéstől, egészen addig, amíg a vevő át nem veszi az árut. Ebben az esetben az eladó indokolatlan késedelem nélkül visszatéríti a vevőnek a vételárat, átutalással a vevő által megadott számlára.
               </li>
               <li>
-                Jeśli wraz z towarem kupującemu został przekazany prezent, umowa darowizny między sprzedawcą a kupującym jest zawarta z warunkiem rozwiązującym, że w przypadku odstąpienia od umowy sprzedaży przez kupującego umowa darowizny dotycząca takiego prezentu traci ważność, a kupujący jest zobowiązany wraz z towarem zwrócić sprzedawcy również otrzymany prezent.
-              </li>
-            </ol>
-          </li>
-
-          <li>
-            <strong>TRANSPORT I DOSTAWA TOWARU</strong>
-            <ol className="list-decimal ml-6 mt-2 space-y-2">
-              <li>
-                W przypadku, gdy sposób transportu został uzgodniony na podstawie specjalnego żądania kupującego, kupujący ponosi ryzyko i ewentualne dodatkowe koszty związane z tym sposobem transportu.
-              </li>
-              <li>
-                Jeśli sprzedawca zgodnie z umową sprzedaży jest zobowiązany dostarczyć towar w miejsce określone przez kupującego w zamówieniu, kupujący jest zobowiązany odebrać towar przy dostawie.
-              </li>
-              <li>
-                W przypadku, gdy z przyczyn leżących po stronie kupującego konieczne jest dostarczanie towaru wielokrotnie lub w inny sposób niż określono w zamówieniu, kupujący jest zobowiązany pokryć koszty związane z wielokrotnym dostarczaniem towaru lub koszty związane z innym sposobem dostawy.
-              </li>
-              <li>
-                Przy odbiorze towaru od przewoźnika kupujący jest zobowiązany sprawdzić nienaruszalność opakowań towaru, a w przypadku jakichkolwiek wad niezwłocznie powiadomić o tym przewoźnika. W przypadku stwierdzenia naruszenia opakowania świadczącego o nieuprawnionej ingerencji w przesyłkę, kupujący nie musi odbierać przesyłki od przewoźnika. Nie narusza to praw kupującego z tytułu odpowiedzialności za wady towaru i innych praw kupującego wynikających z powszechnie obowiązujących przepisów prawa.
-              </li>
-              <li>
-                Dalsze prawa i obowiązki stron przy transporcie towaru mogą regulować specjalne warunki dostawy sprzedawcy, jeśli zostały przez sprzedawcę wydane.
+                Ha a vevő az áruval együtt ajándékot kapott, az eladó és a vevő közötti ajándékozási szerződés bontó feltétellel jön létre, hogy amennyiben a vevő eláll az adásvételi szerződéstől, az ilyen ajándékra vonatkozó ajándékozási szerződés érvényét veszti, és a vevő köteles az áruval együtt a kapott ajándékot is visszaküldeni az eladónak.
               </li>
             </ol>
           </li>
 
           <li>
-            <strong>PRAWA Z WADLIWEGO WYKONANIA</strong>
+            <strong>SZÁLLÍTÁS ÉS AZ ÁRU KÉZBESÍTÉSE</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Prawa i obowiązki stron umowy dotyczące praw z wadliwego wykonania regulują odpowiednie powszechnie obowiązujące przepisy prawa (w szczególności przepisy Kodeksu cywilnego i ustawy o prawach konsumenta).
+                Abban az esetben, ha a szállítási módot a vevő külön kérése alapján állapították meg, a vevő viseli a kockázatot és az ezzel a szállítási móddal kapcsolatos esetleges többletköltségeket.
               </li>
               <li>
-                Sprzedawca odpowiada wobec kupującego, że rzecz przy odbiorze nie ma wad. W szczególności sprzedawca odpowiada wobec kupującego, że rzecz:
+                Ha az eladó az adásvételi szerződés szerint köteles az árut a vevő által a megrendelésben meghatározott helyre szállítani, a vevő köteles az árut kézbesítéskor átvenni.
+              </li>
+              <li>
+                Abban az esetben, ha a vevő miatt szükséges az árut többször vagy a megrendelésben meghatározottól eltérő módon kézbesíteni, a vevő köteles fedezni a többszöri kézbesítéssel vagy a más szállítási móddal kapcsolatos költségeket.
+              </li>
+              <li>
+                Az áru fuvarozótól történő átvételekor a vevő köteles ellenőrizni az áru csomagolásának sértetlenségét, és bármilyen hiba esetén haladéktalanul értesíteni a fuvarozót. A csomagolás megsértésének megállapítása esetén, amely a csomagba való jogosulatlan behatolásra utal, a vevő nem köteles átvenni a csomagot a fuvarozótól. Ez nem érinti a vevő áruhiba miatti felelősségből eredő jogait és a vevő egyéb, az általánosan kötelező érvényű jogszabályokból eredő jogait.
+              </li>
+              <li>
+                A felek további jogait és kötelezettségeit az áru szállítása során az eladó külön szállítási feltételei szabályozhatják, amennyiben azokat az eladó kiadta.
+              </li>
+            </ol>
+          </li>
+
+          <li>
+            <strong>HIBÁS TELJESÍTÉSBŐL EREDŐ JOGOK</strong>
+            <ol className="list-decimal ml-6 mt-2 space-y-2">
+              <li>
+                A szerződő felek hibás teljesítésből eredő jogokkal kapcsolatos jogait és kötelezettségeit a vonatkozó általánosan kötelező érvényű jogszabályok szabályozzák (különösen a Polgári Törvénykönyv és a fogyasztói jogokról szóló törvény rendelkezései).
+              </li>
+              <li>
+                Az eladó felel a vevő felé azért, hogy a dolognak az átvételkor nincs hibája. Különösen az eladó felel a vevő felé azért, hogy a dolog:
                 <ul className="list-disc ml-6 mt-2">
-                  <li>odpowiada uzgodnionemu opisowi, rodzajowi i ilości, a także jakości, funkcjonalności, kompatybilności, interoperacyjności i innym uzgodnionym właściwościom,</li>
-                  <li>nadaje się do celu, dla którego kupujący ją wymaga i z którym sprzedawca się zgodził,</li>
-                  <li>jest dostarczona z uzgodnionym wyposażeniem i instrukcjami użytkowania, w tym instrukcją montażu lub instalacji.</li>
+                  <li>megfelel a megállapodott leírásnak, típusnak és mennyiségnek, valamint minőségnek, funkcionalitásnak, kompatibilitásnak, interoperabilitásnak és egyéb megállapodott tulajdonságoknak,</li>
+                  <li>alkalmas arra a célra, amelyre a vevő igényli, és amellyel az eladó egyetértett,</li>
+                  <li>a megállapodott tartozékokkal és használati utasításokkal kerül szállításra, beleértve a szerelési vagy telepítési útmutatót is.</li>
                 </ul>
               </li>
               <li>
-                Sprzedawca odpowiada wobec kupującego również za to, że oprócz uzgodnionych właściwości:
+                Az eladó a vevő felé azért is felel, hogy a megállapodott tulajdonságokon túl:
                 <ul className="list-disc ml-6 mt-2">
-                  <li>rzecz nadaje się do celu, do którego rzecz tego rodzaju jest zwykle używana, również z uwzględnieniem praw osób trzecich, przepisów prawa, norm technicznych lub kodeksów postępowania danej branży, jeśli nie ma norm technicznych,</li>
-                  <li>rzecz ilością, jakością i innymi właściwościami, w tym trwałością, funkcjonalnością, kompatybilnością i bezpieczeństwem, odpowiada zwykłym właściwościom rzeczy tego samego rodzaju, których kupujący może rozsądnie oczekiwać, również z uwzględnieniem publicznych oświadczeń złożonych przez sprzedawcę lub inną osobę w tym samym łańcuchu umownym, w szczególności reklamą lub oznakowaniem,</li>
-                  <li>rzecz jest dostarczona z wyposażeniem, w tym opakowaniem, instrukcją montażu i innymi instrukcjami użytkowania, których kupujący może rozsądnie oczekiwać,</li>
-                  <li>rzecz odpowiada jakością lub wykonaniem próbce lub wzorowi, które sprzedawca udostępnił kupującemu przed zawarciem umowy sprzedaży.</li>
+                  <li>a dolog alkalmas arra a célra, amelyre az ilyen típusú dolgot általában használják, figyelembe véve harmadik személyek jogait, jogszabályokat, műszaki szabványokat vagy az adott ágazat magatartási kódexeit, ha nincsenek műszaki szabványok,</li>
+                  <li>a dolog mennyiségben, minőségben és egyéb tulajdonságokban, beleértve a tartósságot, funkcionalitást, kompatibilitást és biztonságot, megfelel az azonos típusú dolgok szokásos tulajdonságainak, amelyeket a vevő ésszerűen elvárhat, figyelembe véve az eladó vagy más személy által ugyanabban a szerződési láncban tett nyilvános nyilatkozatokat, különösen a reklámot vagy jelölést,</li>
+                  <li>a dolog olyan tartozékokkal kerül szállításra, beleértve a csomagolást, szerelési útmutatót és egyéb használati utasításokat, amelyeket a vevő ésszerűen elvárhat,</li>
+                  <li>a dolog minőségben vagy kivitelben megfelel annak a mintának vagy modellnek, amelyet az eladó az adásvételi szerződés megkötése előtt a vevő rendelkezésére bocsátott.</li>
                 </ul>
               </li>
               <li>
-                Jeśli wada ujawni się w ciągu dwóch lat od odbioru, uważa się, że rzecz była wadliwa już przy odbiorze.
+                Ha a hiba az átvételtől számított két éven belül jelentkezik, úgy tekintendő, hogy a dolog már az átvételkor hibás volt.
               </li>
               <li>
-                Kupujący może zgłosić wadę, która ujawni się na rzeczy w ciągu dwóch lat od odbioru.
+                A vevő bejelentheti a dolgon az átvételtől számított két éven belül megjelenő hibát.
               </li>
               <li>
-                Jeśli rzecz ma wadę, kupujący może żądać jej usunięcia. Według swojego wyboru może żądać dostarczenia nowej rzeczy bez wady lub naprawy rzeczy, chyba że wybrany sposób usunięcia wady jest niemożliwy lub w porównaniu z drugim nieproporcjonalnie kosztowny. Sprzedawca może odmówić usunięcia wady, jeśli jest to niemożliwe lub nieproporcjonalnie kosztowne, szczególnie z uwzględnieniem znaczenia wady i wartości, jaką rzecz miałaby bez wady.
+                Ha a dolognak hibája van, a vevő kérheti annak eltávolítását. Választása szerint kérheti új, hibátlan dolog szállítását vagy a dolog javítását, kivéve, ha a választott hibaelhárítási mód lehetetlen vagy a másikhoz képest aránytalanul költséges. Az eladó megtagadhatja a hiba eltávolítását, ha az lehetetlen vagy aránytalanul költséges, különösen figyelembe véve a hiba jelentőségét és azt az értéket, amellyel a dolog hiba nélkül rendelkezne.
               </li>
               <li>
-                Sprzedawca usunie wadę w rozsądnym czasie po jej zgłoszeniu, tak aby nie sprawić kupującemu znacznych trudności, przy czym uwzględnia się charakter rzeczy i cel, dla którego kupujący rzecz nabył. W celu usunięcia wady sprzedawca odbierze rzecz na własny koszt.
+                Az eladó a hibát a bejelentés után ésszerű időn belül eltávolítja úgy, hogy ne okozzon jelentős nehézséget a vevőnek, figyelembe véve a dolog jellegét és azt a célt, amelyre a vevő a dolgot megvásárolta. A hiba eltávolítása érdekében az eladó saját költségén átveszi a dolgot.
               </li>
               <li>
-                Kupujący może żądać odpowiedniej obniżki ceny lub odstąpić od umowy sprzedaży, jeśli:
+                A vevő megfelelő árengedményt kérhet vagy elállhat az adásvételi szerződéstől, ha:
                 <ul className="list-disc ml-6 mt-2">
-                  <li>sprzedawca odmówił usunięcia wady lub jej nie usunął,</li>
-                  <li>wada ujawnia się ponownie,</li>
-                  <li>wada stanowi istotne naruszenie umowy sprzedaży,</li>
-                  <li>z oświadczenia sprzedawcy lub z okoliczności wynika, że wada nie zostanie usunięta w rozsądnym czasie lub bez znacznych trudności dla kupującego.</li>
+                  <li>az eladó megtagadta a hiba eltávolítását vagy nem távolította el,</li>
+                  <li>a hiba újra jelentkezik,</li>
+                  <li>a hiba az adásvételi szerződés lényeges megszegését jelenti,</li>
+                  <li>az eladó nyilatkozatából vagy a körülményekből kitűnik, hogy a hiba nem kerül eltávolításra ésszerű időn belül vagy jelentős nehézség nélkül a vevő számára.</li>
                 </ul>
               </li>
               <li>
-                Jeśli wada rzeczy jest nieistotna, kupujący nie może odstąpić od umowy sprzedaży. Jeśli kupujący odstąpi od umowy sprzedaży, sprzedawca zwróci kupującemu cenę zakupu bez zbędnej zwłoki po otrzymaniu rzeczy lub po tym, jak kupujący udowodni, że rzecz odesłał.
+                Ha a dolog hibája jelentéktelen, a vevő nem állhat el az adásvételi szerződéstől. Ha a vevő eláll az adásvételi szerződéstől, az eladó indokolatlan késedelem nélkül visszatéríti a vevőnek a vételárat a dolog átvétele után, vagy miután a vevő bizonyítja, hogy visszaküldte a dolgot.
               </li>
               <li>
-                Wadę można zgłosić sprzedawcy, u którego rzecz została zakupiona.
+                A hibát be lehet jelenteni az eladónál, akinél a dolgot megvásárolták.
               </li>
               <li>
-                Reklamacja wraz z usunięciem wady musi być rozpatrzona, a kupujący musi być o tym poinformowany najpóźniej w ciągu trzydziestu (30) dni od dnia złożenia reklamacji, chyba że sprzedawca z kupującym uzgodni dłuższy termin.
+                A reklamációt a hiba eltávolításával együtt legkésőbb a reklamáció benyújtásától számított harminc (30) napon belül el kell intézni, és a vevőt erről tájékoztatni kell, kivéve, ha az eladó és a vevő hosszabb határidőben állapodik meg.
               </li>
               <li>
-                Prawa z tytułu odpowiedzialności za wady towaru kupujący może w szczególności zgłaszać pocztą elektroniczną na adres support@galaxysklep.pl.
+                Az áru hibáiért való felelősségből eredő jogokat a vevő különösen a support@jovotech.hu e-mail címen jelentheti be.
               </li>
               <li>
-                Dalsze prawa i obowiązki stron związane z odpowiedzialnością sprzedawcy za wady może regulować reklamacyjny regulamin sprzedawcy.
-              </li>
-            </ol>
-          </li>
-
-          <li>
-            <strong>INNE PRAWA I OBOWIĄZKI STRON UMOWY</strong>
-            <ol className="list-decimal ml-6 mt-2 space-y-2">
-              <li>
-                Kupujący nabywa własność towaru poprzez zapłacenie całej ceny zakupu towaru.
-              </li>
-              <li>
-                Sprzedawca nie jest związany żadnymi kodeksami postępowania w stosunku do kupującego.
-              </li>
-              <li>
-                Rozpatrywanie skarg konsumentów zapewnia sprzedawca za pośrednictwem poczty elektronicznej. Skargi można przesyłać na adres elektroniczny sprzedawcy. Informację o rozpatrzeniu skargi kupującego sprzedawca prześle na adres elektroniczny kupującego.
-              </li>
-              <li>
-                Do pozasądowego rozstrzygania sporów konsumenckich z umowy sprzedaży właściwy jest Wojewódzki Inspektorat Inspekcji Handlowej. Platformę do rozstrzygania sporów online znajdującą się pod adresem internetowym http://ec.europa.eu/consumers/odr można wykorzystać przy rozstrzyganiu sporów między sprzedawcą a kupującym z umowy sprzedaży.
-              </li>
-              <li>
-                Europejskie Centrum Konsumenckie Polska jest punktem kontaktowym zgodnie z Rozporządzeniem Parlamentu Europejskiego i Rady (UE) nr 524/2013 z dnia 21 maja 2013 r. w sprawie internetowego systemu rozstrzygania sporów konsumenckich oraz zmiany rozporządzenia (WE) nr 2006/2004 i dyrektywy 2009/22/WE.
-              </li>
-              <li>
-                Kupujący może zwrócić się ze skargą do organu nadzoru lub kontroli państwowej. Sprzedawca jest uprawniony do sprzedaży towarów na podstawie zezwolenia na prowadzenie działalności gospodarczej. Kontrolę działalności gospodarczej przeprowadza w ramach swoich kompetencji właściwy organ. Nadzór nad obszarem ochrony danych osobowych sprawuje Urząd Ochrony Danych Osobowych. Inspekcja Handlowa sprawuje w określonym zakresie między innymi nadzór nad przestrzeganiem przepisów o ochronie konsumentów.
-              </li>
-              <li>
-                Kupujący niniejszym przyjmuje na siebie ryzyko zmiany okoliczności.
+                Az eladó hibákért való felelősségével kapcsolatos felek további jogait és kötelezettségeit az eladó reklamációs szabályzata szabályozhatja.
               </li>
             </ol>
           </li>
 
           <li>
-            <strong>OCHRONA DANYCH OSOBOWYCH</strong>
+            <strong>A SZERZŐDŐ FELEK EGYÉB JOGAI ÉS KÖTELEZETTSÉGEI</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Swój obowiązek informacyjny wobec kupującego w rozumieniu art. 13 Rozporządzenia Parlamentu Europejskiego i Rady 2016/679 w sprawie ochrony osób fizycznych w związku z przetwarzaniem danych osobowych i w sprawie swobodnego przepływu takich danych oraz uchylenia dyrektywy 95/46/WE (ogólne rozporządzenie o ochronie danych) (dalej jako „<strong>RODO</strong>") związany z przetwarzaniem danych osobowych kupującego w celu realizacji umowy sprzedaży, w celu negocjacji w sprawie umowy sprzedaży oraz w celu wypełnienia obowiązków publicznoprawnych sprzedawcy, sprzedawca wypełnia za pośrednictwem odrębnego dokumentu.
+                A vevő az áru teljes vételárának megfizetésével szerzi meg az áru tulajdonjogát.
+              </li>
+              <li>
+                Az eladó nem köti semmilyen magatartási kódex a vevővel szemben.
+              </li>
+              <li>
+                A fogyasztói panaszok kezelését az eladó elektronikus levélben biztosítja. A panaszokat az eladó elektronikus címére lehet küldeni. Az eladó a vevő panaszának elintézéséről szóló információt a vevő elektronikus címére küldi.
+              </li>
+              <li>
+                Az adásvételi szerződésből eredő fogyasztói viták peren kívüli rendezésére a Nemzeti Fogyasztóvédelmi Hatóság illetékes. A http://ec.europa.eu/consumers/odr internetes címen található online vitarendezési platform használható az eladó és a vevő közötti adásvételi szerződésből eredő viták rendezésére.
+              </li>
+              <li>
+                A Európai Fogyasztói Központ Magyarország a 2013. május 21-i 524/2013/EU európai parlamenti és tanácsi rendelet szerinti kapcsolattartó pont a fogyasztói jogviták online rendezéséről, valamint a 2006/2004/EK rendelet és a 2009/22/EK irányelv módosításáról.
+              </li>
+              <li>
+                A vevő panasszal fordulhat az állami felügyeleti vagy ellenőrző szervhez. Az eladó üzleti tevékenység engedély alapján jogosult áruk értékesítésére. Az üzleti tevékenység ellenőrzését hatáskörében az illetékes hatóság végzi. A személyes adatok védelmének területén a felügyeletet a Nemzeti Adatvédelmi és Információszabadság Hatóság gyakorolja. A Nemzeti Fogyasztóvédelmi Hatóság meghatározott mértékben többek között felügyeli a fogyasztóvédelmi előírások betartását.
+              </li>
+              <li>
+                A vevő ezennel magára vállalja a körülmények megváltozásának kockázatát.
               </li>
             </ol>
           </li>
 
           <li>
-            <strong>PRZESYŁANIE KOMUNIKATÓW HANDLOWYCH I ZAPISYWANIE PLIKÓW COOKIES</strong>
+            <strong>SZEMÉLYES ADATOK VÉDELME</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Kupujący wyraża zgodę na przesyłanie komunikatów handlowych przez sprzedawcę na adres elektroniczny lub numer telefonu kupującego. Swój obowiązek informacyjny wobec kupującego w rozumieniu art. 13 RODO związany z przetwarzaniem danych osobowych kupującego w celu przesyłania komunikatów handlowych sprzedawca wypełnia za pośrednictwem odrębnego dokumentu.
-              </li>
-              <li>
-                Swoje ustawowe obowiązki związane z ewentualnym zapisywaniem plików cookies na urządzeniu kupującego sprzedawca wypełnia za pośrednictwem odrębnego dokumentu.
+                Az eladó a vevővel szembeni tájékoztatási kötelezettségét az Európai Parlament és a Tanács 2016/679 rendelete 13. cikke értelmében a természetes személyeknek a személyes adatok kezelése tekintetében történő védelméről és az ilyen adatok szabad áramlásáról, valamint a 95/46/EK irányelv hatályon kívül helyezéséről (általános adatvédelmi rendelet) (a továbbiakban: „<strong>GDPR</strong>") a vevő személyes adatainak az adásvételi szerződés teljesítése, az adásvételi szerződéssel kapcsolatos tárgyalások, valamint az eladó közjogi kötelezettségeinek teljesítése céljából történő kezelésével kapcsolatban külön dokumentumban teljesíti.
               </li>
             </ol>
           </li>
 
           <li>
-            <strong>DORĘCZANIE</strong>
+            <strong>KERESKEDELMI KÖZLEMÉNYEK KÜLDÉSE ÉS COOKIE-K TÁROLÁSA</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Kupującemu można doręczać na adres elektroniczny kupującego.
+                A vevő hozzájárul ahhoz, hogy az eladó kereskedelmi közleményeket küldjön a vevő elektronikus címére vagy telefonszámára. Az eladó a vevővel szembeni tájékoztatási kötelezettségét a GDPR 13. cikke értelmében a vevő személyes adatainak kereskedelmi közlemények küldése céljából történő kezelésével kapcsolatban külön dokumentumban teljesíti.
+              </li>
+              <li>
+                Az eladó a vevő eszközén történő esetleges cookie-k tárolásával kapcsolatos törvényi kötelezettségeit külön dokumentumban teljesíti.
               </li>
             </ol>
           </li>
 
           <li>
-            <strong>POSTANOWIENIA KOŃCOWE</strong>
+            <strong>KÉZBESÍTÉS</strong>
             <ol className="list-decimal ml-6 mt-2 space-y-2">
               <li>
-                Jeśli stosunek założony umową sprzedaży zawiera element międzynarodowy (zagraniczny), strony uzgadniają, że stosunek ten rządzi się prawem polskim. Wyborem prawa zgodnie z poprzednim zdaniem kupujący, który jest konsumentem, nie jest pozbawiony ochrony, jaką zapewniają mu przepisy prawne, od których nie można odstąpić umownie.
+                A vevőnek a vevő elektronikus címére lehet kézbesíteni.
+              </li>
+            </ol>
+          </li>
+
+          <li>
+            <strong>ZÁRÓ RENDELKEZÉSEK</strong>
+            <ol className="list-decimal ml-6 mt-2 space-y-2">
+              <li>
+                Ha az adásvételi szerződés által létrehozott jogviszony nemzetközi (külföldi) elemet tartalmaz, a felek megállapodnak, hogy ezt a jogviszonyt a magyar jog szabályozza. Az előző mondat szerinti jogválasztással a fogyasztó vevő nem fosztható meg attól a védelemtől, amelyet számára olyan jogszabályi rendelkezések biztosítanak, amelyektől szerződéssel nem lehet eltérni.
               </li>
               <li>
-                Jeśli jakiekolwiek postanowienie regulaminu jest nieważne lub nieskuteczne lub stanie się takim, zamiast nieważnych postanowień wejdzie postanowienie, którego sens najbardziej zbliża się do nieważnego postanowienia. Nieważność lub nieskuteczność jednego postanowienia nie wpływa na ważność pozostałych postanowień.
+                Ha a szabályzat bármely rendelkezése érvénytelen vagy hatálytalan, vagy azzá válik, az érvénytelen rendelkezések helyébe olyan rendelkezés lép, amelynek értelme a lehető legközelebb áll az érvénytelen rendelkezéshez. Egy rendelkezés érvénytelensége vagy hatálytalansága nem érinti a többi rendelkezés érvényességét.
               </li>
               <li>
-                Umowa sprzedaży wraz z regulaminem jest archiwizowana przez sprzedawcę w formie elektronicznej i nie jest dostępna.
+                Az adásvételi szerződést a szabályzattal együtt az eladó elektronikus formában archiválja, és nem hozzáférhető.
               </li>
               <li>
-                Załącznik do regulaminu stanowi wzór formularza odstąpienia od umowy sprzedaży.
+                A szabályzat mellékletét képezi az adásvételi szerződéstől való elállási űrlap mintája.
               </li>
               <li>
-                Dane kontaktowe sprzedawcy: adres siedziby 1. máje 535/50, 46007 Liberec, Czechy (siedziba firmy - korespondencja prosimy wysyłać na e-mail), adres poczty elektronicznej support@galaxysklep.pl. Sprzedawca nie udostępnia innego środka komunikacji online.
+                Az eladó elérhetőségei: székhely címe 1. máje 535/50, 46007 Liberec III-Jeřáb, Csehország (székhely - levelezést kérjük e-mailben), e-mail cím support@jovotech.hu. Az eladó nem biztosít más online kommunikációs eszközt.
               </li>
             </ol>
           </li>
         </ol>
 
         <p className="text-center mt-8">
-          W Libercu dnia {new Date().toLocaleDateString('pl-PL')}
+          Liberecben, {new Date().toLocaleDateString('hu-HU')}
         </p>
 
         <div className="mt-12 border-t pt-8">
-          <h2 className="text-xl font-bold mb-4">Dane bankowe</h2>
-          <p><strong>Numer konta:</strong> 21291000062469800208837403</p>
-          <p><strong>IBAN:</strong> PL21 2910 0006 2469 8002 0883 7403</p>
-          <p><strong>BIC/SWIFT:</strong> BMPBPLPP</p>
-          <p><strong>Bank:</strong> Aion S.A. Spolka Akcyjna Oddzial w Polsce</p>
-          <p><strong>Adres banku:</strong> Dobra 40, 00-344, Warszawa, Poland</p>
+          <h2 className="text-xl font-bold mb-4">Banki adatok</h2>
+          <p><strong>Számlaszám:</strong> 12600016-10426947-95638648</p>
+          <p><strong>IBAN:</strong> HU86126000161042694795638648</p>
+          <p><strong>BIC/SWIFT:</strong> TRWIBEBBXXX</p>
+          <p><strong>Bank:</strong> WISE EUROPE S.A.</p>
+          <p><strong>Bank címe:</strong> Rue du Trône 100, 1050 Brussels</p>
         </div>
       </div>
     </div>
