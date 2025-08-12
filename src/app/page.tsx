@@ -92,7 +92,6 @@ const productSelectMobile = {
   },
   // Reduce variants for mobile
   variants: {
-    where: { isActive: true },
     take: 3, // Reduced from 5
     select: {
       id: true,
@@ -130,27 +129,31 @@ const getCachedProductsMobile = unstable_cache(
   { revalidate: 3600, tags: ['products'] }
 );
 
-// Cached category products with mobile optimization
-const getCachedCategoryProductsMobile = unstable_cache(
-  async (categorySlug: string) => {
+// Cached category products by ID (more reliable than slug)
+const getCachedCategoryProductsById = unstable_cache(
+  async (categoryId: string) => {
     return prisma.product.findMany({
       where: {
-        category: {
-          slug: categorySlug
-        }
+        categoryId: categoryId,
+        stock: { gt: 0 }
       },
       select: productSelectMobile,
-      take: 6, // Reduced from 20 for mobile
+      take: 8, // Show more products
       orderBy: {
         createdAt: 'desc'
       }
     });
   },
-  ['home-category-products-mobile'],
+  ['home-category-products-by-id'],
   { revalidate: 3600, tags: ['products'] }
 );
 
 export default async function HomePage() {
+  // Category IDs from your database:
+  // Tisztítóberendezések - ID: cmbidiolg000jk004tbd8mm72
+  // Festés - ID: cmbiea2hl0028k004mjzry0e8
+  // Autó-motorkerékpárok - ID: cmbifvl99003ok004iw18qcud
+
   // Run queries in parallel with mobile optimization
   const [
     banners,
@@ -161,10 +164,24 @@ export default async function HomePage() {
   ] = await Promise.all([
     getCachedBanners(),
     getCachedProductsMobile(),
-    getCachedCategoryProductsMobile('sprzet-czyszczacy'),
-    getCachedCategoryProductsMobile('malarstwo'),
-    getCachedCategoryProductsMobile('auto-moto')
+    getCachedCategoryProductsById('cmbidiolg000jk004tbd8mm72'), // Tisztítóberendezések
+    getCachedCategoryProductsById('cmbiea2hl0028k004mjzry0e8'), // Festés
+    getCachedCategoryProductsById('cmbifvl99003ok004iw18qcud')  // Autó-motorkerékpárok
   ]);
+
+  // Log for debugging
+  console.log('Category product counts:', {
+    cleaning: cleaningProducts.length,
+    painting: paintingProducts.length,
+    auto: autoMotoProducts.length
+  });
+
+  // If categories are empty, try to fetch any products as fallback
+  let fallbackProducts: any[] = [];
+  if (cleaningProducts.length === 0 && paintingProducts.length === 0 && autoMotoProducts.length === 0) {
+    console.log('No category products found, using fallback products');
+    fallbackProducts = randomProducts.slice(0, 8);
+  }
 
   // Shuffle and slice products
   const shuffledProducts = shuffleArray(randomProducts);
@@ -180,6 +197,14 @@ export default async function HomePage() {
     totalRatings: product.totalRatings || 0,
     slug: product.slug || undefined,
     image: product.image || product.images?.[0]?.url || null,
+    // Set category slug for the boxes (use Hungarian URLs)
+    category: product.category ? {
+      ...product.category,
+      slug: product.categoryId === 'cmbidiolg000jk004tbd8mm72' ? 'tisztitoberendezesek' :
+            product.categoryId === 'cmbiea2hl0028k004mjzry0e8' ? 'festes' :
+            product.categoryId === 'cmbifvl99003ok004iw18qcud' ? 'auto-motorkerekparok' :
+            product.category.slug || ''
+    } : null,
     variants: (product.variants || []).map((v: any) => ({
       ...v,
       colorName: v.colorName || ""
@@ -194,9 +219,9 @@ export default async function HomePage() {
       {/* Category Product Boxes - Load after banner */}
       <Suspense fallback={<div className="h-64 md:h-96" />}>
         <CategoryProductBoxes 
-          cleaningProducts={cleaningProducts.map(serializeProduct)}
-          paintingProducts={paintingProducts.map(serializeProduct)}
-          autoMotoProducts={autoMotoProducts.map(serializeProduct)}
+          cleaningProducts={cleaningProducts.length > 0 ? cleaningProducts.map(serializeProduct) : fallbackProducts.slice(0, 3).map(serializeProduct)}
+          paintingProducts={paintingProducts.length > 0 ? paintingProducts.map(serializeProduct) : fallbackProducts.slice(3, 6).map(serializeProduct)}
+          autoMotoProducts={autoMotoProducts.length > 0 ? autoMotoProducts.map(serializeProduct) : fallbackProducts.slice(6, 9).map(serializeProduct)}
         />
       </Suspense>
       
