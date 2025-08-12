@@ -1,5 +1,4 @@
 'use client';
-
 import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
 import { useCart } from '@/lib/cart';
@@ -40,11 +39,11 @@ export function CartIcon() {
     <Link
       href="/cart"
       className="relative group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 touch-manipulation"
-      aria-label={`Koszyk - ${totalItems === 0 ? 'pusty' : `${totalItems} ${totalItems === 1 ? 'produkt' : totalItems < 5 ? 'produkty' : 'produktów'}`}`}
+      aria-label={`Kosár - ${totalItems === 0 ? 'üres' : `${totalItems} termék`}`}
     >
       {/* Icon with subtle animations */}
       <div className="relative">
-        <ShoppingBag
+        <ShoppingBag 
           size={36}
           className="text-[#131921] transition-transform duration-200 group-hover:scale-105 w-8 h-8 md:w-[30px] md:h-[30px]"
           strokeWidth={1.5}
@@ -52,9 +51,9 @@ export function CartIcon() {
         
         {/* Modern minimalist badge */}
         {totalItems > 0 && (
-          <div
+          <div 
             className={`
-              absolute -top-2.5 -right-2.5
+              absolute -top-2.5 -right-2.5 
               bg-[#6da306]
               text-white rounded-full
               min-w-[20px] h-[20px]
@@ -73,15 +72,15 @@ export function CartIcon() {
           </div>
         )}
       </div>
-
+      
       {/* Text label with count */}
       <div className="hidden md:flex flex-col items-start">
-        <span className="text-xs text-gray-500 leading-tight">Koszyk</span>
+        <span className="text-xs text-gray-500 leading-tight">Kosár</span>
         <span className="text-sm font-semibold text-[#131921] leading-tight">
-          {totalItems === 0 ? 'pusty' : `${totalItems} ${totalItems === 1 ? 'produkt' : totalItems < 5 ? 'produkty' : 'produktów'}`}
+          {totalItems === 0 ? 'üres' : `${totalItems} termék`}
         </span>
       </div>
-
+      
       {/* Hover effect indicator */}
       <div className={`
         absolute bottom-0 left-1/2 transform -translate-x-1/2

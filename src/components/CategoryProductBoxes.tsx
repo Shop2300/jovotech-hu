@@ -254,9 +254,9 @@ function CategoryBox({ title, subtitle, icon, products, bgColor, categorySlug, b
           style={{ backgroundColor: buttonColor }}
         >
           <span className={`text-[13px] ${
-            categorySlug === 'sprzet-czyszczacy' ? 'icon-sweep' : 
-            categorySlug === 'malarstwo' ? 'icon-paint' : 
-            categorySlug === 'auto-moto' ? 'icon-wrench' : ''
+            categorySlug === 'tisztitoberendezesek' ? 'icon-sweep' : 
+            categorySlug === 'festes' ? 'icon-paint' : 
+            categorySlug === 'auto-motorkerekparok' ? 'icon-wrench' : ''
           }`}>
             {icon}
           </span>
@@ -346,7 +346,7 @@ export function CategoryProductBoxes({ cleaningProducts, paintingProducts, autoM
             icon="🧹"
             products={cleaningProducts}
             bgColor="bg-gray-50/50"
-            categorySlug="sprzet-czyszczacy"
+            categorySlug="tisztitoberendezesek"
             buttonColor="#feebeb"
             isFirstRow={true}
           />
@@ -357,7 +357,7 @@ export function CategoryProductBoxes({ cleaningProducts, paintingProducts, autoM
             icon="🎨"
             products={paintingProducts}
             bgColor="bg-gray-50/50"
-            categorySlug="malarstwo"
+            categorySlug="festes"
             buttonColor="#fff6dd"
             isFirstRow={true}
           />
@@ -368,7 +368,7 @@ export function CategoryProductBoxes({ cleaningProducts, paintingProducts, autoM
             icon="🔧"
             products={autoMotoProducts}
             bgColor="bg-gray-50/50"
-            categorySlug="auto-moto"
+            categorySlug="auto-motorkerekparok"
             buttonColor="#fff6dd"
             isFirstRow={true}
           />

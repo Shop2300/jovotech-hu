@@ -466,20 +466,34 @@ export const ProductDetailClient = memo(function ProductDetailClient({ product }
           <div className="order-1">
             <ProductImageGallery images={galleryImages} productName={product.name} />
             
-            {/* Detailed Description - Hidden on mobile by default */}
+            {/* Detailed Description - Always visible on desktop, collapsible on mobile */}
             {product.detailDescription && (
-              <details className="mt-6 md:mt-8 border-t border-gray-200 pt-4 md:pt-6">
-                <summary className="text-base md:text-lg font-bold mb-3 md:mb-4 text-[#131921] cursor-pointer touch-manipulation md:cursor-default list-none">
-                  <span className="flex items-center justify-between">
+              isMobile ? (
+                // Mobile: Collapsible
+                <details className="mt-6 border-t border-gray-200 pt-4">
+                  <summary className="text-base font-bold mb-3 text-[#131921] cursor-pointer touch-manipulation list-none">
+                    <span className="flex items-center justify-between">
+                      Részletes leírás
+                      <span className="text-sm font-normal text-gray-500">Kattints a kibontáshoz</span>
+                    </span>
+                  </summary>
+                  <div 
+                    className="text-gray-600 prose max-w-none [&>*]:!text-sm"
+                    dangerouslySetInnerHTML={{ __html: product.detailDescription }}
+                  />
+                </details>
+              ) : (
+                // Desktop: Always visible
+                <div className="mt-8 border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-bold mb-4 text-[#131921]">
                     Részletes leírás
-                    <span className="md:hidden text-sm font-normal text-gray-500">Kattints a kibontáshoz</span>
-                  </span>
-                </summary>
-                <div 
-                  className="prose max-w-none text-gray-700 [&>*]:!text-sm md:[&>*]:!text-[15px]"
-                  dangerouslySetInnerHTML={{ __html: product.detailDescription }}
-                />
-              </details>
+                  </h3>
+                  <div 
+                    className="text-gray-600 prose max-w-none [&>*]:!text-[15px]"
+                    dangerouslySetInnerHTML={{ __html: product.detailDescription }}
+                  />
+                </div>
+              )
             )}
           </div>
           
