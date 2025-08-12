@@ -21,7 +21,7 @@ export default function OrderSearchPage() {
     }
     
     // Navigate to order status page
-    router.push(`/megrendeles-statusz/${orderNumber.trim()}`);
+    router.push(`/order-status/${orderNumber.trim()}`);
   };
 
   return (
