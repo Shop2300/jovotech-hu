@@ -121,7 +121,7 @@ export const OrderConfirmationEmail = ({
             <Row>
               <Column style={headerLeft}>
                 <Img
-                  src="https://galaxysklep.pl/images/galaxyskleplogo.png"
+                  src="https://jovotech.hu/images/jovotechlogovevor.png"
                   alt="Jovotech.hu"
                   height="32"
                   style={logo}

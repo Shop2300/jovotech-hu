@@ -8,9 +8,9 @@ import React from 'react';
 // Initialize Resend with your API key
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Email configuration - Using support@galaxysklep.pl
-const FROM_EMAIL = 'Galaxysklep.pl <support@galaxysklep.pl>';
-const REPLY_TO = process.env.EMAIL_REPLY_TO || 'support@galaxysklep.pl';
+// Email configuration - Using support@jovotech.hu
+const FROM_EMAIL = 'Jovotech.hu <support@jovotech.hu>';
+const REPLY_TO = process.env.EMAIL_REPLY_TO || 'support@jovotech.hu';
 
 interface OrderItem {
   name?: string;
@@ -80,7 +80,7 @@ export class EmailService {
     try {
       // Transform items for email template
       const emailItems = data.items.map(item => ({
-        name: item.name || 'Produkt',
+        name: item.name || 'Termék',
         quantity: item.quantity,
         price: item.price,
         image: item.image || null,
@@ -93,7 +93,7 @@ export class EmailService {
         from: FROM_EMAIL,
         to: data.customerEmail,
         replyTo: REPLY_TO,
-        subject: `Potwierdzenie zamówienia #${data.orderNumber} - Galaxysklep.pl`,
+        subject: `Rendelés visszaigazolása #${data.orderNumber} - Jovotech.hu`,
         react: OrderConfirmationEmail({
           orderNumber: data.orderNumber,
           customerName: data.customerName,
@@ -127,32 +127,32 @@ export class EmailService {
     try {
       // Transform items for email template
       const emailItems = data.items.map(item => ({
-        name: item.name || 'Produkt',
+        name: item.name || 'Termék',
         quantity: item.quantity,
         productSlug: item.productSlug || null,
         categorySlug: item.categorySlug || null,
       }));
 
       // Determine carrier from delivery method or tracking number format
-      let carrier = data.carrier || 'Najwygodniejsza dostawa';
+      let carrier = data.carrier || 'Szállítási szolgáltató';
       
       // If no carrier provided, try to determine from tracking number
       if (!data.carrier && data.trackingNumber) {
-        if (data.trackingNumber.startsWith('PL')) {
-          carrier = 'Poczta Polska';
+        if (data.trackingNumber.startsWith('HU')) {
+          carrier = 'Magyar Posta';
         } else if (data.trackingNumber.startsWith('DPD')) {
           carrier = 'DPD';
         } else if (data.trackingNumber.startsWith('UPS')) {
           carrier = 'UPS';
-        } else if (data.trackingNumber.startsWith('6')) {
-          carrier = 'InPost';
+        } else if (data.trackingNumber.startsWith('GLS')) {
+          carrier = 'GLS';
         }
       }
 
       // Estimate delivery (3-5 business days)
       const estimatedDelivery = new Date();
       estimatedDelivery.setDate(estimatedDelivery.getDate() + 3);
-      const estimatedDeliveryStr = estimatedDelivery.toLocaleDateString('pl-PL', {
+      const estimatedDeliveryStr = estimatedDelivery.toLocaleDateString('hu-HU', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
@@ -163,7 +163,7 @@ export class EmailService {
         from: FROM_EMAIL,
         to: data.customerEmail,
         replyTo: REPLY_TO,
-        subject: `Twoje zamówienie #${data.orderNumber} zostało wysłane - Galaxysklep.pl`,
+        subject: `Rendelése #${data.orderNumber} feladásra került - Jovotech.hu`,
         react: ShippingNotificationEmail({
           orderNumber: data.orderNumber,
           customerName: data.customerName,
@@ -192,7 +192,7 @@ export class EmailService {
     try {
       // Transform items for email template
       const emailItems = data.items.map(item => ({
-        name: item.name || 'Produkt',
+        name: item.name || 'Termék',
         quantity: item.quantity,
         price: item.price,
         image: item.image || null,
@@ -205,7 +205,7 @@ export class EmailService {
         from: FROM_EMAIL,
         to: data.customerEmail,
         replyTo: REPLY_TO,
-        subject: `Płatność otrzymana - Zamówienie #${data.orderNumber} - Galaxysklep.pl`,
+        subject: `Fizetés beérkezett - Rendelés #${data.orderNumber} - Jovotech.hu`,
         react: PaymentConfirmationEmail({
           orderNumber: data.orderNumber,
           customerName: data.customerName,
@@ -236,25 +236,25 @@ export class EmailService {
         from: FROM_EMAIL,
         to: toEmail,
         replyTo: REPLY_TO,
-        subject: 'Test Email - Galaxysklep.pl',
+        subject: 'Teszt Email - Jovotech.hu',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 100%; margin: 0 auto;">
-            <div style="background-color: #6da306; padding: 20px;">
-              <h1 style="color: white; margin: 0;">Galaxysklep.pl</h1>
+            <div style="background-color: #073635; padding: 20px;">
+              <h1 style="color: white; margin: 0;">Jovotech.hu</h1>
             </div>
             <div style="padding: 30px;">
-              <h2 style="color: #1e293b;">Test Email z Galaxysklep.pl</h2>
-              <p>Ten email potwierdza, że usługa emailowa działa prawidłowo.</p>
-              <p>Jeśli widzisz ten email, oznacza to, że:</p>
+              <h2 style="color: #1e293b;">Teszt Email a Jovotech.hu-tól</h2>
+              <p>Ez az email megerősíti, hogy az email szolgáltatás megfelelően működik.</p>
+              <p>Ha látja ezt az emailt, az azt jelenti, hogy:</p>
               <ul>
-                <li>✅ Domena jest prawidłowo zweryfikowana w Resend</li>
-                <li>✅ Rekordy DNS są poprawnie skonfigurowane</li>
-                <li>✅ Usługa emailowa jest gotowa do użycia</li>
+                <li>✅ A domain megfelelően ellenőrizve van a Resend-ben</li>
+                <li>✅ A DNS rekordok helyesen vannak beállítva</li>
+                <li>✅ Az email szolgáltatás használatra kész</li>
               </ul>
               <hr style="border: 1px solid #e2e8f0; margin: 30px 0;">
               <p style="color: #64748b; font-size: 14px;">
-                Ten testowy email został wysłany z Galaxysklep.pl<br>
-                <a href="https://galaxysklep.pl" style="color: #6da306;">www.galaxysklep.pl</a>
+                Ez a teszt email a Jovotech.hu-tól lett küldve<br>
+                <a href="https://jovotech.hu" style="color: #073635;">www.jovotech.hu</a>
               </p>
             </div>
           </div>
@@ -277,7 +277,7 @@ export class EmailService {
    */
   static previewOrderConfirmation(data: Omit<OrderEmailData, 'customerEmail'>): React.ReactElement {
     const emailItems = data.items.map(item => ({
-      name: item.name || 'Produkt',
+      name: item.name || 'Termék',
       quantity: item.quantity,
       price: item.price,
       image: item.image || null,
@@ -307,7 +307,7 @@ export class EmailService {
    */
   static previewShippingNotification(data: Omit<ShippingEmailData, 'customerEmail'>): React.ReactElement {
     const emailItems = data.items.map(item => ({
-      name: item.name || 'Produkt',
+      name: item.name || 'Termék',
       quantity: item.quantity,
       productSlug: item.productSlug || null,
       categorySlug: item.categorySlug || null,
@@ -317,8 +317,8 @@ export class EmailService {
       orderNumber: data.orderNumber,
       customerName: data.customerName,
       trackingNumber: data.trackingNumber,
-      carrier: data.carrier || 'Najwygodniejsza dostawa',
-      estimatedDelivery: '3-5 dni roboczych',
+      carrier: data.carrier || 'Szállítási szolgáltató',
+      estimatedDelivery: '3-5 munkanap',
       items: emailItems,
       deliveryAddress: data.deliveryAddress,
       orderDate: data.orderDate || new Date(),
@@ -330,7 +330,7 @@ export class EmailService {
    */
   static previewPaymentConfirmation(data: Omit<PaymentEmailData, 'customerEmail'>): React.ReactElement {
     const emailItems = data.items.map(item => ({
-      name: item.name || 'Produkt',
+      name: item.name || 'Termék',
       quantity: item.quantity,
       price: item.price,
       image: item.image || null,
