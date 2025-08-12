@@ -41,22 +41,22 @@ export function CartIcon() {
       className="relative group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 touch-manipulation"
       aria-label={`Kosár - ${totalItems === 0 ? 'üres' : `${totalItems} termék`}`}
     >
-      {/* Icon with subtle animations */}
+      {/* Icon with subtle animations - MODERATELY INCREASED SIZE */}
       <div className="relative">
         <ShoppingBag 
-          size={36}
-          className="text-[#131921] transition-transform duration-200 group-hover:scale-105 w-8 h-8 md:w-[30px] md:h-[30px]"
+          size={40}
+          className="text-[#131921] transition-transform duration-200 group-hover:scale-105 w-9 h-9 md:w-10 md:h-10"
           strokeWidth={1.5}
         />
         
-        {/* Modern minimalist badge */}
+        {/* Modern minimalist badge - ADJUSTED POSITION */}
         {totalItems > 0 && (
           <div 
             className={`
-              absolute -top-2.5 -right-2.5 
+              absolute -top-2 -right-2 
               bg-[#6da306]
               text-white rounded-full
-              min-w-[20px] h-[20px]
+              min-w-[21px] h-[21px]
               flex items-center justify-center
               text-xs font-semibold
               ring-2 ring-white
@@ -73,7 +73,7 @@ export function CartIcon() {
         )}
       </div>
       
-      {/* Text label with count */}
+      {/* Text label with count - SLIGHTLY INCREASED FONT SIZE */}
       <div className="hidden md:flex flex-col items-start">
         <span className="text-xs text-gray-500 leading-tight">Kosár</span>
         <span className="text-sm font-semibold text-[#131921] leading-tight">
@@ -85,7 +85,7 @@ export function CartIcon() {
       <div className={`
         absolute bottom-0 left-1/2 transform -translate-x-1/2
         h-0.5 bg-[#6da306] transition-all duration-300
-        ${totalItems > 0 ? 'w-0 group-hover:w-8' : 'w-0'}
+        ${totalItems > 0 ? 'w-0 group-hover:w-9' : 'w-0'}
       `} />
     </Link>
   );

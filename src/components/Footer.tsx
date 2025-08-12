@@ -113,37 +113,37 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4" style={{ fontSize: '16px' }}>Látogasson el</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/category/artyku-y-biurowe" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/category/irodaszerek" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Irodaszerek
                 </Link>
               </li>
               <li>
-                <Link href="/category/zwierzeta-domowe" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/category/haziallatok" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Háziállatok
                 </Link>
               </li>
               <li>
-                <Link href="/category/inzynieria-elektryczna" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/category/elektromos-szerszamok" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Elektrotechnika
                 </Link>
               </li>
               <li>
-                <Link href="/category/ogrod-i-trawnik" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/category/kert-es-gyep" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Kert és gyep
                 </Link>
               </li>
               <li>
-                <Link href="/category/sklep-z-narzedziami" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/category/barkacsbolt" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Szerszámáruház
                 </Link>
               </li>
               <li>
-                <Link href="/category/spawalniczy" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/category/hegesztes" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Hegesztés
                 </Link>
               </li>
               <li>
-                <Link href="/category/bezpieczenstwo" className="hover:text-white transition" style={{ fontSize: '14px' }}>
+                <Link href="/category/biztonsag" className="hover:text-white transition" style={{ fontSize: '14px' }}>
                   Biztonság
                 </Link>
               </li>
