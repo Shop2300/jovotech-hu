@@ -3,9 +3,9 @@ import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://www.galaxysklep.pl'
+  const baseUrl = 'https://jovotech.hu'
   
-  // Get all products (remove isActive since it doesn't exist in your schema)
+  // Get all products
   const products = await prisma.product.findMany({
     select: {
       slug: true,
@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   })
   
-  // Get all categories (remove isActive check)
+  // Get all categories
   const categories = await prisma.category.findMany({
     select: {
       slug: true,
@@ -69,6 +69,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/cegeknek`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/iskolak-es-kozintezmenyek`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
     },
   ]
   
