@@ -36,6 +36,8 @@ interface InvoiceData {
 
 // Helper function to handle Hungarian and Czech characters
 function hungarianToAscii(text: string): string {
+  if (!text) return '';
+  
   const charMap: { [key: string]: string } = {
     'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ö': 'o', 'ő': 'o', 'ú': 'u', 'ü': 'u', 'ű': 'u',
     'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ö': 'O', 'Ő': 'O', 'Ú': 'U', 'Ü': 'U', 'Ű': 'U',
@@ -50,513 +52,482 @@ function hungarianToAscii(text: string): string {
 
 // Format currency for HUF
 function formatCurrency(amount: number): string {
-  return `${amount.toFixed(0)} Ft`;
+  return `${Math.round(amount)} Ft`;
 }
 
 export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4'
-  });
+  try {
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
 
-  // Get delivery and payment methods from configuration
-  const deliveryMethod = getDeliveryMethod(invoiceData.deliveryMethod);
-  const paymentMethod = getPaymentMethod(invoiceData.paymentMethod);
-  
-  // Use prices from configuration
-  const deliveryPrice = deliveryMethod?.price ?? 0;
-  const paymentFee = paymentMethod?.price ?? 0;
-  
-  // Prepare dates early
-  const issueDate = new Date();
-  const saleDate = new Date(invoiceData.createdAt);
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 14);
-  const orderNumberWithoutDash = invoiceData.orderNumber.replace('-', '');
-  
-  // Fallback delivery names if not in configuration
-  const fallbackDeliveryNames: { [key: string]: string } = {
-    'paczkomat': 'Paczkomat InPost',
-    'kurier': 'Futárszolgálat DPD',
-    'courier': 'Futárszolgálat DPD',
-    'dpd': 'Futárszolgálat DPD',
-    'zasilkovna': 'Legkényelmesebb szállítás',
-    'odbior-osobisty': 'Személyes átvétel',
-    'personal': 'Személyes átvétel'
-  };
-  
-  const deliveryName = deliveryMethod?.labelPl || fallbackDeliveryNames[invoiceData.deliveryMethod] || invoiceData.deliveryMethod || 'Szállítás';
-  const paymentName = paymentMethod?.labelPl || invoiceData.paymentMethod || 'Banki átutalás';
+    // Get delivery and payment methods from configuration
+    const deliveryMethod = getDeliveryMethod(invoiceData.deliveryMethod);
+    const paymentMethod = getPaymentMethod(invoiceData.paymentMethod);
+    
+    // Use prices from configuration
+    const deliveryPrice = deliveryMethod?.price ?? 0;
+    const paymentFee = paymentMethod?.price ?? 0;
+    
+    // Prepare dates
+    const issueDate = new Date();
+    const saleDate = new Date(invoiceData.createdAt);
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 14);
+    const orderNumberWithoutDash = invoiceData.orderNumber.replace('-', '');
+    
+    // Fallback delivery names if not in configuration
+    const fallbackDeliveryNames: { [key: string]: string } = {
+      'paczkomat': 'Paczkomat InPost',
+      'kurier': 'Futarszolgalat DPD',
+      'courier': 'Futarszolgalat DPD',
+      'dpd': 'Futarszolgalat DPD',
+      'zasilkovna': 'Legkenyelmesebb szallitas',
+      'odbior-osobisty': 'Szemelyes atvetel',
+      'personal': 'Szemelyes atvetel'
+    };
+    
+    const deliveryName = deliveryMethod?.labelPl || fallbackDeliveryNames[invoiceData.deliveryMethod] || invoiceData.deliveryMethod || 'Szallitas';
+    const paymentName = paymentMethod?.labelPl || invoiceData.paymentMethod || 'Banki atutalas';
 
-  // Page setup - reduced margins for more space
-  const pageWidth = 210;
-  const pageHeight = 297;
-  const leftMargin = 15;
-  const rightMargin = pageWidth - 15;
-  const contentWidth = rightMargin - leftMargin;
-  let yPosition = 15;
+    // Page setup
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const leftMargin = 15;
+    const rightMargin = pageWidth - 15;
+    const contentWidth = rightMargin - leftMargin;
+    let yPosition = 15;
 
-  // Header - Invoice Title with barcode
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SZÁMLA', leftMargin, yPosition);
-  
-  // Draw barcode next to SZÁMLA
-  const barcodeX = leftMargin + 40;
-  const barcodeY = yPosition - 7;
-  const barcodeHeight = 8;
-  
-  // Draw barcode lines (visual representation only) - longer version
-  doc.setFillColor(0, 0, 0);
-  doc.rect(barcodeX, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 1, barcodeY, 1, barcodeHeight, 'F');
-  doc.rect(barcodeX + 2.5, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 3.5, barcodeY, 1.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 5.5, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 6.5, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 7.5, barcodeY, 1, barcodeHeight, 'F');
-  doc.rect(barcodeX + 9, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 10, barcodeY, 1.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 12, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 13, barcodeY, 1, barcodeHeight, 'F');
-  doc.rect(barcodeX + 14.5, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 15.5, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 16.5, barcodeY, 1.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 18.5, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 19.5, barcodeY, 1, barcodeHeight, 'F');
-  doc.rect(barcodeX + 21, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 22, barcodeY, 1.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 24, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 25, barcodeY, 1, barcodeHeight, 'F');
-  doc.rect(barcodeX + 26.5, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 27.5, barcodeY, 0.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 28.5, barcodeY, 1, barcodeHeight, 'F');
-  doc.rect(barcodeX + 30, barcodeY, 1.5, barcodeHeight, 'F');
-  doc.rect(barcodeX + 32, barcodeY, 0.5, barcodeHeight, 'F');
-  
-  // Invoice number and details
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text(invoiceData.invoiceNumber, rightMargin, yPosition - 3, { align: 'right' });
-  
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.text(hungarianToAscii(`Rendelési szám: ${invoiceData.orderNumber}`), rightMargin, yPosition + 1.5, { align: 'right' });
-  
-  // Add sale date with closer spacing
-  doc.setFontSize(8);
-  doc.text(hungarianToAscii(`Teljesítés dátuma:`), rightMargin - 20, yPosition + 5, { align: 'right' });
-  doc.setFont('helvetica', 'bold');
-  doc.text(format(saleDate, 'yyyy.MM.dd'), rightMargin, yPosition + 5, { align: 'right' });
-  doc.setFont('helvetica', 'normal');
-
-  yPosition += 16;
-
-  // Horizontal line
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
-  doc.line(leftMargin, yPosition, rightMargin, yPosition);
-  yPosition += 8;
-
-  // Two columns for seller and buyer
-  const columnWidth = (contentWidth - 10) / 2;
-  
-  // Seller section with bank info
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('ELADÓ:', leftMargin, yPosition);
-  
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  let sellerY = yPosition + 5;
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Jovotech.hu', leftMargin, sellerY);
-  doc.setFont('helvetica', 'normal');
-  sellerY += 4; // Adjusted for bigger font
-  doc.text(hungarianToAscii('1. máje 535/50'), leftMargin, sellerY);
-  sellerY += 3.5;
-  doc.text('46007 Liberec III-Jerab, Cseh Köztársaság', leftMargin, sellerY);
-  sellerY += 3.5;
-  doc.text('Adószám: 04688465', leftMargin, sellerY);
-  sellerY += 3.5;
-  doc.text('Email: support@jovotech.hu', leftMargin, sellerY);
-  sellerY += 3.5;
-  doc.setFontSize(7);
-  doc.setTextColor(100, 100, 100);
-  doc.text(hungarianToAscii('Az eladó nem ÁFA-fizető'), leftMargin, sellerY);
-  doc.setTextColor(0, 0, 0);
-  doc.setFontSize(8);
-  
-  // Bank info under company
-  sellerY += 5;
-  doc.setFontSize(9); // Bigger font for the headline
-  doc.setFont('helvetica', 'bold');
-  doc.text('Bankszámla:', leftMargin, sellerY);
-  sellerY += 4;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('Számlaszám: ', leftMargin, sellerY);
-  doc.setFontSize(9); // Bigger font for account number
-  doc.setFont('helvetica', 'bold');
-  doc.text('12600016-10426947-95638648', leftMargin + 22, sellerY);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  sellerY += 4;
-  doc.text('IBAN: ', leftMargin, sellerY);
-  doc.setFontSize(9); // Bigger font for IBAN
-  doc.setFont('helvetica', 'bold');
-  doc.text('HU86 1260 0016 1042 6947 9563 8648', leftMargin + 10, sellerY);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  sellerY += 4;
-  doc.text('SWIFT: ', leftMargin, sellerY);
-  doc.setFontSize(9); // Bigger font for SWIFT
-  doc.setFont('helvetica', 'bold');
-  doc.text('TRWIBEBBXXX', leftMargin + 12, sellerY);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  sellerY += 3.5;
-  doc.text('WISE EUROPE S.A., Rue du Trone 100, 1050 Brussels', leftMargin, sellerY);
-
-  // Buyer section
-  const buyerX = leftMargin + columnWidth + 10;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('VEVŐ:', buyerX, yPosition);
-  
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  let buyerY = yPosition + 5;
-  
-  // Company name if exists
-  if (invoiceData.billingCompany) {
+    // Header - Invoice Title
+    doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
-    doc.text(hungarianToAscii(invoiceData.billingCompany), buyerX, buyerY);
+    doc.text('SZAMLA', leftMargin, yPosition);
+    
+    // Invoice number and details
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(hungarianToAscii(invoiceData.invoiceNumber), rightMargin, yPosition - 3, { align: 'right' });
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(hungarianToAscii(`Rendelesi szam: ${invoiceData.orderNumber}`), rightMargin, yPosition + 1.5, { align: 'right' });
+    
+    // Add sale date
+    doc.setFontSize(8);
+    doc.text(hungarianToAscii(`Teljesites datuma:`), rightMargin - 20, yPosition + 5, { align: 'right' });
+    doc.setFont('helvetica', 'bold');
+    doc.text(format(saleDate, 'yyyy.MM.dd'), rightMargin, yPosition + 5, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+
+    yPosition += 16;
+
+    // Horizontal line
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(leftMargin, yPosition, rightMargin, yPosition);
+    yPosition += 8;
+
+    // Two columns for seller and buyer
+    const columnWidth = (contentWidth - 10) / 2;
+    
+    // Seller section
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ELADO:', leftMargin, yPosition);
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    let sellerY = yPosition + 5;
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Jovotech.hu', leftMargin, sellerY);
+    doc.setFont('helvetica', 'normal');
+    sellerY += 4;
+    doc.text(hungarianToAscii('1. maje 535/50'), leftMargin, sellerY);
+    sellerY += 3.5;
+    doc.text('46007 Liberec III-Jerab, Cseh Koztarsasag', leftMargin, sellerY);
+    sellerY += 3.5;
+    doc.text('Adoszam: 04688465', leftMargin, sellerY);
+    sellerY += 3.5;
+    doc.text('Email: support@jovotech.hu', leftMargin, sellerY);
+    sellerY += 3.5;
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text(hungarianToAscii('Az elado nem AFA-fizeto'), leftMargin, sellerY);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(8);
+    
+    // Bank info
+    sellerY += 5;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Bankszamla:', leftMargin, sellerY);
+    sellerY += 4;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Szamlaszam: ', leftMargin, sellerY);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('12600016-10426947-95638648', leftMargin + 22, sellerY);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    sellerY += 4;
+    doc.text('IBAN: ', leftMargin, sellerY);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('HU86 1260 0016 1042 6947 9563 8648', leftMargin + 10, sellerY);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    sellerY += 4;
+    doc.text('SWIFT: ', leftMargin, sellerY);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TRWIBEBBXXX', leftMargin + 12, sellerY);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    sellerY += 3.5;
+    doc.text('WISE EUROPE S.A., Rue du Trone 100, 1050 Brussels', leftMargin, sellerY);
+
+    // Buyer section
+    const buyerX = leftMargin + columnWidth + 10;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('VEVO:', buyerX, yPosition);
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    let buyerY = yPosition + 5;
+    
+    // Company name if exists
+    if (invoiceData.billingCompany) {
+      doc.setFont('helvetica', 'bold');
+      doc.text(hungarianToAscii(invoiceData.billingCompany), buyerX, buyerY);
+      doc.setFont('helvetica', 'normal');
+      buyerY += 3.5;
+      if (invoiceData.billingNip) {
+        doc.text(`Adoszam: ${invoiceData.billingNip}`, buyerX, buyerY);
+        buyerY += 3.5;
+      }
+    }
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text(hungarianToAscii(`${invoiceData.billingFirstName} ${invoiceData.billingLastName}`), buyerX, buyerY);
     doc.setFont('helvetica', 'normal');
     buyerY += 3.5;
-    if (invoiceData.billingNip) {
-      doc.text(`Adószám: ${invoiceData.billingNip}`, buyerX, buyerY);
-      buyerY += 3.5;
-    }
-  }
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text(hungarianToAscii(`${invoiceData.billingFirstName} ${invoiceData.billingLastName}`), buyerX, buyerY);
-  doc.setFont('helvetica', 'normal');
-  buyerY += 3.5;
-  doc.text(hungarianToAscii(invoiceData.billingAddress), buyerX, buyerY);
-  buyerY += 3.5;
-  doc.text(hungarianToAscii(`${invoiceData.billingPostalCode} ${invoiceData.billingCity}`), buyerX, buyerY);
-  buyerY += 3.5;
-  doc.text(hungarianToAscii(invoiceData.billingCountry || 'Magyarország'), buyerX, buyerY);
-  buyerY += 3.5;
-  doc.text(`Email: ${invoiceData.customerEmail}`, buyerX, buyerY);
-  buyerY += 3.5;
-  doc.text(`Tel: ${invoiceData.customerPhone}`, buyerX, buyerY);
+    doc.text(hungarianToAscii(invoiceData.billingAddress), buyerX, buyerY);
+    buyerY += 3.5;
+    doc.text(hungarianToAscii(`${invoiceData.billingPostalCode} ${invoiceData.billingCity}`), buyerX, buyerY);
+    buyerY += 3.5;
+    doc.text(hungarianToAscii(invoiceData.billingCountry || 'Magyarorszag'), buyerX, buyerY);
+    buyerY += 3.5;
+    doc.text(`Email: ${invoiceData.customerEmail}`, buyerX, buyerY);
+    buyerY += 3.5;
+    doc.text(`Tel: ${invoiceData.customerPhone}`, buyerX, buyerY);
 
-  yPosition = Math.max(sellerY + 3, buyerY) + 8;
+    yPosition = Math.max(sellerY + 3, buyerY) + 8;
 
-  // Dates section with payment info - horizontal layout
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.2);
-  doc.rect(leftMargin, yPosition - 4, contentWidth, 15);
-  
-  const dateY = yPosition;
-  
-  doc.setFontSize(8);
-  // First row - dates
-  doc.text('Kiállítás dátuma: ', leftMargin + 3, dateY);
-  doc.setFont('helvetica', 'bold');
-  doc.text(format(issueDate, 'yyyy.MM.dd'), leftMargin + 30, dateY);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.text(hungarianToAscii('Teljesítés dátuma: '), leftMargin + 65, dateY);
-  doc.setFont('helvetica', 'bold');
-  doc.text(format(saleDate, 'yyyy.MM.dd'), leftMargin + 93, dateY);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.text(hungarianToAscii('Fizetési határidő: '), leftMargin + 125, dateY);
-  doc.setFont('helvetica', 'bold');
-  doc.text(format(dueDate, 'yyyy.MM.dd'), leftMargin + 152, dateY);
-  
-  // Second row - payment info
-  doc.setFont('helvetica', 'normal');
-  doc.text(hungarianToAscii('Fizetési mód: '), leftMargin + 3, dateY + 5);
-  doc.setFont('helvetica', 'bold');
-  doc.text(hungarianToAscii(paymentName), leftMargin + 25, dateY + 5);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.text(hungarianToAscii('Átutalás közlemény: '), leftMargin + 90, dateY + 5);
-  doc.setFont('helvetica', 'bold');
-  doc.text(hungarianToAscii(orderNumberWithoutDash), leftMargin + 120, dateY + 5);
-  
-  doc.setFont('helvetica', 'normal');
-  yPosition += 18;
-
-  // Items table - simplified
-  doc.setFillColor(0, 0, 0);
-  doc.rect(leftMargin, yPosition - 4, contentWidth, 6, 'F');
-  
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Ssz.', leftMargin + 2, yPosition);
-  doc.text(hungarianToAscii('Termék/szolgáltatás megnevezése'), leftMargin + 10, yPosition);
-  doc.text(hungarianToAscii('Menny.'), leftMargin + 130, yPosition, { align: 'center' });
-  doc.text('Egységár', leftMargin + 150, yPosition, { align: 'right' });
-  doc.text(hungarianToAscii('Érték'), rightMargin - 2, yPosition, { align: 'right' });
-  
-  doc.setTextColor(0, 0, 0);
-  yPosition += 7;
-  
-  // Table items
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  
-  let itemNumber = 1;
-  let subtotal = 0;
-  
-  // Products
-  invoiceData.items.forEach((item) => {
-    const itemTotal = item.price * item.quantity;
-    subtotal += itemTotal;
+    // Dates section
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
+    doc.rect(leftMargin, yPosition - 4, contentWidth, 15);
     
+    const dateY = yPosition;
+    
+    doc.setFontSize(8);
+    // First row - dates
+    doc.text('Kiallitas datuma: ', leftMargin + 3, dateY);
+    doc.setFont('helvetica', 'bold');
+    doc.text(format(issueDate, 'yyyy.MM.dd'), leftMargin + 30, dateY);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(hungarianToAscii('Teljesites datuma: '), leftMargin + 65, dateY);
+    doc.setFont('helvetica', 'bold');
+    doc.text(format(saleDate, 'yyyy.MM.dd'), leftMargin + 93, dateY);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(hungarianToAscii('Fizetesi hatarido: '), leftMargin + 125, dateY);
+    doc.setFont('helvetica', 'bold');
+    doc.text(format(dueDate, 'yyyy.MM.dd'), leftMargin + 152, dateY);
+    
+    // Second row - payment info
+    doc.setFont('helvetica', 'normal');
+    doc.text(hungarianToAscii('Fizetesi mod: '), leftMargin + 3, dateY + 5);
+    doc.setFont('helvetica', 'bold');
+    doc.text(hungarianToAscii(paymentName), leftMargin + 25, dateY + 5);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(hungarianToAscii('Atutalas kozlemeny: '), leftMargin + 90, dateY + 5);
+    doc.setFont('helvetica', 'bold');
+    doc.text(hungarianToAscii(orderNumberWithoutDash), leftMargin + 120, dateY + 5);
+    
+    doc.setFont('helvetica', 'normal');
+    yPosition += 18;
+
+    // Items table header
+    doc.setFillColor(0, 0, 0);
+    doc.rect(leftMargin, yPosition - 4, contentWidth, 6, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Ssz.', leftMargin + 2, yPosition);
+    doc.text(hungarianToAscii('Termek/szolgaltatas megnevezese'), leftMargin + 10, yPosition);
+    doc.text(hungarianToAscii('Menny.'), leftMargin + 130, yPosition, { align: 'center' });
+    doc.text('Egysegar', leftMargin + 150, yPosition, { align: 'right' });
+    doc.text(hungarianToAscii('Ertek'), rightMargin - 2, yPosition, { align: 'right' });
+    
+    doc.setTextColor(0, 0, 0);
+    yPosition += 7;
+    
+    // Table items
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    
+    let itemNumber = 1;
+    let subtotal = 0;
+    
+    // Products
+    invoiceData.items.forEach((item) => {
+      const itemTotal = item.price * item.quantity;
+      subtotal += itemTotal;
+      
+      doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
+      
+      const maxNameLength = 75;
+      const itemName = hungarianToAscii(item.name || 'Termek');
+      const displayName = itemName.length > maxNameLength ? 
+        itemName.substring(0, maxNameLength) + '...' : itemName;
+      
+      doc.text(displayName, leftMargin + 10, yPosition);
+      doc.text(item.quantity.toString(), leftMargin + 130, yPosition, { align: 'center' });
+      doc.text(formatCurrency(item.price), leftMargin + 150, yPosition, { align: 'right' });
+      doc.text(formatCurrency(itemTotal), rightMargin - 2, yPosition, { align: 'right' });
+      
+      yPosition += 5;
+      itemNumber++;
+    });
+
+    // Delivery
     doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
+    doc.text(hungarianToAscii(`Szallitas - ${deliveryName}`), leftMargin + 10, yPosition);
+    doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
+    doc.text(formatCurrency(deliveryPrice), leftMargin + 150, yPosition, { align: 'right' });
+    doc.text(formatCurrency(deliveryPrice), rightMargin - 2, yPosition, { align: 'right' });
     
-    // Truncate long product names
-    const maxNameLength = 75;
-    const itemName = hungarianToAscii(item.name || 'Termék');
-    const displayName = itemName.length > maxNameLength ? 
-      itemName.substring(0, maxNameLength) + '...' : itemName;
-    
-    doc.text(displayName, leftMargin + 10, yPosition);
-    doc.text(item.quantity.toString(), leftMargin + 130, yPosition, { align: 'center' });
-    doc.text(formatCurrency(item.price), leftMargin + 150, yPosition, { align: 'right' });
-    doc.text(formatCurrency(itemTotal), rightMargin - 2, yPosition, { align: 'right' });
-    
+    subtotal += deliveryPrice;
     yPosition += 5;
     itemNumber++;
-  });
-
-  // Delivery - Always show delivery line
-  doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
-  doc.text(hungarianToAscii(`Szállítás - ${deliveryName}`), leftMargin + 10, yPosition);
-  doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
-  doc.text(formatCurrency(deliveryPrice), leftMargin + 150, yPosition, { align: 'right' });
-  doc.text(formatCurrency(deliveryPrice), rightMargin - 2, yPosition, { align: 'right' });
-  
-  subtotal += deliveryPrice;
-  yPosition += 5;
-  itemNumber++;
-  
-  // Payment method - Always show
-  doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
-  doc.text(hungarianToAscii(`Fizetés - ${paymentName}`), leftMargin + 10, yPosition);
-  doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
-  doc.text(formatCurrency(paymentFee), leftMargin + 150, yPosition, { align: 'right' });
-  doc.text(formatCurrency(paymentFee), rightMargin - 2, yPosition, { align: 'right' });
-  
-  subtotal += paymentFee;
-  yPosition += 5;
-
-  // Summary line
-  doc.setLineWidth(0.5);
-  doc.line(leftMargin, yPosition, rightMargin, yPosition);
-  yPosition += 6;
-
-  // Total
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text(hungarianToAscii('FIZETENDŐ ÖSSZESEN:'), leftMargin + 90, yPosition);
-  doc.setFontSize(14);
-  doc.text(formatCurrency(invoiceData.total), rightMargin - 2, yPosition, { align: 'right' });
-  
-  yPosition += 6;
-  
-  // Amount in words
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  const amountInWords = hungarianToAscii(numberToHungarianWords(invoiceData.total));
-  doc.text(hungarianToAscii(`Azaz: ${amountInWords}`), leftMargin, yPosition);
-
-  // Payment details section - compact
-  yPosition += 10;
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.2);
-  doc.rect(leftMargin, yPosition - 4, contentWidth, 25);
-  
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  doc.text(hungarianToAscii('FIZETÉSI ADATOK:'), leftMargin + 3, yPosition);
-  
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  yPosition += 5;
-  
-  // Payment info in columns
-  doc.text(hungarianToAscii('Fizetési mód: '), leftMargin + 3, yPosition);
-  doc.setFont('helvetica', 'bold');
-  doc.text(hungarianToAscii(paymentName), leftMargin + 25, yPosition);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.text(hungarianToAscii('Átutalás közlemény: '), leftMargin + 100, yPosition);
-  doc.setFont('helvetica', 'bold');
-  doc.text(hungarianToAscii(orderNumberWithoutDash), leftMargin + 130, yPosition);
-  
-  doc.setFont('helvetica', 'normal');
-  yPosition += 5;
-  doc.text('Számlaszám: ', leftMargin + 3, yPosition);
-  doc.setFontSize(9); // Bigger font for account number
-  doc.setFont('helvetica', 'bold');
-  doc.text('12600016-10426947-95638648', leftMargin + 25, yPosition);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  yPosition += 5;
-  doc.text('IBAN: ', leftMargin + 3, yPosition);
-  doc.setFontSize(9); // Bigger font for IBAN
-  doc.setFont('helvetica', 'bold');
-  doc.text('HU86 1260 0016 1042 6947 9563 8648', leftMargin + 13, yPosition);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('SWIFT/BIC: ', leftMargin + 100, yPosition);
-  doc.setFontSize(9); // Bigger font for SWIFT
-  doc.setFont('helvetica', 'bold');
-  doc.text('TRWIBEBBXXX', leftMargin + 120, yPosition);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  yPosition += 5;
-  doc.text('Bank: WISE EUROPE S.A., Rue du Trone 100, 1050 Brussels', leftMargin + 3, yPosition);
-
-  yPosition += 12;
-
-  // Shipping address and notes - same height
-  const showShippingAddress = invoiceData.shippingAddress && 
-    (invoiceData.shippingAddress !== invoiceData.billingAddress ||
-     invoiceData.shippingCity !== invoiceData.billingCity);
-  
-  const hasNotes = invoiceData.notes && invoiceData.notes.trim();
-  
-  if (showShippingAddress || hasNotes) {
-    const boxHeight = 20;
-    const boxY = yPosition - 4;
     
-    // Shipping address box
-    if (showShippingAddress) {
-      const shippingBoxWidth = hasNotes ? (contentWidth / 2 - 2.5) : contentWidth;
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.2);
-      doc.rect(leftMargin, boxY, shippingBoxWidth, boxHeight);
+    // Payment method
+    doc.text(itemNumber.toString() + '.', leftMargin + 2, yPosition);
+    doc.text(hungarianToAscii(`Fizetes - ${paymentName}`), leftMargin + 10, yPosition);
+    doc.text('1', leftMargin + 130, yPosition, { align: 'center' });
+    doc.text(formatCurrency(paymentFee), leftMargin + 150, yPosition, { align: 'right' });
+    doc.text(formatCurrency(paymentFee), rightMargin - 2, yPosition, { align: 'right' });
+    
+    subtotal += paymentFee;
+    yPosition += 5;
+
+    // Summary line
+    doc.setLineWidth(0.5);
+    doc.line(leftMargin, yPosition, rightMargin, yPosition);
+    yPosition += 6;
+
+    // Total
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(hungarianToAscii('FIZETENDO OSSZESEN:'), leftMargin + 90, yPosition);
+    doc.setFontSize(14);
+    doc.text(formatCurrency(invoiceData.total), rightMargin - 2, yPosition, { align: 'right' });
+    
+    yPosition += 6;
+    
+    // Amount in words
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    const amountInWords = hungarianToAscii(numberToHungarianWords(invoiceData.total));
+    doc.text(hungarianToAscii(`Azaz: ${amountInWords}`), leftMargin, yPosition);
+
+    // Payment details section
+    yPosition += 10;
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
+    doc.rect(leftMargin, yPosition - 4, contentWidth, 25);
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text(hungarianToAscii('FIZETESI ADATOK:'), leftMargin + 3, yPosition);
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    yPosition += 5;
+    
+    // Payment info
+    doc.text(hungarianToAscii('Fizetesi mod: '), leftMargin + 3, yPosition);
+    doc.setFont('helvetica', 'bold');
+    doc.text(hungarianToAscii(paymentName), leftMargin + 25, yPosition);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(hungarianToAscii('Atutalas kozlemeny: '), leftMargin + 100, yPosition);
+    doc.setFont('helvetica', 'bold');
+    doc.text(hungarianToAscii(orderNumberWithoutDash), leftMargin + 130, yPosition);
+    
+    doc.setFont('helvetica', 'normal');
+    yPosition += 5;
+    doc.text('Szamlaszam: ', leftMargin + 3, yPosition);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('12600016-10426947-95638648', leftMargin + 25, yPosition);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    yPosition += 5;
+    doc.text('IBAN: ', leftMargin + 3, yPosition);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('HU86 1260 0016 1042 6947 9563 8648', leftMargin + 13, yPosition);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('SWIFT/BIC: ', leftMargin + 100, yPosition);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TRWIBEBBXXX', leftMargin + 120, yPosition);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    yPosition += 5;
+    doc.text('Bank: WISE EUROPE S.A., Rue du Trone 100, 1050 Brussels', leftMargin + 3, yPosition);
+
+    yPosition += 12;
+
+    // Shipping address and notes - optional sections
+    const showShippingAddress = invoiceData.shippingAddress && 
+      (invoiceData.shippingAddress !== invoiceData.billingAddress ||
+       invoiceData.shippingCity !== invoiceData.billingCity);
+    
+    const hasNotes = invoiceData.notes && invoiceData.notes.trim();
+    
+    if (showShippingAddress || hasNotes) {
+      const boxHeight = 20;
+      const boxY = yPosition - 4;
       
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('SZÁLLÍTÁSI CÍM:', leftMargin + 3, boxY + 4);
-      
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      let shippingY = boxY + 8;
-      doc.text(hungarianToAscii(`${invoiceData.shippingFirstName || invoiceData.billingFirstName} ${invoiceData.shippingLastName || invoiceData.billingLastName}`), leftMargin + 3, shippingY);
-      shippingY += 3.5;
-      if (invoiceData.shippingAddress) {
-        doc.text(hungarianToAscii(invoiceData.shippingAddress), leftMargin + 3, shippingY);
+      // Shipping address box
+      if (showShippingAddress) {
+        const shippingBoxWidth = hasNotes ? (contentWidth / 2 - 2.5) : contentWidth;
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.2);
+        doc.rect(leftMargin, boxY, shippingBoxWidth, boxHeight);
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SZALLITASI CIM:', leftMargin + 3, boxY + 4);
+        
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        let shippingY = boxY + 8;
+        doc.text(hungarianToAscii(`${invoiceData.shippingFirstName || invoiceData.billingFirstName} ${invoiceData.shippingLastName || invoiceData.billingLastName}`), leftMargin + 3, shippingY);
         shippingY += 3.5;
+        if (invoiceData.shippingAddress) {
+          doc.text(hungarianToAscii(invoiceData.shippingAddress), leftMargin + 3, shippingY);
+          shippingY += 3.5;
+        }
+        if (invoiceData.shippingPostalCode || invoiceData.shippingCity) {
+          doc.text(hungarianToAscii(`${invoiceData.shippingPostalCode || ''} ${invoiceData.shippingCity || ''}`), leftMargin + 3, shippingY);
+        }
       }
-      if (invoiceData.shippingPostalCode || invoiceData.shippingCity) {
-        doc.text(hungarianToAscii(`${invoiceData.shippingPostalCode || ''} ${invoiceData.shippingCity || ''}`), leftMargin + 3, shippingY);
+      
+      // Notes box
+      if (hasNotes) {
+        const notesX = showShippingAddress ? (leftMargin + contentWidth / 2 + 2.5) : leftMargin;
+        const notesWidth = showShippingAddress ? (contentWidth / 2 - 2.5) : contentWidth;
+        
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.2);
+        doc.rect(notesX, boxY, notesWidth, boxHeight);
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('MEGJEGYZESEK:', notesX + 3, boxY + 4);
+        
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        
+        const noteLines = doc.splitTextToSize(hungarianToAscii(invoiceData.notes || ''), notesWidth - 6);
+        let noteY = boxY + 8;
+        noteLines.slice(0, 3).forEach((line: string) => {
+          doc.text(line, notesX + 3, noteY);
+          noteY += 3.5;
+        });
       }
+      
+      yPosition += boxHeight + 5;
     }
+
+    // Signature areas
+    const footerY = Math.min(yPosition + 10, pageHeight - 42);
     
-    // Notes box
-    if (hasNotes) {
-      const notesX = showShippingAddress ? (leftMargin + contentWidth / 2 + 2.5) : leftMargin;
-      const notesWidth = showShippingAddress ? (contentWidth / 2 - 2.5) : contentWidth;
-      
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.2);
-      doc.rect(notesX, boxY, notesWidth, boxHeight);
-      
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('MEGJEGYZÉSEK:', notesX + 3, boxY + 4);
-      
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      
-      const noteLines = doc.splitTextToSize(hungarianToAscii(invoiceData.notes || ''), notesWidth - 6);
-      let noteY = boxY + 8;
-      noteLines.slice(0, 3).forEach((line: string) => {
-        doc.text(line, notesX + 3, noteY);
-        noteY += 3.5;
-      });
-    }
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(150, 150, 150);
     
-    yPosition += boxHeight + 5;
+    // Draw signature lines
+    doc.setDrawColor(150, 150, 150);
+    doc.setLineWidth(0.2);
+    doc.line(leftMargin, footerY, leftMargin + 60, footerY);
+    doc.line(rightMargin - 60, footerY, rightMargin, footerY);
+    
+    doc.text(hungarianToAscii('A szamla kiallitasara'), leftMargin + 30, footerY + 4, { align: 'center' });
+    doc.text(hungarianToAscii('jogosult szemely alairasa'), leftMargin + 30, footerY + 7, { align: 'center' });
+    
+    doc.text(hungarianToAscii('A szamla atvetelere'), rightMargin - 30, footerY + 4, { align: 'center' });
+    doc.text(hungarianToAscii('jogosult szemely alairasa'), rightMargin - 30, footerY + 7, { align: 'center' });
+
+    // Bottom line
+    doc.setTextColor(0, 0, 0);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(leftMargin, pageHeight - 24, rightMargin, pageHeight - 24);
+    
+    // Company footer
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'normal');
+    
+    doc.text(
+      hungarianToAscii('Jovotech.hu • 1. maje 535/50, 46007 Liberec III-Jerab • Adoszam: 04688465 • Email: support@jovotech.hu • www.jovotech.hu'),
+      pageWidth / 2,
+      pageHeight - 21,
+      { align: 'center', maxWidth: 180 }
+    );
+    
+    doc.setFontSize(6);
+    const footerText1 = hungarianToAscii('Kulfoldi vallalkozo magyarorszagi ertekesitessel. Penztargep hasznalatat kotelezettsege alol mentesitett tevekenyseg.');
+    const footerText2 = hungarianToAscii('A szamla a 2007. evi CXXVII. torveny az altalanos forgalmi adorol szolo jogszabaly alapjan kerult kiallitasra.');
+    
+    doc.text(
+      footerText1,
+      pageWidth / 2,
+      pageHeight - 17,
+      { align: 'center', maxWidth: 170 }
+    );
+    doc.text(
+      footerText2,
+      pageWidth / 2,
+      pageHeight - 14,
+      { align: 'center', maxWidth: 150 }
+    );
+    
+    // Page number
+    doc.setFontSize(6);
+    doc.text('Oldal 1 / 1', pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+    return doc;
+  } catch (error) {
+    console.error('Error in generateInvoicePDF:', error);
+    throw error;
   }
-
-  // Signature areas - with light grey
-  const footerY = Math.min(yPosition + 10, pageHeight - 42);
-  
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(150, 150, 150); // Light grey
-  
-  // Draw signature lines in grey
-  doc.setDrawColor(150, 150, 150);
-  doc.setLineWidth(0.2);
-  doc.line(leftMargin, footerY, leftMargin + 60, footerY);
-  doc.line(rightMargin - 60, footerY, rightMargin, footerY);
-  
-  doc.text(hungarianToAscii('A számla kiállítására'), leftMargin + 30, footerY + 4, { align: 'center' });
-  doc.text(hungarianToAscii('jogosult személy aláírása'), leftMargin + 30, footerY + 7, { align: 'center' });
-  
-  doc.text(hungarianToAscii('A számla átvételére'), rightMargin - 30, footerY + 4, { align: 'center' });
-  doc.text(hungarianToAscii('jogosult személy aláírása'), rightMargin - 30, footerY + 7, { align: 'center' });
-
-  // Bottom line
-  doc.setTextColor(0, 0, 0);
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
-  doc.line(leftMargin, pageHeight - 24, rightMargin, pageHeight - 24);
-  
-  // Company footer with more jurisdictional text - all in one line
-  doc.setFontSize(6); // Slightly smaller to fit in one line
-  doc.setFont('helvetica', 'normal');
-  
-  // All info in one line
-  doc.text(
-    hungarianToAscii('Jovotech.hu • 1. máje 535/50, 46007 Liberec III-Jeřáb • Adószám: 04688465 • Email: support@jovotech.hu • www.jovotech.hu'),
-    pageWidth / 2,
-    pageHeight - 21,
-    { align: 'center', maxWidth: 180 }
-  );
-  
-  doc.setFontSize(6);
-  // Wider text by adjusting maxWidth parameter
-  const footerText1 = hungarianToAscii('Külföldi vállalkozó magyarországi értékesítéssel. Pénztárgép használatának kötelezettsége alól mentesített tevékenység.');
-  const footerText2 = hungarianToAscii('A számla a 2007. évi CXXVII. törvény az általános forgalmi adóról szóló jogszabály alapján került kiállításra.');
-  
-  doc.text(
-    footerText1,
-    pageWidth / 2,
-    pageHeight - 17,
-    { align: 'center', maxWidth: 170 }
-  );
-  doc.text(
-    footerText2,
-    pageWidth / 2,
-    pageHeight - 14,
-    { align: 'center', maxWidth: 150 }
-  );
-  
-  // Page number
-  doc.setFontSize(6);
-  doc.text('Oldal 1 / 1', pageWidth / 2, pageHeight - 10, { align: 'center' });
-
-  return doc;
 }
 
 // Helper function to convert numbers to Hungarian words
@@ -564,10 +535,10 @@ function numberToHungarianWords(amount: number): string {
   const forint = Math.floor(amount);
   
   // Basic conversion for common amounts
-  const ones = ['', 'egy', 'kettő', 'három', 'négy', 'öt', 'hat', 'hét', 'nyolc', 'kilenc'];
-  const teens = ['tíz', 'tizenegy', 'tizenkettő', 'tizenhárom', 'tizennégy', 'tizenöt', 'tizenhat', 'tizenhét', 'tizennyolc', 'tizenkilenc'];
-  const tens = ['', '', 'húsz', 'harminc', 'negyven', 'ötven', 'hatvan', 'hetven', 'nyolcvan', 'kilencven'];
-  const hundreds = ['', 'száz', 'kétszáz', 'háromszáz', 'négyszáz', 'ötszáz', 'hatszáz', 'hétszáz', 'nyolcszáz', 'kilencszáz'];
+  const ones = ['', 'egy', 'ketto', 'harom', 'negy', 'ot', 'hat', 'het', 'nyolc', 'kilenc'];
+  const teens = ['tiz', 'tizenegy', 'tizenketto', 'tizenharom', 'tizennegy', 'tizenot', 'tizenhat', 'tizenhet', 'tizennyolc', 'tizenkilenc'];
+  const tens = ['', '', 'husz', 'harminc', 'negyven', 'otven', 'hatvan', 'hetven', 'nyolcvan', 'kilencven'];
+  const hundreds = ['', 'szaz', 'ketszaz', 'haromszaz', 'negyszaz', 'otszaz', 'hatszaz', 'hetszaz', 'nyolcszaz', 'kilencszaz'];
   
   function convertHundreds(n: number): string {
     if (n === 0) return '';

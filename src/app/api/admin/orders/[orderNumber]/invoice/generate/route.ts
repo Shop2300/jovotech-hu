@@ -13,10 +13,11 @@ export async function POST(
   if (authResponse) return authResponse;
 
   const { orderNumber } = await params;
+  let order: any = null; // Declare order in outer scope
 
   try {
     // Fetch order by orderNumber with complete data
-    const order = await prisma.order.findUnique({
+    order = await prisma.order.findUnique({
       where: { orderNumber },
       include: { invoice: true }
     });
@@ -31,7 +32,11 @@ export async function POST(
     // Check if invoice already exists
     if (order.invoice) {
       return NextResponse.json(
-        { error: 'Invoice already exists', invoice: order.invoice },
+        { 
+          success: true,
+          invoice: order.invoice,
+          message: 'Invoice already exists'
+        },
         { status: 200 }
       );
     }
@@ -48,7 +53,7 @@ export async function POST(
     
     const invoiceNumber = `FAK${year}${order.orderNumber}`;
 
-    // Create invoice record - NO VAT since Galaxy Sklep is not a VAT payer
+    // Create invoice record first (without PDF)
     const invoice = await prisma.invoice.create({
       data: {
         invoiceNumber,
@@ -59,10 +64,17 @@ export async function POST(
       }
     });
 
-    // Generate PDF
     try {
-      // Parse order items
-      const items = order.items as any[];
+      // Parse order items - handle as JSON
+      let items = [];
+      try {
+        items = typeof order.items === 'string' 
+          ? JSON.parse(order.items as string)
+          : order.items as any[];
+      } catch (parseError) {
+        console.error('Error parsing order items:', parseError);
+        items = [];
+      }
       
       // Ensure delivery and payment methods have values
       const deliveryMethod = order.deliveryMethod || 'zasilkovna';
@@ -73,25 +85,25 @@ export async function POST(
         invoiceNumber: invoice.invoiceNumber,
         orderNumber: order.orderNumber,
         createdAt: order.createdAt.toISOString(),
-        customerEmail: order.customerEmail,
+        customerEmail: order.customerEmail || '',
         customerPhone: order.customerPhone || '',
         billingFirstName: order.billingFirstName || order.firstName || '',
         billingLastName: order.billingLastName || order.lastName || '',
         billingAddress: order.billingAddress || order.address || '',
         billingCity: order.billingCity || order.city || '',
         billingPostalCode: order.billingPostalCode || order.postalCode || '',
-        billingCountry: 'Polska', // Default to Poland
-        billingCompany: order.companyName || '', // Company name from order
-        billingNip: order.companyNip || '', // Company NIP from order
-        shippingFirstName: order.useDifferentDelivery ? (order.deliveryFirstName || '') : (order.billingFirstName || ''),
-        shippingLastName: order.useDifferentDelivery ? (order.deliveryLastName || '') : (order.billingLastName || ''),
-        shippingAddress: order.useDifferentDelivery ? (order.deliveryAddress || '') : (order.billingAddress || ''),
-        shippingCity: order.useDifferentDelivery ? (order.deliveryCity || '') : (order.billingCity || ''),
-        shippingPostalCode: order.useDifferentDelivery ? (order.deliveryPostalCode || '') : (order.billingPostalCode || ''),
-        items: items.map(item => ({
+        billingCountry: 'Magyarorszag', // Default to Hungary
+        billingCompany: order.companyName || '',
+        billingNip: order.companyNip || '',
+        shippingFirstName: order.useDifferentDelivery ? (order.deliveryFirstName || '') : (order.billingFirstName || order.firstName || ''),
+        shippingLastName: order.useDifferentDelivery ? (order.deliveryLastName || '') : (order.billingLastName || order.lastName || ''),
+        shippingAddress: order.useDifferentDelivery ? (order.deliveryAddress || '') : (order.billingAddress || order.address || ''),
+        shippingCity: order.useDifferentDelivery ? (order.deliveryCity || '') : (order.billingCity || order.city || ''),
+        shippingPostalCode: order.useDifferentDelivery ? (order.deliveryPostalCode || '') : (order.billingPostalCode || order.postalCode || ''),
+        items: items.map((item: any) => ({
           name: item.name || 'Product',
-          quantity: item.quantity,
-          price: item.price
+          quantity: item.quantity || 1,
+          price: item.price || 0
         })),
         total: Number(order.total),
         paymentMethod: paymentMethod,
@@ -105,8 +117,7 @@ export async function POST(
       // Convert jsPDF to Buffer
       const pdfBuffer = Buffer.from(pdfDoc.output('arraybuffer'));
       
-      // Upload to Vercel Blob Storage with a unique timestamp to avoid caching issues
-      // This ensures we always get a fresh PDF even if regenerating
+      // Upload to Vercel Blob Storage with a unique timestamp
       const timestamp = Date.now();
       const { url } = await put(
         `invoices/${invoiceNumber}_${timestamp}.pdf`,
@@ -141,21 +152,70 @@ export async function POST(
 
       return NextResponse.json({ 
         success: true, 
-        invoice: updatedInvoice 
+        invoice: updatedInvoice,
+        message: 'Invoice generated successfully'
       });
 
     } catch (pdfError) {
-      // If PDF generation fails, delete the invoice record
-      await prisma.invoice.delete({
-        where: { id: invoice.id }
+      console.error('PDF generation error:', pdfError);
+      
+      // Don't delete the invoice record - keep it even if PDF fails
+      // Just log the error but keep the invoice record
+      const updatedInvoice = await prisma.invoice.update({
+        where: { id: invoice.id },
+        data: { 
+          pdfUrl: null // Mark that PDF generation failed
+        }
       });
-      throw pdfError;
+
+      // Still add to order history with error info
+      await prisma.orderHistory.create({
+        data: {
+          orderId: order.id,
+          action: 'invoice_generation_partial',
+          description: `Invoice ${invoiceNumber} created but PDF generation failed`,
+          newValue: invoiceNumber,
+          metadata: {
+            invoiceId: invoice.id,
+            error: pdfError instanceof Error ? pdfError.message : 'Unknown error'
+          }
+        }
+      });
+
+      return NextResponse.json({ 
+        success: true, 
+        invoice: updatedInvoice,
+        warning: 'Invoice created but PDF generation failed. You can try regenerating it later.',
+        error: pdfError instanceof Error ? pdfError.message : 'Unknown error'
+      });
     }
 
   } catch (error) {
     console.error('Error generating invoice:', error);
+    
+    // Clean up any created invoice if the main process fails
+    try {
+      const partialInvoice = await prisma.invoice.findFirst({
+        where: { 
+          orderId: order?.id,
+          pdfUrl: null 
+        }
+      });
+      
+      if (partialInvoice) {
+        await prisma.invoice.delete({
+          where: { id: partialInvoice.id }
+        });
+      }
+    } catch (cleanupError) {
+      console.error('Cleanup error:', cleanupError);
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to generate invoice' },
+      { 
+        error: 'Failed to generate invoice',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
