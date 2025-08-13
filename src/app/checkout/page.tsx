@@ -432,8 +432,7 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         {...register('companyNip', { 
-                          required: isCompany ? 'Az adószám megadása kötelező' : false,
-                          validate: isCompany ? validateNIP : undefined
+                          required: isCompany ? 'Az adószám megadása kötelező' : false
                         })}
                         inputMode="numeric"
                         className="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"

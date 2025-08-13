@@ -41,11 +41,11 @@ export function CartIcon() {
       className="relative group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 touch-manipulation"
       aria-label={`Kosár - ${totalItems === 0 ? 'üres' : `${totalItems} termék`}`}
     >
-      {/* Icon with subtle animations - MODERATELY INCREASED SIZE */}
+      {/* Icon with subtle animations - REDUCED SIZE */}
       <div className="relative">
         <ShoppingBag 
-          size={40}
-          className="text-[#131921] transition-transform duration-200 group-hover:scale-105 w-9 h-9 md:w-10 md:h-10"
+          size={32}
+          className="text-[#131921] transition-transform duration-200 group-hover:scale-105 w-7 h-7 md:w-8 md:h-8"
           strokeWidth={1.5}
         />
         
@@ -53,10 +53,10 @@ export function CartIcon() {
         {totalItems > 0 && (
           <div 
             className={`
-              absolute -top-2 -right-2 
+              absolute -top-1.5 -right-1.5 
               bg-[#6da306]
               text-white rounded-full
-              min-w-[21px] h-[21px]
+              min-w-[20px] h-[20px]
               flex items-center justify-center
               text-xs font-semibold
               ring-2 ring-white
@@ -73,10 +73,10 @@ export function CartIcon() {
         )}
       </div>
       
-      {/* Text label with count - SLIGHTLY INCREASED FONT SIZE */}
+      {/* Text label with count - INCREASED FONT SIZE */}
       <div className="hidden md:flex flex-col items-start">
-        <span className="text-xs text-gray-500 leading-tight">Kosár</span>
-        <span className="text-sm font-semibold text-[#131921] leading-tight">
+        <span className="text-sm text-gray-500 leading-tight">Kosár</span>
+        <span className="text-base font-semibold text-[#131921] leading-tight">
           {totalItems === 0 ? 'üres' : `${totalItems} termék`}
         </span>
       </div>
