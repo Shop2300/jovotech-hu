@@ -22,6 +22,7 @@ import {
 import Link from 'next/link';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SatisfactionRating } from '@/components/SatisfactionRating';
+import { InvoiceDownloadButton } from '@/components/InvoiceDownloadButton';
 import { getDeliveryMethodLabel, getPaymentMethodLabel, getDeliveryMethod, getPaymentMethod } from '@/lib/order-options';
 import SimpleQRDisplay from '@/components/SimpleQRDisplay';
 
@@ -152,16 +153,12 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
           </Link>
           
           {/* Invoice Download Button */}
-          {order.invoice && order.invoice.pdfUrl ? (
-            <a
-              href={`/api/invoices/${order.orderNumber}/download`}
-              download
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              <FileText size={16} />
-              <span>Számla letöltése</span>
-              <Download size={14} />
-            </a>
+          {order.invoice ? (
+            <InvoiceDownloadButton 
+              orderNumber={order.orderNumber}
+              invoiceNumber={order.invoice.invoiceNumber}
+              pdfUrl={order.invoice.pdfUrl}
+            />
           ) : (
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-gray-100 text-gray-500 rounded-md cursor-not-allowed">
               <FileText size={16} />
@@ -490,20 +487,11 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                       Kiállítva: {formatDateWithTimezone(order.invoice.issuedAt, false)}
                     </p>
                   </div>
-                  {order.invoice.pdfUrl ? (
-                    <a
-                      href={`/api/invoices/${order.orderNumber}/download`}
-                      download
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                    >
-                      <Download size={16} />
-                      PDF letöltése
-                    </a>
-                  ) : (
-                    <div className="px-3 py-1.5 text-sm bg-gray-200 text-gray-500 rounded-md">
-                      PDF nem elérhető
-                    </div>
-                  )}
+                  <InvoiceDownloadButton 
+                    orderNumber={order.orderNumber}
+                    invoiceNumber={order.invoice.invoiceNumber}
+                    pdfUrl={order.invoice.pdfUrl}
+                  />
                 </div>
               </div>
             )}
