@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/galaxyskleplogo.png",
+        url: "/images/jovotechlogovevor.png",
         width: 1200,
         height: 630,
         alt: "Jovotech - Az Ön webáruháza",
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Jovotech.hu - Elektronika, Divat, Kiegészítők",
     description: "Az Ön webáruháza elektronikával, divattal és kiegészítőkkel. A legjobb árak, gyors szállítás!",
-    images: ["/images/galaxyskleplogo.png"],
+    images: ["/images/jovotechlogovevor.png"],
   },
   robots: {
     index: true,
@@ -105,9 +105,6 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/manifest.json',
-  verification: {
-    google: "rM73bzskVZTTR0tmKXijqULs5zrCBTgi1EY-th_ce3k",
-  },
   // Performance hints
   other: {
     'mobile-web-app-capable': 'yes',

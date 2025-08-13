@@ -12,6 +12,9 @@ declare global {
 
 export function GoogleTagManager() {
   useEffect(() => {
+    // Google Analytics 4 Measurement ID for Jovotech.hu
+    const GA_MEASUREMENT_ID = 'G-2106H16G4E';
+    
     // Only load GTM after page is interactive
     const loadGTM = () => {
       // Prevent multiple loads
@@ -23,11 +26,13 @@ export function GoogleTagManager() {
       }
       window.gtag = gtag;
       gtag('js', new Date());
-      gtag('config', 'AW-770697695');
+      
+      // Configure GA4
+      gtag('config', GA_MEASUREMENT_ID);
 
-      // Load GTM script
+      // Load Google Analytics script
       const script = document.createElement('script');
-      script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-770697695';
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
       script.async = true;
       document.head.appendChild(script);
     };
