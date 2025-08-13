@@ -1,4 +1,4 @@
-# robots.txt for https://galaxysklep.pl
+# robots.txt for https://jovotech.hu
 User-agent: *
 Allow: /
 
@@ -13,6 +13,7 @@ Disallow: /api/
 Allow: /api/search
 Allow: /api/products
 Allow: /api/categories
+Allow: /api/feeds/google-shopping
 
 # Disallow cart and checkout for crawlers
 Disallow: /cart
@@ -21,7 +22,7 @@ Disallow: /order-success
 Disallow: /order-status/
 
 # Sitemap location
-Sitemap: https://galaxysklep.pl/sitemap.xml
+Sitemap: https://jovotech.hu/sitemap.xml
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1
