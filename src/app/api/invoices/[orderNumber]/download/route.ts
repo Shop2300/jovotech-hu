@@ -10,27 +10,30 @@ export async function GET(
   try {
     const { orderNumber } = await params;
     
-    // Fetch the order with invoice
+    // Find order with invoice by order number
     const order = await prisma.order.findUnique({
       where: { orderNumber },
-      include: {
-        invoice: true
-      }
+      include: { invoice: true }
     });
 
-    if (!order || !order.invoice) {
+    if (!order) {
       return NextResponse.json(
-        { error: 'Invoice not found' },
+        { error: 'Order not found' },
         { status: 404 }
       );
     }
 
-    const invoice = order.invoice;
+    if (!order.invoice) {
+      return NextResponse.json(
+        { error: 'Invoice not found for this order' },
+        { status: 404 }
+      );
+    }
 
-    // If PDF URL exists, fetch and return it
-    if (invoice.pdfUrl) {
-      if (invoice.pdfUrl.startsWith('http')) {
-        const response = await fetch(invoice.pdfUrl);
+    // Try to fetch from URL if exists
+    if (order.invoice.pdfUrl && order.invoice.pdfUrl.startsWith('http')) {
+      try {
+        const response = await fetch(order.invoice.pdfUrl);
         
         if (response.ok) {
           const pdfBuffer = await response.arrayBuffer();
@@ -38,15 +41,19 @@ export async function GET(
           return new NextResponse(pdfBuffer, {
             headers: {
               'Content-Type': 'application/pdf',
-              'Content-Disposition': `attachment; filename="${invoice.invoiceNumber}.pdf"`,
+              'Content-Disposition': `attachment; filename="Faktura-${order.invoice.invoiceNumber}.pdf"`,
               'Cache-Control': 'no-cache, no-store, must-revalidate',
             },
           });
         }
+      } catch (fetchError) {
+        console.error('Failed to fetch PDF from URL, generating new one:', fetchError);
       }
     }
 
-    // Generate PDF on-the-fly if URL missing or fetch failed
+    // Generate PDF on-the-fly as fallback
+    console.log('Generating PDF on-the-fly for invoice:', order.invoice.invoiceNumber);
+    
     let items = [];
     try {
       items = typeof order.items === 'string' 
@@ -58,7 +65,7 @@ export async function GET(
     }
     
     const invoiceData = {
-      invoiceNumber: invoice.invoiceNumber,
+      invoiceNumber: order.invoice.invoiceNumber,
       orderNumber: order.orderNumber,
       createdAt: order.createdAt.toISOString(),
       customerEmail: order.customerEmail || '',
@@ -93,7 +100,7 @@ export async function GET(
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${invoice.invoiceNumber}.pdf"`,
+        'Content-Disposition': `attachment; filename="Faktura-${order.invoice.invoiceNumber}.pdf"`,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
     });
