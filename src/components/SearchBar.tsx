@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useId } from 'react';
+import { useState, useEffect, useRef, useCallback, useId, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Clock, TrendingUp, ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -34,7 +34,8 @@ type InstantPayload = {
   totalResults: number;
 };
 
-const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+const CACHE_TTL_MS = 2 * 60 * 1000;
+const MIN_QUERY_LENGTH = 2;
 
 function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -42,7 +43,7 @@ function escapeRegExp(str: string) {
 
 function HighlightMatch({ text, query }: { text: string; query: string }) {
   if (!query.trim()) return <>{text}</>;
-  // accent-insensitive highlight without regex escapes in this patch
+  
   const strip = (s: string) => {
     const n = s.normalize('NFD');
     let out = '';
@@ -52,14 +53,17 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
     }
     return out;
   };
+  
   const base = strip(text);
   const q = strip(query.trim());
   const escaped = escapeRegExp(q);
   if (!escaped) return <>{text}</>;
+  
   const re = new RegExp(`(${escaped})`, 'ig');
   const parts = base.split(re);
   let idx = 0;
   const out: React.ReactNode[] = [];
+  
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
     const start = base.indexOf(part, idx);
@@ -77,14 +81,24 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
 export function SearchBar() {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [totalResults, setTotalResults] = useState(0);
+  const [searchState, setSearchState] = useState<{
+    loading: boolean;
+    results: SearchResult[];
+    categories: Category[];
+    totalResults: number;
+    didYouMean: string | null;
+    hasSearched: boolean;
+  }>({
+    loading: false,
+    results: [],
+    categories: [],
+    totalResults: 0,
+    didYouMean: null,
+    hasSearched: false
+  });
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [popularSearches, setPopularSearches] = useState<string[]>([]);
-  const [didYouMean, setDidYouMean] = useState<string | null>(null);
 
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -92,7 +106,7 @@ export function SearchBar() {
   const listboxId = useId();
   const statusId = useId();
 
-  // request control + cache
+  // Request control + cache
   const abortRef = useRef<AbortController | null>(null);
   const lastRequestId = useRef(0);
   const cacheRef = useRef<Map<string, { ts: number; data: InstantPayload }>>(new Map());
@@ -135,7 +149,7 @@ export function SearchBar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Global shortcut: "/" or Ctrl/Cmd+K to focus search (outside inputs)
+  // Global shortcut: "/" or Ctrl/Cmd+K to focus search
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const isModK = e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey);
@@ -153,15 +167,13 @@ export function SearchBar() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // Body scroll-lock when dropdown is open (mobile-only to avoid desktop layout shift)
+  // Body scroll-lock when dropdown is open (mobile-only)
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
     const prevPaddingRight = document.body.style.paddingRight;
-
     const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
 
     if (isOpen && isMobile) {
-      // Compensate for scrollbar width to prevent content jump
       const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
       if (scrollBarWidth > 0) {
         document.body.style.paddingRight = `${scrollBarWidth}px`;
@@ -178,190 +190,212 @@ export function SearchBar() {
     };
   }, [isOpen]);
 
-  // Debounced search function with cancellation, cache, and tolerant fallbacks
-  const performSearch = useCallback(
-    debounce(async (searchQuery: string) => {
-      const qRaw = searchQuery.trim();
-      if (qRaw.length < 2) {
-        setResults([]);
-        setCategories([]);
-        setTotalResults(0);
-        setLoading(false);
-        setDidYouMean(null);
-        return;
+  // Improved search function with better state management
+  const performSearch = useCallback(async (searchQuery: string) => {
+    const qRaw = searchQuery.trim();
+    
+    if (qRaw.length < MIN_QUERY_LENGTH) {
+      setSearchState({
+        loading: false,
+        results: [],
+        categories: [],
+        totalResults: 0,
+        didYouMean: null,
+        hasSearched: false
+      });
+      return;
+    }
+
+    // Set loading state immediately
+    setSearchState(prev => ({ ...prev, loading: true, hasSearched: true }));
+
+    const nowMs = Date.now();
+
+    // Helper functions
+    const strip = (s: string) => {
+      const n = s.normalize('NFD');
+      let out = '';
+      for (let i = 0; i < n.length; i++) {
+        const code = n.charCodeAt(i);
+        if (code < 0x300 || code > 0x36f) out += n[i];
       }
+      return out;
+    };
 
-      setLoading(true);
-      setDidYouMean(null);
+    const uniq = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)));
 
-      const nowMs = Date.now();
-
-      // helpers (no regexes to keep patching safe)
-      const strip = (s: string) => {
-        const n = s.normalize('NFD');
-        let out = '';
-        for (let i = 0; i < n.length; i++) {
-          const code = n.charCodeAt(i);
-          if (code < 0x300 || code > 0x36f) out += n[i];
-        }
-        return out;
-      };
-
-      const uniq = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)));
-
-      const replaceAllCI = (src: string, find: string, repl: string) => {
-        let out = src;
-        const f = find.toLowerCase();
-        let pos = out.toLowerCase().indexOf(f);
-        while (pos !== -1) {
-          out = out.slice(0, pos) + repl + out.slice(pos + find.length);
-          pos = out.toLowerCase().indexOf(f, pos + repl.length);
-        }
-        return out;
-      };
-
-      const readNumberBefore = (text: string, unit: string) => {
-        const low = text.toLowerCase();
-        const idx = low.indexOf(unit);
-        if (idx === -1) return null;
-        let i = idx - 1;
-        while (i >= 0 && low[i] === ' ') i--;
-        let j = i;
-        const digits = '0123456789.,';
-        while (j >= 0 && digits.indexOf(low[j]) !== -1) j--;
-        const numStr = low.slice(j + 1, i + 1);
-        if (!numStr) return null;
-        const before = text.slice(0, j + 1);
-        const after = text.slice(idx + unit.length);
-        const val = parseFloat(numStr.replace(',', '.'));
-        if (Number.isNaN(val)) return null;
-        return { before, after, val };
-      };
-
-      const buildAlternates = (q: string) => {
-        const vars: string[] = [];
-        vars.push(q);
-        const noAcc = strip(q);
-        if (noAcc !== q) vars.push(noAcc);
-        vars.push(q.split('×').join('x'));
-        vars.push(q.split('x').join('×'));
-        let syn = q;
-        syn = replaceAllCI(syn, 'lezer', 'lézer');
-        syn = replaceAllCI(syn, 'laser', 'lézer');
-        syn = replaceAllCI(syn, 'heat press', 'hőprés');
-        syn = replaceAllCI(syn, 'hot press', 'hőprés');
-        syn = replaceAllCI(syn, 'press', 'prés');
-        syn = replaceAllCI(syn, 'router', 'maró');
-        syn = replaceAllCI(syn, 'ultrasonic', 'ultrahang');
-        syn = replaceAllCI(syn, 'compressor', 'kompresszor');
-        if (syn !== q) vars.push(syn);
-
-        // simple unit conversions (first occurrence only)
-        const psi = readNumberBefore(q, 'psi');
-        if (psi) {
-          const bar = Math.round(psi.val * 0.0689476);
-          const mpa = Math.round(psi.val / 145.0377377);
-          vars.push(`${psi.before}${bar} bar${psi.after}`.trim());
-          vars.push(`${psi.before}${mpa} mpa${psi.after}`.trim());
-        } else {
-          const bar = readNumberBefore(q, 'bar');
-          if (bar) {
-            const psiVal = Math.round(bar.val * 14.5037738);
-            const mpa = Math.round(bar.val / 10);
-            vars.push(`${bar.before}${psiVal} psi${bar.after}`.trim());
-            vars.push(`${bar.before}${mpa} mpa${bar.after}`.trim());
-          } else {
-            const mpa = readNumberBefore(q, 'mpa');
-            if (mpa) {
-              const barVal = Math.round(mpa.val * 10);
-              const psiVal = Math.round(mpa.val * 145.0377377);
-              vars.push(`${mpa.before}${barVal} bar${mpa.after}`.trim());
-              vars.push(`${mpa.before}${psiVal} psi${mpa.after}`.trim());
-            }
-          }
-        }
-
-        const mm = readNumberBefore(q, 'mm');
-        if (mm) {
-          const cm = mm.val / 10;
-          const inch = mm.val / 25.4;
-          vars.push(`${mm.before}${cm % 1 === 0 ? cm : cm.toFixed(1)} cm${mm.after}`.trim());
-          vars.push(`${mm.before}${inch % 1 === 0 ? inch : inch.toFixed(2)} inch${mm.after}`.trim());
-        } else {
-          const inch = readNumberBefore(q, 'inch') || readNumberBefore(q, ' in');
-          if (inch) {
-            const mmVal = Math.round(inch.val * 25.4);
-            const cm = (inch.val * 25.4) / 10;
-            vars.push(`${inch.before}${mmVal} mm${inch.after}`.trim());
-            vars.push(`${inch.before}${cm % 1 === 0 ? cm : cm.toFixed(1)} cm${inch.after}`.trim());
-          } else {
-            const cm = readNumberBefore(q, 'cm');
-            if (cm) {
-              const mmVal = Math.round(cm.val * 10);
-              const inchVal = (cm.val * 10) / 25.4;
-              vars.push(`${cm.before}${mmVal} mm${cm.after}`.trim());
-              vars.push(`${cm.before}${inchVal % 1 === 0 ? inchVal : inchVal.toFixed(2)} inch${cm.after}`.trim());
-            }
-          }
-        }
-
-        return uniq(vars).slice(0, 6);
-      };
-
-      const doFetch = async (q: string): Promise<InstantPayload | null> => {
-        const hit = cacheRef.current.get(q);
-        if (hit && nowMs - hit.ts < CACHE_TTL_MS) return hit.data;
-
-        if (abortRef.current) abortRef.current.abort();
-        const controller = new AbortController();
-        abortRef.current = controller;
-        const reqId = ++lastRequestId.current;
-        try {
-          const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&instant=true&limit=5`, { signal: controller.signal, cache: 'no-store' });
-          const data: Partial<InstantPayload> = res.ok ? await res.json() : {};
-          if (reqId !== lastRequestId.current) return null;
-          const payload: InstantPayload = {
-            products: data.products || [],
-            categories: data.categories || [],
-            totalResults: data.totalResults ?? (data.products?.length || 0)
-          };
-          cacheRef.current.set(q, { ts: Date.now(), data: payload });
-          return payload;
-        } catch (e: any) {
-          if (e?.name === 'AbortError') return null;
-          console.error('Search error:', e);
-          return null;
-        }
-      };
-
-      let payload = await doFetch(qRaw);
-      if (payload && payload.products.length === 0 && payload.categories.length === 0) {
-        const alts = buildAlternates(qRaw).filter(v => v.toLowerCase() !== qRaw.toLowerCase());
-        for (const alt of alts.slice(0, 2)) {
-          const p2 = await doFetch(alt);
-          if (p2 && (p2.products.length > 0 || p2.categories.length > 0)) {
-            payload = p2;
-            setDidYouMean(alt);
-            break;
-          }
-        }
+    const replaceAllCI = (src: string, find: string, repl: string) => {
+      let out = src;
+      const f = find.toLowerCase();
+      let pos = out.toLowerCase().indexOf(f);
+      while (pos !== -1) {
+        out = out.slice(0, pos) + repl + out.slice(pos + find.length);
+        pos = out.toLowerCase().indexOf(f, pos + repl.length);
       }
+      return out;
+    };
 
-      if (payload) {
-        const sorted = [...payload.products].sort((a, b) => Number(b.stock > 0) - Number(a.stock > 0));
-        setResults(sorted);
-        setCategories(payload.categories);
-        setTotalResults(payload.totalResults);
+    const readNumberBefore = (text: string, unit: string) => {
+      const low = text.toLowerCase();
+      const idx = low.indexOf(unit);
+      if (idx === -1) return null;
+      let i = idx - 1;
+      while (i >= 0 && low[i] === ' ') i--;
+      let j = i;
+      const digits = '0123456789.,';
+      while (j >= 0 && digits.indexOf(low[j]) !== -1) j--;
+      const numStr = low.slice(j + 1, i + 1);
+      if (!numStr) return null;
+      const before = text.slice(0, j + 1);
+      const after = text.slice(idx + unit.length);
+      const val = parseFloat(numStr.replace(',', '.'));
+      if (Number.isNaN(val)) return null;
+      return { before, after, val };
+    };
+
+    const buildAlternates = (q: string) => {
+      const vars: string[] = [];
+      vars.push(q);
+      const noAcc = strip(q);
+      if (noAcc !== q) vars.push(noAcc);
+      vars.push(q.split('×').join('x'));
+      vars.push(q.split('x').join('×'));
+      
+      let syn = q;
+      syn = replaceAllCI(syn, 'lezer', 'lézer');
+      syn = replaceAllCI(syn, 'laser', 'lézer');
+      syn = replaceAllCI(syn, 'heat press', 'hőprés');
+      syn = replaceAllCI(syn, 'hot press', 'hőprés');
+      syn = replaceAllCI(syn, 'press', 'prés');
+      syn = replaceAllCI(syn, 'router', 'maró');
+      syn = replaceAllCI(syn, 'ultrasonic', 'ultrahang');
+      syn = replaceAllCI(syn, 'compressor', 'kompresszor');
+      if (syn !== q) vars.push(syn);
+
+      // Unit conversions
+      const psi = readNumberBefore(q, 'psi');
+      if (psi) {
+        const bar = Math.round(psi.val * 0.0689476);
+        const mpa = Math.round(psi.val / 145.0377377);
+        vars.push(`${psi.before}${bar} bar${psi.after}`.trim());
+        vars.push(`${psi.before}${mpa} mpa${psi.after}`.trim());
       } else {
-        setResults([]);
-        setCategories([]);
-        setTotalResults(0);
+        const bar = readNumberBefore(q, 'bar');
+        if (bar) {
+          const psiVal = Math.round(bar.val * 14.5037738);
+          const mpa = Math.round(bar.val / 10);
+          vars.push(`${bar.before}${psiVal} psi${bar.after}`.trim());
+          vars.push(`${bar.before}${mpa} mpa${bar.after}`.trim());
+        } else {
+          const mpa = readNumberBefore(q, 'mpa');
+          if (mpa) {
+            const barVal = Math.round(mpa.val * 10);
+            const psiVal = Math.round(mpa.val * 145.0377377);
+            vars.push(`${mpa.before}${barVal} bar${mpa.after}`.trim());
+            vars.push(`${mpa.before}${psiVal} psi${mpa.after}`.trim());
+          }
+        }
       }
 
-      setLoading(false);
-    }, 300),
-    []
+      const mm = readNumberBefore(q, 'mm');
+      if (mm) {
+        const cm = mm.val / 10;
+        const inch = mm.val / 25.4;
+        vars.push(`${mm.before}${cm % 1 === 0 ? cm : cm.toFixed(1)} cm${mm.after}`.trim());
+        vars.push(`${mm.before}${inch % 1 === 0 ? inch : inch.toFixed(2)} inch${mm.after}`.trim());
+      } else {
+        const inch = readNumberBefore(q, 'inch') || readNumberBefore(q, ' in');
+        if (inch) {
+          const mmVal = Math.round(inch.val * 25.4);
+          const cm = (inch.val * 25.4) / 10;
+          vars.push(`${inch.before}${mmVal} mm${inch.after}`.trim());
+          vars.push(`${inch.before}${cm % 1 === 0 ? cm : cm.toFixed(1)} cm${inch.after}`.trim());
+        } else {
+          const cm = readNumberBefore(q, 'cm');
+          if (cm) {
+            const mmVal = Math.round(cm.val * 10);
+            const inchVal = (cm.val * 10) / 25.4;
+            vars.push(`${cm.before}${mmVal} mm${cm.after}`.trim());
+            vars.push(`${cm.before}${inchVal % 1 === 0 ? inchVal : inchVal.toFixed(2)} inch${cm.after}`.trim());
+          }
+        }
+      }
+
+      return uniq(vars).slice(0, 6);
+    };
+
+    const doFetch = async (q: string): Promise<InstantPayload | null> => {
+      const hit = cacheRef.current.get(q);
+      if (hit && nowMs - hit.ts < CACHE_TTL_MS) return hit.data;
+
+      if (abortRef.current) abortRef.current.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      const reqId = ++lastRequestId.current;
+      
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&instant=true&limit=5`, { 
+          signal: controller.signal, 
+          cache: 'no-store' 
+        });
+        const data: Partial<InstantPayload> = res.ok ? await res.json() : {};
+        if (reqId !== lastRequestId.current) return null;
+        
+        const payload: InstantPayload = {
+          products: data.products || [],
+          categories: data.categories || [],
+          totalResults: data.totalResults ?? (data.products?.length || 0)
+        };
+        
+        cacheRef.current.set(q, { ts: Date.now(), data: payload });
+        return payload;
+      } catch (e: any) {
+        if (e?.name === 'AbortError') return null;
+        console.error('Search error:', e);
+        return null;
+      }
+    };
+
+    let payload = await doFetch(qRaw);
+    let didYouMean: string | null = null;
+    
+    if (payload && payload.products.length === 0 && payload.categories.length === 0) {
+      const alts = buildAlternates(qRaw).filter(v => v.toLowerCase() !== qRaw.toLowerCase());
+      for (const alt of alts.slice(0, 2)) {
+        const p2 = await doFetch(alt);
+        if (p2 && (p2.products.length > 0 || p2.categories.length > 0)) {
+          payload = p2;
+          didYouMean = alt;
+          break;
+        }
+      }
+    }
+
+    // Update state in one batch
+    setSearchState({
+      loading: false,
+      results: payload ? [...payload.products].sort((a, b) => Number(b.stock > 0) - Number(a.stock > 0)) : [],
+      categories: payload?.categories || [],
+      totalResults: payload?.totalResults || 0,
+      didYouMean,
+      hasSearched: true
+    });
+  }, []);
+
+  // Memoized debounced search function
+  const debouncedSearch = useMemo(
+    () => debounce(performSearch, 300),
+    [performSearch]
   );
+
+  // Cleanup debounced function on unmount
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) {
+        abortRef.current.abort();
+      }
+    };
+  }, []);
 
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -371,13 +405,17 @@ export function SearchBar() {
 
     if (value.trim()) {
       setIsOpen(true);
-      performSearch(value);
+      debouncedSearch(value);
     } else {
-      setIsOpen(true); // show recent/popular
-      setResults([]);
-      setCategories([]);
-      setTotalResults(0);
-      setLoading(false);
+      setIsOpen(true);
+      setSearchState({
+        loading: false,
+        results: [],
+        categories: [],
+        totalResults: 0,
+        didYouMean: null,
+        hasSearched: false
+      });
     }
   };
 
@@ -394,7 +432,7 @@ export function SearchBar() {
     if (query.trim()) goToSearchPage(query.trim());
   };
 
-  const totalItems = categories.length + results.length;
+  const totalItems = searchState.categories.length + searchState.results.length;
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -420,11 +458,11 @@ export function SearchBar() {
       case 'Enter': {
         if (selectedIndex >= 0) {
           e.preventDefault();
-          if (selectedIndex < categories.length) {
-            const category = categories[selectedIndex];
+          if (selectedIndex < searchState.categories.length) {
+            const category = searchState.categories[selectedIndex];
             router.push(`/category/${category.slug}`);
           } else {
-            const product = results[selectedIndex - categories.length];
+            const product = searchState.results[selectedIndex - searchState.categories.length];
             const productUrl =
               product.category?.slug && product.slug
                 ? `/${product.category.slug}/${product.slug}`
@@ -453,17 +491,20 @@ export function SearchBar() {
 
   const clearSearch = () => {
     setQuery('');
-    setResults([]);
-    setCategories([]);
-    setTotalResults(0);
+    setSearchState({
+      loading: false,
+      results: [],
+      categories: [],
+      totalResults: 0,
+      didYouMean: null,
+      hasSearched: false
+    });
     setIsOpen(false);
     inputRef.current?.focus();
   };
 
   const activeId = selectedIndex >= 0 ? `sb-opt-${selectedIndex}` : undefined;
-
-  const getGlobalIndex = (i: number, isCategory: boolean) => (isCategory ? i : categories.length + i);
-
+  const getGlobalIndex = (i: number, isCategory: boolean) => (isCategory ? i : searchState.categories.length + i);
   const prefetch = (href: string) => {
     try { router.prefetch(href); } catch {}
   };
@@ -480,7 +521,7 @@ export function SearchBar() {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Mit keres? Pl. CNC maró, ultrahang, hőprés..."
-          className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-md focus:outline-none focus:ring-0 focus-visible:ring-1 focus-visible:ring-[#131921] focus-visible:border-[#131921] text-black bg-white placeholder:text-sm placeholder:text-gray-400 "
+          className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-md focus:outline-none focus:ring-0 focus-visible:ring-1 focus-visible:ring-[#131921] focus-visible:border-[#131921] text-black bg-white placeholder:text-sm placeholder:text-gray-400"
           aria-label="Termék keresőmező"
           role="combobox"
           aria-autocomplete="list"
@@ -488,7 +529,7 @@ export function SearchBar() {
           aria-controls={listboxId}
           aria-activedescendant={activeId}
           aria-describedby={statusId}
-          aria-busy={loading}
+          aria-busy={searchState.loading}
         />
 
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 h-full py-1">
@@ -506,20 +547,20 @@ export function SearchBar() {
           <button
             type="submit"
             className="text-gray-600 hover:text-gray-900 transition-colors p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label={loading ? 'Keresés folyamatban' : 'Keresés'}
+            aria-label={searchState.loading ? 'Keresés folyamatban' : 'Keresés'}
           >
-            {loading ? <Loader2 size={22} className="animate-spin" /> : <Search size={22} />}
+            {searchState.loading ? <Loader2 size={22} className="animate-spin" /> : <Search size={22} />}
           </button>
         </div>
       </form>
 
       {/* Screen reader status */}
       <div id={statusId} role="status" aria-live="polite" className="sr-only">
-        {loading
+        {searchState.loading
           ? 'Keresés folyamatban...'
-          : isOpen && query && (results.length > 0 || categories.length > 0)
-            ? `Találatok: ${categories.length} kategória és ${results.length} termék`
-            : isOpen && query && !loading && results.length === 0 && categories.length === 0
+          : isOpen && query && (searchState.results.length > 0 || searchState.categories.length > 0)
+            ? `Találatok: ${searchState.categories.length} kategória és ${searchState.results.length} termék`
+            : isOpen && query && !searchState.loading && searchState.hasSearched && searchState.results.length === 0 && searchState.categories.length === 0
               ? `Nincs találat erre: ${query}`
               : ''}
       </div>
@@ -529,15 +570,15 @@ export function SearchBar() {
         <>
           <div className="search-backdrop-overlay" onClick={() => setIsOpen(false)} />
           <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-xl border border-gray-200 max-h-[500px] overflow-hidden search-dropdown">
-            <div className="overflow-y-auto max-h-[500px] bg-white search-results-scroll" id={listboxId} role="listbox" aria-busy={loading}>
+            <div className="overflow-y-auto max-h-[500px] bg-white search-results-scroll" id={listboxId} role="listbox" aria-busy={searchState.loading}>
               {/* Categories Section */}
-              {categories.length > 0 && (
+              {searchState.categories.length > 0 && (
                 <div className="border-b border-gray-100 bg-white">
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase" role="presentation">
                     Kategóriák
                   </div>
                   <ul className="divide-y divide-gray-50" role="presentation">
-                    {categories.map((category, i) => {
+                    {searchState.categories.map((category, i) => {
                       const gi = getGlobalIndex(i, true);
                       const id = `sb-opt-${gi}`;
                       return (
@@ -569,15 +610,17 @@ export function SearchBar() {
               )}
 
               {/* Did you mean */}
-              {didYouMean && didYouMean.toLowerCase() !== query.trim().toLowerCase() && (
+              {searchState.didYouMean && searchState.didYouMean.toLowerCase() !== query.trim().toLowerCase() && (
                 <div className="px-4 py-2 text-xs text-gray-600">
                   Ezt kereste:{' '}
-                  <button onClick={() => handleSuggestionClick(didYouMean)} className="underline text-[#131921]">„{didYouMean}”</button>?
+                  <button onClick={() => handleSuggestionClick(searchState.didYouMean!)} className="underline text-[#131921]">
+                    „{searchState.didYouMean}"
+                  </button>?
                 </div>
               )}
 
               {/* Loading skeleton */}
-              {loading && query && results.length === 0 && categories.length === 0 && (
+              {searchState.loading && query && searchState.results.length === 0 && searchState.categories.length === 0 && (
                 <div className="px-4 py-3 space-y-3">
                   {[0, 1, 2].map(i => (
                     <div key={i} className="flex items-center gap-3 animate-pulse">
@@ -592,13 +635,13 @@ export function SearchBar() {
               )}
 
               {/* Products Section */}
-              {results.length > 0 && (
+              {searchState.results.length > 0 && (
                 <div className="border-b border-gray-100 bg-white">
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase" role="presentation">
                     Termékek
                   </div>
                   <ul className="divide-y divide-gray-50" role="presentation">
-                    {results.map((product, i) => {
+                    {searchState.results.map((product, i) => {
                       const gi = getGlobalIndex(i, false);
                       const id = `sb-opt-${gi}`;
                       const productUrl =
@@ -684,7 +727,7 @@ export function SearchBar() {
               )}
 
               {/* View all */}
-              {query && totalResults > 5 && (
+              {query && searchState.totalResults > 5 && (
                 <button
                   onMouseOver={() => prefetch(`/search?q=${encodeURIComponent(query)}`)}
                   onClick={() => {
@@ -695,12 +738,12 @@ export function SearchBar() {
                   role="option"
                   aria-selected={false}
                 >
-                  Összes találat megtekintése ({totalResults})
+                  Összes találat megtekintése ({searchState.totalResults})
                 </button>
               )}
 
-              {/* No results */}
-              {query && !loading && results.length === 0 && categories.length === 0 && (
+              {/* No results - Only show after search has completed */}
+              {query && !searchState.loading && searchState.hasSearched && searchState.results.length === 0 && searchState.categories.length === 0 && (
                 <div className="px-4 py-8 text-center bg-white">
                   <Search size={40} className="mx-auto text-gray-300 mb-3" />
                   <p className="text-sm text-gray-500">
@@ -710,7 +753,7 @@ export function SearchBar() {
               )}
 
               {/* Recent & Popular */}
-              {!query && !loading && (
+              {!query && !searchState.loading && (
                 <>
                   {recentSearches.length > 0 && (
                     <div className="border-b border-gray-100 bg-white">
