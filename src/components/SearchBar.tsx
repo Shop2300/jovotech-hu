@@ -1,12 +1,11 @@
-// src/components/SearchBar.tsx
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Clock, TrendingUp, ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
-import { debounce, highlightText, getRecentSearches, saveRecentSearch, clearRecentSearches } from '@/lib/search-utils';
+import { debounce, getRecentSearches, saveRecentSearch, clearRecentSearches } from '@/lib/search-utils';
 
 interface SearchResult {
   id: string;
@@ -29,6 +28,52 @@ interface Category {
   slug: string;
 }
 
+type InstantPayload = {
+  products: SearchResult[];
+  categories: Category[];
+  totalResults: number;
+};
+
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
+function escapeRegExp(str: string) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query.trim()) return <>{text}</>;
+  // accent-insensitive highlight without regex escapes in this patch
+  const strip = (s: string) => {
+    const n = s.normalize('NFD');
+    let out = '';
+    for (let i = 0; i < n.length; i++) {
+      const code = n.charCodeAt(i);
+      if (code < 0x300 || code > 0x36f) out += n[i];
+    }
+    return out;
+  };
+  const base = strip(text);
+  const q = strip(query.trim());
+  const escaped = escapeRegExp(q);
+  if (!escaped) return <>{text}</>;
+  const re = new RegExp(`(${escaped})`, 'ig');
+  const parts = base.split(re);
+  let idx = 0;
+  const out: React.ReactNode[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    const start = base.indexOf(part, idx);
+    const end = start + part.length;
+    if (i % 2 === 1) {
+      out.push(<mark key={i} className="bg-yellow-200 text-black">{text.slice(start, end)}</mark>);
+    } else {
+      out.push(<span key={i}>{text.slice(start, end)}</span>);
+    }
+    idx = end;
+  }
+  return <>{out}</>;
+}
+
 export function SearchBar() {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -39,40 +84,41 @@ export function SearchBar() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [popularSearches, setPopularSearches] = useState<string[]>([]);
-  
+  const [didYouMean, setDidYouMean] = useState<string | null>(null);
+
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listboxId = useId();
+  const statusId = useId();
+
+  // request control + cache
+  const abortRef = useRef<AbortController | null>(null);
+  const lastRequestId = useRef(0);
+  const cacheRef = useRef<Map<string, { ts: number; data: InstantPayload }>>(new Map());
 
   // Load recent searches and fetch random products on mount
   useEffect(() => {
     setRecentSearches(getRecentSearches());
-    fetchRandomProducts();
+    void fetchRandomProducts();
   }, []);
 
   // Fetch random products for popular searches
   const fetchRandomProducts = async () => {
     try {
-      const response = await fetch('/api/products?limit=50'); // Fetch more to get better randomization
+      const response = await fetch('/api/products?limit=50', { cache: 'no-store' });
       if (response.ok) {
         const products = await response.json();
-        
-        // Shuffle array and pick 5 random products
-        const shuffled = products.sort(() => 0.5 - Math.random());
+        const shuffled = [...products].sort(() => 0.5 - Math.random());
         const randomProducts = shuffled.slice(0, 5);
-        
-        // Extract product names
-        const productNames = randomProducts.map((product: any) => {
-          // Shorten long product names if needed
-          const name = product.name;
-          return name.length > 30 ? name.substring(0, 30) + '...' : name;
-        });
-        
+        const productNames = randomProducts.map((p: any) =>
+          p.name.length > 30 ? `${p.name.substring(0, 30)}...` : p.name
+        );
         setPopularSearches(productNames);
+      } else {
+        setPopularSearches(['CNC maró', 'ultrahang', 'prések', 'lézerek', 'elektronika']);
       }
-    } catch (error) {
-      console.error('Error fetching random products:', error);
-      // Fallback to some default searches if fetch fails
+    } catch {
       setPopularSearches(['CNC maró', 'ultrahang', 'prések', 'lézerek', 'elektronika']);
     }
   };
@@ -82,41 +128,237 @@ export function SearchBar() {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setSelectedIndex(-1);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Debounced search function
+  // Global shortcut: "/" or Ctrl/Cmd+K to focus search (outside inputs)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const isModK = e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey);
+      if (isModK || (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey)) {
+        const el = document.activeElement as HTMLElement | null;
+        const tag = el?.tagName ?? '';
+        if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) {
+          e.preventDefault();
+          inputRef.current?.focus();
+          setIsOpen(true);
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Body scroll-lock when dropdown is open (mobile-only to avoid desktop layout shift)
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    const prevPaddingRight = document.body.style.paddingRight;
+
+    const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+
+    if (isOpen && isMobile) {
+      // Compensate for scrollbar width to prevent content jump
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      if (scrollBarWidth > 0) {
+        document.body.style.paddingRight = `${scrollBarWidth}px`;
+      }
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = prevOverflow || '';
+      document.body.style.paddingRight = prevPaddingRight || '';
+    }
+
+    return () => {
+      document.body.style.overflow = prevOverflow || '';
+      document.body.style.paddingRight = prevPaddingRight || '';
+    };
+  }, [isOpen]);
+
+  // Debounced search function with cancellation, cache, and tolerant fallbacks
   const performSearch = useCallback(
     debounce(async (searchQuery: string) => {
-      if (searchQuery.trim().length < 2) {
+      const qRaw = searchQuery.trim();
+      if (qRaw.length < 2) {
         setResults([]);
         setCategories([]);
+        setTotalResults(0);
         setLoading(false);
+        setDidYouMean(null);
         return;
       }
 
       setLoading(true);
-      
-      try {
-        const response = await fetch(
-          `/api/search?q=${encodeURIComponent(searchQuery)}&instant=true&limit=5`
-        );
-        const data = await response.json();
+      setDidYouMean(null);
 
-        if (response.ok) {
-          setResults(data.products || []);
-          setCategories(data.categories || []);
-          setTotalResults(data.totalResults || 0);
+      const nowMs = Date.now();
+
+      // helpers (no regexes to keep patching safe)
+      const strip = (s: string) => {
+        const n = s.normalize('NFD');
+        let out = '';
+        for (let i = 0; i < n.length; i++) {
+          const code = n.charCodeAt(i);
+          if (code < 0x300 || code > 0x36f) out += n[i];
         }
-      } catch (error) {
-        console.error('Search error:', error);
-      } finally {
-        setLoading(false);
+        return out;
+      };
+
+      const uniq = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)));
+
+      const replaceAllCI = (src: string, find: string, repl: string) => {
+        let out = src;
+        const f = find.toLowerCase();
+        let pos = out.toLowerCase().indexOf(f);
+        while (pos !== -1) {
+          out = out.slice(0, pos) + repl + out.slice(pos + find.length);
+          pos = out.toLowerCase().indexOf(f, pos + repl.length);
+        }
+        return out;
+      };
+
+      const readNumberBefore = (text: string, unit: string) => {
+        const low = text.toLowerCase();
+        const idx = low.indexOf(unit);
+        if (idx === -1) return null;
+        let i = idx - 1;
+        while (i >= 0 && low[i] === ' ') i--;
+        let j = i;
+        const digits = '0123456789.,';
+        while (j >= 0 && digits.indexOf(low[j]) !== -1) j--;
+        const numStr = low.slice(j + 1, i + 1);
+        if (!numStr) return null;
+        const before = text.slice(0, j + 1);
+        const after = text.slice(idx + unit.length);
+        const val = parseFloat(numStr.replace(',', '.'));
+        if (Number.isNaN(val)) return null;
+        return { before, after, val };
+      };
+
+      const buildAlternates = (q: string) => {
+        const vars: string[] = [];
+        vars.push(q);
+        const noAcc = strip(q);
+        if (noAcc !== q) vars.push(noAcc);
+        vars.push(q.split('×').join('x'));
+        vars.push(q.split('x').join('×'));
+        let syn = q;
+        syn = replaceAllCI(syn, 'lezer', 'lézer');
+        syn = replaceAllCI(syn, 'laser', 'lézer');
+        syn = replaceAllCI(syn, 'heat press', 'hőprés');
+        syn = replaceAllCI(syn, 'hot press', 'hőprés');
+        syn = replaceAllCI(syn, 'press', 'prés');
+        syn = replaceAllCI(syn, 'router', 'maró');
+        syn = replaceAllCI(syn, 'ultrasonic', 'ultrahang');
+        syn = replaceAllCI(syn, 'compressor', 'kompresszor');
+        if (syn !== q) vars.push(syn);
+
+        // simple unit conversions (first occurrence only)
+        const psi = readNumberBefore(q, 'psi');
+        if (psi) {
+          const bar = Math.round(psi.val * 0.0689476);
+          const mpa = Math.round(psi.val / 145.0377377);
+          vars.push(`${psi.before}${bar} bar${psi.after}`.trim());
+          vars.push(`${psi.before}${mpa} mpa${psi.after}`.trim());
+        } else {
+          const bar = readNumberBefore(q, 'bar');
+          if (bar) {
+            const psiVal = Math.round(bar.val * 14.5037738);
+            const mpa = Math.round(bar.val / 10);
+            vars.push(`${bar.before}${psiVal} psi${bar.after}`.trim());
+            vars.push(`${bar.before}${mpa} mpa${bar.after}`.trim());
+          } else {
+            const mpa = readNumberBefore(q, 'mpa');
+            if (mpa) {
+              const barVal = Math.round(mpa.val * 10);
+              const psiVal = Math.round(mpa.val * 145.0377377);
+              vars.push(`${mpa.before}${barVal} bar${mpa.after}`.trim());
+              vars.push(`${mpa.before}${psiVal} psi${mpa.after}`.trim());
+            }
+          }
+        }
+
+        const mm = readNumberBefore(q, 'mm');
+        if (mm) {
+          const cm = mm.val / 10;
+          const inch = mm.val / 25.4;
+          vars.push(`${mm.before}${cm % 1 === 0 ? cm : cm.toFixed(1)} cm${mm.after}`.trim());
+          vars.push(`${mm.before}${inch % 1 === 0 ? inch : inch.toFixed(2)} inch${mm.after}`.trim());
+        } else {
+          const inch = readNumberBefore(q, 'inch') || readNumberBefore(q, ' in');
+          if (inch) {
+            const mmVal = Math.round(inch.val * 25.4);
+            const cm = (inch.val * 25.4) / 10;
+            vars.push(`${inch.before}${mmVal} mm${inch.after}`.trim());
+            vars.push(`${inch.before}${cm % 1 === 0 ? cm : cm.toFixed(1)} cm${inch.after}`.trim());
+          } else {
+            const cm = readNumberBefore(q, 'cm');
+            if (cm) {
+              const mmVal = Math.round(cm.val * 10);
+              const inchVal = (cm.val * 10) / 25.4;
+              vars.push(`${cm.before}${mmVal} mm${cm.after}`.trim());
+              vars.push(`${cm.before}${inchVal % 1 === 0 ? inchVal : inchVal.toFixed(2)} inch${cm.after}`.trim());
+            }
+          }
+        }
+
+        return uniq(vars).slice(0, 6);
+      };
+
+      const doFetch = async (q: string): Promise<InstantPayload | null> => {
+        const hit = cacheRef.current.get(q);
+        if (hit && nowMs - hit.ts < CACHE_TTL_MS) return hit.data;
+
+        if (abortRef.current) abortRef.current.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+        const reqId = ++lastRequestId.current;
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&instant=true&limit=5`, { signal: controller.signal, cache: 'no-store' });
+          const data: Partial<InstantPayload> = res.ok ? await res.json() : {};
+          if (reqId !== lastRequestId.current) return null;
+          const payload: InstantPayload = {
+            products: data.products || [],
+            categories: data.categories || [],
+            totalResults: data.totalResults ?? (data.products?.length || 0)
+          };
+          cacheRef.current.set(q, { ts: Date.now(), data: payload });
+          return payload;
+        } catch (e: any) {
+          if (e?.name === 'AbortError') return null;
+          console.error('Search error:', e);
+          return null;
+        }
+      };
+
+      let payload = await doFetch(qRaw);
+      if (payload && payload.products.length === 0 && payload.categories.length === 0) {
+        const alts = buildAlternates(qRaw).filter(v => v.toLowerCase() !== qRaw.toLowerCase());
+        for (const alt of alts.slice(0, 2)) {
+          const p2 = await doFetch(alt);
+          if (p2 && (p2.products.length > 0 || p2.categories.length > 0)) {
+            payload = p2;
+            setDidYouMean(alt);
+            break;
+          }
+        }
       }
+
+      if (payload) {
+        const sorted = [...payload.products].sort((a, b) => Number(b.stock > 0) - Number(a.stock > 0));
+        setResults(sorted);
+        setCategories(payload.categories);
+        setTotalResults(payload.totalResults);
+      } else {
+        setResults([]);
+        setCategories([]);
+        setTotalResults(0);
+      }
+
+      setLoading(false);
     }, 300),
     []
   );
@@ -126,85 +368,104 @@ export function SearchBar() {
     const value = e.target.value;
     setQuery(value);
     setSelectedIndex(-1);
-    
+
     if (value.trim()) {
       setIsOpen(true);
       performSearch(value);
     } else {
-      setIsOpen(true); // Show recent/popular searches
+      setIsOpen(true); // show recent/popular
       setResults([]);
       setCategories([]);
+      setTotalResults(0);
+      setLoading(false);
     }
   };
 
-  // Handle form submission
+  // Submit helpers
+  const goToSearchPage = (q: string) => {
+    saveRecentSearch(q);
+    router.push(`/search?q=${encodeURIComponent(q)}`);
+    setIsOpen(false);
+    inputRef.current?.blur();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      saveRecentSearch(query.trim());
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-      setIsOpen(false);
-      inputRef.current?.blur();
-    }
+    if (query.trim()) goToSearchPage(query.trim());
   };
 
-  // Handle keyboard navigation
+  const totalItems = categories.length + results.length;
+
+  // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    const totalItems = results.length + categories.length;
-    
+    if (!isOpen && ['ArrowDown', 'ArrowUp'].includes(e.key)) setIsOpen(true);
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         setSelectedIndex(prev => (prev < totalItems - 1 ? prev + 1 : prev));
         break;
-      
       case 'ArrowUp':
         e.preventDefault();
         setSelectedIndex(prev => (prev > -1 ? prev - 1 : -1));
         break;
-      
-      case 'Enter':
+      case 'Home':
+        e.preventDefault();
+        setSelectedIndex(totalItems > 0 ? 0 : -1);
+        break;
+      case 'End':
+        e.preventDefault();
+        setSelectedIndex(totalItems > 0 ? totalItems - 1 : -1);
+        break;
+      case 'Enter': {
         if (selectedIndex >= 0) {
           e.preventDefault();
           if (selectedIndex < categories.length) {
-            // Navigate to category
             const category = categories[selectedIndex];
             router.push(`/category/${category.slug}`);
           } else {
-            // Navigate to product
             const product = results[selectedIndex - categories.length];
-            const productUrl = product.category?.slug && product.slug
-              ? `/${product.category.slug}/${product.slug}`
-              : `/products/${product.id}`;
+            const productUrl =
+              product.category?.slug && product.slug
+                ? `/${product.category.slug}/${product.slug}`
+                : `/products/${product.id}`;
             router.push(productUrl);
           }
           setIsOpen(false);
           inputRef.current?.blur();
+        } else if (query.trim()) {
+          goToSearchPage(query.trim());
         }
         break;
-      
+      }
       case 'Escape':
         setIsOpen(false);
-        inputRef.current?.blur();
+        setSelectedIndex(-1);
         break;
     }
   };
 
-  // Handle search suggestion click
+  // Suggestion click
   const handleSuggestionClick = (searchTerm: string) => {
     setQuery(searchTerm);
-    saveRecentSearch(searchTerm);
-    router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
-    setIsOpen(false);
+    goToSearchPage(searchTerm);
   };
 
-  // Clear search
   const clearSearch = () => {
     setQuery('');
     setResults([]);
     setCategories([]);
+    setTotalResults(0);
     setIsOpen(false);
     inputRef.current?.focus();
+  };
+
+  const activeId = selectedIndex >= 0 ? `sb-opt-${selectedIndex}` : undefined;
+
+  const getGlobalIndex = (i: number, isCategory: boolean) => (isCategory ? i : categories.length + i);
+
+  const prefetch = (href: string) => {
+    try { router.prefetch(href); } catch {}
   };
 
   return (
@@ -212,16 +473,24 @@ export function SearchBar() {
       <form onSubmit={handleSubmit} className="relative">
         <input
           ref={inputRef}
+          id={`search-${listboxId}`}
           type="text"
           value={query}
           onChange={handleInputChange}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Mit keres? Pl. CNC maró, ultrahang, hőprés..."
-          className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#131921] focus:border-[#131921] text-black bg-white placeholder:text-sm placeholder:text-gray-400"
+          className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-md focus:outline-none focus:ring-0 focus-visible:ring-1 focus-visible:ring-[#131921] focus-visible:border-[#131921] text-black bg-white placeholder:text-sm placeholder:text-gray-400 "
           aria-label="Termék keresőmező"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isOpen}
+          aria-controls={listboxId}
+          aria-activedescendant={activeId}
+          aria-describedby={statusId}
+          aria-busy={loading}
         />
-        
+
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 h-full py-1">
           {query && (
             <button
@@ -233,54 +502,91 @@ export function SearchBar() {
               <X size={20} />
             </button>
           )}
-          
+
           <button
             type="submit"
             className="text-gray-600 hover:text-gray-900 transition-colors p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label={loading ? "Keresés folyamatban" : "Keresés"}
+            aria-label={loading ? 'Keresés folyamatban' : 'Keresés'}
           >
             {loading ? <Loader2 size={22} className="animate-spin" /> : <Search size={22} />}
           </button>
         </div>
       </form>
 
+      {/* Screen reader status */}
+      <div id={statusId} role="status" aria-live="polite" className="sr-only">
+        {loading
+          ? 'Keresés folyamatban...'
+          : isOpen && query && (results.length > 0 || categories.length > 0)
+            ? `Találatok: ${categories.length} kategória és ${results.length} termék`
+            : isOpen && query && !loading && results.length === 0 && categories.length === 0
+              ? `Nincs találat erre: ${query}`
+              : ''}
+      </div>
+
       {/* Search Dropdown */}
       {isOpen && (
         <>
-          {/* Invisible backdrop to ensure isolation */}
-          <div 
-            className="search-backdrop-overlay" 
-            onClick={() => setIsOpen(false)}
-          />
-          <div 
-            className="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-xl border border-gray-200 max-h-[500px] overflow-hidden search-dropdown"
-          >
-            <div className="overflow-y-auto max-h-[500px] bg-white">
+          <div className="search-backdrop-overlay" onClick={() => setIsOpen(false)} />
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-xl border border-gray-200 max-h-[500px] overflow-hidden search-dropdown">
+            <div className="overflow-y-auto max-h-[500px] bg-white search-results-scroll" id={listboxId} role="listbox" aria-busy={loading}>
               {/* Categories Section */}
               {categories.length > 0 && (
                 <div className="border-b border-gray-100 bg-white">
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase" role="presentation">
                     Kategóriák
                   </div>
-                  {categories.map((category, index) => (
-                    <Link
-                      key={category.id}
-                      href={`/category/${category.slug}`}
-                      onClick={() => setIsOpen(false)}
-                      className={`block px-4 py-2 hover:bg-gray-50 transition-colors ${
-                        selectedIndex === index ? 'bg-gray-50' : ''
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span 
-                          className="text-sm text-gray-700"
-                          dangerouslySetInnerHTML={{ 
-                            __html: highlightText(category.name, query) 
+                  <ul className="divide-y divide-gray-50" role="presentation">
+                    {categories.map((category, i) => {
+                      const gi = getGlobalIndex(i, true);
+                      const id = `sb-opt-${gi}`;
+                      return (
+                        <li
+                          key={category.id}
+                          id={id}
+                          role="option"
+                          aria-selected={selectedIndex === gi}
+                          className={`px-4 py-2 hover:bg-gray-50 transition-colors cursor-pointer ${selectedIndex === gi ? 'bg-gray-50' : ''}`}
+                          onMouseEnter={() => setSelectedIndex(gi)}
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => {
+                            setIsOpen(false);
+                            router.push(`/category/${category.slug}`);
                           }}
-                        />
-                        <ChevronRight size={16} className="text-gray-400" />
+                          onMouseOver={() => prefetch(`/category/${category.slug}`)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-700">
+                              <HighlightMatch text={category.name} query={query} />
+                            </span>
+                            <ChevronRight size={16} className="text-gray-400" />
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {/* Did you mean */}
+              {didYouMean && didYouMean.toLowerCase() !== query.trim().toLowerCase() && (
+                <div className="px-4 py-2 text-xs text-gray-600">
+                  Ezt kereste:{' '}
+                  <button onClick={() => handleSuggestionClick(didYouMean)} className="underline text-[#131921]">„{didYouMean}”</button>?
+                </div>
+              )}
+
+              {/* Loading skeleton */}
+              {loading && query && results.length === 0 && categories.length === 0 && (
+                <div className="px-4 py-3 space-y-3">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="flex items-center gap-3 animate-pulse">
+                      <div className="w-12 h-12 bg-gray-200 rounded" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4" />
+                        <div className="h-3 bg-gray-200 rounded w-1/3" />
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               )}
@@ -288,93 +594,112 @@ export function SearchBar() {
               {/* Products Section */}
               {results.length > 0 && (
                 <div className="border-b border-gray-100 bg-white">
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase" role="presentation">
                     Termékek
                   </div>
-                  {results.map((product, index) => {
-                    const actualIndex = categories.length + index;
-                    const productUrl = product.category?.slug && product.slug
-                      ? `/${product.category.slug}/${product.slug}`
-                      : `/products/${product.id}`;
-                    const discount = product.regularPrice 
-                      ? calculateDiscount(product.price, product.regularPrice) 
-                      : 0;
+                  <ul className="divide-y divide-gray-50" role="presentation">
+                    {results.map((product, i) => {
+                      const gi = getGlobalIndex(i, false);
+                      const id = `sb-opt-${gi}`;
+                      const productUrl =
+                        product.category?.slug && product.slug
+                          ? `/${product.category.slug}/${product.slug}`
+                          : `/products/${product.id}`;
+                      const discount = product.regularPrice
+                        ? calculateDiscount(product.price, product.regularPrice)
+                        : 0;
 
-                    return (
-                      <Link
-                        key={product.id}
-                        href={productUrl}
-                        onClick={() => setIsOpen(false)}
-                        className={`block px-4 py-3 hover:bg-gray-50 transition-colors ${
-                          selectedIndex === actualIndex ? 'bg-gray-50' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {/* Product Image */}
-                          <div className="w-12 h-12 flex-shrink-0">
-                            {product.image ? (
-                              <img
-                                src={product.image}
-                                alt={product.name}
-                                className="w-full h-full object-contain"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center">
-                                <Search size={20} className="text-gray-400" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Product Info */}
-                          <div className="flex-1 min-w-0">
-                            <div 
-                              className="text-sm text-gray-900 font-medium truncate"
-                              dangerouslySetInnerHTML={{ 
-                                __html: highlightText(product.name, query) 
-                              }}
-                            />
-                            <div className="flex items-center gap-2 mt-1">
-                              {discount > 0 ? (
-                                <>
-                                  <span className="text-sm font-semibold text-red-600">
-                                    {formatPrice(product.price)}
-                                  </span>
-                                  <span className="text-xs text-gray-500 line-through">
-                                    {formatPrice(product.regularPrice!)}
-                                  </span>
-                                  <span className="text-xs text-red-600 font-medium">
-                                    -{discount}%
-                                  </span>
-                                </>
+                      return (
+                        <li
+                          key={product.id}
+                          id={id}
+                          role="option"
+                          aria-selected={selectedIndex === gi}
+                          className={`px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer ${selectedIndex === gi ? 'bg-gray-50' : ''}`}
+                          onMouseEnter={() => setSelectedIndex(gi)}
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => {
+                            setIsOpen(false);
+                            router.push(productUrl);
+                          }}
+                          onMouseOver={() => prefetch(productUrl)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 flex-shrink-0">
+                              {product.image ? (
+                                <img
+                                  src={product.image}
+                                  alt={product.name}
+                                  loading="lazy"
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-contain"
+                                />
                               ) : (
-                                <span className="text-sm font-semibold text-gray-900">
-                                  {formatPrice(product.price)}
-                                </span>
-                              )}
-                              {product.stock === 0 && (
-                                <span className="text-xs text-red-500">Elfogyott</span>
+                                <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center">
+                                  <Search size={20} className="text-gray-400" />
+                                </div>
                               )}
                             </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm text-gray-900 font-medium truncate">
+                                <HighlightMatch text={product.name} query={query} />
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                {discount > 0 ? (
+                                  <>
+                                    <span className="text-sm font-semibold text-red-600">
+                                      {formatPrice(product.price)}
+                                    </span>
+                                    <span className="text-xs text-gray-500 line-through">
+                                      {formatPrice(product.regularPrice!)}
+                                    </span>
+                                    <span className="text-xs text-red-600 font-medium">-{discount}%</span>
+                                  </>
+                                ) : (
+                                  <span className="text-sm font-semibold text-gray-900">
+                                    {formatPrice(product.price)}
+                                  </span>
+                                )}
+                                {product.stock === 0 ? (
+                                  <>
+                                    <span className="text-xs text-red-500">Elfogyott</span>
+                                    <button
+                                      className="text-xs text-blue-600 underline"
+                                      onClick={(e) => { e.preventDefault(); router.push(`${productUrl}?notify=1`); }}
+                                    >
+                                      Értesítsen, ha elérhető
+                                    </button>
+                                  </>
+                                ) : null}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
               )}
 
-              {/* Show "View all results" if there are more results */}
+              {/* View all */}
               {query && totalResults > 5 && (
-                <Link
-                  href={`/search?q=${encodeURIComponent(query)}`}
-                  onClick={() => setIsOpen(false)}
-                  className="block px-4 py-3 text-center text-sm text-[#131921] hover:bg-gray-50 transition-colors"
+                <button
+                  onMouseOver={() => prefetch(`/search?q=${encodeURIComponent(query)}`)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    goToSearchPage(query);
+                  }}
+                  className="w-full px-4 py-3 text-center text-sm text-[#131921] hover:bg-gray-50 transition-colors"
+                  role="option"
+                  aria-selected={false}
                 >
                   Összes találat megtekintése ({totalResults})
-                </Link>
+                </button>
               )}
 
-              {/* No results message */}
+              {/* No results */}
               {query && !loading && results.length === 0 && categories.length === 0 && (
                 <div className="px-4 py-8 text-center bg-white">
                   <Search size={40} className="mx-auto text-gray-300 mb-3" />
@@ -384,16 +709,13 @@ export function SearchBar() {
                 </div>
               )}
 
-              {/* Recent & Popular Searches (when no query) */}
+              {/* Recent & Popular */}
               {!query && !loading && (
                 <>
-                  {/* Recent Searches */}
                   {recentSearches.length > 0 && (
                     <div className="border-b border-gray-100 bg-white">
                       <div className="px-4 py-2 flex items-center justify-between">
-                        <span className="text-xs font-semibold text-gray-500 uppercase">
-                          Legutóbbi keresések
-                        </span>
+                        <span className="text-xs font-semibold text-gray-500 uppercase">Legutóbbi keresések</span>
                         <button
                           onClick={() => {
                             clearRecentSearches();
@@ -405,35 +727,52 @@ export function SearchBar() {
                           Törlés
                         </button>
                       </div>
-                      {recentSearches.map((search, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSuggestionClick(search)}
-                          className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 min-h-[44px]"
-                        >
-                          <Clock size={14} className="text-gray-400" />
-                          <span className="text-sm text-gray-700">{search}</span>
-                        </button>
-                      ))}
+                      <ul role="presentation">
+                        {recentSearches.map((s, i) => {
+                          const gi = i;
+                          const id = `sb-opt-${gi}`;
+                          return (
+                            <li key={s}>
+                              <button
+                                id={id}
+                                role="option"
+                                aria-selected={selectedIndex === gi}
+                                onMouseEnter={() => setSelectedIndex(gi)}
+                                onMouseDown={e => e.preventDefault()}
+                                onClick={() => handleSuggestionClick(s)}
+                                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 min-h-[44px]"
+                              >
+                                <Clock size={14} className="text-gray-400" />
+                                <span className="text-sm text-gray-700">{s}</span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
                   )}
 
-                  {/* Popular Searches */}
                   {popularSearches.length > 0 && (
                     <div className="bg-white">
-                      <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                      <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase" role="presentation">
                         Népszerű keresések
                       </div>
-                      {popularSearches.map((search, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSuggestionClick(search)}
-                          className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 min-h-[44px]"
-                        >
-                          <TrendingUp size={14} className="text-gray-400" />
-                          <span className="text-sm text-gray-700">{search}</span>
-                        </button>
-                      ))}
+                      <ul role="presentation">
+                        {popularSearches.map((s, i) => (
+                          <li key={`${s}-${i}`}>
+                            <button
+                              role="option"
+                              aria-selected={false}
+                              onMouseDown={e => e.preventDefault()}
+                              onClick={() => handleSuggestionClick(s)}
+                              className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 min-h-[44px]"
+                            >
+                              <TrendingUp size={14} className="text-gray-400" />
+                              <span className="text-sm text-gray-700">{s}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                 </>

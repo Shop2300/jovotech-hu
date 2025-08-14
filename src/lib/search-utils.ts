@@ -1,60 +1,69 @@
-// src/lib/search-utils.ts
-
-// In-memory storage for recent searches (per session)
-let recentSearchesMemory: string[] = [];
-
-/**
- * Debounce function to limit API calls
- */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
-  
+// Debounce with proper browser timeout typing
+export function debounce<T extends (...args: any[]) => void>(fn: T, wait: number) {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
   return (...args: Parameters<T>) => {
     if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      func(...args);
-    }, wait);
+    timeout = setTimeout(() => fn(...args), wait);
   };
 }
 
-/**
- * Highlight matching text in search results
- */
-export function highlightText(text: string, query: string): string {
-  if (!query.trim()) return text;
-  
-  const regex = new RegExp(`(${query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-  return text.replace(regex, '<mark class="bg-yellow-200 text-black">$1</mark>');
+// --- Recent searches (persisted) ---
+const KEY = 'recent_searches_v1';
+const MAX = 5;
+
+function safeStorage(): Storage | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    // Test write access
+    window.localStorage.setItem('__t', '1');
+    window.localStorage.removeItem('__t');
+    return window.localStorage;
+  } catch {
+    return null;
+  }
 }
 
-/**
- * Get recent searches from memory
- */
+let memoryFallback: string[] = [];
+
 export function getRecentSearches(): string[] {
-  return recentSearchesMemory;
+  const ls = safeStorage();
+  if (!ls) return memoryFallback;
+  try {
+    const raw = ls.getItem(KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
 }
 
-/**
- * Save search to recent searches in memory
- */
-export function saveRecentSearch(query: string): void {
-  if (!query.trim()) return;
-  
-  // Remove duplicate if exists
-  recentSearchesMemory = recentSearchesMemory.filter(
-    s => s.toLowerCase() !== query.toLowerCase()
-  );
-  
-  // Add to beginning and keep only 5 most recent
-  recentSearchesMemory = [query, ...recentSearchesMemory].slice(0, 5);
+export function saveRecentSearch(q: string): void {
+  const query = q.trim();
+  if (!query) return;
+
+  const ls = safeStorage();
+  if (!ls) {
+    memoryFallback = [query, ...memoryFallback.filter(s => s.toLowerCase() !== query.toLowerCase())].slice(0, MAX);
+    return;
+  }
+
+  const existing = getRecentSearches().filter(s => s.toLowerCase() !== query.toLowerCase());
+  const next = [query, ...existing].slice(0, MAX);
+  try {
+    ls.setItem(KEY, JSON.stringify(next));
+  } catch {
+    // ignore quota errors
+  }
 }
 
-/**
- * Clear recent searches from memory
- */
 export function clearRecentSearches(): void {
-  recentSearchesMemory = [];
+  const ls = safeStorage();
+  if (!ls) {
+    memoryFallback = [];
+    return;
+  }
+  try {
+    ls.removeItem(KEY);
+  } catch {
+    // ignore
+  }
 }

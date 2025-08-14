@@ -23,7 +23,7 @@ async function generateInvoice(order: any) {
     const year = new Date().getFullYear();
     const invoiceNumber = `FAK${year}${order.orderNumber}`;
 
-    // Create invoice record - NO VAT since Galaxy Sklep is not a VAT payer
+    // Create invoice record - NO VAT since not a VAT payer
     const invoice = await prisma.invoice.create({
       data: {
         invoiceNumber,
@@ -31,6 +31,8 @@ async function generateInvoice(order: any) {
         totalAmount: order.total,
         vatAmount: 0, // No VAT - not a VAT payer
         dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+        status: 'issued',
+        issuedAt: new Date()
       }
     });
 
@@ -55,9 +57,9 @@ async function generateInvoice(order: any) {
         billingAddress: order.billingAddress || order.address || '',
         billingCity: order.billingCity || order.city || '',
         billingPostalCode: order.billingPostalCode || order.postalCode || '',
-        billingCountry: 'Polska', // Default to Poland
-        billingCompany: order.companyName || '', // Company name from order
-        billingNip: order.companyNip || '', // Company NIP from order
+        billingCountry: 'Magyarorszag', // Hungarian default
+        billingCompany: order.companyName || '',
+        billingNip: order.companyNip || '',
         shippingFirstName: order.useDifferentDelivery ? (order.deliveryFirstName || '') : (order.billingFirstName || ''),
         shippingLastName: order.useDifferentDelivery ? (order.deliveryLastName || '') : (order.billingLastName || ''),
         shippingAddress: order.useDifferentDelivery ? (order.deliveryAddress || '') : (order.billingAddress || ''),
@@ -104,7 +106,7 @@ async function generateInvoice(order: any) {
         data: {
           orderId: order.id,
           action: 'invoice_generated',
-          description: `Invoice ${invoiceNumber} was generated`,
+          description: `Számla ${invoiceNumber} automatikusan létrehozva`,
           newValue: invoiceNumber,
           metadata: {
             invoiceId: invoice.id,
@@ -116,16 +118,30 @@ async function generateInvoice(order: any) {
       return updatedInvoice;
 
     } catch (pdfError) {
-      // If PDF generation fails, delete the invoice record
-      await prisma.invoice.delete({
-        where: { id: invoice.id }
+      console.error('PDF generation error:', pdfError);
+      // Keep the invoice record even if PDF generation fails
+      // Admin can regenerate PDF later
+      
+      await prisma.orderHistory.create({
+        data: {
+          orderId: order.id,
+          action: 'invoice_generation_partial',
+          description: `Számla ${invoiceNumber} létrehozva, de PDF generálás sikertelen`,
+          newValue: invoiceNumber,
+          metadata: {
+            error: pdfError instanceof Error ? pdfError.message : 'Unknown error'
+          }
+        }
       });
-      throw pdfError;
+      
+      return invoice; // Return invoice even without PDF
     }
 
   } catch (error) {
     console.error('Error generating invoice:', error);
-    throw error;
+    // Don't throw - just log the error
+    // Order should succeed even if invoice fails
+    return null;
   }
 }
 
@@ -228,7 +244,7 @@ export async function POST(request: NextRequest) {
       data: {
         orderId: order.id,
         action: 'order_created',
-        description: 'Order has been placed',
+        description: 'Megrendelés létrehozva', // Hungarian text
         newValue: 'processing',
         performedBy: 'Customer',
         metadata: {
@@ -244,7 +260,7 @@ export async function POST(request: NextRequest) {
       data: {
         orderId: order.id,
         action: 'status_change',
-        description: 'Order status changed to: Processing',
+        description: 'Megrendelés státusza: Feldolgozás alatt', // Hungarian text
         oldValue: 'pending',
         newValue: 'processing',
         performedBy: 'System',
@@ -258,7 +274,9 @@ export async function POST(request: NextRequest) {
     try {
       console.log('Generating invoice for order:', order.orderNumber);
       const invoice = await generateInvoice(order);
-      console.log('Invoice generated successfully:', invoice.invoiceNumber);
+      if (invoice) {
+        console.log('Invoice generated successfully:', invoice.invoiceNumber);
+      }
     } catch (invoiceError) {
       console.error('Failed to generate invoice:', invoiceError);
       // Don't fail the order creation if invoice generation fails

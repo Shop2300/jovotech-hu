@@ -1,9 +1,7 @@
-// src/components/ProductFilter.tsx
 'use client';
 
-import { useState, useRef, useEffect, memo, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { ChevronDown, Filter, Star, TrendingUp, Tag, Gem, SortAsc } from 'lucide-react';
+import { useState, useRef, useEffect, memo, useCallback, useMemo } from 'react';
+import { Star, TrendingUp, Tag, Gem, SortAsc } from 'lucide-react';
 
 export type SortOption = 'recommended' | 'bestselling' | 'cheapest' | 'expensive' | 'alphabetical';
 
@@ -15,111 +13,6 @@ interface ProductFilterProps {
   endProduct?: number;
 }
 
-interface DropdownPortalProps {
-  children: React.ReactNode;
-  isOpen: boolean;
-  targetRef: React.RefObject<HTMLDivElement | null>;
-  onClose: () => void;
-}
-
-const DropdownPortal = memo(function DropdownPortal({ children, isOpen, targetRef, onClose }: DropdownPortalProps) {
-  const [mounted, setMounted] = useState(false);
-  const [position, setPosition] = useState({ top: 0, right: 0 });
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    setIsMobile(window.innerWidth < 768);
-    
-    const updatePosition = () => {
-      if (targetRef.current) {
-        const rect = targetRef.current.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const spaceBelow = viewportHeight - rect.bottom;
-        const dropdownHeight = 250; // Approximate height
-        
-        // On mobile, check if dropdown fits below
-        if (window.innerWidth < 768) {
-          if (spaceBelow < dropdownHeight) {
-            // Position above the button on mobile if not enough space below
-            setPosition({
-              top: rect.top + window.scrollY - dropdownHeight - 8,
-              right: window.innerWidth - rect.right + window.scrollX
-            });
-          } else {
-            setPosition({
-              top: rect.bottom + window.scrollY,
-              right: window.innerWidth - rect.right + window.scrollX
-            });
-          }
-        } else {
-          // Desktop positioning
-          setPosition({
-            top: rect.bottom + window.scrollY,
-            right: window.innerWidth - rect.right + window.scrollX
-          });
-        }
-      }
-    };
-
-    if (isOpen) {
-      updatePosition();
-      window.addEventListener('scroll', updatePosition, { passive: true });
-      window.addEventListener('resize', updatePosition, { passive: true });
-    }
-
-    return () => {
-      window.removeEventListener('scroll', updatePosition);
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, [targetRef, isOpen]);
-
-  useEffect(() => {
-    if (isOpen && mounted) {
-      const style = document.createElement('style');
-      style.innerHTML = `
-        .product-filter-dropdown {
-          z-index: 999999 !important;
-          position: absolute !important;
-          background: white !important;
-        }
-        .product-filter-overlay {
-          z-index: 999998 !important;
-        }
-      `;
-      document.head.appendChild(style);
-      
-      return () => {
-        document.head.removeChild(style);
-      };
-    }
-  }, [isOpen, mounted]);
-
-  if (!mounted || !isOpen) return null;
-
-  return createPortal(
-    <>
-      <div
-        className="fixed inset-0 product-filter-overlay bg-black/20 md:bg-transparent"
-        onClick={onClose}
-      />
-      <div
-        className={`product-filter-dropdown rounded-lg border border-gray-200 mt-1 ${
-          isMobile ? 'w-[calc(100vw-2rem)] max-w-sm' : 'w-56'
-        }`}
-        style={{
-          position: 'absolute',
-          top: `${position.top}px`,
-          right: `${position.right}px`,
-        }}
-      >
-        {children}
-      </div>
-    </>,
-    document.body
-  );
-});
-
 const sortOptions = [
   { value: 'recommended' as SortOption, label: 'Ajánlott', icon: Star },
   { value: 'bestselling' as SortOption, label: 'Legnépszerűbb', icon: TrendingUp },
@@ -128,58 +21,69 @@ const sortOptions = [
   { value: 'alphabetical' as SortOption, label: 'ABC sorrendben', icon: SortAsc },
 ];
 
-export const ProductFilter = memo(function ProductFilter({ 
-  onSortChange, 
+export const ProductFilter = memo(function ProductFilter({
+  onSortChange,
   currentSort,
   productCount,
   startProduct,
-  endProduct
+  endProduct,
 }: ProductFilterProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const buttonRef = useRef<HTMLDivElement>(null);
-  
-  const currentOption = sortOptions.find(opt => opt.value === currentSort) || sortOptions[0];
-  const currentLabel = currentOption.label;
-  const CurrentIcon = currentOption.icon;
+  const currentIndex = Math.max(0, sortOptions.findIndex(o => o.value === currentSort));
+  const [focusIndex, setFocusIndex] = useState<number>(currentIndex);
 
-  const handleSortChange = useCallback((value: SortOption) => {
-    onSortChange(value);
-    setIsOpen(false);
-  }, [onSortChange]);
+  const groupRef = useRef<HTMLDivElement | null>(null);
+  const btnRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  const toggleDropdown = useCallback(() => {
-    setIsOpen(prev => !prev);
-  }, []);
+  useEffect(() => setFocusIndex(currentIndex), [currentIndex]);
 
-  const closeDropdown = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  // Close on ESC key
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEsc);
-      return () => document.removeEventListener('keydown', handleEsc);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const last = sortOptions.length - 1;
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = Math.min(focusIndex + 1, last);
+      setFocusIndex(next);
+      btnRefs.current[next]?.focus();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prev = Math.max(focusIndex - 1, 0);
+      setFocusIndex(prev);
+      btnRefs.current[prev]?.focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setFocusIndex(0);
+      btnRefs.current[0]?.focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      setFocusIndex(last);
+      btnRefs.current[last]?.focus();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSortChange(sortOptions[focusIndex].value);
     }
-  }, [isOpen]);
+  };
+
+  const select = useCallback(
+    (value: SortOption, index: number) => {
+      onSortChange(value);
+      setFocusIndex(index);
+    },
+    [onSortChange]
+  );
+
+  // announce changes for SR users
+  const [announce, setAnnounce] = useState('');
+  useEffect(() => {
+    const opt = sortOptions.find(o => o.value === currentSort);
+    setAnnounce(`Rendezés: ${opt?.label ?? ''}`);
+  }, [currentSort]);
 
   return (
-    <div className="flex items-center justify-between mb-3 py-2 md:py-4">
-      {/* Product count - Mobile responsive */}
+    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-3 md:mb-4">
+      {/* Left: product count */}
       <div className="flex items-baseline gap-1 md:gap-3">
-        <span className="text-xs md:text-sm font-medium text-gray-700">
-          Termékek
-        </span>
-        <span className="text-xs md:text-sm text-gray-700 font-bold">
-          {productCount}
-        </span>
-        {startProduct && endProduct && (
+        <span className="text-xs md:text-sm font-medium text-gray-700">Termékek</span>
+        <span className="text-xs md:text-sm text-gray-700 font-bold">{productCount}</span>
+        {startProduct != null && endProduct != null && (
           <>
             <span className="text-gray-500 mx-1 hidden md:inline">-</span>
             <span className="text-xs md:text-sm text-gray-700 hidden md:inline">
@@ -187,60 +91,46 @@ export const ProductFilter = memo(function ProductFilter({
             </span>
           </>
         )}
+        <span className="sr-only" aria-live="polite">{announce}</span>
       </div>
 
-      {/* Sort dropdown - Mobile optimized */}
-      <div ref={buttonRef} className="relative">
-        <button
-          onClick={toggleDropdown}
-          className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 touch-manipulation ${
-            isOpen ? 'border-gray-400 bg-gray-50' : ''
-          } w-auto md:w-56`}
-          aria-expanded={isOpen}
-          aria-haspopup="true"
-          style={{ minHeight: '40px' }}
-        >
-          <CurrentIcon size={14} className="text-gray-500 md:w-4 md:h-4 shrink-0" />
-          <span className="flex-1 text-left line-clamp-1">{currentLabel}</span>
-          <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-gray-500 transition-transform duration-200 ml-1 md:ml-auto shrink-0 ${
-            isOpen ? 'rotate-180' : ''
-          }`} />
-        </button>
-
-        <DropdownPortal
-          isOpen={isOpen}
-          targetRef={buttonRef}
-          onClose={closeDropdown}
-        >
-          {sortOptions.map((option, index) => (
-            <button
-              key={option.value}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSortChange(option.value);
-              }}
-              className={`
-                block w-full text-left px-3 md:px-4 py-3 md:py-2.5 text-xs md:text-sm transition-all duration-150 flex items-center gap-2 touch-manipulation
-                ${currentSort === option.value
-                  ? 'font-medium text-blue-600 bg-blue-50'
-                  : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
-                }
-                ${index === 0 ? 'rounded-t-lg' : ''}
-                ${index === sortOptions.length - 1 ? 'rounded-b-lg' : ''}
-              `}
-              style={{ minHeight: '44px' }}
-            >
-              <option.icon size={14} className={`${
-                currentSort === option.value ? 'text-blue-600' : 'text-gray-500'
-              } md:w-4 md:h-4 shrink-0`} />
-              <span className="line-clamp-1">{option.label}</span>
-              {currentSort === option.value && (
-                <span className="ml-auto text-blue-600">✓</span>
-              )}
-            </button>
-          ))}
-        </DropdownPortal>
+      {/* Right: inline pills (radiogroup) */}
+      <div
+        ref={groupRef}
+        role="radiogroup"
+        aria-label="Rendezés"
+        className="relative -mx-2 px-2"
+        onKeyDown={handleKeyDown}
+      >
+        {/* horizontal scroll on small screens */}
+        <div className="flex gap-1.5 md:gap-2 overflow-x-auto py-1 no-scrollbar">
+          {sortOptions.map((opt, i) => {
+            const selected = currentSort === opt.value;
+            const Icon = opt.icon;
+            return (
+              <button
+                key={opt.value}
+                ref={(el: HTMLButtonElement | null) => {
+                  btnRefs.current[i] = el; // callback returns void
+                }}
+                role="radio"
+                aria-checked={selected}
+                tabIndex={i === focusIndex ? 0 : -1}
+                onClick={() => select(opt.value, i)}
+                className={[
+                  'inline-flex items-center gap-1.5 md:gap-2 whitespace-nowrap',
+                  'px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-full border transition-all duration-150',
+                  selected
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ].join(' ')}
+              >
+                <Icon className={selected ? 'w-3.5 h-3.5 md:w-4 md:h-4 text-white' : 'w-3.5 h-3.5 md:w-4 md:h-4 text-gray-500'} />
+                <span>{opt.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
