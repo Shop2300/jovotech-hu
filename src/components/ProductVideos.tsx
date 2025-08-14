@@ -14,33 +14,33 @@ interface VideoData {
 const productVideos: VideoData[] = [
   {
     id: '1',
-    title: 'CNC marógép - Működés bemutatása',
+    title: 'Product Video 1',
     youtubeId: '6aLMNgElA6Q'
   },
   {
     id: '2',
-    title: 'Gravírozó lézer - Anyagteszt',
+    title: 'Product Video 2',
     youtubeId: 'QH4L_qYfavw'
   },
   {
     id: '3',
-    title: 'Hőprés - Használati útmutató',
+    title: 'Product Video 3',
     youtubeId: 'HqAqr5g76Zg'
   },
   {
     id: '4',
-    title: 'Ultrahang - Alkatrészek tisztítása',
+    title: 'Product Video 4',
     youtubeId: 'uxWO4eM4nAM'
   },
   {
     id: '5',
-    title: 'CNC 3040 - Első üzembe helyezés',
+    title: 'Product Video 5',
     youtubeId: 'DYdiWyO6Ct8'
   },
   {
     id: '6',
-    title: 'CO2 lézer - Fa gravírozás',
-    youtubeId: 'gaeh1sTsl70' // Fixed typo: was 'gaeh1sTsI70' (capital I instead of lowercase l)
+    title: 'Product Video 6',
+    youtubeId: 'gaeh1sTsl70'
   }
 ];
 
@@ -66,8 +66,6 @@ function VideoThumbnail({ video }: VideoThumbnailProps) {
     );
   }
 
-  // Use the correct YouTube thumbnail URL pattern
-  // Using img.youtube.com instead of i.ytimg.com for better reliability
   const thumbnailUrl = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
 
   return (
@@ -75,7 +73,6 @@ function VideoThumbnail({ video }: VideoThumbnailProps) {
       className="relative w-full h-full cursor-pointer group overflow-hidden bg-gray-900"
       onClick={() => setIsLoaded(true)}
     >
-      {/* Only use Next.js Image if no error occurred */}
       {!imageError ? (
         <Image
           src={thumbnailUrl}
@@ -85,10 +82,9 @@ function VideoThumbnail({ video }: VideoThumbnailProps) {
           className="object-cover"
           quality={75}
           onError={() => setImageError(true)}
-          unoptimized // YouTube images don't need Next.js optimization
+          unoptimized
         />
       ) : (
-        // Fallback to div with background color if image fails
         <div className="absolute inset-0 bg-gray-800" />
       )}
       
@@ -97,11 +93,6 @@ function VideoThumbnail({ video }: VideoThumbnailProps) {
         <div className="bg-red-600 bg-opacity-90 rounded-full p-4 shadow-2xl transform group-hover:scale-110 transition-transform">
           <Play className="w-8 h-8 text-white fill-white ml-0.5" />
         </div>
-      </div>
-      
-      {/* Title overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-        <p className="text-white text-sm font-medium line-clamp-2">{video.title}</p>
       </div>
     </div>
   );

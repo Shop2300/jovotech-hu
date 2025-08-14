@@ -368,12 +368,12 @@ export function CartIcon() {
                   {/* Subtle animated arrow on hover */}
                   <Link
                     href="/checkout"
-                    className="group inline-flex items-center justify-center rounded-lg bg-[#6da306] px-3.5 py-2 text-sm font-semibold text-white hover:brightness-110"
+                    className="group inline-flex items-center justify-center rounded-lg bg-[#6da306] px-4 py-2 text-sm font-semibold text-white hover:brightness-110"
                     onClick={() => setOpen(false)}
                   >
-                    <span>Pénztár</span>
+                    <span className="inline-block">Pénztár</span>
                     <ChevronRight
-                      className="ml-1.5 h-4 w-4 transition-transform duration-200 ease-out motion-safe:group-hover:translate-x-0.5"
+                      className="ml-1 h-4 w-4 transition-transform duration-200 ease-out motion-safe:group-hover:translate-x-0.5"
                       aria-hidden="true"
                     />
                   </Link>
