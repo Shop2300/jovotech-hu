@@ -208,12 +208,12 @@ export function CartIcon() {
         />
       </Link>
 
-      {/* Bigger mini-cart popover */}
+      {/* Bigger mini-cart popover - mobile optimized */}
       {open && (
         <div
           role="dialog"
           aria-label="Kosár előnézet"
-          className="absolute right-0 mt-2 w-[380px] sm:w-[420px] rounded-2xl border border-gray-200 bg-white shadow-xl ring-1 ring-black/5 z-50 p-4"
+          className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-[420px] sm:w-[380px] md:w-[420px] rounded-2xl border border-gray-200 bg-white shadow-xl ring-1 ring-black/5 z-50 p-3 sm:p-4"
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
         >
@@ -226,8 +226,8 @@ export function CartIcon() {
             </div>
           ) : (
             <>
-              {/* UPDATED SCROLLABLE CONTAINER */}
-              <div className="max-h-[400px] overflow-y-auto pr-2 -mr-2">
+              {/* UPDATED SCROLLABLE CONTAINER - mobile optimized */}
+              <div className="max-h-[60vh] sm:max-h-[400px] overflow-y-auto pr-2 -mr-2">
                 <ul className="divide-y divide-gray-100">
                   {items.map((it) => {
                     const href = productHref(it);
@@ -236,8 +236,8 @@ export function CartIcon() {
                     const lineDiscounted = it.price * it.quantity;
 
                     return (
-                      <li key={it.id + (it.variantId ?? '')} className="py-4 flex gap-3">
-                        <div className="h-16 w-16 sm:h-18 sm:w-18 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                      <li key={it.id + (it.variantId ?? '')} className="py-3 sm:py-4 flex gap-2 sm:gap-3">
+                        <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={it.image ?? '/favicon-32x32.png'}
@@ -249,49 +249,49 @@ export function CartIcon() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start gap-2">
                             {href ? (
-                              <Link href={href} className="block truncate text-sm font-medium text-[#131921] hover:underline">
+                              <Link href={href} className="block truncate text-xs sm:text-sm font-medium text-[#131921] hover:underline">
                                 {it.name}
                               </Link>
                             ) : (
-                              <div className="truncate text-sm font-medium text-[#131921]">{it.name}</div>
+                              <div className="truncate text-xs sm:text-sm font-medium text-[#131921]">{it.name}</div>
                             )}
                             {pct > 0 && (
-                              <span className="shrink-0 rounded-md bg-[#6da306]/10 text-[#6da306] text-[10px] px-1.5 py-0.5 font-semibold">
+                              <span className="shrink-0 rounded-md bg-[#6da306]/10 text-[#6da306] text-[10px] px-1 sm:px-1.5 py-0.5 font-semibold">
                                 −{pct}%
                               </span>
                             )}
                           </div>
 
                           {it.variantName && (
-                            <div className="text-xs text-gray-500 truncate mt-0.5">{it.variantName}</div>
+                            <div className="text-[10px] sm:text-xs text-gray-500 truncate mt-0.5">{it.variantName}</div>
                           )}
 
-                          <div className="mt-2 flex items-center gap-2">
+                          <div className="mt-1.5 sm:mt-2 flex items-center gap-1 sm:gap-2">
                             <button
                               type="button"
                               onClick={() => onDecrement(it)}
-                              className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50"
+                              className="h-8 w-8 sm:h-7 sm:w-7 inline-flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50 touch-manipulation"
                               aria-label="Mennyiség csökkentése"
                               disabled={busyId === it.id + (it.variantId ?? '') || it.quantity <= 1}
                             >
                               {busyId === it.id + (it.variantId ?? '') ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
                               ) : (
-                                <Minus className="h-3.5 w-3.5" />
+                                <Minus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                               )}
                             </button>
-                            <span className="w-7 text-center text-sm tabular-nums">{it.quantity}</span>
+                            <span className="w-7 text-center text-xs sm:text-sm tabular-nums">{it.quantity}</span>
                             <button
                               type="button"
                               onClick={() => onIncrement(it)}
-                              className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50"
+                              className="h-8 w-8 sm:h-7 sm:w-7 inline-flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50 touch-manipulation"
                               aria-label="Mennyiség növelése"
                               disabled={busyId === it.id + (it.variantId ?? '')}
                             >
                               {busyId === it.id + (it.variantId ?? '') ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
                               ) : (
-                                <Plus className="h-3.5 w-3.5" />
+                                <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                               )}
                             </button>
 
@@ -299,20 +299,20 @@ export function CartIcon() {
                             <button
                               type="button"
                               onClick={() => onRemove(it)}
-                              className="ml-2 h-7 w-7 inline-flex items-center justify-center rounded-md text-red-600 hover:bg-red-50"
+                              className="ml-1 sm:ml-2 h-8 w-8 sm:h-7 sm:w-7 inline-flex items-center justify-center rounded-md text-red-600 hover:bg-red-50 touch-manipulation"
                               aria-label="Tétel eltávolítása"
                               disabled={busyId === it.id + (it.variantId ?? '')}
                             >
                               {busyId === it.id + (it.variantId ?? '') ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
                               ) : (
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                               )}
                             </button>
                           </div>
 
                           {/* Unit price with discount info */}
-                          <div className="mt-1 text-xs text-gray-600">
+                          <div className="mt-1 text-[10px] sm:text-xs text-gray-600">
                             {it.quantity}×{' '}
                             {it.regularPrice && it.regularPrice > it.price ? (
                               <>
@@ -328,11 +328,11 @@ export function CartIcon() {
                         {/* Line totals including discount */}
                         <div className="text-right">
                           {it.regularPrice && it.regularPrice > it.price ? (
-                            <div className="text-[11px] text-gray-400 line-through">
+                            <div className="text-[10px] sm:text-[11px] text-gray-400 line-through">
                               {formatPrice(lineRegular)}
                             </div>
                           ) : null}
-                          <div className="text-sm font-semibold text-[#131921]">
+                          <div className="text-xs sm:text-sm font-semibold text-[#131921]">
                             {formatPrice(lineDiscounted)}
                           </div>
                         </div>
@@ -342,25 +342,25 @@ export function CartIcon() {
                 </ul>
               </div>
 
-              {/* Totals + actions */}
-              <div className="mt-4 border-t border-gray-100 pt-4 space-y-2">
+              {/* Totals + actions - mobile optimized */}
+              <div className="mt-3 sm:mt-4 border-t border-gray-100 pt-3 sm:pt-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Részösszeg</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Részösszeg</span>
                   {/* Bigger subtotal value */}
-                  <span className="text-lg md:text-xl font-semibold text-[#131921]">
+                  <span className="text-base sm:text-lg md:text-xl font-semibold text-[#131921]">
                     {formatPrice(subtotal)}
                   </span>
                 </div>
                 {savings > 0 && (
-                  <div className="flex items-center justify-between text-xs text-[#6da306]">
+                  <div className="flex items-center justify-between text-[10px] sm:text-xs text-[#6da306]">
                     <span>Megtakarítás</span>
                     <span className="font-semibold">{formatPrice(savings)}</span>
                   </div>
                 )}
-                <div className="flex justify-end gap-2 pt-1">
+                <div className="flex gap-2 pt-1">
                   <Link
                     href="/cart"
-                    className="inline-flex items-center justify-center rounded-lg border border-gray-200 px-3.5 py-2 text-sm font-medium text-[#131921] hover:bg-gray-50"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 sm:px-3.5 py-2.5 sm:py-2 text-xs sm:text-sm font-medium text-[#131921] hover:bg-gray-50 touch-manipulation"
                     onClick={() => setOpen(false)}
                   >
                     Kosár
@@ -368,12 +368,12 @@ export function CartIcon() {
                   {/* Subtle animated arrow on hover */}
                   <Link
                     href="/checkout"
-                    className="group inline-flex items-center justify-center rounded-lg bg-[#6da306] px-4 py-2 text-sm font-semibold text-white hover:brightness-110"
+                    className="flex-1 sm:flex-initial group inline-flex items-center justify-center rounded-lg bg-[#6da306] px-3 sm:px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-semibold text-white hover:brightness-110 touch-manipulation"
                     onClick={() => setOpen(false)}
                   >
                     <span className="inline-block">Pénztár</span>
                     <ChevronRight
-                      className="ml-1 h-4 w-4 transition-transform duration-200 ease-out motion-safe:group-hover:translate-x-0.5"
+                      className="ml-1 h-3 w-3 sm:h-4 sm:w-4 transition-transform duration-200 ease-out motion-safe:group-hover:translate-x-0.5"
                       aria-hidden="true"
                     />
                   </Link>
