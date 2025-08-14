@@ -71,7 +71,7 @@ export function CartIcon() {
   }, [open]);
 
   const labelText =
-    totalItems === 0 ? 'Kosár – üres' : `Kosár – ${totalItems} termék`;
+    totalItems === 0 ? 'Kosár — üres' : `Kosár — ${totalItems} termék`;
 
   const handleEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
@@ -103,7 +103,7 @@ export function CartIcon() {
     }[];
   };
 
-  const previewItems = items.slice(0, 5);
+  // REMOVED SLICE - SHOW ALL ITEMS
   const subtotal = getTotalPrice();
   const savings = getTotalSavings();
 
@@ -226,118 +226,121 @@ export function CartIcon() {
             </div>
           ) : (
             <>
-              <ul className="max-h-[340px] overflow-auto divide-y divide-gray-100">
-                {previewItems.map((it) => {
-                  const href = productHref(it);
-                  const pct = discountPct(it.price, it.regularPrice);
-                  const lineRegular = it.regularPrice ? it.regularPrice * it.quantity : 0;
-                  const lineDiscounted = it.price * it.quantity;
+              {/* UPDATED SCROLLABLE CONTAINER */}
+              <div className="max-h-[400px] overflow-y-auto pr-2 -mr-2">
+                <ul className="divide-y divide-gray-100">
+                  {items.map((it) => {
+                    const href = productHref(it);
+                    const pct = discountPct(it.price, it.regularPrice);
+                    const lineRegular = it.regularPrice ? it.regularPrice * it.quantity : 0;
+                    const lineDiscounted = it.price * it.quantity;
 
-                  return (
-                    <li key={it.id + (it.variantId ?? '')} className="py-4 flex gap-3">
-                      <div className="h-16 w-16 sm:h-18 sm:w-18 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={it.image ?? '/favicon-32x32.png'}
-                          alt={it.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start gap-2">
-                          {href ? (
-                            <Link href={href} className="block truncate text-sm font-medium text-[#131921] hover:underline">
-                              {it.name}
-                            </Link>
-                          ) : (
-                            <div className="truncate text-sm font-medium text-[#131921]">{it.name}</div>
-                          )}
-                          {pct > 0 && (
-                            <span className="shrink-0 rounded-md bg-[#6da306]/10 text-[#6da306] text-[10px] px-1.5 py-0.5 font-semibold">
-                              −{pct}%
-                            </span>
-                          )}
+                    return (
+                      <li key={it.id + (it.variantId ?? '')} className="py-4 flex gap-3">
+                        <div className="h-16 w-16 sm:h-18 sm:w-18 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={it.image ?? '/favicon-32x32.png'}
+                            alt={it.name}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
 
-                        {it.variantName && (
-                          <div className="text-xs text-gray-500 truncate mt-0.5">{it.variantName}</div>
-                        )}
-
-                        <div className="mt-2 flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => onDecrement(it)}
-                            className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50"
-                            aria-label="Mennyiség csökkentése"
-                            disabled={busyId === it.id + (it.variantId ?? '') || it.quantity <= 1}
-                          >
-                            {busyId === it.id + (it.variantId ?? '') ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start gap-2">
+                            {href ? (
+                              <Link href={href} className="block truncate text-sm font-medium text-[#131921] hover:underline">
+                                {it.name}
+                              </Link>
                             ) : (
-                              <Minus className="h-3.5 w-3.5" />
+                              <div className="truncate text-sm font-medium text-[#131921]">{it.name}</div>
                             )}
-                          </button>
-                          <span className="w-7 text-center text-sm tabular-nums">{it.quantity}</span>
-                          <button
-                            type="button"
-                            onClick={() => onIncrement(it)}
-                            className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50"
-                            aria-label="Mennyiség növelése"
-                            disabled={busyId === it.id + (it.variantId ?? '')}
-                          >
-                            {busyId === it.id + (it.variantId ?? '') ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Plus className="h-3.5 w-3.5" />
+                            {pct > 0 && (
+                              <span className="shrink-0 rounded-md bg-[#6da306]/10 text-[#6da306] text-[10px] px-1.5 py-0.5 font-semibold">
+                                −{pct}%
+                              </span>
                             )}
-                          </button>
-
-                          {/* ICON-ONLY REMOVE BUTTON */}
-                          <button
-                            type="button"
-                            onClick={() => onRemove(it)}
-                            className="ml-2 h-7 w-7 inline-flex items-center justify-center rounded-md text-red-600 hover:bg-red-50"
-                            aria-label="Tétel eltávolítása"
-                            disabled={busyId === it.id + (it.variantId ?? '')}
-                          >
-                            {busyId === it.id + (it.variantId ?? '') ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-3.5 w-3.5" />
-                            )}
-                          </button>
-                        </div>
-
-                        {/* Unit price with discount info */}
-                        <div className="mt-1 text-xs text-gray-600">
-                          {it.quantity}×{' '}
-                          {it.regularPrice && it.regularPrice > it.price ? (
-                            <>
-                              <span className="line-through text-gray-400">{formatPrice(it.regularPrice)}</span>{' '}
-                              <span className="font-medium text-[#131921]">{formatPrice(it.price)}</span>
-                            </>
-                          ) : (
-                            <span className="font-medium text-[#131921]">{formatPrice(it.price)}</span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Line totals including discount */}
-                      <div className="text-right">
-                        {it.regularPrice && it.regularPrice > it.price ? (
-                          <div className="text-[11px] text-gray-400 line-through">
-                            {formatPrice(lineRegular)}
                           </div>
-                        ) : null}
-                        <div className="text-sm font-semibold text-[#131921]">
-                          {formatPrice(lineDiscounted)}
+
+                          {it.variantName && (
+                            <div className="text-xs text-gray-500 truncate mt-0.5">{it.variantName}</div>
+                          )}
+
+                          <div className="mt-2 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => onDecrement(it)}
+                              className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50"
+                              aria-label="Mennyiség csökkentése"
+                              disabled={busyId === it.id + (it.variantId ?? '') || it.quantity <= 1}
+                            >
+                              {busyId === it.id + (it.variantId ?? '') ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Minus className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                            <span className="w-7 text-center text-sm tabular-nums">{it.quantity}</span>
+                            <button
+                              type="button"
+                              onClick={() => onIncrement(it)}
+                              className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50"
+                              aria-label="Mennyiség növelése"
+                              disabled={busyId === it.id + (it.variantId ?? '')}
+                            >
+                              {busyId === it.id + (it.variantId ?? '') ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Plus className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+
+                            {/* ICON-ONLY REMOVE BUTTON */}
+                            <button
+                              type="button"
+                              onClick={() => onRemove(it)}
+                              className="ml-2 h-7 w-7 inline-flex items-center justify-center rounded-md text-red-600 hover:bg-red-50"
+                              aria-label="Tétel eltávolítása"
+                              disabled={busyId === it.id + (it.variantId ?? '')}
+                            >
+                              {busyId === it.id + (it.variantId ?? '') ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Unit price with discount info */}
+                          <div className="mt-1 text-xs text-gray-600">
+                            {it.quantity}×{' '}
+                            {it.regularPrice && it.regularPrice > it.price ? (
+                              <>
+                                <span className="line-through text-gray-400">{formatPrice(it.regularPrice)}</span>{' '}
+                                <span className="font-medium text-[#131921]">{formatPrice(it.price)}</span>
+                              </>
+                            ) : (
+                              <span className="font-medium text-[#131921]">{formatPrice(it.price)}</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+
+                        {/* Line totals including discount */}
+                        <div className="text-right">
+                          {it.regularPrice && it.regularPrice > it.price ? (
+                            <div className="text-[11px] text-gray-400 line-through">
+                              {formatPrice(lineRegular)}
+                            </div>
+                          ) : null}
+                          <div className="text-sm font-semibold text-[#131921]">
+                            {formatPrice(lineDiscounted)}
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
 
               {/* Totals + actions */}
               <div className="mt-4 border-t border-gray-100 pt-4 space-y-2">

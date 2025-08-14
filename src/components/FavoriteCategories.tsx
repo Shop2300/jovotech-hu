@@ -11,27 +11,27 @@ interface CategoryItem {
 const favoriteCategories: CategoryItem[] = [
   {
     name: 'Sport és szabadidő',
-    slug: 'sport-i-rekreacja',
+    slug: 'sport-es-kikapcsolodas',
     image: '/images/favorite_categories/categories3.webp'
   },
   {
     name: 'Tisztítóeszközök',
-    slug: 'sprzet-czyszczacy',
+    slug: 'tisztitoberendezesek',
     image: '/images/favorite_categories/categories1.webp'
   },
   {
     name: 'Kert és gyep',
-    slug: 'ogrod-i-trawnik',
+    slug: 'kert-es-gyep',
     image: '/images/favorite_categories/categories4.webp'
   },
   {
     name: 'Mezőgazdasági és erdészeti eszközök',
-    slug: 'sprzet-rolniczy-i-lesny',
+    slug: 'mezogazdasagi-es-erdeszeti-gepek',
     image: '/images/favorite_categories/categories5.webp'
   },
   {
     name: 'Irodaszerek',
-    slug: 'artyku-y-biurowe',
+    slug: 'irodaszerek',
     image: '/images/favorite_categories/categories2.webp'
   }
 ];
