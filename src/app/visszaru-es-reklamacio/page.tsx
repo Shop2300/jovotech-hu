@@ -342,30 +342,42 @@ export default function ZwrotyIReklamacjePage() {
                 <FileText className="text-blue-600 mx-auto mb-3" size={40} />
                 <h4 className="font-semibold mb-2">Visszaküldési űrlap</h4>
                 <p className="text-sm text-gray-600 mb-4">Elállási nyilatkozat</p>
-                <button className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <a 
+                  href="/Return_and_Exchange_Form.pdf"
+                  download="Visszakuldesi_urlap.pdf"
+                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
                   <Download size={18} />
                   PDF letöltése
-                </button>
+                </a>
               </div>
               
               <div className="bg-white rounded-lg p-6 text-center">
                 <FileText className="text-purple-600 mx-auto mb-3" size={40} />
                 <h4 className="font-semibold mb-2">Reklamációs űrlap</h4>
                 <p className="text-sm text-gray-600 mb-4">Garanciális reklamáció bejelentése</p>
-                <button className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                <a 
+                  href="/Return_and_Exchange_Form.pdf"
+                  download="Reklamacios_urlap.pdf"
+                  className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                >
                   <Download size={18} />
                   PDF letöltése
-                </button>
+                </a>
               </div>
               
               <div className="bg-white rounded-lg p-6 text-center">
                 <FileText className="text-green-600 mx-auto mb-3" size={40} />
                 <h4 className="font-semibold mb-2">Csere űrlap</h4>
                 <p className="text-sm text-gray-600 mb-4">Termékcsere kérelem</p>
-                <button className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                <a 
+                  href="/Return_and_Exchange_Form.pdf"
+                  download="Csere_urlap.pdf"
+                  className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                >
                   <Download size={18} />
                   PDF letöltése
-                </button>
+                </a>
               </div>
             </div>
           </div>
