@@ -336,8 +336,8 @@ export async function POST(request: NextRequest) {
         companyNip: data.companyNip || null,
         items: emailItems,
         total: total,
-        deliveryMethod: getDeliveryMethodLabel(data.deliveryMethod, 'pl'),
-        paymentMethod: getPaymentMethodLabel(data.paymentMethod, 'pl'),
+        deliveryMethod: getDeliveryMethodLabel(data.deliveryMethod),
+        paymentMethod: getPaymentMethodLabel(data.paymentMethod),
         deliveryAddress: {
           street: deliveryAddress,
           city: deliveryCity,

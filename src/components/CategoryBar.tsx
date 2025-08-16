@@ -38,7 +38,6 @@ function DropdownPortal({ children, isOpen, targetRef, fullWidth = false }: Drop
         const rect = targetRef.current.getBoundingClientRect();
         
         if (fullWidth) {
-          // Get the website container width for full-width dropdowns
           const websiteContainer = document.querySelector('.max-w-screen-2xl');
           const containerRect = websiteContainer?.getBoundingClientRect();
           
@@ -48,7 +47,6 @@ function DropdownPortal({ children, isOpen, targetRef, fullWidth = false }: Drop
             width: containerRect ? containerRect.width : window.innerWidth
           });
         } else {
-          // Regular dropdown positioning
           setPosition({
             top: rect.bottom + window.scrollY,
             left: rect.left + window.scrollX,
@@ -84,7 +82,7 @@ function DropdownPortal({ children, isOpen, targetRef, fullWidth = false }: Drop
         ...(fullWidth && { width: `${position.width}px` }),
         zIndex: 9999,
         opacity: isPositioned ? 1 : 0,
-        transition: 'opacity 100ms ease-in-out'
+        transition: 'opacity 150ms ease-in-out'
       }}
     >
       {children}
@@ -105,7 +103,6 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
   const navRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Detect mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -126,7 +123,6 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
     };
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     const handleRouteChange = () => {
       setMobileMenuOpen(false);
@@ -137,7 +133,6 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
     return () => window.removeEventListener('popstate', handleRouteChange);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -150,7 +145,6 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
     };
   }, [mobileMenuOpen]);
 
-  // Calculate which categories fit in the available space (desktop only)
   const calculateVisibleCategories = useCallback(() => {
     if (isMobile || !navRef.current || !containerRef.current || categories.length === 0) return;
 
@@ -187,7 +181,6 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
     }
   }, [categories, isMobile]);
 
-  // Only fetch categories if not provided from server
   useEffect(() => {
     if (initialCategories.length > 0) return;
 
@@ -207,7 +200,6 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
     fetchCategories();
   }, [initialCategories]);
 
-  // Set up ResizeObserver for desktop
   useEffect(() => {
     if (isMobile || !containerRef.current) return;
 
@@ -269,12 +261,10 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
 
   const hiddenCategories = categories.filter(cat => !visibleCategories.includes(cat.id));
 
-  // Mobile menu component
   const MobileMenu = () => (
     <div className="fixed inset-0 z-50 md:hidden">
       <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
       <div className="fixed left-0 top-0 h-full w-[85%] max-w-sm bg-white shadow-xl overflow-y-auto">
-        {/* Header */}
         <div className="bg-gradient-to-r from-[#8bc34a] to-[#7cb342] text-white p-4 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -291,7 +281,6 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
           </div>
         </div>
         
-        {/* Categories List */}
         <nav className="py-2">
           {categories.map((category) => (
             <div key={category.id} className="border-b border-gray-100 last:border-b-0">
@@ -301,6 +290,8 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                     onClick={() => toggleDropdown(category.id)}
                     className="w-full flex items-center justify-between px-4 py-4 text-left font-medium hover:bg-gray-50 transition-colors touch-manipulation"
                     style={{ minHeight: '52px' }}
+                    aria-expanded={openDropdown === category.id}
+                    aria-controls={`mobile-sub-${category.id}`}
                   >
                     <div className="flex items-center gap-3">
                       {category.image ? (
@@ -311,7 +302,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                         />
                       ) : (
                         <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <FolderOpen size={16} className="text-gray-400" />
+                          <FolderOpen size={20} className="text-gray-400" />
                         </div>
                       )}
                       <span className="text-[#131921]">{category.name}</span>
@@ -324,31 +315,31 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                   </button>
                   
                   {openDropdown === category.id && (
-                    <div className="bg-gray-50 py-2 px-4">
+                    <div id={`mobile-sub-${category.id}`} className="bg-gray-50 py-2 px-4">
                       <Link
                         href={`/category/${category.slug}`}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#8bc34a] font-medium hover:bg-white rounded-lg transition-colors touch-manipulation"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#8bc34a] font-medium hover:bg-white rounded-lg transition-colors touch-manipulation focus:ring-2 focus:ring-[#8bc34a]"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <ChevronRight size={16} />
-                        Összes megjelenítése
+                        Összes mutatása
                       </Link>
                       {category.children.map((subcat) => (
                         <Link
                           key={subcat.id}
                           href={`/category/${subcat.slug}`}
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-white rounded-lg transition-colors touch-manipulation"
+                          className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-white rounded-lg transition-colors touch-manipulation focus:ring-2 focus:ring-[#8bc34a]"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           {subcat.image ? (
                             <img 
                               src={subcat.image} 
                               alt={subcat.name}
-                              className="w-6 h-6 rounded object-cover"
+                              className="w-6 h-6 rounded-lg object-cover"
                             />
                           ) : (
-                            <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
-                              <div className="w-2 h-2 bg-gray-400 rounded-full" />
+                            <div className="w-6 h-6 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <FolderOpen size={16} className="text-gray-400" />
                             </div>
                           )}
                           <span>{subcat.name}</span>
@@ -360,7 +351,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
               ) : (
                 <Link
                   href={`/category/${category.slug}`}
-                  className="flex items-center gap-3 px-4 py-4 font-medium hover:bg-gray-50 transition-colors touch-manipulation"
+                  className="flex items-center gap-3 px-4 py-4 font-medium hover:bg-gray-50 transition-colors touch-manipulation focus:ring-2 focus:ring-[#8bc34a]"
                   onClick={() => setMobileMenuOpen(false)}
                   style={{ minHeight: '52px' }}
                 >
@@ -372,7 +363,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                     />
                   ) : (
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <FolderOpen size={16} className="text-gray-400" />
+                      <FolderOpen size={20} className="text-gray-400" />
                     </div>
                   )}
                   <span className="text-[#131921]">{category.name}</span>
@@ -382,7 +373,6 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
           ))}
         </nav>
         
-        {/* Footer */}
         <div className="p-4 mt-4 border-t border-gray-100">
           <p className="text-xs text-gray-500 text-center">
             {categories.length} kategória
@@ -395,6 +385,29 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
   const renderCategoryItem = (category: Category, isInMoreMenu: boolean = false) => {
     const hasChildren = category.children && category.children.length > 0;
     
+    const categoryLink = (
+      <Link
+        ref={(el) => { if (!isInMoreMenu) buttonRefs.current[category.id] = el; }}
+        href={`/category/${category.slug}`}
+        className="flex items-center gap-2 px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-150 group whitespace-nowrap focus:ring-2 focus:ring-[#8bc34a]"
+        onClick={() => setOpenDropdown(null)}
+      >
+        {category.image ? (
+          <img 
+            src={category.image} 
+            alt=""
+            className="w-5 h-5 rounded object-cover"
+          />
+        ) : (
+          <FolderOpen size={16} className="text-gray-500" />
+        )}
+        {category.name}
+        {hasChildren && !isInMoreMenu && (
+          <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${openDropdown === category.id ? 'rotate-180' : ''} group-hover:text-gray-900`} />
+        )}
+      </Link>
+    );
+
     if (hasChildren && !isInMoreMenu) {
       return (
         <div 
@@ -404,14 +417,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
           onMouseEnter={() => handleMouseEnter(category.id)}
           onMouseLeave={handleMouseLeave}
         >
-          <Link
-            ref={(el) => { buttonRefs.current[category.id] = el; }}
-            href={`/category/${category.slug}`}
-            className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-100 group whitespace-nowrap"
-          >
-            {category.name}
-            <ChevronDown className={`w-4 h-4 transition-transform duration-100 ${openDropdown === category.id ? 'rotate-180' : ''} group-hover:text-gray-900`} />
-          </Link>
+          {categoryLink}
 
           <DropdownPortal
             isOpen={openDropdown === category.id}
@@ -419,44 +425,50 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
             fullWidth={true}
           >
             <div 
-              className="dropdown-content mt-2 bg-white rounded-lg shadow-2xl border border-gray-100 w-full"
+              className="dropdown-content mt-2 bg-white rounded-xl shadow-xl border border-gray-100 w-full overflow-hidden"
               onMouseEnter={() => handleMouseEnter(category.id)}
               onMouseLeave={handleMouseLeave}
             >
-              <div className="px-6 py-8">
-                <Link
-                  href={`/category/${category.slug}`}
-                  className="inline-block mb-6 px-4 py-2 text-sm font-medium text-[#131921] hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors duration-150"
-                  onClick={() => setOpenDropdown(null)}
-                >
-                  <span>Összes megjelenítése: {category.name} →</span>
-                </Link>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6">
+              <div className="flex min-h-[280px]">
+                <div className="w-64 bg-gray-50 p-6 flex-shrink-0 border-r border-gray-100">
+                  {category.image && (
+                    <img 
+                      src={category.image}
+                      alt={category.name}
+                      className="w-full h-32 object-cover rounded-lg mb-4"
+                      loading="lazy"
+                    />
+                  )}
+                  <h3 className="text-xl font-bold text-[#131921] mb-2">{category.name}</h3>
+                  <Link 
+                    href={`/category/${category.slug}`}
+                    className="text-sm font-medium text-[#8bc34a] hover:text-[#7cb342] transition-colors focus:ring-2 focus:ring-[#8bc34a]"
+                    onClick={() => setOpenDropdown(null)}
+                  >
+                    Összes mutatása ebben a kategóriában →
+                  </Link>
+                </div>
+                <div className="flex-1 p-6 columns-4 gap-8">
                   {category.children?.map((subcat) => (
                     <Link
                       key={subcat.id}
                       href={`/category/${subcat.slug}`}
-                      className="group flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                      className="flex items-center gap-3 mb-4 text-sm text-[#131921] hover:underline transition-all duration-150 block break-inside-avoid focus:ring-2 focus:ring-[#8bc34a]"
                       onClick={() => setOpenDropdown(null)}
                     >
-                      <div className="relative w-12 h-12 mb-3 overflow-hidden rounded-lg bg-gray-100 group-hover:shadow-md transition-shadow">
-                        {subcat.image ? (
-                          <img
-                            src={subcat.image}
-                            alt={subcat.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <FolderOpen size={20} />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-sm text-center text-[#131921] group-hover:text-gray-900 font-bold px-2 leading-tight min-h-[2.5rem] flex items-center">
-                        {subcat.name}
-                      </span>
+                      {subcat.image ? (
+                        <img
+                          src={subcat.image}
+                          alt={subcat.name}
+                          className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <FolderOpen size={16} className="text-gray-400" />
+                        </div>
+                      )}
+                      <span className="font-medium">{subcat.name}</span>
                     </Link>
                   ))}
                 </div>
@@ -467,17 +479,10 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
       );
     }
 
-    // Simple category link (no children or in more menu)
     return (
-      <Link
-        key={category.id}
-        data-category-id={category.id}
-        href={`/category/${category.slug}`}
-        className="inline-block px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-100 whitespace-nowrap"
-        onClick={() => setOpenDropdown(null)}
-      >
-        {category.name}
-      </Link>
+      <div key={category.id} data-category-id={category.id}>
+        {categoryLink}
+      </div>
     );
   };
 
@@ -488,7 +493,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
           <div className="max-w-screen-2xl mx-auto px-4 py-3">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="flex items-center justify-between px-4 py-3 text-sm font-medium bg-[#8bc34a] text-white hover:bg-[#7cb342] rounded-lg transition-colors touch-manipulation w-full group"
+              className="flex items-center justify-between px-4 py-3 text-sm font-medium bg-[#8bc34a] text-white hover:bg-[#7cb342] rounded-lg transition-colors touch-manipulation w-full group focus:ring-2 focus:ring-white"
               style={{ minHeight: '48px' }}
             >
               <div className="flex items-center gap-3">
@@ -504,12 +509,10 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
     );
   }
 
-  // Desktop view
   return (
     <div className="bg-white border-b border-gray-100">
       <div className="max-w-screen-2xl mx-auto px-6" ref={containerRef}>
-        <nav className="flex items-center gap-4 py-2 min-h-[52px]" ref={navRef}>
-          {/* Visible categories */}
+        <nav className="flex items-center gap-2 py-2 min-h-[52px]" ref={navRef}>
           {categories.map((category) => {
             if (!showMoreMenu || visibleCategories.includes(category.id)) {
               return renderCategoryItem(category);
@@ -517,7 +520,6 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
             return null;
           })}
           
-          {/* More menu button */}
           {showMoreMenu && hiddenCategories.length > 0 && (
             <div 
               className="relative"
@@ -526,11 +528,11 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
             >
               <button
                 ref={moreButtonRef}
-                className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-100 group whitespace-nowrap"
+                className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold text-[#131921] hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all duration-150 group whitespace-nowrap focus:ring-2 focus:ring-[#8bc34a]"
               >
                 <Menu className="w-4 h-4" />
                 Több
-                <ChevronDown className={`w-4 h-4 transition-transform duration-100 ${openDropdown === 'more-menu' ? 'rotate-180' : ''} group-hover:text-gray-900`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${openDropdown === 'more-menu' ? 'rotate-180' : ''} group-hover:text-gray-900`} />
               </button>
 
               <DropdownPortal
@@ -538,10 +540,10 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                 targetRef={moreButtonRef as React.RefObject<HTMLElement>}
               >
                 <div 
-                  className="dropdown-content mt-2 bg-white rounded-lg shadow-2xl border border-gray-100"
+                  className="dropdown-content mt-2 bg-white rounded-xl shadow-xl border border-gray-100"
                   style={{ 
                     width: 'max-content',
-                    minWidth: '250px'
+                    minWidth: '280px'
                   }}
                   onMouseEnter={() => handleMouseEnter('more-menu')}
                   onMouseLeave={handleMouseLeave}
@@ -553,18 +555,18 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                           <>
                             <Link
                               href={`/category/${category.slug}`}
-                              className="flex items-center justify-between px-4 py-2 text-sm font-bold text-[#131921] hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150"
+                              className="flex items-center justify-between px-4 py-3 text-sm font-bold text-[#131921] hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150 focus:ring-2 focus:ring-[#8bc34a]"
                               onClick={() => setOpenDropdown(null)}
                             >
                               {category.name}
                               <ChevronDown className="w-4 h-4 rotate-[-90deg] ml-2" />
                             </Link>
-                            <div className="pl-4 border-l ml-4">
+                            <div className="pl-4 border-l ml-4 bg-gray-50">
                               {category.children?.map((subcat) => (
                                 <Link
                                   key={subcat.id}
                                   href={`/category/${subcat.slug}`}
-                                  className="block px-4 py-2 text-sm text-[#131921]/70 hover:bg-gray-100 hover:text-[#131921] transition-colors duration-150"
+                                  className="block px-4 py-2 text-sm text-[#131921]/80 hover:bg-gray-100 hover:text-[#131921] hover:underline transition-all duration-150 focus:ring-2 focus:ring-[#8bc34a]"
                                   onClick={() => setOpenDropdown(null)}
                                 >
                                   {subcat.name}
@@ -575,7 +577,7 @@ export const CategoryBar = memo(function CategoryBar({ initialCategories = [] }:
                         ) : (
                           <Link
                             href={`/category/${category.slug}`}
-                            className="block px-4 py-2 text-sm font-bold text-[#131921] hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150"
+                            className="block px-4 py-3 text-sm font-bold text-[#131921] hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150 focus:ring-2 focus:ring-[#8bc34a]"
                             onClick={() => setOpenDropdown(null)}
                           >
                             {category.name}

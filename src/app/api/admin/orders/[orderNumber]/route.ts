@@ -146,7 +146,7 @@ export async function PATCH(
               };
 
           // Get delivery method label
-          const deliveryMethodLabel = getDeliveryMethodLabel(existingOrder.deliveryMethod, 'pl');
+          const deliveryMethodLabel = getDeliveryMethodLabel(existingOrder.deliveryMethod);
 
           await EmailService.sendShippingNotification({
             orderNumber: orderNumber,

@@ -77,8 +77,8 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
     'personal': 'Odbiór osobisty'
   };
   
-  const deliveryName = deliveryMethod?.labelPl || fallbackDeliveryNames[order.deliveryMethod] || order.deliveryMethod || 'Dostawa';
-  const paymentName = paymentMethod?.labelPl || order.paymentMethod || 'Przelew bankowy';
+  const deliveryName = deliveryMethod?.label || fallbackDeliveryNames[order.deliveryMethod] || order.deliveryMethod || 'Dostawa';
+  const paymentName = paymentMethod?.label || order.paymentMethod || 'Przelew bankowy';
 
   // Calculate totals - NO VAT
   let subtotal = 0;

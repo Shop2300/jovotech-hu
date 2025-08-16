@@ -89,8 +89,8 @@ export function generateInvoicePDF(invoiceData: InvoiceData): jsPDF {
       'personal': 'Szemelyes atvetel'
     };
     
-    const deliveryName = deliveryMethod?.labelPl || fallbackDeliveryNames[invoiceData.deliveryMethod] || invoiceData.deliveryMethod || 'Szallitas';
-    const paymentName = paymentMethod?.labelPl || invoiceData.paymentMethod || 'Banki atutalas';
+    const deliveryName = deliveryMethod?.label || fallbackDeliveryNames[invoiceData.deliveryMethod] || invoiceData.deliveryMethod || 'Szallitas';
+    const paymentName = paymentMethod?.label || invoiceData.paymentMethod || 'Banki atutalas';
 
     // Page setup
     const pageWidth = 210;

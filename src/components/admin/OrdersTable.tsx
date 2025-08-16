@@ -177,12 +177,12 @@ const OrderPreview = memo(({ order, position }: { order: Order; position: { x: n
           </div>
           {order.deliveryMethod && (
             <div className="text-xs text-gray-600 mb-1">
-              <span className="font-medium">Delivery:</span> {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+              <span className="font-medium">Delivery:</span> {getDeliveryMethodLabel(order.deliveryMethod)}
             </div>
           )}
           {order.paymentMethod && (
             <div className="text-xs text-gray-600">
-              <span className="font-medium">Payment:</span> {getPaymentMethodLabel(order.paymentMethod, 'pl')}
+              <span className="font-medium">Payment:</span> {getPaymentMethodLabel(order.paymentMethod)}
             </div>
           )}
         </div>
@@ -388,7 +388,7 @@ const OrderCard = memo(({
           <div className="flex items-center justify-between">
             <span className="text-gray-500">Delivery:</span>
             <span className="text-gray-700 text-xs">
-              {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+              {getDeliveryMethodLabel(order.deliveryMethod)}
             </span>
           </div>
         )}
@@ -1225,7 +1225,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                           {getPaymentStatusBadge(order.paymentStatus)}
                           {order.paymentMethod && (
                             <div className="text-xs text-gray-600 mt-1">
-                              {getPaymentMethodLabel(order.paymentMethod, 'pl')}
+                              {getPaymentMethodLabel(order.paymentMethod)}
                             </div>
                           )}
                         </div>
@@ -1233,7 +1233,7 @@ export function OrdersTable({ orders, onDelete }: OrdersTableProps) {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {order.deliveryMethod ? (
                           <div className={`text-sm ${order.status === 'cancelled' ? 'text-gray-600' : 'text-gray-900'}`}>
-                            {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+                            {getDeliveryMethodLabel(order.deliveryMethod)}
                           </div>
                         ) : (
                           <span className="text-sm text-gray-400">-</span>

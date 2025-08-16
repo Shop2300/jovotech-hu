@@ -299,7 +299,7 @@ export const OrderConfirmationEmail = ({
                   {/* Delivery */}
                   <tr>
                     <td style={methodCell} colSpan={2}>
-                      🚚 Szállítás: {deliveryMethodInfo ? deliveryMethodInfo.labelPl : deliveryMethod}
+                      🚚 Szállítás: {deliveryMethodInfo ? deliveryMethodInfo.label : deliveryMethod}
                     </td>
                     <td style={deliveryFee > 0 ? tableCellRight : tableCellRightFree}>
                       {deliveryFee > 0 ? formatPrice(deliveryFee) : 'Ingyenes'}
@@ -309,7 +309,7 @@ export const OrderConfirmationEmail = ({
                   {/* Payment */}
                   <tr>
                     <td style={methodCell} colSpan={2}>
-                      💳 Fizetés: {paymentMethodInfo ? paymentMethodInfo.labelPl : paymentMethod}
+                      💳 Fizetés: {paymentMethodInfo ? paymentMethodInfo.label : paymentMethod}
                     </td>
                     <td style={paymentFee > 0 ? tableCellRight : tableCellRightFree}>
                       {paymentFee > 0 ? formatPrice(paymentFee) : 'Ingyenes'}

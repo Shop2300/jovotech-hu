@@ -737,9 +737,9 @@ export default function CheckoutPage() {
                         <div className="flex items-start md:items-center gap-3 flex-1">
                           <Icon className="text-gray-600 flex-shrink-0 mt-0.5 md:mt-0" size={20} />
                           <div className="flex-1">
-                            <div className="font-medium text-[#131921] text-sm md:text-base">{method.labelPl}</div>
-                            {method.descriptionPl && (
-                              <div className="text-xs md:text-sm text-gray-600">{method.descriptionPl}</div>
+                            <div className="font-medium text-[#131921] text-sm md:text-base">{method.label}</div>
+                            {method.description && (
+                              <div className="text-xs md:text-sm text-gray-600">{method.description}</div>
                             )}
                           </div>
                         </div>
@@ -789,9 +789,9 @@ export default function CheckoutPage() {
                         </div>
                         <Icon className="mr-3 text-gray-600 flex-shrink-0" size={20} />
                         <div className="flex-1">
-                          <div className="font-medium text-[#131921] text-sm md:text-base">{method.labelPl}</div>
-                          {method.descriptionPl && (
-                            <div className="text-xs md:text-sm text-gray-600">{method.descriptionPl}</div>
+                          <div className="font-medium text-[#131921] text-sm md:text-base">{method.label}</div>
+                          {method.description && (
+                            <div className="text-xs md:text-sm text-gray-600">{method.description}</div>
                           )}
                         </div>
                         {method.price === 0 ? (

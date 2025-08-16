@@ -331,7 +331,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                       Nyomkövetési szám: <span className="font-mono font-semibold">{order.trackingNumber}</span>
                     </p>
                     <p className="text-sm text-green-700">
-                      Futárszolgálat: {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+                      Futárszolgálat: {getDeliveryMethodLabel(order.deliveryMethod)}
                     </p>
                   </div>
                   {order.trackingNumber && (
@@ -418,7 +418,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <div>
                       <h3 className="font-medium">Szállítás</h3>
                       <p className="text-sm text-gray-600">
-                        {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+                        {getDeliveryMethodLabel(order.deliveryMethod)}
                       </p>
                     </div>
                   </div>
@@ -440,7 +440,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                     <div>
                       <h3 className="font-medium">Fizetés</h3>
                       <p className="text-sm text-gray-600">
-                        {getPaymentMethodLabel(order.paymentMethod, 'pl')}
+                        {getPaymentMethodLabel(order.paymentMethod)}
                       </p>
                     </div>
                   </div>
@@ -522,7 +522,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <div>
                     <p className="text-sm font-medium text-gray-900">Szállítási mód</p>
                     <p className="text-sm text-gray-600">
-                      {getDeliveryMethodLabel(order.deliveryMethod, 'pl')}
+                      {getDeliveryMethodLabel(order.deliveryMethod)}
                     </p>
                   </div>
                 </div>
@@ -532,7 +532,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ or
                   <div>
                     <p className="text-sm font-medium text-gray-900">Fizetési mód</p>
                     <p className="text-sm text-gray-600">
-                      {getPaymentMethodLabel(order.paymentMethod, 'pl')}
+                      {getPaymentMethodLabel(order.paymentMethod)}
                     </p>
                     {/* Payment status - different display for cash on delivery */}
                     {order.paymentMethod === 'bank' && order.paymentStatus && (
